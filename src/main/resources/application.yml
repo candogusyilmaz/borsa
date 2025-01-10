@@ -1,0 +1,29 @@
+rsa:
+  private-key: classpath:certs/private.pem
+  public-key: classpath:certs/public.pem
+
+spring:
+  application:
+    name: Finance
+  datasource:
+    url: jdbc:postgresql://localhost:5432/stocks
+    username: postgres
+    password: 123
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      auto-commit: false
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        generate_statistics: false
+        fail_on_pagination_over_collection_fetch: true
+logging:
+  level:
+    org:
+      hibernate:
+        stat: debug
+        SQL: debug
