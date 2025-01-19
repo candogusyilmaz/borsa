@@ -2,10 +2,8 @@ package dev.canverse.stocks.dataloader;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.canverse.stocks.domain.entity.Stock;
-import dev.canverse.stocks.domain.entity.StockExchangeMapping;
 import dev.canverse.stocks.repository.CountryRepository;
 import dev.canverse.stocks.repository.ExchangeRepository;
-import dev.canverse.stocks.repository.StockExchangeMappingRepository;
 import dev.canverse.stocks.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -30,7 +28,6 @@ public class StocksDataLoader implements CommandLineRunner {
 
     private final StockRepository stockRepository;
     private final ExchangeRepository exchangeRepository;
-    private final StockExchangeMappingRepository stockExchangeMappingRepository;
 
     @Override
     public void run(String... args) {
@@ -43,19 +40,14 @@ public class StocksDataLoader implements CommandLineRunner {
             var turkiye = countryRepository.findByIsoCode("TR");
 
             var stockEntities = new ArrayList<Stock>();
-            var stockExchangeEntities = new ArrayList<StockExchangeMapping>();
             var exchange = exchangeRepository.findByCode("BIST");
 
             for (var stock : stocks) {
-                var entity = new Stock(stock.Name(), stock.Code(), stock.Isin(), turkiye);
+                var entity = new Stock(exchange, stock.Name(), stock.Code(), stock.Isin(), turkiye);
                 stockEntities.add(entity);
-
-                var en = new StockExchangeMapping(entity, exchange);
-                stockExchangeEntities.add(en);
             }
 
             stockRepository.saveAll(stockEntities);
-            stockExchangeMappingRepository.saveAll(stockExchangeEntities);
         } catch (IOException e) {
             log.error("Failed to load stocks data", e);
         }

@@ -2,6 +2,7 @@ package dev.canverse.stocks.domain.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
@@ -16,6 +17,10 @@ public class Stock implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotNull
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    private Exchange exchange;
 
     @NotEmpty
     @Column(nullable = false)
@@ -41,18 +46,24 @@ public class Stock implements Serializable {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "id", referencedColumnName = "stock_id")
+    private StockSnapshot snapshot;
+
     protected Stock() {
     }
 
-    public Stock(String name, String symbol, String isin, Country country) {
+    public Stock(Exchange exchange, String name, String symbol, String isin, Country country) {
+        this.exchange = exchange;
         this.name = name;
         this.symbol = symbol;
         this.isin = isin;
         this.country = country;
+        this.snapshot = new StockSnapshot(this);
     }
 
-    public Stock(String name, String symbol, String isin, Country country, Industry industry, String description) {
-        this(name, symbol, isin, country);
+    public Stock(Exchange exchange, String name, String symbol, String isin, Country country, Industry industry, String description) {
+        this(exchange, name, symbol, isin, country);
         this.industry = industry;
         this.description = description;
     }

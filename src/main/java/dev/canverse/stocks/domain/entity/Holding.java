@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
-import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -29,7 +28,6 @@ public class Holding implements Serializable {
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Stock stock;
 
-    @Setter
     @PositiveOrZero
     @Column(nullable = false)
     private int quantity;
@@ -38,7 +36,6 @@ public class Holding implements Serializable {
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal averagePrice;
 
-    @Setter
     @PositiveOrZero
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal totalTax;
@@ -70,9 +67,20 @@ public class Holding implements Serializable {
         return averagePrice.multiply(BigDecimal.valueOf(quantity));
     }
 
-    public void setAveragePrice(int quantity, BigDecimal price) {
+    public void buy(int quantity, BigDecimal price, BigDecimal tax) {
+        this.quantity += quantity;
         this.averagePrice = averagePrice.equals(BigDecimal.ZERO) ? price : averagePrice.multiply(BigDecimal.valueOf(this.quantity))
                 .add(price.multiply(BigDecimal.valueOf(quantity)))
                 .divide(BigDecimal.valueOf(this.quantity + quantity), RoundingMode.HALF_UP);
+        this.totalTax = this.totalTax.add(tax);
+    }
+
+    public void sell(int quantity, BigDecimal tax) {
+        if (this.quantity < quantity) {
+            throw new IllegalArgumentException("Not enough quantity");
+        }
+
+        this.quantity -= quantity;
+        this.totalTax = this.totalTax.add(tax);
     }
 }

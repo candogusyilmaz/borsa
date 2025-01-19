@@ -53,6 +53,10 @@ public class Trade implements Serializable {
     @Column(nullable = false)
     private Instant updatedAt;
 
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "id", referencedColumnName = "trade_id")
+    private TradePerformance performance;
+
     protected Trade() {
     }
 

@@ -2,7 +2,9 @@ package dev.canverse.stocks.domain.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
@@ -10,14 +12,12 @@ import java.time.Instant;
 
 @Getter
 @Entity
-@Table(name = "trade_analytics")
-public class TradeAnalytic {
+@Table(name = "trade_performance")
+public class TradePerformance {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @NotNull
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @Setter(AccessLevel.NONE)
+    @OneToOne(optional = false, fetch = FetchType.LAZY)
     private Trade trade;
 
     @Column(nullable = false, precision = 15, scale = 2)
@@ -34,10 +34,10 @@ public class TradeAnalytic {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    protected TradeAnalytic() {
+    protected TradePerformance() {
     }
 
-    public TradeAnalytic(Trade trade, BigDecimal profit, BigDecimal returnPercentage) {
+    public TradePerformance(Trade trade, BigDecimal profit, BigDecimal returnPercentage) {
         this.trade = trade;
         this.profit = profit;
         this.returnPercentage = returnPercentage;
