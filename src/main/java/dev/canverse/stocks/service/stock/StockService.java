@@ -41,6 +41,7 @@ public class StockService {
                         stock.snapshot.updatedAt))
                 .from(stock)
                 .where(stock.exchange.code.eq(exchange))
+                .orderBy(stock.symbol.asc())
                 .fetch();
 
         return new Stocks(exchange, query);
