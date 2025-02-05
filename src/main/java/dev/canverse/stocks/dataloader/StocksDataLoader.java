@@ -8,7 +8,8 @@ import dev.canverse.stocks.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
@@ -22,7 +23,7 @@ import java.util.List;
 @Order(1000)
 @Component
 @RequiredArgsConstructor
-public class StocksDataLoader implements CommandLineRunner {
+public class StocksDataLoader implements ApplicationListener<ApplicationReadyEvent> {
     private static final Logger log = LoggerFactory.getLogger(StocksDataLoader.class);
 
     private final ObjectMapper mapper;
@@ -33,7 +34,7 @@ public class StocksDataLoader implements CommandLineRunner {
     private final ExchangeRepository exchangeRepository;
 
     @Override
-    public void run(String... args) {
+    public void onApplicationEvent(ApplicationReadyEvent event) {
         if (stockRepository.count() != 0) return;
 
         var resource = new ClassPathResource("/data/symbols.json");
