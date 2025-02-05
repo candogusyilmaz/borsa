@@ -50,7 +50,7 @@ public class Setup implements ApplicationListener<ApplicationReadyEvent> {
         try (var reader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
             var countries = mapper.readValue(reader, new TypeReference<List<Country>>() {
             });
-            countryRepository.saveAll(countries);
+            countryRepository.saveAllAndFlush(countries);
         } catch (IOException e) {
             log.error("Failed to load stocks data", e);
         }
@@ -67,7 +67,7 @@ public class Setup implements ApplicationListener<ApplicationReadyEvent> {
         try (var reader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
             var countries = mapper.readValue(reader, new TypeReference<List<Exchange>>() {
             });
-            exchangeRepository.saveAll(countries);
+            exchangeRepository.saveAllAndFlush(countries);
         } catch (IOException e) {
             log.error("Failed to load stocks data", e);
         }
