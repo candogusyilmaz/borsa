@@ -33,7 +33,7 @@ public class HoldingService {
                                 holding.stock.snapshot.last)
                 )
                 .from(QHolding.holding)
-                .where(QHolding.holding.user.id.eq(AuthenticationProvider.getUser().getId()))
+                .where(QHolding.holding.user.id.eq(AuthenticationProvider.getUser().getId()).and(holding.quantity.gt(0)))
                 .fetch();
 
         return query.isEmpty() ? null : new Balance(query);
