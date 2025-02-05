@@ -1,0 +1,242 @@
+[
+  {
+    "id": 37,
+    "code": "NYSE",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "New York Stock Exchange",
+    "timezone": "America/New_York",
+    "countryId": 185
+  },
+  {
+    "id": 38,
+    "code": "NASDAQ",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "NASDAQ",
+    "timezone": "America/New_York",
+    "countryId": 185
+  },
+  {
+    "id": 39,
+    "code": "LSE",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "London Stock Exchange",
+    "timezone": "Europe/London",
+    "countryId": 184
+  },
+  {
+    "id": 40,
+    "code": "TSE",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "Tokyo Stock Exchange",
+    "timezone": "Asia/Tokyo",
+    "countryId": 83
+  },
+  {
+    "id": 41,
+    "code": "SSE",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "Shanghai Stock Exchange",
+    "timezone": "Asia/Shanghai",
+    "countryId": 36
+  },
+  {
+    "id": 42,
+    "code": "HKEX",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "Hong Kong Stock Exchange",
+    "timezone": "Asia/Hong_Kong",
+    "countryId": 36
+  },
+  {
+    "id": 43,
+    "code": "EURONEXT",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "Euronext",
+    "timezone": "Europe/Paris",
+    "countryId": 59
+  },
+  {
+    "id": 44,
+    "code": "TSX",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "Toronto Stock Exchange",
+    "timezone": "America/Toronto",
+    "countryId": 32
+  },
+  {
+    "id": 45,
+    "code": "FWB",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "Frankfurt Stock Exchange",
+    "timezone": "Europe/Berlin",
+    "countryId": 63
+  },
+  {
+    "id": 46,
+    "code": "ASX",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "Australian Securities Exchange",
+    "timezone": "Australia/Sydney",
+    "countryId": 9
+  },
+  {
+    "id": 47,
+    "code": "BSE",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "Bombay Stock Exchange",
+    "timezone": "Asia/Kolkata",
+    "countryId": 75
+  },
+  {
+    "id": 48,
+    "code": "NSE",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "National Stock Exchange of India",
+    "timezone": "Asia/Kolkata",
+    "countryId": 75
+  },
+  {
+    "id": 49,
+    "code": "JSE",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "Johannesburg Stock Exchange",
+    "timezone": "Africa/Johannesburg",
+    "countryId": 159
+  },
+  {
+    "id": 50,
+    "code": "SIX",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "SIX Swiss Exchange",
+    "timezone": "Europe/Zurich",
+    "countryId": 167
+  },
+  {
+    "id": 51,
+    "code": "KRX",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "Korea Exchange",
+    "timezone": "Asia/Seoul",
+    "countryId": 160
+  },
+  {
+    "id": 52,
+    "code": "Tadawul",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "Saudi Stock Exchange (Tadawul)",
+    "timezone": "Asia/Riyadh",
+    "countryId": 149
+  },
+  {
+    "id": 53,
+    "code": "MOEX",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "Moscow Exchange",
+    "timezone": "Europe/Moscow",
+    "countryId": 141
+  },
+  {
+    "id": 54,
+    "code": "SGX",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "Singapore Exchange",
+    "timezone": "Asia/Singapore",
+    "countryId": 154
+  },
+  {
+    "id": 55,
+    "code": "TWSE",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "Taiwan Stock Exchange",
+    "timezone": "Asia/Taipei",
+    "countryId": 169
+  },
+  {
+    "id": 56,
+    "code": "B3",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "BM&FBOVESPA (B3)",
+    "timezone": "America/Sao_Paulo",
+    "countryId": 24
+  },
+  {
+    "id": 57,
+    "code": "BMV",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "Mexican Stock Exchange",
+    "timezone": "America/Mexico_City",
+    "countryId": 108
+  },
+  {
+    "id": 58,
+    "code": "OSE",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "Oslo Stock Exchange",
+    "timezone": "Europe/Oslo",
+    "countryId": 127
+  },
+  {
+    "id": 59,
+    "code": "OMXSTO",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "Stockholm Stock Exchange",
+    "timezone": "Europe/Stockholm",
+    "countryId": 166
+  },
+  {
+    "id": 60,
+    "code": "OMXCPH",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "Copenhagen Stock Exchange",
+    "timezone": "Europe/Copenhagen",
+    "countryId": 45
+  },
+  {
+    "id": 61,
+    "code": "OMXHEL",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "Helsinki Stock Exchange",
+    "timezone": "Europe/Helsinki",
+    "countryId": 58
+  },
+  {
+    "id": 62,
+    "code": "WSE",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "Warsaw Stock Exchange",
+    "timezone": "Europe/Warsaw",
+    "countryId": 137
+  },
+  {
+    "id": 63,
+    "code": "ATHEX",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "Athens Stock Exchange",
+    "timezone": "Europe/Athens",
+    "countryId": 65
+  },
+  {
+    "id": 64,
+    "code": "BIST",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "Istanbul Stock Exchange",
+    "timezone": "Europe/Istanbul",
+    "countryId": 178
+  },
+  {
+    "id": 65,
+    "code": "TASE",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "Tel Aviv Stock Exchange",
+    "timezone": "Asia/Jerusalem",
+    "countryId": 80
+  },
+  {
+    "id": 66,
+    "code": "NZX",
+    "createdAt": "2025-01-07 16:30:59.850536 +00:00",
+    "name": "New Zealand Exchange",
+    "timezone": "Pacific/Auckland",
+    "countryId": 121
+  }
+]
