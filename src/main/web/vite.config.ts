@@ -20,9 +20,5 @@ export default defineConfig({
       '~/': '/src/',
       '@tabler/icons-react': '@tabler/icons-react/dist/esm/icons/index.mjs'
     }
-  },
-  build: {
-    outDir: '../resources/static/',
-    emptyOutDir: true
   }
 });
