@@ -28,7 +28,7 @@ public class Setup implements ApplicationListener<ApplicationReadyEvent> {
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         setupCountries();
-        setupExchanges();
+        //setupExchanges();
     }
 
     private void setupCountries() {
