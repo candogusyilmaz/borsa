@@ -41,7 +41,7 @@ public class Setup implements ApplicationListener<ApplicationReadyEvent> {
             // Get the SQL file from resources
             var resource = new ClassPathResource("/scripts/countries.sql");
             var sqlScript = new String(FileCopyUtils.copyToByteArray(resource.getInputStream()));
-            jdbcTemplate.execute(sqlScript);
+            jdbcTemplate.update(sqlScript);
             log.info("Countries data loaded successfully.");
         } catch (IOException e) {
             log.error("Error reading SQL file: " + e.getMessage());
