@@ -1,10 +1,11 @@
 import { http } from '~/lib/axios';
+import type { BuyTradeRequest, SellTradeRequest } from './types';
 
 export const tradeMutations = {
   buy: {
-    mutationFn: (body: unknown) => http.post('/trades/buy', body)
+    mutationFn: (body: BuyTradeRequest) => http.post('/trades/buy', body)
   },
   sell: {
-    mutationFn: (body: unknown) => http.post('/trades/sell', body)
+    mutationFn: (body: SellTradeRequest) => http.post('/trades/sell', body)
   }
 };

@@ -1,7 +1,6 @@
 package dev.canverse.stocks.domain.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,7 +14,10 @@ import java.time.Instant;
 @Table(name = "trade_performance")
 public class TradePerformance {
     @Id
-    @NotNull
+    @Column(name = "trade_id")
+    private Long id;
+
+    @MapsId
     @Setter(AccessLevel.NONE)
     @OneToOne(optional = false, fetch = FetchType.LAZY)
     private Trade trade;
@@ -37,7 +39,7 @@ public class TradePerformance {
     protected TradePerformance() {
     }
 
-    public TradePerformance(Trade trade, BigDecimal profit, BigDecimal returnPercentage) {
+    protected TradePerformance(Trade trade, BigDecimal profit, BigDecimal returnPercentage) {
         this.trade = trade;
         this.profit = profit;
         this.returnPercentage = returnPercentage;

@@ -9,7 +9,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Instant;
 
 @Getter
@@ -18,6 +17,10 @@ import java.time.Instant;
 @Table(name = "stock_snapshots")
 public class StockSnapshot implements Serializable {
     @Id
+    @Column(name = "stock_id")
+    private Long id;
+
+    @MapsId
     @Setter(AccessLevel.NONE)
     @OneToOne(optional = false, fetch = FetchType.LAZY)
     private Stock stock;
@@ -49,11 +52,16 @@ public class StockSnapshot implements Serializable {
     private BigDecimal momLow;  // Month-on-month low
 
     @Column(precision = 15, scale = 2)
+    private BigDecimal dailyChange;
+    @Column(precision = 15, scale = 2)
     private BigDecimal weeklyChange;
     @Column(precision = 15, scale = 2)
     private BigDecimal monthlyChange;
     @Column(precision = 15, scale = 2)
     private BigDecimal yearlyChange;
+
+    @Column(precision = 15, scale = 2)
+    private BigDecimal dailyChangePercent;
 
     @CreationTimestamp
     @Setter(AccessLevel.NONE)
@@ -67,33 +75,7 @@ public class StockSnapshot implements Serializable {
     protected StockSnapshot() {
     }
 
-    public StockSnapshot(Stock stock) {
+    protected StockSnapshot(Stock stock) {
         this.stock = stock;
     }
-
-    public void updateLive(BigDecimal open, BigDecimal high, BigDecimal low, BigDecimal last, Instant dateTime) {
-        this.open = open;
-        this.high = high;
-        this.low = low;
-        this.last = last;
-        this.updatedAt = dateTime;
-    }
-
-    public BigDecimal getDailyChange() {
-        if (last != null && open != null) {
-            return last.subtract(open);
-        }
-        return null;
-    }
-
-    public BigDecimal getDailyChangePercent() {
-        var dailyChange = getDailyChange();
-
-        if (dailyChange != null && open != null) {
-            return dailyChange.divide(open, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
-        }
-
-        return null;
-    }
-
 }

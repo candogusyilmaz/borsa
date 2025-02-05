@@ -1,20 +1,21 @@
-import { ActionIcon, Card, Group, Stack, Text } from "@mantine/core";
-import type { Balance } from "~/api/queries/types";
-import Currency from "~/components/Currency";
-import { useState } from "react";
-import { format } from "~/lib/format";
-import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
+import { ActionIcon, Card, Group, Stack, Text } from '@mantine/core';
+import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
+import { useState } from 'react';
+import type { Balance } from '~/api/queries/types';
+import Currency from '~/components/Currency';
+import { format } from '~/lib/format';
 
 const PAGE_SIZE = 3;
 
 export function BalanceHoldings({ data: { stocks } }: { data: Balance }) {
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortedStocks] = useState(stocks.sort((a, b) => b.value - a.value));
 
   const totalPages = Math.ceil(stocks.length / PAGE_SIZE);
 
   const startIndex = (currentPage - 1) * PAGE_SIZE;
   const endIndex = startIndex + PAGE_SIZE;
-  const currentStocks = stocks.slice(startIndex, endIndex);
+  const currentStocks = sortedStocks.slice(startIndex, endIndex);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
@@ -31,12 +32,7 @@ export function BalanceHoldings({ data: { stocks } }: { data: Balance }) {
   return (
     <Stack justify="center" gap="md" mt="xl">
       <Group justify="space-between">
-        <ActionIcon
-          variant="transparent"
-          c={currentPage === 1 ? "dimmed" : "white"}
-          onClick={handlePrevPage}
-          disabled={currentPage === 1}
-        >
+        <ActionIcon variant="transparent" c={currentPage === 1 ? 'dimmed' : 'white'} onClick={handlePrevPage} disabled={currentPage === 1}>
           <IconChevronLeft />
         </ActionIcon>
         <Text size="sm" fw={500}>
@@ -44,10 +40,9 @@ export function BalanceHoldings({ data: { stocks } }: { data: Balance }) {
         </Text>
         <ActionIcon
           variant="transparent"
-          c={currentPage === totalPages ? "dimmed" : "white"}
+          c={currentPage === totalPages ? 'dimmed' : 'white'}
           onClick={handleNextPage}
-          disabled={currentPage === totalPages}
-        >
+          disabled={currentPage === totalPages}>
           <IconChevronRight />
         </ActionIcon>
       </Group>
@@ -59,12 +54,11 @@ export function BalanceHoldings({ data: { stocks } }: { data: Balance }) {
           </Group>
           <Group justify="space-between">
             <Text size="xs" c="dimmed">
-              {stock.quantity} shares @{" "}
-              <Currency span>{stock.averagePrice}</Currency>
+              {stock.quantity} shares @ <Currency span>{stock.averagePrice}</Currency>
             </Text>
             <Group>
-              <Text span size="xs" c={stock.profit >= 0 ? "teal" : "red"}>
-                {format.toLocalePercentage(stock.profitPercentage / 100)}
+              <Text span size="xs" c={stock.profit >= 0 ? 'teal' : 'red'}>
+                {format.toLocalePercentage(stock.profitPercentage)}
               </Text>
             </Group>
           </Group>

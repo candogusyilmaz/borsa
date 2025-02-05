@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +17,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.List;
 
+@Order(1000)
 @Component
 @RequiredArgsConstructor
 public class StocksDataLoader implements CommandLineRunner {
@@ -33,7 +36,7 @@ public class StocksDataLoader implements CommandLineRunner {
     public void run(String... args) {
         if (stockRepository.count() != 0) return;
 
-        var resource = new ClassPathResource("/data/bist_tickers.json");
+        var resource = new ClassPathResource("/data/symbols.json");
 
         try (var reader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {
             var stocks = mapper.readValue(reader, StockJson[].class);
@@ -43,7 +46,7 @@ public class StocksDataLoader implements CommandLineRunner {
             var exchange = exchangeRepository.findByCode("BIST");
 
             for (var stock : stocks) {
-                var entity = new Stock(exchange, stock.Name(), stock.Code(), stock.Isin(), turkiye);
+                var entity = new Stock(exchange, stock.description(), stock.symbolCode(), stock.isinCode(), turkiye);
                 stockEntities.add(entity);
             }
 
@@ -53,9 +56,11 @@ public class StocksDataLoader implements CommandLineRunner {
         }
     }
 
-    record StockJson(
-            String Code, String Name, String Country, String Exchange, String Currency, String Type,
-            String Isin) {
+    record StockJson(Long symbolId, Long modifiedAt, String symbolCode, Boolean deleted, String description,
+                     Long sectorId, Long exchangeId, String marketCode, Long fraction, Long tradeFraction,
+                     String symbolType, String stockSymbolCode, Long tradeableStatus, Boolean isProxy, String isinCode,
+                     Boolean multiSession, Long delay, String exchangeCode, String actionType, List<String> indexes,
+                     String sectorCode, Long marketId, Long tradeStatus, String swapType, String marketMaker) {
     }
 }
 

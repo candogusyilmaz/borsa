@@ -3,6 +3,7 @@ package dev.canverse.stocks.domain.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -32,18 +33,17 @@ public class HoldingHistory implements Serializable {
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal totalTax;
 
-    @NotNull
-    @Column(nullable = false)
-    private Instant timestamp;
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private Instant createdAt;
 
     protected HoldingHistory() {
     }
 
-    public HoldingHistory(Holding holding) {
+    protected HoldingHistory(Holding holding) {
         this.holding = holding;
         this.quantity = holding.getQuantity();
         this.averagePrice = holding.getAveragePrice();
         this.totalTax = holding.getTotalTax();
-        this.timestamp = Instant.now();
     }
 }

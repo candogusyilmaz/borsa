@@ -1,25 +1,34 @@
-import { Card, Group, Stack, Title } from "@mantine/core";
-import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
-import { queries } from "~/api";
-import { BalanceCard } from "~/components/Portfolio/Balance";
+import { Flex, Space, Stack, Title } from '@mantine/core';
+import { useQuery } from '@tanstack/react-query';
+import { createFileRoute } from '@tanstack/react-router';
+import { queries } from '~/api';
+import { BalanceCard } from '~/components/Portfolio/BalanceCard';
+import '@mantine/charts/styles.css';
+import { BalanceChangeHistoryCard } from '~/components/Portfolio/BalanceChangeHistoryCard';
+import { TradeHistoryCard } from '~/components/Portfolio/TradeHistoryCard';
 
-export const Route = createFileRoute("/_authenticated/_member/portfolio")({
-  component: RouteComponent,
+export const Route = createFileRoute('/_authenticated/_member/portfolio')({
+  component: RouteComponent
 });
 
 function RouteComponent() {
   const { data: balance } = useQuery(queries.member.balance());
+  const { data: balanceHistory } = useQuery(queries.member.balanceHistory(7));
+  const { data: tradeHistory } = useQuery(queries.member.tradeHistory());
 
   return (
     <Stack>
       <Title>Portfolio</Title>
-      <Group align="stretch">
+      <Flex gap="md" direction={{ base: 'column', sm: 'row' }}>
         {balance && <BalanceCard data={balance} />}
-        <Card shadow="sm" padding="lg" radius="md" withBorder>
-          asdg
-        </Card>
-      </Group>
+        {balanceHistory && <BalanceChangeHistoryCard data={balanceHistory} />}
+      </Flex>
+      {tradeHistory && (
+        <>
+          <Space />
+          <TradeHistoryCard data={tradeHistory} />
+        </>
+      )}
     </Stack>
   );
 }

@@ -15,6 +15,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated/route
 import { Route as IndexImport } from './routes/index'
 import { Route as LoginIndexImport } from './routes/login/index'
 import { Route as AuthenticatedMemberRouteImport } from './routes/_authenticated/_member/route'
+import { Route as AuthenticatedMemberStocksImport } from './routes/_authenticated/_member/stocks'
 import { Route as AuthenticatedMemberPortfolioImport } from './routes/_authenticated/_member/portfolio'
 
 // Create/Update Routes
@@ -39,6 +40,12 @@ const LoginIndexRoute = LoginIndexImport.update({
 const AuthenticatedMemberRouteRoute = AuthenticatedMemberRouteImport.update({
   id: '/_member',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+
+const AuthenticatedMemberStocksRoute = AuthenticatedMemberStocksImport.update({
+  id: '/stocks',
+  path: '/stocks',
+  getParentRoute: () => AuthenticatedMemberRouteRoute,
 } as any)
 
 const AuthenticatedMemberPortfolioRoute =
@@ -87,6 +94,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMemberPortfolioImport
       parentRoute: typeof AuthenticatedMemberRouteImport
     }
+    '/_authenticated/_member/stocks': {
+      id: '/_authenticated/_member/stocks'
+      path: '/stocks'
+      fullPath: '/stocks'
+      preLoaderRoute: typeof AuthenticatedMemberStocksImport
+      parentRoute: typeof AuthenticatedMemberRouteImport
+    }
   }
 }
 
@@ -94,11 +108,13 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedMemberRouteRouteChildren {
   AuthenticatedMemberPortfolioRoute: typeof AuthenticatedMemberPortfolioRoute
+  AuthenticatedMemberStocksRoute: typeof AuthenticatedMemberStocksRoute
 }
 
 const AuthenticatedMemberRouteRouteChildren: AuthenticatedMemberRouteRouteChildren =
   {
     AuthenticatedMemberPortfolioRoute: AuthenticatedMemberPortfolioRoute,
+    AuthenticatedMemberStocksRoute: AuthenticatedMemberStocksRoute,
   }
 
 const AuthenticatedMemberRouteRouteWithChildren =
@@ -122,6 +138,7 @@ export interface FileRoutesByFullPath {
   '': typeof AuthenticatedMemberRouteRouteWithChildren
   '/login': typeof LoginIndexRoute
   '/portfolio': typeof AuthenticatedMemberPortfolioRoute
+  '/stocks': typeof AuthenticatedMemberStocksRoute
 }
 
 export interface FileRoutesByTo {
@@ -129,6 +146,7 @@ export interface FileRoutesByTo {
   '': typeof AuthenticatedMemberRouteRouteWithChildren
   '/login': typeof LoginIndexRoute
   '/portfolio': typeof AuthenticatedMemberPortfolioRoute
+  '/stocks': typeof AuthenticatedMemberStocksRoute
 }
 
 export interface FileRoutesById {
@@ -138,13 +156,14 @@ export interface FileRoutesById {
   '/_authenticated/_member': typeof AuthenticatedMemberRouteRouteWithChildren
   '/login/': typeof LoginIndexRoute
   '/_authenticated/_member/portfolio': typeof AuthenticatedMemberPortfolioRoute
+  '/_authenticated/_member/stocks': typeof AuthenticatedMemberStocksRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '' | '/login' | '/portfolio'
+  fullPaths: '/' | '' | '/login' | '/portfolio' | '/stocks'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '' | '/login' | '/portfolio'
+  to: '/' | '' | '/login' | '/portfolio' | '/stocks'
   id:
     | '__root__'
     | '/'
@@ -152,6 +171,7 @@ export interface FileRouteTypes {
     | '/_authenticated/_member'
     | '/login/'
     | '/_authenticated/_member/portfolio'
+    | '/_authenticated/_member/stocks'
   fileRoutesById: FileRoutesById
 }
 
@@ -195,7 +215,8 @@ export const routeTree = rootRoute
       "filePath": "_authenticated/_member/route.tsx",
       "parent": "/_authenticated",
       "children": [
-        "/_authenticated/_member/portfolio"
+        "/_authenticated/_member/portfolio",
+        "/_authenticated/_member/stocks"
       ]
     },
     "/login/": {
@@ -203,6 +224,10 @@ export const routeTree = rootRoute
     },
     "/_authenticated/_member/portfolio": {
       "filePath": "_authenticated/_member/portfolio.tsx",
+      "parent": "/_authenticated/_member"
+    },
+    "/_authenticated/_member/stocks": {
+      "filePath": "_authenticated/_member/stocks.tsx",
       "parent": "/_authenticated/_member"
     }
   }

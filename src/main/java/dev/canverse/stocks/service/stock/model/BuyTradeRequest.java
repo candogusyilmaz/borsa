@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 
 public record BuyTradeRequest(
         @NotNull
@@ -16,6 +17,8 @@ public record BuyTradeRequest(
         @Positive
         BigDecimal price,
         @PositiveOrZero
-        BigDecimal tax
+        BigDecimal tax,
+        @NotNull
+        Instant actionDate
 ) {
 }

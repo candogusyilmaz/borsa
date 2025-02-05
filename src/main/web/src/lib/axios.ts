@@ -14,7 +14,7 @@ http.interceptors.request.use((config) => {
     throw new Error("Expected 'config' and 'config.headers' not to be undefined");
   }
 
-  if (config.url === '/auth/token' || config.url === '/auth/refresh-token') {
+  if (config.url === '/auth/token' || config.url === '/auth/google' || config.url === '/auth/refresh-token') {
     config.headers.Authorization = undefined;
   } else {
     const user = JSON.parse(localStorage.getItem('user') ?? '');

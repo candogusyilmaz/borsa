@@ -1,6 +1,6 @@
-import { Button, type ButtonProps } from "@mantine/core";
+import { Button, type ButtonProps } from '@mantine/core';
 
-function GoogleIcon(props: React.ComponentPropsWithoutRef<"svg">) {
+function GoogleIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (
     // biome-ignore lint/a11y/noSvgWithoutTitle: <explanation>
     <svg
@@ -30,8 +30,6 @@ function GoogleIcon(props: React.ComponentPropsWithoutRef<"svg">) {
   );
 }
 
-export function GoogleButton(
-  props: ButtonProps & React.ComponentPropsWithoutRef<"button">
-) {
+export function GoogleButton(props: ButtonProps & React.ComponentPropsWithoutRef<'button'>) {
   return <Button leftSection={<GoogleIcon />} variant="default" {...props} />;
 }

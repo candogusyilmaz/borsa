@@ -1,9 +1,6 @@
-import { createContext, type ReactNode, useContext, useState } from "react";
-import {
-  type UseMutateAsyncFunction,
-  useMutation,
-} from "@tanstack/react-query";
-import { http } from "./axios.ts";
+import { type UseMutationResult, useMutation } from '@tanstack/react-query';
+import { type ReactNode, createContext, useContext, useState } from 'react';
+import { http } from './axios.ts';
 
 export interface LoginResponse {
   token: string;
@@ -12,10 +9,14 @@ export interface LoginResponse {
 
 export interface AuthContext {
   isAuthenticated: boolean;
-  login: UseMutateAsyncFunction<
+  login: UseMutationResult<
     LoginResponse,
     Error,
-    { username: string; password: string },
+    | {
+        username: string;
+        password: string;
+      }
+    | { token: string },
     unknown
   >;
   logout: () => Promise<void>;
@@ -27,36 +28,36 @@ type AuthProviderProps = {
 };
 
 function getStoredUser(): LoginResponse | null {
-  const user = localStorage.getItem("user");
+  const user = localStorage.getItem('user');
 
   return user ? JSON.parse(user) : null;
 }
 
 const AuthContext = createContext<AuthContext>(null!);
 
-export function AuthenticationProvider({
-  children,
-}: Readonly<AuthProviderProps>) {
+export function AuthenticationProvider({ children }: Readonly<AuthProviderProps>) {
   const [user, setUser] = useState<LoginResponse | null>(getStoredUser());
 
   const login = useMutation({
-    mutationFn: async (credentials: { username: string; password: string }) =>
-      (await http.post<LoginResponse>("/auth/token", credentials)).data,
-    onSuccess: async (data) => {
-      localStorage.setItem("user", JSON.stringify(data));
-      setUser(data);
+    mutationFn: async (credentials: { username: string; password: string } | { token: string }) => {
+      const endpoint = 'token' in credentials ? '/auth/google' : '/auth/token';
+      return (await http.post<LoginResponse>(endpoint, credentials)).data;
     },
+    onSuccess: async (data) => {
+      localStorage.setItem('user', JSON.stringify(data));
+      setUser(data);
+    }
   });
 
   const logout = async () => {
-    localStorage.removeItem("user");
+    localStorage.removeItem('user');
     setUser(null);
   };
 
   const updateToken = (token: string) => {
     const user = getStoredUser();
     user!.token = token;
-    localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem('user', JSON.stringify(user));
     setUser(user);
   };
 
@@ -64,11 +65,10 @@ export function AuthenticationProvider({
     <AuthContext
       value={{
         isAuthenticated: !!user,
-        login: login.mutateAsync,
+        login,
         logout,
-        updateToken,
-      }}
-    >
+        updateToken
+      }}>
       {children}
     </AuthContext>
   );
@@ -78,7 +78,7 @@ export function useAuthentication() {
   const context = useContext(AuthContext);
 
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuth must be used within an AuthProvider');
   }
 
   return context;

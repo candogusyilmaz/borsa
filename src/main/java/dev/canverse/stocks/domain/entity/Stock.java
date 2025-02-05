@@ -33,9 +33,6 @@ public class Stock implements Serializable {
     @Column(unique = true, length = 12)
     private String isin;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Industry industry;
-
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Country country;
 
@@ -46,7 +43,7 @@ public class Stock implements Serializable {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "stock", cascade = CascadeType.ALL)
     @JoinColumn(name = "id", referencedColumnName = "stock_id")
     private StockSnapshot snapshot;
 
@@ -62,9 +59,8 @@ public class Stock implements Serializable {
         this.snapshot = new StockSnapshot(this);
     }
 
-    public Stock(Exchange exchange, String name, String symbol, String isin, Country country, Industry industry, String description) {
+    public Stock(Exchange exchange, String name, String symbol, String isin, Country country, String description) {
         this(exchange, name, symbol, isin, country);
-        this.industry = industry;
         this.description = description;
     }
 }

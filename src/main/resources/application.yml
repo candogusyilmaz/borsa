@@ -21,6 +21,15 @@ spring:
         format_sql: true
         generate_statistics: false
         fail_on_pagination_over_collection_fetch: true
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 11207596743-8ql23qmgre6sssabg68hvsrcioucd686.apps.googleusercontent.com
+            client-secret: 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
+            scope:
+              - email
 logging:
   level:
     org:

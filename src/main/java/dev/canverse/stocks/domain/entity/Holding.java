@@ -11,6 +11,8 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Entity
@@ -48,6 +50,12 @@ public class Holding implements Serializable {
     @Column(nullable = false)
     private Instant updatedAt;
 
+    @OneToMany(mappedBy = "holding", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<Trade> trades = new HashSet<>();
+
+    @OneToMany(mappedBy = "holding", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<HoldingHistory> history = new HashSet<>();
+
     protected Holding() {
     }
 
@@ -67,20 +75,26 @@ public class Holding implements Serializable {
         return averagePrice.multiply(BigDecimal.valueOf(quantity));
     }
 
-    public void buy(int quantity, BigDecimal price, BigDecimal tax) {
+    public void buy(int quantity, BigDecimal price, BigDecimal tax, Instant actionDate) {
         this.quantity += quantity;
-        this.averagePrice = averagePrice.equals(BigDecimal.ZERO) ? price : averagePrice.multiply(BigDecimal.valueOf(this.quantity))
+        this.averagePrice = averagePrice == null ? price : averagePrice.equals(BigDecimal.ZERO) ? price : averagePrice.multiply(BigDecimal.valueOf(this.quantity))
                 .add(price.multiply(BigDecimal.valueOf(quantity)))
                 .divide(BigDecimal.valueOf(this.quantity + quantity), RoundingMode.HALF_UP);
-        this.totalTax = this.totalTax.add(tax);
+        this.totalTax = this.totalTax == null ? tax : this.totalTax.add(tax);
+
+        trades.add(new Trade(this, Trade.Type.BUY, quantity, price, tax, actionDate));
+        history.add(new HoldingHistory(this));
     }
 
-    public void sell(int quantity, BigDecimal tax) {
+    public void sell(int quantity, BigDecimal price, BigDecimal tax, Instant actionDate) {
         if (this.quantity < quantity) {
             throw new IllegalArgumentException("Not enough quantity");
         }
 
         this.quantity -= quantity;
         this.totalTax = this.totalTax.add(tax);
+
+        history.add(new HoldingHistory(this));
+        trades.add(new Trade(this, Trade.Type.SELL, quantity, price, tax, actionDate));
     }
 }

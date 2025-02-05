@@ -5,11 +5,13 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 
 @Getter
@@ -22,11 +24,7 @@ public class Trade implements Serializable {
 
     @NotNull
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    private User user;
-
-    @NotNull
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    private Stock stock;
+    private Holding holding;
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -45,28 +43,39 @@ public class Trade implements Serializable {
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal tax;
 
+    @NotNull
+    @Column(nullable = false)
+    private Instant actionDate;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
+    @ColumnDefault("now()")
     private Instant createdAt;
 
     @UpdateTimestamp
     @Column(nullable = false)
     private Instant updatedAt;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "trade", cascade = CascadeType.ALL)
     @JoinColumn(name = "id", referencedColumnName = "trade_id")
     private TradePerformance performance;
 
     protected Trade() {
     }
 
-    public Trade(User user, Stock stock, Type type, int quantity, BigDecimal price, BigDecimal tax) {
-        this.user = user;
-        this.stock = stock;
+    protected Trade(Holding holding, Type type, int quantity, BigDecimal price, BigDecimal tax, Instant actionDate) {
+        this.holding = holding;
         this.type = type;
         this.quantity = quantity;
         this.price = price;
         this.tax = tax;
+        this.actionDate = actionDate;
+
+        if (type == Type.SELL) {
+            performance = new TradePerformance(this,
+                    price.subtract(holding.getAveragePrice()).multiply(BigDecimal.valueOf(quantity)),
+                    price.subtract(holding.getAveragePrice()).divide(holding.getAveragePrice(), RoundingMode.HALF_UP));
+        }
     }
 
     public enum Type {

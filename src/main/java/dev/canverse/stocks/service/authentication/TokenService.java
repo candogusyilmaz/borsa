@@ -33,7 +33,7 @@ public class TokenService {
 
     public String createRefreshTokenCookie(User principal) {
         var now = Instant.now();
-        var expiresAt = now.plus(ACCESS_TOKEN_EXPIRATION_IN_SECONDS, ChronoUnit.SECONDS);
+        var expiresAt = now.plus(REFRESH_TOKEN_EXPIRATION_IN_SECONDS, ChronoUnit.SECONDS);
 
         var claims = JwtClaimsSet.builder()
                 .issuer("finance-api")

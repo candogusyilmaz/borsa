@@ -14,7 +14,7 @@ public record Balance(List<Stock> stocks) {
     }
 
     public BigDecimal getTotalProfitPercentage() {
-        return getTotalProfit().divide(getTotalCost(), RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
+        return getTotalProfit().divide(getTotalCost(), RoundingMode.HALF_UP);
     }
 
     public BigDecimal getTotalValue() {
@@ -27,7 +27,7 @@ public record Balance(List<Stock> stocks) {
         }
 
         public BigDecimal getProfitPercentage() {
-            return currentPrice.subtract(averagePrice).divide(averagePrice, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
+            return currentPrice.subtract(averagePrice).divide(averagePrice, RoundingMode.HALF_UP);
         }
 
         public BigDecimal getValue() {

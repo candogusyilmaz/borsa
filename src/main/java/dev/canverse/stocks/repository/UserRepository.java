@@ -13,5 +13,9 @@ public interface UserRepository extends BaseJpaRepository<User, Long> {
     @EntityGraph(attributePaths = {"userRoles.role.rolePermissions.permission"})
     Optional<User> findByUsernameIncludePermissions(String username);
 
+    @Query("select u from User u where u.email = :email")
+    @EntityGraph(attributePaths = {"userRoles.role.rolePermissions.permission"})
+    Optional<User> findByEmailIncludePermissions(String email);
+
     Optional<User> findByUsername(String username);
 }

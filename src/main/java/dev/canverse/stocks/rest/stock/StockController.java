@@ -2,6 +2,7 @@ package dev.canverse.stocks.rest.stock;
 
 import dev.canverse.stocks.domain.common.SelectItem;
 import dev.canverse.stocks.service.stock.StockService;
+import dev.canverse.stocks.service.stock.model.Stocks;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +16,11 @@ import java.util.Optional;
 @RequestMapping("/api/stocks")
 public class StockController {
     private final StockService stockService;
+
+    @GetMapping
+    public Stocks fetchStocks(String exchange) {
+        return stockService.fetchStocks(exchange);
+    }
 
     @GetMapping("/lookup")
     public List<SelectItem> fetchLookupStocks(Optional<String> exchange) {

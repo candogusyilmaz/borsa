@@ -21,10 +21,6 @@ public class Country implements Serializable {
     private String name;
 
     @NotEmpty
-    @Column(nullable = false, unique = true)
-    private String localName;
-
-    @NotEmpty
     @Column(nullable = false, unique = true, length = 3)
     private String isoCode;
 
@@ -35,9 +31,8 @@ public class Country implements Serializable {
     protected Country() {
     }
 
-    public Country(String name, String localName, String isoCode) {
+    public Country(String name, String isoCode) {
         this.name = name;
-        this.localName = localName;
         this.isoCode = isoCode;
     }
 }

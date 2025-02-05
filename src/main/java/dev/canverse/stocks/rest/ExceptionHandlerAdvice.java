@@ -27,6 +27,7 @@ public class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handlePreconditions(RuntimeException ex, ServletWebRequest request) {
         var detail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
         detail.setInstance(URI.create(request.getRequest().getRequestURI()));
+        this.logger.error("An unexpected error occurred.", ex);
         return ResponseEntity.status(detail.getStatus()).body(detail);
     }
 

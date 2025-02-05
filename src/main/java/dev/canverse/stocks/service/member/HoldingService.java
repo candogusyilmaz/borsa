@@ -3,10 +3,19 @@ package dev.canverse.stocks.service.member;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import dev.canverse.stocks.domain.entity.QHolding;
+import dev.canverse.stocks.domain.entity.QHoldingHistory;
+import dev.canverse.stocks.domain.entity.QTrade;
+import dev.canverse.stocks.domain.entity.QTradePerformance;
 import dev.canverse.stocks.security.AuthenticationProvider;
 import dev.canverse.stocks.service.member.model.Balance;
+import dev.canverse.stocks.service.member.model.BalanceHistory;
+import dev.canverse.stocks.service.member.model.TradeHistory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -24,8 +33,56 @@ public class HoldingService {
                                 holding.stock.snapshot.last)
                 )
                 .from(QHolding.holding)
-                .where(QHolding.holding.user.id.eq(AuthenticationProvider.getUser().getId()));
+                .where(QHolding.holding.user.id.eq(AuthenticationProvider.getUser().getId()))
+                .fetch();
 
-        return new Balance(query.fetch());
+        return query.isEmpty() ? null : new Balance(query);
+    }
+
+    public List<BalanceHistory> fetchBalanceHistory(int lastDays) {
+        var holdingHistory = QHoldingHistory.holdingHistory;
+
+        var startDate = LocalDate.now().minusDays(lastDays);
+        var startInstant = startDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+
+        return queryFactory
+                .select(
+                        Projections.constructor(
+                                BalanceHistory.class,
+                                holdingHistory.createdAt,
+                                holdingHistory.holding.stock.symbol,
+                                holdingHistory.averagePrice.multiply(holdingHistory.quantity).sumBigDecimal()
+                        )
+                )
+                .from(holdingHistory)
+                .where(holdingHistory.createdAt.after(startInstant))
+                .groupBy(holdingHistory.createdAt, holdingHistory.holding.stock.symbol)
+                .orderBy(holdingHistory.createdAt.desc())
+                .fetch();
+    }
+
+    public TradeHistory fetchTradeHistory() {
+        var trade = QTrade.trade;
+        var p = QTradePerformance.tradePerformance;
+
+        var query = queryFactory.select(
+                        Projections.constructor(TradeHistory.Item.class,
+                                trade.actionDate,
+                                trade.type,
+                                trade.holding.stock.symbol,
+                                trade.price,
+                                trade.quantity,
+                                p.profit,
+                                p.returnPercentage,
+                                p.performanceCategory
+                        )
+                )
+                .from(trade)
+                .leftJoin(trade.performance, p)
+                .where(trade.holding.user.id.eq(AuthenticationProvider.getUser().getId()))
+                .orderBy(trade.actionDate.desc())
+                .fetch();
+
+        return new TradeHistory(query);
     }
 }

@@ -1,3 +1,13 @@
+export type SelectItem = {
+  value: string;
+  label: string;
+};
+
+export type SelectItemGroup = {
+  group: string;
+  items: Array<SelectItem>;
+};
+
 export type Balance = {
   stocks: Array<{
     symbol: string;
@@ -13,4 +23,43 @@ export type Balance = {
   totalProfit: number;
   totalCost: number;
   totalProfitPercentage: number;
+};
+
+export type BalanceHistory = Array<{
+  date: string;
+  stock: string;
+  balance: number;
+}>;
+
+export type TradeHistory = {
+  trades: Array<
+    {
+      date: string;
+      symbol: string;
+      price: number;
+      quantity: number;
+      total: number;
+    } & (
+      | { type: 'BUY' }
+      | {
+          type: 'SELL';
+          profit: number;
+          returnPercentage: number;
+          performanceCategory: string;
+        }
+    )
+  >;
+};
+
+export type Stocks = {
+  exchange: string;
+  symbols: Array<{
+    id: string;
+    symbol: string;
+    name: string;
+    last: number;
+    dailyChange: number;
+    dailyChangePercent: number;
+    lastUpdated: string;
+  }>;
 };
