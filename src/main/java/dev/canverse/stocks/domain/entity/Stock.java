@@ -56,7 +56,7 @@ public class Stock implements Serializable {
         this.symbol = symbol;
         this.isin = isin;
         this.country = country;
-        this.snapshot = new StockSnapshot(this);
+        //this.snapshot = new StockSnapshot(this);
     }
 
     public Stock(Exchange exchange, String name, String symbol, String isin, Country country, String description) {
