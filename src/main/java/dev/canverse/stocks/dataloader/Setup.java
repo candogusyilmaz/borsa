@@ -34,6 +34,7 @@ public class Setup implements ApplicationListener<ApplicationReadyEvent> {
     @Override
     @Transactional
     public void onApplicationEvent(ApplicationReadyEvent event) {
+
         setupCountries();
         setupExchanges();
     }

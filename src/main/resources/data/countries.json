@@ -1,1165 +1,971 @@
 [
   {
     "id": 1,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "AF",
     "name": "Afghanistan"
   },
   {
     "id": 2,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "AL",
     "name": "Albania"
   },
   {
     "id": 3,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "DZ",
     "name": "Algeria"
   },
   {
     "id": 4,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "AD",
     "name": "Andorra"
   },
   {
     "id": 5,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "AO",
     "name": "Angola"
   },
   {
     "id": 6,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "AG",
     "name": "Antigua and Barbuda"
   },
   {
     "id": 7,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "AR",
     "name": "Argentina"
   },
   {
     "id": 8,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "AM",
     "name": "Armenia"
   },
   {
     "id": 9,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "AU",
     "name": "Australia"
   },
   {
     "id": 10,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "AT",
     "name": "Austria"
   },
   {
     "id": 11,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "AZ",
     "name": "Azerbaijan"
   },
   {
     "id": 12,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "BS",
     "name": "Bahamas"
   },
   {
     "id": 13,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "BH",
     "name": "Bahrain"
   },
   {
     "id": 14,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "BD",
     "name": "Bangladesh"
   },
   {
     "id": 15,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "BB",
     "name": "Barbados"
   },
   {
     "id": 16,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "BY",
     "name": "Belarus"
   },
   {
     "id": 17,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "BE",
     "name": "Belgium"
   },
   {
     "id": 18,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "BZ",
     "name": "Belize"
   },
   {
     "id": 19,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "BJ",
     "name": "Benin"
   },
   {
     "id": 20,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "BT",
     "name": "Bhutan"
   },
   {
     "id": 21,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "BO",
     "name": "Bolivia"
   },
   {
     "id": 22,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "BA",
     "name": "Bosnia and Herzegovina"
   },
   {
     "id": 23,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "BW",
     "name": "Botswana"
   },
   {
     "id": 24,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "BR",
     "name": "Brazil"
   },
   {
     "id": 25,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "BN",
     "name": "Brunei"
   },
   {
     "id": 26,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "BG",
     "name": "Bulgaria"
   },
   {
     "id": 27,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "BF",
     "name": "Burkina Faso"
   },
   {
     "id": 28,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "BI",
     "name": "Burundi"
   },
   {
     "id": 29,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "CV",
     "name": "Cabo Verde"
   },
   {
     "id": 30,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "KH",
     "name": "Cambodia"
   },
   {
     "id": 31,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "CM",
     "name": "Cameroon"
   },
   {
     "id": 32,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "CA",
     "name": "Canada"
   },
   {
     "id": 33,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "CF",
     "name": "Central African Republic"
   },
   {
     "id": 34,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "TD",
     "name": "Chad"
   },
   {
     "id": 35,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "CL",
     "name": "Chile"
   },
   {
     "id": 36,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "CN",
     "name": "China"
   },
   {
     "id": 37,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "CO",
     "name": "Colombia"
   },
   {
     "id": 38,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "KM",
     "name": "Comoros"
   },
   {
     "id": 39,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "CG",
     "name": "Congo (Congo-Brazzaville)"
   },
   {
     "id": 40,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "CR",
     "name": "Costa Rica"
   },
   {
     "id": 41,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "HR",
     "name": "Croatia"
   },
   {
     "id": 42,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "CU",
     "name": "Cuba"
   },
   {
     "id": 43,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "CY",
     "name": "Cyprus"
   },
   {
     "id": 44,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "CZ",
     "name": "Czechia (Czech Republic)"
   },
   {
     "id": 45,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "DK",
     "name": "Denmark"
   },
   {
     "id": 46,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "DJ",
     "name": "Djibouti"
   },
   {
     "id": 47,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "DM",
     "name": "Dominica"
   },
   {
     "id": 48,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "DO",
     "name": "Dominican Republic"
   },
   {
     "id": 49,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "EC",
     "name": "Ecuador"
   },
   {
     "id": 50,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "EG",
     "name": "Egypt"
   },
   {
     "id": 51,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "SV",
     "name": "El Salvador"
   },
   {
     "id": 52,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "GQ",
     "name": "Equatorial Guinea"
   },
   {
     "id": 53,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "ER",
     "name": "Eritrea"
   },
   {
     "id": 54,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "EE",
     "name": "Estonia"
   },
   {
     "id": 55,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "SZ",
     "name": "Eswatini"
   },
   {
     "id": 56,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "ET",
     "name": "Ethiopia"
   },
   {
     "id": 57,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "FJ",
     "name": "Fiji"
   },
   {
     "id": 58,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "FI",
     "name": "Finland"
   },
   {
     "id": 59,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "FR",
     "name": "France"
   },
   {
     "id": 60,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "GA",
     "name": "Gabon"
   },
   {
     "id": 61,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "GM",
     "name": "Gambia"
   },
   {
     "id": 62,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "GE",
     "name": "Georgia"
   },
   {
     "id": 63,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "DE",
     "name": "Germany"
   },
   {
     "id": 64,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "GH",
     "name": "Ghana"
   },
   {
     "id": 65,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "GR",
     "name": "Greece"
   },
   {
     "id": 66,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "GD",
     "name": "Grenada"
   },
   {
     "id": 67,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "GT",
     "name": "Guatemala"
   },
   {
     "id": 68,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "GN",
     "name": "Guinea"
   },
   {
     "id": 69,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "GW",
     "name": "Guinea-Bissau"
   },
   {
     "id": 70,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "GY",
     "name": "Guyana"
   },
   {
     "id": 71,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "HT",
     "name": "Haiti"
   },
   {
     "id": 72,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "HN",
     "name": "Honduras"
   },
   {
     "id": 73,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "HU",
     "name": "Hungary"
   },
   {
     "id": 74,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "IS",
     "name": "Iceland"
   },
   {
     "id": 75,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "IN",
     "name": "India"
   },
   {
     "id": 76,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "ID",
     "name": "Indonesia"
   },
   {
     "id": 77,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "IR",
     "name": "Iran"
   },
   {
     "id": 78,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "IQ",
     "name": "Iraq"
   },
   {
     "id": 79,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "IE",
     "name": "Ireland"
   },
   {
     "id": 80,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "IL",
     "name": "Israel"
   },
   {
     "id": 81,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "IT",
     "name": "Italy"
   },
   {
     "id": 82,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "JM",
     "name": "Jamaica"
   },
   {
     "id": 83,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "JP",
     "name": "Japan"
   },
   {
     "id": 84,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "JO",
     "name": "Jordan"
   },
   {
     "id": 85,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "KZ",
     "name": "Kazakhstan"
   },
   {
     "id": 86,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "KE",
     "name": "Kenya"
   },
   {
     "id": 87,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "KI",
     "name": "Kiribati"
   },
   {
     "id": 88,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "KW",
     "name": "Kuwait"
   },
   {
     "id": 89,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "KG",
     "name": "Kyrgyzstan"
   },
   {
     "id": 90,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "LA",
     "name": "Laos"
   },
   {
     "id": 91,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "LV",
     "name": "Latvia"
   },
   {
     "id": 92,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "LB",
     "name": "Lebanon"
   },
   {
     "id": 93,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "LS",
     "name": "Lesotho"
   },
   {
     "id": 94,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "LR",
     "name": "Liberia"
   },
   {
     "id": 95,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "LY",
     "name": "Libya"
   },
   {
     "id": 96,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "LI",
     "name": "Liechtenstein"
   },
   {
     "id": 97,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "LT",
     "name": "Lithuania"
   },
   {
     "id": 98,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "LU",
     "name": "Luxembourg"
   },
   {
     "id": 99,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "MG",
     "name": "Madagascar"
   },
   {
     "id": 100,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "MW",
     "name": "Malawi"
   },
   {
     "id": 101,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "MY",
     "name": "Malaysia"
   },
   {
     "id": 102,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "MV",
     "name": "Maldives"
   },
   {
     "id": 103,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "ML",
     "name": "Mali"
   },
   {
     "id": 104,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "MT",
     "name": "Malta"
   },
   {
     "id": 105,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "MH",
     "name": "Marshall Islands"
   },
   {
     "id": 106,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "MR",
     "name": "Mauritania"
   },
   {
     "id": 107,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "MU",
     "name": "Mauritius"
   },
   {
     "id": 108,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "MX",
     "name": "Mexico"
   },
   {
     "id": 109,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "FM",
     "name": "Micronesia"
   },
   {
     "id": 110,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "MD",
     "name": "Moldova"
   },
   {
     "id": 111,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "MC",
     "name": "Monaco"
   },
   {
     "id": 112,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "MN",
     "name": "Mongolia"
   },
   {
     "id": 113,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "ME",
     "name": "Montenegro"
   },
   {
     "id": 114,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "MA",
     "name": "Morocco"
   },
   {
     "id": 115,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "MZ",
     "name": "Mozambique"
   },
   {
     "id": 116,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "MM",
     "name": "Myanmar (Burma)"
   },
   {
     "id": 117,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "NA",
     "name": "Namibia"
   },
   {
     "id": 118,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "NR",
     "name": "Nauru"
   },
   {
     "id": 119,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "NP",
     "name": "Nepal"
   },
   {
     "id": 120,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "NL",
     "name": "Netherlands"
   },
   {
     "id": 121,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "NZ",
     "name": "New Zealand"
   },
   {
     "id": 122,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "NI",
     "name": "Nicaragua"
   },
   {
     "id": 123,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "NE",
     "name": "Niger"
   },
   {
     "id": 124,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "NG",
     "name": "Nigeria"
   },
   {
     "id": 125,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "KP",
     "name": "North Korea"
   },
   {
     "id": 126,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "MK",
     "name": "North Macedonia"
   },
   {
     "id": 127,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "NO",
     "name": "Norway"
   },
   {
     "id": 128,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "OM",
     "name": "Oman"
   },
   {
     "id": 129,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "PK",
     "name": "Pakistan"
   },
   {
     "id": 130,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "PW",
     "name": "Palau"
   },
   {
     "id": 131,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "PS",
     "name": "Palestine"
   },
   {
     "id": 132,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "PA",
     "name": "Panama"
   },
   {
     "id": 133,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "PG",
     "name": "Papua New Guinea"
   },
   {
     "id": 134,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "PY",
     "name": "Paraguay"
   },
   {
     "id": 135,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "PE",
     "name": "Peru"
   },
   {
     "id": 136,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "PH",
     "name": "Philippines"
   },
   {
     "id": 137,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "PL",
     "name": "Poland"
   },
   {
     "id": 138,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "PT",
     "name": "Portugal"
   },
   {
     "id": 139,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "QA",
     "name": "Qatar"
   },
   {
     "id": 140,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "RO",
     "name": "Romania"
   },
   {
     "id": 141,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "RU",
     "name": "Russia"
   },
   {
     "id": 142,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "RW",
     "name": "Rwanda"
   },
   {
     "id": 143,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "KN",
     "name": "Saint Kitts and Nevis"
   },
   {
     "id": 144,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "LC",
     "name": "Saint Lucia"
   },
   {
     "id": 145,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "VC",
     "name": "Saint Vincent and the Grenadines"
   },
   {
     "id": 146,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "WS",
     "name": "Samoa"
   },
   {
     "id": 147,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "SM",
     "name": "San Marino"
   },
   {
     "id": 148,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "ST",
     "name": "Sao Tome and Principe"
   },
   {
     "id": 149,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "SA",
     "name": "Saudi Arabia"
   },
   {
     "id": 150,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "SN",
     "name": "Senegal"
   },
   {
     "id": 151,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "RS",
     "name": "Serbia"
   },
   {
     "id": 152,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "SC",
     "name": "Seychelles"
   },
   {
     "id": 153,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "SL",
     "name": "Sierra Leone"
   },
   {
     "id": 154,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "SG",
     "name": "Singapore"
   },
   {
     "id": 155,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "SK",
     "name": "Slovakia"
   },
   {
     "id": 156,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "SI",
     "name": "Slovenia"
   },
   {
     "id": 157,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "SB",
     "name": "Solomon Islands"
   },
   {
     "id": 158,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "SO",
     "name": "Somalia"
   },
   {
     "id": 159,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "ZA",
     "name": "South Africa"
   },
   {
     "id": 160,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "KR",
     "name": "South Korea"
   },
   {
     "id": 161,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "SS",
     "name": "South Sudan"
   },
   {
     "id": 162,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "ES",
     "name": "Spain"
   },
   {
     "id": 163,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "LK",
     "name": "Sri Lanka"
   },
   {
     "id": 164,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "SD",
     "name": "Sudan"
   },
   {
     "id": 165,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "SR",
     "name": "Suriname"
   },
   {
     "id": 166,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "SE",
     "name": "Sweden"
   },
   {
     "id": 167,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "CH",
     "name": "Switzerland"
   },
   {
     "id": 168,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "SY",
     "name": "Syria"
   },
   {
     "id": 169,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "TW",
     "name": "Taiwan"
   },
   {
     "id": 170,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "TJ",
     "name": "Tajikistan"
   },
   {
     "id": 171,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "TZ",
     "name": "Tanzania"
   },
   {
     "id": 172,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "TH",
     "name": "Thailand"
   },
   {
     "id": 173,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "TL",
     "name": "Timor-Leste"
   },
   {
     "id": 174,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "TG",
     "name": "Togo"
   },
   {
     "id": 175,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "TO",
     "name": "Tonga"
   },
   {
     "id": 176,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "TT",
     "name": "Trinidad and Tobago"
   },
   {
     "id": 177,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "TN",
     "name": "Tunisia"
   },
   {
     "id": 178,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "TR",
     "name": "Turkey"
   },
   {
     "id": 179,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "TM",
     "name": "Turkmenistan"
   },
   {
     "id": 180,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "TV",
     "name": "Tuvalu"
   },
   {
     "id": 181,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "UG",
     "name": "Uganda"
   },
   {
     "id": 182,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "UA",
     "name": "Ukraine"
   },
   {
     "id": 183,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "AE",
     "name": "United Arab Emirates"
   },
   {
     "id": 184,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "GB",
     "name": "United Kingdom"
   },
   {
     "id": 185,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "US",
     "name": "United States of America"
   },
   {
     "id": 186,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "UY",
     "name": "Uruguay"
   },
   {
     "id": 187,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "UZ",
     "name": "Uzbekistan"
   },
   {
     "id": 188,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "VU",
     "name": "Vanuatu"
   },
   {
     "id": 189,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "VA",
     "name": "Vatican City"
   },
   {
     "id": 190,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "VE",
     "name": "Venezuela"
   },
   {
     "id": 191,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "VN",
     "name": "Vietnam"
   },
   {
     "id": 192,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "YE",
     "name": "Yemen"
   },
   {
     "id": 193,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "ZM",
     "name": "Zambia"
   },
   {
     "id": 194,
-    "createdAt": "2025-01-07 16:00:39.955759 +00:00",
     "isoCode": "ZW",
     "name": "Zimbabwe"
   }
