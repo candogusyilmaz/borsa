@@ -26,7 +26,7 @@ FROM eclipse-temurin:21-jre-alpine as runtime
 WORKDIR /app
 
 # Copy the JAR file from the builder stage
-COPY --from=builder /app/target/finance-api-0.0.1-SNAPSHOT.jar /app/app.jar
+COPY --from=builder /app/target/stocks-0.0.1-SNAPSHOT.jar /app/app.jar
 
 EXPOSE 8080
 
