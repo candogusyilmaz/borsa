@@ -6,6 +6,7 @@ import dev.canverse.stocks.domain.entity.Country;
 import dev.canverse.stocks.domain.entity.Exchange;
 import dev.canverse.stocks.repository.CountryRepository;
 import dev.canverse.stocks.repository.ExchangeRepository;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,11 +31,11 @@ public class Setup implements ApplicationListener<ApplicationReadyEvent> {
     private final ObjectMapper mapper;
     private final CountryRepository countryRepository;
     private final ExchangeRepository exchangeRepository;
+    private final EntityManager entityManager;
 
     @Override
     @Transactional
     public void onApplicationEvent(ApplicationReadyEvent event) {
-
         setupCountries();
         setupExchanges();
     }
@@ -53,6 +54,8 @@ public class Setup implements ApplicationListener<ApplicationReadyEvent> {
             countryRepository.saveAllAndFlush(countries);
         } catch (IOException e) {
             log.error("Failed to load stocks data", e);
+        } finally {
+            entityManager.clear();
         }
     }
 
@@ -70,6 +73,8 @@ public class Setup implements ApplicationListener<ApplicationReadyEvent> {
             exchangeRepository.saveAllAndFlush(countries);
         } catch (IOException e) {
             log.error("Failed to load stocks data", e);
+        } finally {
+            entityManager.clear();
         }
     }
 }
