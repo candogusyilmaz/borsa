@@ -6,6 +6,10 @@ import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -41,12 +45,21 @@ public class SabahClient {
 
             String[] fields = entry.split("\\|");
             if (fields.length >= 6) { // Ensure there are enough fields
+
+                var formatter = DateTimeFormatter.ofPattern("HH:mm");
+                var time = LocalTime.parse(fields[3], formatter);
+
+                // Combine it with today's date and convert to Instant
+                Instant timeInstant = time.atDate(LocalDate.now())
+                        .atZone(ZoneId.of("Europe/Istanbul"))
+                        .toInstant();
+
                 stockDataList.add(new CanliBorsaVerileri.Item(
                         fields[0],
                         new BigDecimal(fields[1].replace(',', '.')),
-                        new BigDecimal(fields[2].replace(',', '.')),
-                        Instant.now(),
                         new BigDecimal(fields[4].replace(',', '.')),
+                        timeInstant,
+                        new BigDecimal(fields[2].replace(',', '.')),
                         fields[5]));
             }
         }

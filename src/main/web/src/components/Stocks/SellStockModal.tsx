@@ -114,7 +114,11 @@ function SellStockForm({
         />
         <DateTimePicker label="Date" {...form.getInputProps("actionDate")} />
         <Group justify="flex-end" mt="md">
-          <Button type="submit" color="red">
+          <Button
+            type="submit"
+            color="red"
+            loading={mutation.isPending || mutation.isSuccess}
+          >
             Sell
           </Button>
         </Group>

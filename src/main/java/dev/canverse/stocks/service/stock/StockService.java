@@ -13,8 +13,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.Types;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -97,17 +95,15 @@ public class StockService {
                 .map(s -> {
                     Integer stockId = stockIdMap.get(s.symbol());
                     if (stockId == null) {
-                        // Log missing stock symbol
-                        System.out.println("Symbol not found: " + s.symbol());
                         return null;
                     }
                     return new Object[]{
                             stockId,
                             s.price(),
-                            s.time().atOffset(ZoneOffset.UTC),  // created_at
-                            s.time().atOffset(ZoneOffset.UTC),   // updated_at
+                            s.time().atOffset(ZoneOffset.UTC), // created_at
+                            s.time().atOffset(ZoneOffset.UTC), // updated_at
                             s.change(),
-                            s.changePercent().divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP)
+                            s.changePercent()
                     };
                 })
                 .filter(Objects::nonNull)

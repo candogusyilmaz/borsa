@@ -32,8 +32,8 @@ public class HoldingService {
                                 holding.averagePrice,
                                 holding.stock.snapshot.last)
                 )
-                .from(QHolding.holding)
-                .where(QHolding.holding.user.id.eq(AuthenticationProvider.getUser().getId()).and(holding.quantity.gt(0)))
+                .from(holding)
+                .where(holding.user.id.eq(AuthenticationProvider.getUser().getId()).and(holding.quantity.gt(0)))
                 .fetch();
 
         return query.isEmpty() ? null : new Balance(query);
