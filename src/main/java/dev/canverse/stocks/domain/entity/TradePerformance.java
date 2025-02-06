@@ -54,9 +54,9 @@ public class TradePerformance {
     }
 
     private PerformanceCategory calculatePerformanceCategory(BigDecimal returnPercentage) {
-        if (returnPercentage.compareTo(BigDecimal.valueOf(20)) > 0) {
+        if (returnPercentage.compareTo(BigDecimal.valueOf(0.20)) > 0) {
             return PerformanceCategory.EXCELLENT;
-        } else if (returnPercentage.compareTo(BigDecimal.valueOf(10)) >= 0) {
+        } else if (returnPercentage.compareTo(BigDecimal.valueOf(0.10)) >= 0) {
             return PerformanceCategory.GOOD;
         } else if (returnPercentage.compareTo(BigDecimal.ZERO) >= 0) {
             return PerformanceCategory.MODERATE;

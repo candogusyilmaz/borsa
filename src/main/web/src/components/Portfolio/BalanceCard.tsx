@@ -1,7 +1,7 @@
-import { Card } from '@mantine/core';
-import type { Balance } from '~/api/queries/types';
-import { BalanceChart } from './BalanceChart';
-import { BalanceHoldings } from './BalanceHoldings';
+import { Card } from "@mantine/core";
+import type { Balance } from "~/api/queries/types";
+import { BalanceChart } from "./BalanceChart";
+import { BalanceHoldings } from "./BalanceHoldings";
 
 export function BalanceCard({ data }: { data: Balance }) {
   return (

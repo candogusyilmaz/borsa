@@ -76,10 +76,7 @@ public class Holding implements Serializable {
     }
 
     public void buy(int quantity, BigDecimal price, BigDecimal tax, Instant actionDate) {
-        this.quantity += quantity;
-        this.averagePrice = averagePrice == null ? price : averagePrice.equals(BigDecimal.ZERO) ? price : averagePrice.multiply(BigDecimal.valueOf(this.quantity))
-                .add(price.multiply(BigDecimal.valueOf(quantity)))
-                .divide(BigDecimal.valueOf(this.quantity + quantity), RoundingMode.HALF_UP);
+        calculateAveragePrice(price, quantity);
         this.totalTax = this.totalTax == null ? tax : this.totalTax.add(tax);
 
         trades.add(new Trade(this, Trade.Type.BUY, quantity, price, tax, actionDate));
@@ -96,5 +93,19 @@ public class Holding implements Serializable {
 
         history.add(new HoldingHistory(this));
         trades.add(new Trade(this, Trade.Type.SELL, quantity, price, tax, actionDate));
+    }
+
+    private void calculateAveragePrice(BigDecimal price, int quantity) {
+        if (this.averagePrice == null || this.averagePrice.equals(BigDecimal.ZERO) || this.quantity == 0) {
+            this.quantity += quantity;
+            this.averagePrice = price;
+            return;
+        }
+
+        // ORDER MATTERS!
+        this.averagePrice = this.averagePrice.multiply(BigDecimal.valueOf(this.quantity))
+                .add(price.multiply(BigDecimal.valueOf(quantity)))
+                .divide(BigDecimal.valueOf(this.quantity + quantity), RoundingMode.HALF_UP);
+        this.quantity += quantity;
     }
 }

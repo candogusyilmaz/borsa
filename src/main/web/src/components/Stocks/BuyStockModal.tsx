@@ -1,4 +1,11 @@
-import { Button, Group, Modal, NumberInput, Stack } from "@mantine/core";
+import {
+  Button,
+  type ButtonProps,
+  Group,
+  Modal,
+  NumberInput,
+  Stack,
+} from "@mantine/core";
 import { DateTimePicker } from "@mantine/dates";
 import { useForm } from "@mantine/form";
 import { useDisclosure } from "@mantine/hooks";
@@ -10,9 +17,15 @@ type BuyStockModalProps = {
   symbol: string;
   price: number;
   stockId: string;
+  buttonProps?: ButtonProps;
 };
 
-export function BuyStockModal({ symbol, price, stockId }: BuyStockModalProps) {
+export function BuyStockModal({
+  symbol,
+  price,
+  stockId,
+  buttonProps,
+}: BuyStockModalProps) {
   const [opened, { open, close }] = useDisclosure(false);
 
   return (
@@ -38,6 +51,7 @@ export function BuyStockModal({ symbol, price, stockId }: BuyStockModalProps) {
         color="teal.7"
         fw={400}
         fz="xs"
+        {...buttonProps}
         onClick={open}
       >
         Buy

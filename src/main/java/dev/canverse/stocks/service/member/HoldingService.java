@@ -27,6 +27,7 @@ public class HoldingService {
 
         var query = queryFactory.select(
                         Projections.constructor(Balance.Stock.class,
+                                holding.stock.id.stringValue(),
                                 holding.stock.symbol,
                                 holding.quantity,
                                 holding.averagePrice,
@@ -34,6 +35,7 @@ public class HoldingService {
                 )
                 .from(holding)
                 .where(holding.user.id.eq(AuthenticationProvider.getUser().getId()).and(holding.quantity.gt(0)))
+                .orderBy(holding.stock.symbol.asc())
                 .fetch();
 
         return query.isEmpty() ? null : new Balance(query);
@@ -68,6 +70,7 @@ public class HoldingService {
         var query = queryFactory.select(
                         Projections.constructor(TradeHistory.Item.class,
                                 trade.actionDate,
+                                trade.createdAt,
                                 trade.type,
                                 trade.holding.stock.symbol,
                                 trade.price,
@@ -80,7 +83,7 @@ public class HoldingService {
                 .from(trade)
                 .leftJoin(trade.performance, p)
                 .where(trade.holding.user.id.eq(AuthenticationProvider.getUser().getId()))
-                .orderBy(trade.actionDate.desc())
+                .orderBy(trade.createdAt.desc())
                 .fetch();
 
         return new TradeHistory(query);

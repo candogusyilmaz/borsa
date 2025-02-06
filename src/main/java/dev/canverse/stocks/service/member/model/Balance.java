@@ -21,7 +21,7 @@ public record Balance(List<Stock> stocks) {
         return stocks.stream().map(Stock::getValue).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    public record Stock(String symbol, int quantity, BigDecimal averagePrice, BigDecimal currentPrice) {
+    public record Stock(String id, String symbol, int quantity, BigDecimal averagePrice, BigDecimal currentPrice) {
         public BigDecimal getProfit() {
             return currentPrice.subtract(averagePrice).multiply(BigDecimal.valueOf(quantity));
         }

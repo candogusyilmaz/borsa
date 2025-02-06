@@ -10,6 +10,7 @@ export type SelectItemGroup = {
 
 export type Balance = {
   stocks: Array<{
+    id: string;
     symbol: string;
     quantity: number;
     averagePrice: number;
@@ -35,6 +36,7 @@ export type TradeHistory = {
   trades: Array<
     {
       date: string;
+      createdAt: string;
       symbol: string;
       price: number;
       quantity: number;

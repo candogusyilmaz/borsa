@@ -11,6 +11,7 @@ import java.util.List;
 public record TradeHistory(List<Item> trades) {
     public record Item(
             Instant date,
+            Instant createdAt,
             Trade.Type type,
             String symbol,
             BigDecimal price,
