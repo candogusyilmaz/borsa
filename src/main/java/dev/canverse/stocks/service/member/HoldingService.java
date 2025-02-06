@@ -38,7 +38,7 @@ public class HoldingService {
                 .orderBy(holding.stock.symbol.asc())
                 .fetch();
 
-        return query.isEmpty() ? null : new Balance(query);
+        return query.isEmpty() ? new Balance(List.of()) : new Balance(query);
     }
 
     public List<BalanceHistory> fetchBalanceHistory(int lastDays) {

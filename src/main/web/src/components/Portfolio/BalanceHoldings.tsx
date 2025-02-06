@@ -1,16 +1,23 @@
 import { Card, Group, Stack, Text } from "@mantine/core";
-import { useState } from "react";
-import type { Balance } from "~/api/queries/types";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { queries } from "~/api";
 import Currency from "~/components/Currency";
 import { format } from "~/lib/format";
 
-export function BalanceHoldings({ data: { stocks } }: { data: Balance }) {
-  const [sortedStocks] = useState(stocks.sort((a, b) => b.value - a.value));
+export function BalanceHoldings() {
+  const {
+    data: { stocks },
+  } = useSuspenseQuery(queries.member.balance());
+  const sortedStocks = stocks?.sort((a, b) => b.value - a.value);
   const topStocks = sortedStocks.slice(0, 3);
 
+  if (stocks.length === 0) {
+    return <></>;
+  }
+
   return (
-    <Stack justify="center" gap="md" mt="xl">
-      <Text c="dimmed" ta="center" size="sm">
+    <Stack justify="center" gap="sm" mt="xl">
+      <Text c="dimmed" ta="center" size="sm" fw={700}>
         Top Holdings
       </Text>
       {topStocks.map((stock) => (

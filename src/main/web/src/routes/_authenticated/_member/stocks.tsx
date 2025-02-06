@@ -25,6 +25,9 @@ import { format } from "~/lib/format";
 
 export const Route = createFileRoute("/_authenticated/_member/stocks")({
   component: RouteComponent,
+  beforeLoad: ({ context }) => {
+    context.queryClient.ensureQueryData(queries.stocks.fetchAll("BIST"));
+  },
 });
 
 function RouteComponent() {

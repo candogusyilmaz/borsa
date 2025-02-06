@@ -82,7 +82,7 @@ function SellStockForm({
         `Sold ${variables.quantity} share(s) of ${symbol} @ ${variables.price}.`
       );
       close();
-      client.invalidateQueries({
+      client.refetchQueries({
         predicate: (q) =>
           [
             queries.member.balance().queryKey[0],

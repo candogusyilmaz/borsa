@@ -7,7 +7,8 @@ export const stockQueries = {
     queryOptions({
       queryKey: ['/stocks', exchange],
       queryFn: async ({ signal }) => (await http.get<Stocks>('/stocks', { signal, params: { exchange } })).data,
-      staleTime: 1000 * 30
+      staleTime: 1000 * 30,
+      refetchInterval: 1000 * 30
     }),
   lookup: (exchange?: string) =>
     queryOptions({
