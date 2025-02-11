@@ -57,6 +57,9 @@ public class TradeService {
 
 
     public List<TradesHeatMap> getTradesHeatMap() {
+        if (1 == 1)
+            return List.of();
+
         var tradePerformance = QTradePerformance.tradePerformance;
 
         var month = tradePerformance.trade.actionDate.month();
