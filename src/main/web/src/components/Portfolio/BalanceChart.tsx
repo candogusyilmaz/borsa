@@ -1,15 +1,15 @@
-import { DonutChart } from "@mantine/charts";
-import { Box, Group, Stack, Text, rem } from "@mantine/core";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import { queries } from "~/api";
-import Currency from "~/components/Currency";
-import { format } from "~/lib/format";
+import { DonutChart } from '@mantine/charts';
+import { Box, Group, Stack, Text, rem } from '@mantine/core';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { queries } from '~/api';
+import Currency from '~/components/Currency';
+import { format } from '~/lib/format';
 
 const COLORS = [
-  { id: 0, color: "#0066ff" },
-  { id: 1, color: "#e85dff" },
-  { id: 2, color: "#ffb800" },
+  { id: 0, color: '#0066ff' },
+  { id: 1, color: '#e85dff' },
+  { id: 2, color: '#ffb800' }
 ];
 
 export function BalanceChart() {
@@ -23,13 +23,13 @@ export function BalanceChart() {
     ...topStocks.map((stock, idx) => ({
       name: stock.symbol,
       value: stock.value,
-      color: COLORS.find((s) => s.id === idx)?.color!,
+      color: COLORS.find((s) => s.id === idx)?.color!
     })),
     {
-      name: "Other",
+      name: 'Other',
       value: otherValue,
-      color: "lightgray",
-    },
+      color: 'lightgray'
+    }
   ];
 
   const [activeSegment, setActiveSegment] = useState<{
@@ -60,20 +60,19 @@ export function BalanceChart() {
           pieProps={{
             cornerRadius: 5,
             onMouseEnter: (segment) => handleMouseEnter(segment),
-            onMouseLeave: handleMouseLeave,
+            onMouseLeave: handleMouseLeave
           }}
           withTooltip={false}
         />
         <Stack
           style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            textAlign: "center",
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            textAlign: 'center'
           }}
-          gap={8}
-        >
+          gap={8}>
           {!activeSegment ? (
             <>
               <Text c="gray.3" fz={rem(18)} fw={700}>
@@ -83,12 +82,8 @@ export function BalanceChart() {
                 {data.totalValue}
               </Currency>
               {data.stocks.length !== 0 && (
-                <Text
-                  fz="sm"
-                  fw={700}
-                  c={data.totalProfitPercentage >= 0 ? "teal" : "red"}
-                >
-                  {`${data.totalProfit > 0 ? "+" : ""}${format.toCurrency(data.totalProfit)}`}
+                <Text fz="sm" fw={700} c={data.totalProfitPercentage >= 0 ? 'teal' : 'red'}>
+                  {`${data.totalProfit > 0 ? '+' : ''}${format.toCurrency(data.totalProfit)}`}
                 </Text>
               )}
             </>

@@ -1,6 +1,6 @@
 import { queryOptions } from '@tanstack/react-query';
-import type { TradesHeatMap } from './types';
 import { http } from '~/lib/axios';
+import type { TradesHeatMap } from './types';
 
 export const tradeQueries = {
   heatMap: () =>

@@ -1,25 +1,9 @@
-import {
-  ActionIcon,
-  Badge,
-  Card,
-  Group,
-  Stack,
-  Text,
-  ThemeIcon,
-  rem,
-} from "@mantine/core";
-import {
-  IconCalendar,
-  IconChartBar,
-  IconChevronLeft,
-  IconChevronRight,
-  IconCircleArrowDown,
-  IconCircleArrowUp,
-} from "@tabler/icons-react";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import { queries } from "~/api";
-import { format } from "~/lib/format";
+import { ActionIcon, Badge, Card, Group, Stack, Text, ThemeIcon, rem } from '@mantine/core';
+import { IconCalendar, IconChartBar, IconChevronLeft, IconChevronRight, IconCircleArrowDown, IconCircleArrowUp } from '@tabler/icons-react';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { queries } from '~/api';
+import { format } from '~/lib/format';
 
 const PAGE_SIZE = 5;
 
@@ -60,21 +44,13 @@ export function RecentTransactionsCard() {
         </Group>
         {totalPages > 1 && (
           <Group justify="space-between">
-            <ActionIcon
-              variant="transparent"
-              c={currentPage === 1 ? "dimmed" : "white"}
-              onClick={handlePrevPage}
-            >
+            <ActionIcon variant="transparent" c={currentPage === 1 ? 'dimmed' : 'white'} onClick={handlePrevPage}>
               <IconChevronLeft />
             </ActionIcon>
             <Text size="sm" fw={500}>
               {`${currentPage}/${totalPages}`}
             </Text>
-            <ActionIcon
-              variant="transparent"
-              c={currentPage === totalPages ? "dimmed" : "white"}
-              onClick={handleNextPage}
-            >
+            <ActionIcon variant="transparent" c={currentPage === totalPages ? 'dimmed' : 'white'} onClick={handleNextPage}>
               <IconChevronRight />
             </ActionIcon>
           </Group>
@@ -89,36 +65,24 @@ export function RecentTransactionsCard() {
             radius="md"
             p="xs"
             px="lg"
-            withBorder
-          >
+            withBorder>
             <Group justify="space-between" align="center" ta="right">
               <Group align="center">
-                <ThemeIcon
-                  variant="transparent"
-                  c={trade.type === "BUY" ? "red" : "green"}
-                >
-                  {trade.type === "BUY" ? (
-                    <IconCircleArrowUp />
-                  ) : (
-                    <IconCircleArrowDown />
-                  )}
+                <ThemeIcon variant="transparent" c={trade.type === 'BUY' ? 'red' : 'green'}>
+                  {trade.type === 'BUY' ? <IconCircleArrowUp /> : <IconCircleArrowDown />}
                 </ThemeIcon>
                 <Stack gap={2}>
                   <Group gap="xs" align="center" ml={3}>
                     <Text size="lg" fw={600}>
                       {trade.symbol}
                     </Text>
-                    <Badge
-                      size="xs"
-                      variant="light"
-                      color={trade.type === "BUY" ? "red" : "green"}
-                    >
+                    <Badge size="xs" variant="light" color={trade.type === 'BUY' ? 'red' : 'green'}>
                       {trade.type}
                     </Badge>
                   </Group>
                   <Group gap={4} align="center">
                     <ThemeIcon size="xs" variant="transparent" c="dimmed">
-                      <IconCalendar style={{ width: "100%", height: "100%" }} />
+                      <IconCalendar style={{ width: '100%', height: '100%' }} />
                     </ThemeIcon>
                     <Text size="xs" c="dimmed">
                       {format.toFullDateTime(new Date(trade.date))}
@@ -140,11 +104,8 @@ export function RecentTransactionsCard() {
                 </Stack>
                 <Stack gap={2} ml="auto">
                   <Text fw={600}>{format.toCurrency(trade.total)}</Text>
-                  {trade.type === "SELL" && (
-                    <Text
-                      size="xs"
-                      c={trade.returnPercentage >= 0 ? "teal" : "red"}
-                    >
+                  {trade.type === 'SELL' && (
+                    <Text size="xs" c={trade.returnPercentage >= 0 ? 'teal' : 'red'}>
                       {`${format.toCurrency(trade.profit)} (${format.toLocalePercentage(trade.returnPercentage)})`}
                     </Text>
                   )}

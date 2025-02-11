@@ -1,17 +1,9 @@
-import {
-  Card,
-  Center,
-  Group,
-  SimpleGrid,
-  Space,
-  Text,
-  Title,
-} from "@mantine/core";
-import { format } from "~/lib/format";
-import { BuyStockModal } from "../Stocks/BuyStockModal";
-import { SellStockModal } from "../Stocks/SellStockModal";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { queries } from "~/api";
+import { Card, Center, Group, SimpleGrid, Space, Text, Title } from '@mantine/core';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { queries } from '~/api';
+import { format } from '~/lib/format';
+import { BuyStockModal } from '../Stocks/BuyStockModal';
+import { SellStockModal } from '../Stocks/SellStockModal';
 
 export function HoldingsCard() {
   const { data } = useSuspenseQuery(queries.member.balance());
@@ -34,16 +26,7 @@ export function HoldingsCard() {
                 <Text c="dimmed" size="sm">
                   {s.quantity} shares
                 </Text>
-                <Text
-                  size="xs"
-                  c={
-                    s.profitPercentage === 0
-                      ? "dimmed"
-                      : s.profitPercentage > 0
-                        ? "teal"
-                        : "red"
-                  }
-                >
+                <Text size="xs" c={s.profitPercentage === 0 ? 'dimmed' : s.profitPercentage > 0 ? 'teal' : 'red'}>
                   {format.toCurrency(s.profit)}
                 </Text>
               </Group>
@@ -54,7 +37,7 @@ export function HoldingsCard() {
                   stockId={s.id}
                   buttonProps={{
                     flex: 1,
-                    variant: "filled",
+                    variant: 'filled'
                   }}
                 />
                 <SellStockModal
@@ -63,7 +46,7 @@ export function HoldingsCard() {
                   stockId={s.id}
                   buttonProps={{
                     flex: 1,
-                    variant: "filled",
+                    variant: 'filled'
                   }}
                 />
               </Group>

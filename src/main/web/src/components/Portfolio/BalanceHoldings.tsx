@@ -1,12 +1,12 @@
-import { Box, Card, Divider, Group, Stack, Text } from "@mantine/core";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { queries } from "~/api";
-import Currency from "~/components/Currency";
-import { format } from "~/lib/format";
+import { Box, Divider, Group, Stack, Text } from '@mantine/core';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { queries } from '~/api';
+import Currency from '~/components/Currency';
+import { format } from '~/lib/format';
 
 export function BalanceHoldings() {
   const {
-    data: { stocks },
+    data: { stocks }
   } = useSuspenseQuery(queries.member.balance());
   const sortedStocks = stocks?.sort((a, b) => b.value - a.value);
   const topStocks = sortedStocks.slice(0, 3);
@@ -29,21 +29,10 @@ export function BalanceHoldings() {
             </Group>
             <Group justify="space-between">
               <Text size="xs" c="dimmed">
-                {stock.quantity} shares @{" "}
-                <Currency span>{stock.averagePrice}</Currency>
+                {stock.quantity} shares @ <Currency span>{stock.averagePrice}</Currency>
               </Text>
               <Group>
-                <Text
-                  span
-                  size="xs"
-                  c={
-                    stock.profit === 0
-                      ? "dimmed"
-                      : stock.profit >= 0
-                        ? "teal"
-                        : "red"
-                  }
-                >
+                <Text span size="xs" c={stock.profit === 0 ? 'dimmed' : stock.profit >= 0 ? 'teal' : 'red'}>
                   {format.toLocalePercentage(stock.profitPercentage)}
                 </Text>
               </Group>
