@@ -1,8 +1,7 @@
 package dev.canverse.stocks.service.stock;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import dev.canverse.stocks.domain.entity.Holding;
-import dev.canverse.stocks.domain.entity.QTradePerformance;
+import dev.canverse.stocks.domain.entity.*;
 import dev.canverse.stocks.domain.exception.NotFoundException;
 import dev.canverse.stocks.repository.HoldingRepository;
 import dev.canverse.stocks.repository.StockRepository;
@@ -57,13 +56,13 @@ public class TradeService {
 
 
     public List<TradesHeatMap> getTradesHeatMap() {
-        if (1 == 1)
-            return List.of();
-
         var tradePerformance = QTradePerformance.tradePerformance;
+        var trade = QTrade.trade;
+        var holding = QHolding.holding;
+        var user = QUser.user;
 
-        var month = tradePerformance.trade.actionDate.month();
-        var year = tradePerformance.trade.actionDate.year();
+        var month = trade.actionDate.month();
+        var year = trade.actionDate.year();
         var profitSum = tradePerformance.profit.sumBigDecimal();
 
         var groupedData = queryFactory
@@ -73,15 +72,16 @@ public class TradeService {
                         profitSum
                 )
                 .from(tradePerformance)
-                .where(tradePerformance.trade.holding.user.id.eq(AuthenticationProvider.getUser().getId()))
+                .join(tradePerformance.trade, trade)
+                .join(trade.holding, holding)
+                .join(holding.user, user)
+                .where(user.id.eq(AuthenticationProvider.getUser().getId()))
                 .groupBy(year, month)
                 .fetch();
 
-        // Group the fetched tuples by year.
         var dataByYear = groupedData.stream()
                 .collect(Collectors.groupingBy(tuple -> tuple.get(year)));
 
-        // Map each year group to a TradesHeatMap record.
         return dataByYear.entrySet().stream()
                 .map(entry -> {
                     int year2 = entry.getKey();
