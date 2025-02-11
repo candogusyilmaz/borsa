@@ -70,6 +70,7 @@ public class TradeService {
                         profitSum
                 )
                 .from(tradePerformance)
+                .where(tradePerformance.trade.holding.user.id.eq(AuthenticationProvider.getUser().getId()))
                 .groupBy(year, month)
                 .fetch();
 
