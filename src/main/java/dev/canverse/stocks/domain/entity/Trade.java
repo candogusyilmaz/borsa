@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -49,7 +48,6 @@ public class Trade implements Serializable {
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    @ColumnDefault("now()")
     private Instant createdAt;
 
     @UpdateTimestamp

@@ -23,7 +23,7 @@ import { format } from "~/lib/format";
 
 const PAGE_SIZE = 5;
 
-export function TradeHistoryCard() {
+export function RecentTransactionsCard() {
   const { data } = useSuspenseQuery(queries.member.tradeHistory());
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.ceil(data.trades.length / PAGE_SIZE);

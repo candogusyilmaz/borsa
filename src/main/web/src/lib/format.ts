@@ -41,5 +41,11 @@ export const format = {
       minimumFractionDigits: minimumFractionDigits,
       maximumFractionDigits: maximumFractionDigits
     }).format(value);
+  },
+  toHumanizedCurrency: (value: number, locale = 'tr-TR') => {
+    return new Intl.NumberFormat(locale, {
+      notation: 'compact',
+      compactDisplay: 'short'
+    }).format(value);
   }
 };

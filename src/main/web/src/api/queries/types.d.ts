@@ -65,3 +65,11 @@ export type Stocks = {
     lastUpdated: string;
   }>;
 };
+
+export type TradesHeatMap = Array<{
+  year: number;
+  data: Array<{
+    month: number;
+    profit: number;
+  }>;
+}>;

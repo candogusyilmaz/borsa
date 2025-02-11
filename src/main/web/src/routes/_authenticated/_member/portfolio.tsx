@@ -1,8 +1,9 @@
 import { Flex, Space, Stack, Title } from "@mantine/core";
 import { createFileRoute } from "@tanstack/react-router";
 import { BalanceCard } from "~/components/Portfolio/BalanceCard";
-import { TradeHistoryCard } from "~/components/Portfolio/TradeHistoryCard";
+import { RecentTransactionsCard } from "~/components/Portfolio/RecentTransactionsCard";
 import { HoldingsCard } from "~/components/Portfolio/HoldingsCard";
+import { TradesHeatMap } from "~/components/Portfolio/TradesHeatMap";
 
 export const Route = createFileRoute("/_authenticated/_member/portfolio")({
   component: RouteComponent,
@@ -17,7 +18,8 @@ function RouteComponent() {
         <HoldingsCard />
       </Flex>
       <Space />
-      <TradeHistoryCard />
+      <TradesHeatMap />
+      <RecentTransactionsCard />
     </Stack>
   );
 }

@@ -1,4 +1,4 @@
-import { Card, Group, Stack, Text } from "@mantine/core";
+import { Box, Card, Divider, Group, Stack, Text } from "@mantine/core";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { queries } from "~/api";
 import Currency from "~/components/Currency";
@@ -20,34 +20,37 @@ export function BalanceHoldings() {
       <Text c="dimmed" ta="center" size="sm" fw={700}>
         Top Holdings
       </Text>
-      {topStocks.map((stock) => (
-        <Card shadow="0" key={stock.symbol} withBorder padding="sm" radius="sm">
-          <Group justify="space-between">
-            <Text>{stock.symbol}</Text>
-            <Currency fw={500}>{stock.value}</Currency>
-          </Group>
-          <Group justify="space-between">
-            <Text size="xs" c="dimmed">
-              {stock.quantity} shares @{" "}
-              <Currency span>{stock.averagePrice}</Currency>
-            </Text>
-            <Group>
-              <Text
-                span
-                size="xs"
-                c={
-                  stock.profit === 0
-                    ? "dimmed"
-                    : stock.profit >= 0
-                      ? "teal"
-                      : "red"
-                }
-              >
-                {format.toLocalePercentage(stock.profitPercentage)}
-              </Text>
+      {topStocks.map((stock, idx) => (
+        <Stack key={stock.symbol} gap="sm" justify="center">
+          <Box>
+            <Group justify="space-between">
+              <Text>{stock.symbol}</Text>
+              <Currency fw={500}>{stock.value}</Currency>
             </Group>
-          </Group>
-        </Card>
+            <Group justify="space-between">
+              <Text size="xs" c="dimmed">
+                {stock.quantity} shares @{" "}
+                <Currency span>{stock.averagePrice}</Currency>
+              </Text>
+              <Group>
+                <Text
+                  span
+                  size="xs"
+                  c={
+                    stock.profit === 0
+                      ? "dimmed"
+                      : stock.profit >= 0
+                        ? "teal"
+                        : "red"
+                  }
+                >
+                  {format.toLocalePercentage(stock.profitPercentage)}
+                </Text>
+              </Group>
+            </Group>
+          </Box>
+          {idx !== topStocks.length - 1 && <Divider color="gray" />}
+        </Stack>
       ))}
     </Stack>
   );

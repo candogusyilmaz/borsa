@@ -72,27 +72,23 @@ export function BalanceChart() {
             transform: "translate(-50%, -50%)",
             textAlign: "center",
           }}
-          gap={16}
+          gap={8}
         >
           {!activeSegment ? (
             <>
-              <Text size={rem(18)} fw={700}>
+              <Text c="gray.3" fz={rem(18)} fw={700}>
                 Balance
               </Text>
-              <Currency
-                size={rem(22)}
-                fw={500}
-                c={data.totalValue === 0 ? "dimmed" : "teal"}
-              >
+              <Currency fz={rem(22)} fw={500}>
                 {data.totalValue}
               </Currency>
               {data.stocks.length !== 0 && (
                 <Text
-                  size="xs"
+                  fz="sm"
                   fw={700}
                   c={data.totalProfitPercentage >= 0 ? "teal" : "red"}
                 >
-                  {format.toLocalePercentage(data.totalProfitPercentage)}
+                  {`${data.totalProfit > 0 ? "+" : ""}${format.toCurrency(data.totalProfit)}`}
                 </Text>
               )}
             </>
