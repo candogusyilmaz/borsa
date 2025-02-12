@@ -64,9 +64,6 @@ public class HoldingService {
     }
 
     public TradeHistory fetchTradeHistory() {
-        if (1 == 1)
-            return new TradeHistory(List.of());
-
         var trade = QTrade.trade;
         var p = QTradePerformance.tradePerformance;
 
