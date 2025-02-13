@@ -1,33 +1,24 @@
-import { DonutChart } from "@mantine/charts";
-import {
-  Box,
-  Card,
-  type CardProps,
-  Divider,
-  Group,
-  Stack,
-  Text,
-  rem,
-} from "@mantine/core";
-import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import { queries } from "~/api";
-import type { Balance } from "~/api/queries/types";
-import { format } from "~/lib/format";
-import Currency from "../Currency";
-import { ErrorView } from "../ErrorView";
-import { LoadingView } from "../LoadingView";
+import { DonutChart } from '@mantine/charts';
+import { Box, Card, type CardProps, Divider, Group, Stack, Text, rem } from '@mantine/core';
+import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { queries } from '~/api';
+import type { Balance } from '~/api/queries/types';
+import { format } from '~/lib/format';
+import Currency from '../Currency';
+import { ErrorView } from '../ErrorView';
+import { LoadingView } from '../LoadingView';
 
 const COLORS = [
-  { id: 0, color: "#0066ff" },
-  { id: 1, color: "#e85dff" },
-  { id: 2, color: "#ffb800" },
+  { id: 0, color: '#0066ff' },
+  { id: 1, color: '#e85dff' },
+  { id: 2, color: '#ffb800' }
 ];
 
 export function BalanceCard() {
   const { data, status } = useQuery(queries.member.balance());
 
-  if (status === "pending") {
+  if (status === 'pending') {
     return (
       <BalanceContainer miw={275} mih={325}>
         <LoadingView />
@@ -35,13 +26,9 @@ export function BalanceCard() {
     );
   }
 
-  if (status === "error") {
+  if (status === 'error') {
     return (
-      <BalanceContainer
-        miw={275}
-        mih={325}
-        style={{ borderColor: "var(--mantine-color-red-5)" }}
-      >
+      <BalanceContainer miw={275} mih={325} style={{ borderColor: 'var(--mantine-color-red-5)' }}>
         <ErrorView />
       </BalanceContainer>
     );
@@ -74,13 +61,13 @@ function Inner({ data }: { data: Balance }) {
     ...topStocks.map((stock, idx) => ({
       name: stock.symbol,
       value: stock.value,
-      color: COLORS.find((s) => s.id === idx)?.color!,
+      color: COLORS.find((s) => s.id === idx)?.color!
     })),
     {
-      name: "Other",
+      name: 'Other',
       value: otherValue,
-      color: "lightgray",
-    },
+      color: 'lightgray'
+    }
   ];
 
   const handleMouseEnter = (segment: {
@@ -106,20 +93,19 @@ function Inner({ data }: { data: Balance }) {
             pieProps={{
               cornerRadius: 5,
               onMouseEnter: (segment) => handleMouseEnter(segment),
-              onMouseLeave: handleMouseLeave,
+              onMouseLeave: handleMouseLeave
             }}
             withTooltip={false}
           />
           <Stack
             style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              textAlign: "center",
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              textAlign: 'center'
             }}
-            gap={8}
-          >
+            gap={8}>
             {!activeSegment ? (
               <>
                 <Text c="gray.3" fz={rem(18)} fw={700}>
@@ -129,12 +115,8 @@ function Inner({ data }: { data: Balance }) {
                   {data.totalValue}
                 </Currency>
                 {data.stocks.length !== 0 && (
-                  <Text
-                    fz="sm"
-                    fw={700}
-                    c={data.totalProfitPercentage >= 0 ? "teal" : "red"}
-                  >
-                    {`${data.totalProfit > 0 ? "+" : ""}${format.toCurrency(data.totalProfit)}`}
+                  <Text fz="sm" fw={700} c={data.totalProfitPercentage >= 0 ? 'teal' : 'red'}>
+                    {`${data.totalProfit > 0 ? '+' : ''}${format.toCurrency(data.totalProfit)}`}
                   </Text>
                 )}
               </>
@@ -165,21 +147,10 @@ function Inner({ data }: { data: Balance }) {
                 </Group>
                 <Group justify="space-between">
                   <Text size="xs" c="dimmed">
-                    {stock.quantity} shares @{" "}
-                    <Currency span>{stock.averagePrice}</Currency>
+                    {stock.quantity} shares @ <Currency span>{stock.averagePrice}</Currency>
                   </Text>
                   <Group>
-                    <Text
-                      span
-                      size="xs"
-                      c={
-                        stock.profit === 0
-                          ? "dimmed"
-                          : stock.profit >= 0
-                            ? "teal"
-                            : "red"
-                      }
-                    >
+                    <Text span size="xs" c={stock.profit === 0 ? 'dimmed' : stock.profit >= 0 ? 'teal' : 'red'}>
                       {format.toLocalePercentage(stock.profitPercentage)}
                     </Text>
                   </Group>
