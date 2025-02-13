@@ -62,7 +62,7 @@
         <dependency>
             <groupId>io.github.openfeign.querydsl</groupId>
             <artifactId>querydsl-jpa-spring</artifactId>
-            <version>6.10.1</version>
+            <version>6.10</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.antlr</groupId>
