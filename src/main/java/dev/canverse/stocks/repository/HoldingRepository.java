@@ -8,4 +8,6 @@ import java.util.Optional;
 @Repository
 public interface HoldingRepository extends BaseJpaRepository<Holding, Long> {
     Optional<Holding> findByUserIdAndStockId(Long userId, Long stockId);
+
+    void deleteAllByUserId(Long userId);
 }

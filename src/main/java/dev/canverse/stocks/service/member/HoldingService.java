@@ -6,12 +6,14 @@ import dev.canverse.stocks.domain.entity.QHolding;
 import dev.canverse.stocks.domain.entity.QHoldingHistory;
 import dev.canverse.stocks.domain.entity.QTrade;
 import dev.canverse.stocks.domain.entity.QTradePerformance;
+import dev.canverse.stocks.repository.HoldingRepository;
 import dev.canverse.stocks.security.AuthenticationProvider;
 import dev.canverse.stocks.service.member.model.Balance;
 import dev.canverse.stocks.service.member.model.BalanceHistory;
 import dev.canverse.stocks.service.member.model.TradeHistory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -21,6 +23,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class HoldingService {
     private final JPAQueryFactory queryFactory;
+    private final HoldingRepository holdingRepository;
+
+    @Transactional
+    public void deleteAllHoldings() {
+        holdingRepository.deleteAllByUserId(AuthenticationProvider.getUser().getId());
+    }
 
     public Balance fetchBalance() {
         var holding = QHolding.holding;

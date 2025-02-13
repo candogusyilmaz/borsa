@@ -1,25 +1,17 @@
-import {
-  Card,
-  type CardProps,
-  Center,
-  Group,
-  ScrollArea,
-  SimpleGrid,
-  Text,
-  Title,
-} from "@mantine/core";
-import { useQuery } from "@tanstack/react-query";
-import { queries } from "~/api";
-import { format } from "~/lib/format";
-import { BuyStockModal } from "../Stocks/BuyStockModal";
-import { SellStockModal } from "../Stocks/SellStockModal";
-import { ErrorView } from "~/components/ErrorView";
-import { LoadingView } from "~/components/LoadingView";
+import { Card, type CardProps, Center, Group, ScrollArea, SimpleGrid, Text, Title } from '@mantine/core';
+import { useQuery } from '@tanstack/react-query';
+import { queries } from '~/api';
+import type { Balance } from '~/api/queries/types';
+import { ErrorView } from '~/components/ErrorView';
+import { LoadingView } from '~/components/LoadingView';
+import { format } from '~/lib/format';
+import { BuyStockModal } from '../Stocks/BuyStockModal';
+import { SellStockModal } from '../Stocks/SellStockModal';
 
 export function HoldingsCard() {
   const { data, status } = useQuery(queries.member.balance());
 
-  if (status === "pending") {
+  if (status === 'pending') {
     return (
       <HoldingsContainer>
         <LoadingView />
@@ -27,9 +19,9 @@ export function HoldingsCard() {
     );
   }
 
-  if (status === "error") {
+  if (status === 'error') {
     return (
-      <HoldingsContainer style={{ borderColor: "var(--mantine-color-red-5)" }}>
+      <HoldingsContainer style={{ borderColor: 'var(--mantine-color-red-5)' }}>
         <ErrorView />
       </HoldingsContainer>
     );
@@ -47,6 +39,19 @@ export function HoldingsCard() {
     );
   }
 
+  return <Inner data={data} />;
+}
+
+function HoldingsContainer({ children, ...props }: CardProps) {
+  return (
+    <Card shadow="sm" padding="lg" radius="md" withBorder flex={1} {...props}>
+      <Title order={3}>Holdings</Title>
+      {children}
+    </Card>
+  );
+}
+
+function Inner({ data }: { data: Balance }) {
   return (
     <HoldingsContainer>
       <ScrollArea mt="md">
@@ -63,16 +68,7 @@ export function HoldingsCard() {
                 <Text c="dimmed" size="sm">
                   {s.quantity} shares
                 </Text>
-                <Text
-                  size="xs"
-                  c={
-                    s.profitPercentage === 0
-                      ? "dimmed"
-                      : s.profitPercentage > 0
-                        ? "teal"
-                        : "red"
-                  }
-                >
+                <Text size="xs" c={s.profitPercentage === 0 ? 'dimmed' : s.profitPercentage > 0 ? 'teal' : 'red'}>
                   {format.toCurrency(s.profit)}
                 </Text>
               </Group>
@@ -83,7 +79,7 @@ export function HoldingsCard() {
                   stockId={s.id}
                   buttonProps={{
                     flex: 1,
-                    variant: "filled",
+                    variant: 'filled'
                   }}
                 />
                 <SellStockModal
@@ -92,7 +88,7 @@ export function HoldingsCard() {
                   stockId={s.id}
                   buttonProps={{
                     flex: 1,
-                    variant: "filled",
+                    variant: 'filled'
                   }}
                 />
               </Group>
@@ -101,14 +97,5 @@ export function HoldingsCard() {
         </SimpleGrid>
       </ScrollArea>
     </HoldingsContainer>
-  );
-}
-
-function HoldingsContainer({ children, ...props }: CardProps) {
-  return (
-    <Card shadow="sm" padding="lg" radius="md" withBorder flex={1} {...props}>
-      <Title order={3}>Holdings</Title>
-      {children}
-    </Card>
   );
 }

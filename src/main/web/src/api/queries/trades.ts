@@ -1,11 +1,11 @@
 import { queryOptions } from '@tanstack/react-query';
 import { http } from '~/lib/axios';
-import type { TradesHeatMap } from './types';
+import type { MonthlyRevenueOverview } from './types';
 
 export const tradeQueries = {
-  heatMap: () =>
+  monthlyRevenueOverview: () =>
     queryOptions({
-      queryKey: ['/trades/heat-map'],
-      queryFn: async ({ signal }) => (await http.get<TradesHeatMap>('/trades/heat-map', { signal })).data
+      queryKey: ['/analytics/monthly-revenue-overview'],
+      queryFn: async ({ signal }) => (await http.get<MonthlyRevenueOverview>('/analytics/monthly-revenue-overview', { signal })).data
     })
 };

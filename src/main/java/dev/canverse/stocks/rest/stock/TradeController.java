@@ -2,8 +2,8 @@ package dev.canverse.stocks.rest.stock;
 
 import dev.canverse.stocks.service.stock.TradeService;
 import dev.canverse.stocks.service.stock.model.BuyTradeRequest;
+import dev.canverse.stocks.service.stock.model.MonthlyRevenueOverview;
 import dev.canverse.stocks.service.stock.model.SellTradeRequest;
-import dev.canverse.stocks.service.stock.model.TradesHeatMap;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -30,7 +30,7 @@ public class TradeController {
     }
 
     @GetMapping("/heat-map")
-    public List<TradesHeatMap> getTradesHeatMap() {
-        return tradeService.getTradesHeatMap();
+    public List<MonthlyRevenueOverview> getTradesHeatMap() {
+        return tradeService.getMonthlyRevenueOverview();
     }
 }

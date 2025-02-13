@@ -1,3 +1,4 @@
+import { memberMutations } from './mutations/member';
 import { stockMutations } from './mutations/stocks';
 import { tradeMutations } from './mutations/trades';
 import { memberQueries } from './queries/member';
@@ -12,5 +13,6 @@ export const queries = {
 
 export const mutations = {
   stocks: stockMutations,
-  trades: tradeMutations
+  trades: tradeMutations,
+  member: memberMutations
 };

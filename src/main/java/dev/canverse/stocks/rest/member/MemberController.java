@@ -5,10 +5,7 @@ import dev.canverse.stocks.service.member.model.Balance;
 import dev.canverse.stocks.service.member.model.BalanceHistory;
 import dev.canverse.stocks.service.member.model.TradeHistory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -31,5 +28,10 @@ public class MemberController {
     @GetMapping("/trades/history")
     public TradeHistory fetchTradeHistory() {
         return holdingService.fetchTradeHistory();
+    }
+
+    @PostMapping("/clear-my-data")
+    public void clearMyData() {
+        holdingService.deleteAllHoldings();
     }
 }

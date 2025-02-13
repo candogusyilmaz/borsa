@@ -66,7 +66,7 @@ export type Stocks = {
   }>;
 };
 
-export type TradesHeatMap = Array<{
+export type MonthlyRevenueOverview = Array<{
   year: number;
   data: Array<{
     month: number;

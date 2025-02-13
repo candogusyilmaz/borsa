@@ -7,8 +7,8 @@ import dev.canverse.stocks.repository.HoldingRepository;
 import dev.canverse.stocks.repository.StockRepository;
 import dev.canverse.stocks.security.AuthenticationProvider;
 import dev.canverse.stocks.service.stock.model.BuyTradeRequest;
+import dev.canverse.stocks.service.stock.model.MonthlyRevenueOverview;
 import dev.canverse.stocks.service.stock.model.SellTradeRequest;
-import dev.canverse.stocks.service.stock.model.TradesHeatMap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,7 +55,7 @@ public class TradeService {
     }
 
 
-    public List<TradesHeatMap> getTradesHeatMap() {
+    public List<MonthlyRevenueOverview> getMonthlyRevenueOverview() {
         var tradePerformance = QTradePerformance.tradePerformance;
         var trade = QTrade.trade;
         var holding = QHolding.holding;
@@ -85,13 +85,13 @@ public class TradeService {
         return dataByYear.entrySet().stream()
                 .map(entry -> {
                     int year2 = entry.getKey();
-                    List<TradesHeatMap.Month> months = entry.getValue().stream()
-                            .map(tuple -> new TradesHeatMap.Month(
+                    List<MonthlyRevenueOverview.Month> months = entry.getValue().stream()
+                            .map(tuple -> new MonthlyRevenueOverview.Month(
                                     tuple.get(month),
                                     tuple.get(profitSum)
                             ))
                             .collect(Collectors.toList());
-                    return new TradesHeatMap(year2, months);
+                    return new MonthlyRevenueOverview(year2, months);
                 })
                 .collect(Collectors.toList());
     }

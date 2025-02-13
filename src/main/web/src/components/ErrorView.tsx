@@ -1,5 +1,5 @@
-import { Stack, Text, ThemeIcon } from "@mantine/core";
-import { IconAlertTriangle } from "@tabler/icons-react";
+import { Stack, Text, ThemeIcon } from '@mantine/core';
+import { IconAlertTriangle } from '@tabler/icons-react';
 
 export function ErrorView() {
   return (
