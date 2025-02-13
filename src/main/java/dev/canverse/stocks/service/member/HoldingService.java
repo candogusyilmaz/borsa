@@ -57,7 +57,7 @@ public class HoldingService {
                         )
                 )
                 .from(holdingHistory)
-                .where(holdingHistory.createdAt.after(startInstant))
+                .where(holdingHistory.createdAt.after(startInstant).and(holdingHistory.holding.user.id.eq(AuthenticationProvider.getUser().getId())))
                 .groupBy(holdingHistory.createdAt, holdingHistory.holding.stock.symbol)
                 .orderBy(holdingHistory.createdAt.desc())
                 .fetch();
