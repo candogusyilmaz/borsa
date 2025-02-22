@@ -1,5 +1,6 @@
 package dev.canverse.stocks.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -54,6 +55,7 @@ public class Trade implements Serializable {
     @Column(nullable = false)
     private Instant updatedAt;
 
+    @JsonManagedReference
     @OneToOne(mappedBy = "trade", cascade = CascadeType.ALL)
     @JoinColumn(name = "id", referencedColumnName = "trade_id")
     private TradePerformance performance;
