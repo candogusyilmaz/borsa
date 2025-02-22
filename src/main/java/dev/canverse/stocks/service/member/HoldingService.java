@@ -5,7 +5,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import dev.canverse.stocks.domain.entity.QHolding;
 import dev.canverse.stocks.domain.entity.QHoldingHistory;
 import dev.canverse.stocks.domain.entity.QTrade;
-import dev.canverse.stocks.domain.entity.QTradePerformance;
 import dev.canverse.stocks.repository.HoldingRepository;
 import dev.canverse.stocks.security.AuthenticationProvider;
 import dev.canverse.stocks.service.member.model.Balance;
@@ -73,7 +72,6 @@ public class HoldingService {
 
     public TradeHistory fetchTradeHistory() {
         var trade = QTrade.trade;
-        var p = QTradePerformance.tradePerformance;
 
         var query = queryFactory.select(
                         Projections.constructor(TradeHistory.Item.class,
@@ -83,13 +81,12 @@ public class HoldingService {
                                 trade.holding.stock.symbol,
                                 trade.price,
                                 trade.quantity,
-                                p.profit,
-                                p.returnPercentage,
-                                p.performanceCategory
+                                trade.performance.profit,
+                                trade.performance.returnPercentage,
+                                trade.performance.performanceCategory
                         )
                 )
                 .from(trade)
-                .leftJoin(trade.performance, p)
                 .where(trade.holding.user.id.eq(AuthenticationProvider.getUser().getId()))
                 .orderBy(trade.createdAt.desc())
                 .fetch();

@@ -56,26 +56,24 @@ public class TradeService {
 
 
     public List<MonthlyRevenueOverview> getMonthlyRevenueOverview() {
-        var tradePerformance = QTradePerformance.tradePerformance;
         var trade = QTrade.trade;
         var holding = QHolding.holding;
         var user = QUser.user;
 
         var month = trade.actionDate.month();
         var year = trade.actionDate.year();
-        var profitSum = tradePerformance.profit.sumBigDecimal();
+        var q = trade.performance.profit.sumBigDecimal();
 
         var groupedData = queryFactory
                 .select(
                         month,
                         year,
-                        profitSum
+                        q
                 )
-                .from(tradePerformance)
-                .join(tradePerformance.trade, trade)
+                .from(trade)
                 .join(trade.holding, holding)
                 .join(holding.user, user)
-                .where(user.id.eq(AuthenticationProvider.getUser().getId()))
+                .where(trade.type.eq(Trade.Type.SELL).and(user.id.eq(AuthenticationProvider.getUser().getId())))
                 .groupBy(year, month)
                 .fetch();
 
@@ -88,7 +86,7 @@ public class TradeService {
                     List<MonthlyRevenueOverview.Month> months = entry.getValue().stream()
                             .map(tuple -> new MonthlyRevenueOverview.Month(
                                     tuple.get(month),
-                                    tuple.get(profitSum)
+                                    tuple.get(q)
                             ))
                             .collect(Collectors.toList());
                     return new MonthlyRevenueOverview(year2, months);
