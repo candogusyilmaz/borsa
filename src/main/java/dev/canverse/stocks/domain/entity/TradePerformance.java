@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import net.minidev.json.annotate.JsonIgnore;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
@@ -19,6 +20,7 @@ public class TradePerformance {
 
     @MapsId
     @Setter(AccessLevel.NONE)
+    @JsonIgnore
     @OneToOne(optional = false, fetch = FetchType.LAZY)
     private Trade trade;
 
