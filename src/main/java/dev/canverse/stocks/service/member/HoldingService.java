@@ -87,6 +87,7 @@ public class HoldingService {
                         )
                 )
                 .from(trade)
+                .leftJoin(trade.performance)
                 .where(trade.holding.user.id.eq(AuthenticationProvider.getUser().getId()))
                 .orderBy(trade.createdAt.desc())
                 .fetch();
