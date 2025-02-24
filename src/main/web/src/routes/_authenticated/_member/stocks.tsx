@@ -1,24 +1,37 @@
-import { Group, Paper, Stack, Text, TextInput, ThemeIcon, Title, useMatches } from '@mantine/core';
-import { useDebouncedState } from '@mantine/hooks';
-import { IconArrowNarrowDownDashed, IconArrowNarrowUpDashed, IconSearch } from '@tabler/icons-react';
-import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
-import { useWindowVirtualizer } from '@tanstack/react-virtual';
-import { useEffect, useRef, useState } from 'react';
-import { queries } from '~/api';
-import { BuyStockModal } from '~/components/Stocks/BuyStockModal';
-import { SellStockModal } from '~/components/Stocks/SellStockModal';
-import { format } from '~/lib/format';
+import {
+  Group,
+  Paper,
+  Stack,
+  Text,
+  TextInput,
+  ThemeIcon,
+  Title,
+  useMatches,
+} from "@mantine/core";
+import { useDebouncedState } from "@mantine/hooks";
+import {
+  IconArrowNarrowDownDashed,
+  IconArrowNarrowUpDashed,
+  IconSearch,
+} from "@tabler/icons-react";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
+import { useEffect, useRef, useState } from "react";
+import { queries } from "~/api";
+import { BuyStockModal } from "~/components/Stocks/BuyStockModal";
+import { SellStockModal } from "~/components/Stocks/SellStockModal";
+import { format } from "~/lib/format";
 
-export const Route = createFileRoute('/_authenticated/_member/stocks')({
+export const Route = createFileRoute("/_authenticated/_member/stocks")({
   component: RouteComponent,
   beforeLoad: ({ context }) => {
-    context.queryClient.ensureQueryData(queries.stocks.fetchAll('BIST'));
-  }
+    context.queryClient.ensureQueryData(queries.stocks.fetchAll("BIST"));
+  },
 });
 
 function RouteComponent() {
-  const { data: stocks } = useSuspenseQuery(queries.stocks.fetchAll('BIST'));
+  const { data: stocks } = useSuspenseQuery(queries.stocks.fetchAll("BIST"));
   const { data: balance } = useQuery(queries.member.balance());
   const [filteredSymbols, setFilteredSymbols] = useState(stocks.symbols);
   const nameSize = useMatches({
@@ -26,12 +39,18 @@ function RouteComponent() {
     xs: 100,
     sm: 175,
     md: 225,
-    lg: 275
+    lg: 275,
   });
-  const [q, setQ] = useDebouncedState('', 300);
+  const [q, setQ] = useDebouncedState("", 300);
 
   useEffect(() => {
-    setFilteredSymbols(stocks.symbols.filter((s) => s.name.toLowerCase().includes(q) || s.symbol.toLowerCase().includes(q.toLowerCase())));
+    setFilteredSymbols(
+      stocks.symbols.filter(
+        (s) =>
+          s.name.toLowerCase().includes(q) ||
+          s.symbol.toLowerCase().includes(q.toLowerCase())
+      )
+    );
   }, [stocks, q]);
 
   const listRef = useRef<HTMLDivElement | null>(null);
@@ -40,7 +59,7 @@ function RouteComponent() {
     count: filteredSymbols.length,
     estimateSize: () => 80,
     overscan: 5,
-    scrollMargin: listRef.current?.offsetTop ?? 0
+    scrollMargin: listRef.current?.offsetTop ?? 0,
   });
 
   return (
@@ -57,30 +76,34 @@ function RouteComponent() {
         <div
           style={{
             height: `${virtualizer.getTotalSize()}px`,
-            width: '100%',
-            position: 'relative'
-          }}>
+            width: "100%",
+            position: "relative",
+          }}
+        >
           {virtualizer.getVirtualItems().map((item) => (
             <div
               key={item.key}
               style={{
-                position: 'absolute',
+                position: "absolute",
                 top: 0,
                 left: 0,
-                width: '100%',
+                width: "100%",
                 height: `${item.size}px`,
-                transform: `translateY(${item.start - virtualizer.options.scrollMargin}px)`
-              }}>
+                transform: `translateY(${item.start - virtualizer.options.scrollMargin}px)`,
+              }}
+            >
               <Paper
                 px="sm"
                 py="xs"
                 withBorder
                 bg="dark.6"
                 style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr minmax(auto, 100px) minmax(auto,100px) minmax(auto,100px) auto',
-                  columnGap: 'var(--mantine-spacing-md)'
-                }}>
+                  display: "grid",
+                  gridTemplateColumns:
+                    "1fr minmax(auto, 100px) minmax(auto,100px) minmax(auto,100px) auto",
+                  columnGap: "var(--mantine-spacing-md)",
+                }}
+              >
                 <Group gap="xs" align="center">
                   <ThemeIcon variant="transparent" size="md">
                     {filteredSymbols[item.index].dailyChange >= 0 ? (
@@ -102,13 +125,31 @@ function RouteComponent() {
                   </Text>
                 </Group>
                 <Group gap="xs" justify="flex-end">
-                  <Text c={filteredSymbols[item.index].dailyChange >= 0 ? 'teal' : 'red'} fz="sm" fw={300}>
+                  <Text
+                    c={
+                      filteredSymbols[item.index].dailyChange >= 0
+                        ? "teal"
+                        : "red"
+                    }
+                    fz="sm"
+                    fw={300}
+                  >
                     {format.toCurrency(filteredSymbols[item.index].dailyChange)}
                   </Text>
                 </Group>
                 <Group align="center" justify="flex-end">
-                  <Text c={filteredSymbols[item.index].dailyChangePercent >= 0 ? 'teal' : 'red'} fw={300} fz="sm">
-                    {format.toLocalePercentage(filteredSymbols[item.index].dailyChangePercent / 100)}
+                  <Text
+                    c={
+                      filteredSymbols[item.index].dailyChangePercent >= 0
+                        ? "teal"
+                        : "red"
+                    }
+                    fw={300}
+                    fz="sm"
+                  >
+                    {format.toLocalePercentage(
+                      filteredSymbols[item.index].dailyChangePercent
+                    )}
                   </Text>
                 </Group>
                 <Stack gap={0} justify="center" align="flex-end">
@@ -118,7 +159,9 @@ function RouteComponent() {
                     stockId={filteredSymbols[item.index].id}
                     symbol={filteredSymbols[item.index].symbol}
                   />
-                  {balance?.stocks?.find((s) => s.symbol === filteredSymbols[item.index].symbol) && (
+                  {balance?.stocks?.find(
+                    (s) => s.symbol === filteredSymbols[item.index].symbol
+                  ) && (
                     <SellStockModal
                       key={`sell-${filteredSymbols[item.index].id}`}
                       price={filteredSymbols[item.index].last}
