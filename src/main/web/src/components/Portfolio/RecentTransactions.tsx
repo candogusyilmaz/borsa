@@ -1,19 +1,36 @@
-import { ActionIcon, Badge, Card, Group, Stack, Text, ThemeIcon, rem } from '@mantine/core';
-import { IconCalendar, IconChartBar, IconChevronLeft, IconChevronRight, IconCircleArrowDown, IconCircleArrowUp } from '@tabler/icons-react';
-import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
-import { queries } from '~/api';
-import type { TradeHistory } from '~/api/queries/types';
-import { format } from '~/lib/format';
-import { ErrorView } from '../ErrorView';
-import { LoadingView } from '../LoadingView';
+import {
+  ActionIcon,
+  Badge,
+  Card,
+  Group,
+  Stack,
+  Text,
+  ThemeIcon,
+  rem,
+} from "@mantine/core";
+import {
+  IconCalendar,
+  IconChartBar,
+  IconChevronLeft,
+  IconChevronRight,
+  IconCirclePlus,
+  IconTrendingDown3,
+  IconTrendingUp3,
+} from "@tabler/icons-react";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { queries } from "~/api";
+import type { TradeHistory } from "~/api/queries/types";
+import { format } from "~/lib/format";
+import { ErrorView } from "../ErrorView";
+import { LoadingView } from "../LoadingView";
 
 const PAGE_SIZE = 5;
 
-export function RecentTransactionsCard() {
+export function RecentTransactions() {
   const { data, status } = useQuery(queries.member.tradeHistory());
 
-  if (status === 'pending') {
+  if (status === "pending") {
     return (
       <Stack>
         <Text fw={700} size={rem(22)}>
@@ -26,13 +43,19 @@ export function RecentTransactionsCard() {
     );
   }
 
-  if (status === 'error') {
+  if (status === "error") {
     return (
       <Stack>
         <Text fw={700} size={rem(22)}>
           Recent Transactions
         </Text>
-        <Card shadow="sm" radius="md" p="lg" withBorder style={{ borderColor: 'var(--mantine-color-red-5)' }}>
+        <Card
+          shadow="sm"
+          radius="md"
+          p="lg"
+          withBorder
+          style={{ borderColor: "var(--mantine-color-red-5)" }}
+        >
           <ErrorView />
         </Card>
       </Stack>
@@ -94,13 +117,21 @@ function Inner({ data }: { data: TradeHistory }) {
         </Group>
         {totalPages > 1 && (
           <Group justify="space-between">
-            <ActionIcon variant="transparent" c={currentPage === 1 ? 'dimmed' : 'white'} onClick={handlePrevPage}>
+            <ActionIcon
+              variant="transparent"
+              c={currentPage === 1 ? "dimmed" : "white"}
+              onClick={handlePrevPage}
+            >
               <IconChevronLeft />
             </ActionIcon>
             <Text size="sm" fw={500}>
               {`${currentPage}/${totalPages}`}
             </Text>
-            <ActionIcon variant="transparent" c={currentPage === totalPages ? 'dimmed' : 'white'} onClick={handleNextPage}>
+            <ActionIcon
+              variant="transparent"
+              c={currentPage === totalPages ? "dimmed" : "white"}
+              onClick={handleNextPage}
+            >
               <IconChevronRight />
             </ActionIcon>
           </Group>
@@ -115,24 +146,50 @@ function Inner({ data }: { data: TradeHistory }) {
             radius="md"
             p="xs"
             px="lg"
-            withBorder>
+            withBorder
+          >
             <Group justify="space-between" align="center" ta="right">
               <Group align="center">
-                <ThemeIcon variant="transparent" c={trade.type === 'BUY' ? 'red' : 'green'}>
-                  {trade.type === 'BUY' ? <IconCircleArrowUp /> : <IconCircleArrowDown />}
+                <ThemeIcon
+                  variant="transparent"
+                  c={
+                    trade.type === "BUY"
+                      ? "blue"
+                      : trade.profit >= 0
+                        ? "green"
+                        : "red"
+                  }
+                >
+                  {trade.type === "BUY" ? (
+                    <IconCirclePlus />
+                  ) : trade.profit >= 0 ? (
+                    <IconTrendingUp3 />
+                  ) : (
+                    <IconTrendingDown3 />
+                  )}
                 </ThemeIcon>
                 <Stack gap={2}>
                   <Group gap="xs" align="center" ml={3}>
                     <Text size="lg" fw={600}>
                       {trade.symbol}
                     </Text>
-                    <Badge size="xs" variant="light" color={trade.type === 'BUY' ? 'red' : 'green'}>
+                    <Badge
+                      size="xs"
+                      variant="light"
+                      color={
+                        trade.type === "BUY"
+                          ? "blue"
+                          : trade.profit >= 0
+                            ? "green"
+                            : "red"
+                      }
+                    >
                       {trade.type}
                     </Badge>
                   </Group>
                   <Group gap={4} align="center">
                     <ThemeIcon size="xs" variant="transparent" c="dimmed">
-                      <IconCalendar style={{ width: '100%', height: '100%' }} />
+                      <IconCalendar style={{ width: "100%", height: "100%" }} />
                     </ThemeIcon>
                     <Text size="xs" c="dimmed">
                       {format.toFullDateTime(new Date(trade.date))}
@@ -141,12 +198,14 @@ function Inner({ data }: { data: TradeHistory }) {
                 </Stack>
               </Group>
               <Group align="center" miw={rem(300)}>
-                <Stack gap={2}>
-                  <Group gap={4} align="center">
+                <Stack gap={2} miw={rem(150)}>
+                  <Group gap={4} align="center" justify="flex-end">
                     <ThemeIcon size="xs" variant="transparent" c="dimmed">
                       <IconChartBar />
                     </ThemeIcon>
-                    <Text fw={500}>{trade.quantity} shares</Text>
+                    <Text fw={500}>
+                      {`${format.toHumanizedNumber(trade.quantity)} share${trade.quantity === 1 ? "" : "s"}`}
+                    </Text>
                   </Group>
                   <Text size="xs" c="dimmed">
                     @ {format.toCurrency(trade.price)}
@@ -154,8 +213,11 @@ function Inner({ data }: { data: TradeHistory }) {
                 </Stack>
                 <Stack gap={2} ml="auto">
                   <Text fw={600}>{format.toCurrency(trade.total)}</Text>
-                  {trade.type === 'SELL' && (
-                    <Text size="xs" c={trade.returnPercentage >= 0 ? 'teal' : 'red'}>
+                  {trade.type === "SELL" && (
+                    <Text
+                      size="xs"
+                      c={trade.returnPercentage >= 0 ? "teal" : "red"}
+                    >
                       {`${format.toCurrency(trade.profit)} (${format.toLocalePercentage(trade.returnPercentage)})`}
                     </Text>
                   )}

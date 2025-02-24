@@ -30,7 +30,7 @@ public record Balance(List<Stock> stocks) {
         }
 
         public BigDecimal getProfitPercentage() {
-            return currentPrice.subtract(averagePrice).divide(averagePrice, RoundingMode.HALF_UP);
+            return currentPrice.subtract(averagePrice).multiply(BigDecimal.valueOf(100)).divide(averagePrice, RoundingMode.HALF_UP);
         }
 
         public BigDecimal getValue() {

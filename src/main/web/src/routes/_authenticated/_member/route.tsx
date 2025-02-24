@@ -1,25 +1,30 @@
-import { AppShell, Burger, Container, Group, Title } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
-import { Link, Outlet, createFileRoute, linkOptions } from '@tanstack/react-router';
-import classes from '~/styles/MemberLayout.module.css';
+import { AppShell, Burger, Container, Group, Title } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
+import {
+  Link,
+  Outlet,
+  createFileRoute,
+  linkOptions,
+} from "@tanstack/react-router";
+import classes from "~/styles/MemberLayout.module.css";
 
-export const Route = createFileRoute('/_authenticated/_member')({
-  component: RouteComponent
+export const Route = createFileRoute("/_authenticated/_member")({
+  component: RouteComponent,
 });
 
 const NAV_LINKS = [
   {
-    label: 'Portfolio',
+    label: "Portfolio",
     options: linkOptions({
-      to: '/portfolio'
-    })
+      to: "/portfolio",
+    }),
   },
   {
-    label: 'Stocks',
+    label: "Stocks",
     options: linkOptions({
-      to: '/stocks'
-    })
-  }
+      to: "/stocks",
+    }),
+  },
 ];
 
 function RouteComponent() {
@@ -30,22 +35,32 @@ function RouteComponent() {
       header={{ height: 60 }}
       navbar={{
         width: 300,
-        breakpoint: 'sm',
-        collapsed: { desktop: true, mobile: !opened }
+        breakpoint: "sm",
+        collapsed: { desktop: true, mobile: !opened },
       }}
-      padding="md">
+      padding="md"
+    >
       <AppShell.Header>
         <Container h="100%">
           <Group h="100%">
-            <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
-            <Group justify="space-between" style={{ flex: 1 }}>
+            <Burger
+              opened={opened}
+              onClick={toggle}
+              hiddenFrom="sm"
+              size="sm"
+            />
+            <Group justify="space-between" w="100%">
               <Title size="md" c="gray">
                 Canverse
               </Title>
               <Group ml="xl" gap={0} visibleFrom="sm">
                 {NAV_LINKS.map((s) => {
                   return (
-                    <Link key={s.options.to} {...s.options} className={classes.control}>
+                    <Link
+                      key={s.options.to}
+                      {...s.options}
+                      className={classes.control}
+                    >
                       {s.label}
                     </Link>
                   );
@@ -59,7 +74,12 @@ function RouteComponent() {
       <AppShell.Navbar py="md" px={4}>
         {NAV_LINKS.map((s) => {
           return (
-            <Link key={s.options.to} {...s.options} className={classes.control} onClick={toggle}>
+            <Link
+              key={s.options.to}
+              {...s.options}
+              className={classes.control}
+              onClick={toggle}
+            >
               {s.label}
             </Link>
           );

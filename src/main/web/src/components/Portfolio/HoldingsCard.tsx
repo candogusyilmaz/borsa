@@ -1,17 +1,26 @@
-import { Card, type CardProps, Center, Group, ScrollArea, SimpleGrid, Text, Title } from '@mantine/core';
-import { useQuery } from '@tanstack/react-query';
-import { queries } from '~/api';
-import type { Balance } from '~/api/queries/types';
-import { ErrorView } from '~/components/ErrorView';
-import { LoadingView } from '~/components/LoadingView';
-import { format } from '~/lib/format';
-import { BuyStockModal } from '../Stocks/BuyStockModal';
-import { SellStockModal } from '../Stocks/SellStockModal';
+import {
+  Card,
+  type CardProps,
+  Center,
+  Group,
+  ScrollArea,
+  SimpleGrid,
+  Text,
+  Title,
+} from "@mantine/core";
+import { useQuery } from "@tanstack/react-query";
+import { queries } from "~/api";
+import type { Balance } from "~/api/queries/types";
+import { ErrorView } from "~/components/ErrorView";
+import { LoadingView } from "~/components/LoadingView";
+import { format } from "~/lib/format";
+import { BuyStockModal } from "../Stocks/BuyStockModal";
+import { SellStockModal } from "../Stocks/SellStockModal";
 
 export function HoldingsCard() {
   const { data, status } = useQuery(queries.member.balance());
 
-  if (status === 'pending') {
+  if (status === "pending") {
     return (
       <HoldingsContainer>
         <LoadingView />
@@ -19,9 +28,9 @@ export function HoldingsCard() {
     );
   }
 
-  if (status === 'error') {
+  if (status === "error") {
     return (
-      <HoldingsContainer style={{ borderColor: 'var(--mantine-color-red-5)' }}>
+      <HoldingsContainer style={{ borderColor: "var(--mantine-color-red-5)" }}>
         <ErrorView />
       </HoldingsContainer>
     );
@@ -66,9 +75,18 @@ function Inner({ data }: { data: Balance }) {
               </Group>
               <Group justify="space-between" align="center">
                 <Text c="dimmed" size="sm">
-                  {s.quantity} shares
+                  {format.toHumanizedNumber(s.quantity)} shares
                 </Text>
-                <Text size="xs" c={s.profitPercentage === 0 ? 'dimmed' : s.profitPercentage > 0 ? 'teal' : 'red'}>
+                <Text
+                  size="xs"
+                  c={
+                    s.profitPercentage === 0
+                      ? "dimmed"
+                      : s.profitPercentage > 0
+                        ? "teal"
+                        : "red"
+                  }
+                >
                   {format.toCurrency(s.profit)}
                 </Text>
               </Group>
@@ -79,7 +97,7 @@ function Inner({ data }: { data: Balance }) {
                   stockId={s.id}
                   buttonProps={{
                     flex: 1,
-                    variant: 'filled'
+                    variant: "filled",
                   }}
                 />
                 <SellStockModal
@@ -88,7 +106,7 @@ function Inner({ data }: { data: Balance }) {
                   stockId={s.id}
                   buttonProps={{
                     flex: 1,
-                    variant: 'filled'
+                    variant: "filled",
                   }}
                 />
               </Group>

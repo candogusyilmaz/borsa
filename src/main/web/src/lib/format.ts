@@ -4,9 +4,10 @@ export const format = {
       throw new Error('Invalid input: value must be a number');
     }
 
-    return value.toLocaleString(locale, {
+    return (value / 100).toLocaleString(locale, {
       style: 'percent',
-      minimumFractionDigits: decimalPlaces
+      minimumFractionDigits: decimalPlaces,
+      notation: 'compact'
     });
   },
   toShortDate: (date: Date, locale = 'tr-TR') => {
@@ -34,15 +35,16 @@ export const format = {
       minute: '2-digit'
     });
   },
-  toCurrency: (value: number, currency = 'TRY', locale = 'tr-TR', minimumFractionDigits = 2, maximumFractionDigits = 2) => {
+  toCurrency: (value: number, compact = true, currency = 'TRY', locale = 'tr-TR', minimumFractionDigits = 2, maximumFractionDigits = 2) => {
     return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: currency,
+      notation: compact ? 'compact' : 'standard',
       minimumFractionDigits: minimumFractionDigits,
       maximumFractionDigits: maximumFractionDigits
     }).format(value);
   },
-  toHumanizedCurrency: (value: number, locale = 'tr-TR') => {
+  toHumanizedNumber: (value: number, locale = 'tr-TR') => {
     return new Intl.NumberFormat(locale, {
       notation: 'compact',
       compactDisplay: 'short'
