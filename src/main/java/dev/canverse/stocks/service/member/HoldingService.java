@@ -36,6 +36,8 @@ public class HoldingService {
                         Projections.constructor(Balance.Stock.class,
                                 holding.stock.id.stringValue(),
                                 holding.stock.symbol,
+                                holding.stock.snapshot.dailyChange,
+                                holding.stock.snapshot.dailyChangePercent,
                                 holding.quantity,
                                 holding.averagePrice,
                                 holding.stock.snapshot.last)

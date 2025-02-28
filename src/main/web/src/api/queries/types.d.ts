@@ -12,13 +12,17 @@ export type Balance = {
   stocks: Array<{
     id: string;
     symbol: string;
+    dailyChange: number;
+    dailyChangePercent: number;
     quantity: number;
     averagePrice: number;
     currentPrice: number;
     value: number;
-    profit: number;
-    cost: number;
     profitPercentage: number;
+    profit: number;
+    previousClose: number;
+    cost: number;
+    dailyProfit: number;
   }>;
   totalValue: number;
   totalProfit: number;

@@ -1,18 +1,11 @@
-import {
-  Button,
-  type ButtonProps,
-  Group,
-  Modal,
-  NumberInput,
-  Stack,
-} from "@mantine/core";
-import { DateTimePicker } from "@mantine/dates";
-import { useForm } from "@mantine/form";
-import { useDisclosure } from "@mantine/hooks";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { mutations } from "~/api";
-import { queryKeys } from "~/api/queries/keys";
-import { alerts } from "~/lib/alert";
+import { Button, type ButtonProps, Group, Modal, NumberInput, Stack } from '@mantine/core';
+import { DateTimePicker } from '@mantine/dates';
+import { useForm } from '@mantine/form';
+import { useDisclosure } from '@mantine/hooks';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { mutations } from '~/api';
+import { queryKeys } from '~/api/queries/config';
+import { alerts } from '~/lib/alert';
 
 type BuyStockModalProps = {
   symbol: string;
@@ -21,75 +14,44 @@ type BuyStockModalProps = {
   buttonProps?: ButtonProps;
 };
 
-export function BuyStockModal({
-  symbol,
-  price,
-  stockId,
-  buttonProps,
-}: BuyStockModalProps) {
+export function BuyStockModal({ symbol, price, stockId, buttonProps }: BuyStockModalProps) {
   const [opened, { open, close }] = useDisclosure(false);
 
   return (
     <>
-      <Modal
-        centered
-        opened={opened}
-        onClose={close}
-        title={`Buy: ${symbol}`}
-        transitionProps={{ transition: "fade" }}
-      >
-        <BuyStockForm
-          symbol={symbol}
-          price={price}
-          stockId={stockId}
-          close={close}
-        />
+      <Modal centered opened={opened} onClose={close} title={`Buy: ${symbol}`} transitionProps={{ transition: 'fade' }}>
+        <BuyStockForm symbol={symbol} price={price} stockId={stockId} close={close} />
       </Modal>
 
-      <Button
-        variant="subtle"
-        size="compact-xs"
-        color="teal.7"
-        fw={400}
-        fz="xs"
-        {...buttonProps}
-        onClick={open}
-      >
+      <Button variant="subtle" size="compact-xs" color="teal.7" fw={400} fz="xs" {...buttonProps} onClick={open}>
         Buy
       </Button>
     </>
   );
 }
 
-function BuyStockForm({
-  symbol,
-  price,
-  stockId,
-  close,
-}: BuyStockModalProps & { close: () => void }) {
+function BuyStockForm({ symbol, price, stockId, close }: BuyStockModalProps & { close: () => void }) {
   const client = useQueryClient();
   const form = useForm({
     initialValues: {
       price,
       quantity: 1,
-      actionDate: new Date(),
-    },
+      actionDate: new Date()
+    }
   });
 
   const mutation = useMutation({
     ...mutations.trades.buy,
     onSuccess: (_, variables) => {
       close();
-      alerts.success(
-        `Bought ${variables.quantity} share(s) of ${symbol} @ ${variables.price}.`
-      );
+      alerts.success(`Bought ${variables.quantity} share(s) of ${symbol} @ ${variables.price}.`);
       client.invalidateQueries({
-        predicate: (q) => q.queryKey.includes(queryKeys.portfolio),
+        predicate: (q) => q.queryKey.includes(queryKeys.portfolio)
       });
     },
     onError: (res) => {
       console.log(res);
-    },
+    }
   });
 
   return (
@@ -100,31 +62,15 @@ function BuyStockForm({
           price: values.price,
           quantity: values.quantity,
           tax: 0,
-          actionDate: values.actionDate.toJSON(),
+          actionDate: values.actionDate.toJSON()
         })
-      )}
-    >
+      )}>
       <Stack>
-        <NumberInput
-          label="Price"
-          hideControls
-          decimalScale={2}
-          min={0}
-          {...form.getInputProps("price")}
-        />
-        <NumberInput
-          label="Quantity"
-          min={1}
-          allowDecimal={false}
-          {...form.getInputProps("quantity")}
-        />
-        <DateTimePicker label="Date" {...form.getInputProps("actionDate")} />
+        <NumberInput label="Price" hideControls decimalScale={2} min={0} {...form.getInputProps('price')} />
+        <NumberInput label="Quantity" min={1} allowDecimal={false} {...form.getInputProps('quantity')} />
+        <DateTimePicker label="Date" {...form.getInputProps('actionDate')} />
         <Group justify="flex-end" mt="md">
-          <Button
-            type="submit"
-            color="teal"
-            loading={mutation.isPending || mutation.isSuccess}
-          >
+          <Button type="submit" color="teal" loading={mutation.isPending || mutation.isSuccess}>
             Buy
           </Button>
         </Group>

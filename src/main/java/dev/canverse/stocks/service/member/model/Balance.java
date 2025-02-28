@@ -24,13 +24,22 @@ public record Balance(List<Stock> stocks) {
         return stocks.stream().map(Stock::getValue).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    public record Stock(String id, String symbol, int quantity, BigDecimal averagePrice, BigDecimal currentPrice) {
+    public record Stock(String id, String symbol, BigDecimal dailyChange, BigDecimal dailyChangePercent, int quantity,
+                        BigDecimal averagePrice, BigDecimal currentPrice) {
+        public BigDecimal getPreviousClose() {
+            return currentPrice.subtract(dailyChange);
+        }
+
         public BigDecimal getProfit() {
             return currentPrice.subtract(averagePrice).multiply(BigDecimal.valueOf(quantity));
         }
 
         public BigDecimal getProfitPercentage() {
             return currentPrice.subtract(averagePrice).multiply(BigDecimal.valueOf(100)).divide(averagePrice, RoundingMode.HALF_UP);
+        }
+
+        public BigDecimal getDailyProfit() {
+            return dailyChange.multiply(BigDecimal.valueOf(quantity));
         }
 
         public BigDecimal getValue() {

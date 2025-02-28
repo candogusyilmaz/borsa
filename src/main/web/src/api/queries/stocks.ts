@@ -1,5 +1,6 @@
 import { queryOptions } from '@tanstack/react-query';
 import { http } from '~/lib/axios';
+import { staleTimes } from './config';
 import type { SelectItem, Stocks } from './types';
 
 export const stockQueries = {
@@ -7,8 +8,8 @@ export const stockQueries = {
     queryOptions({
       queryKey: ['/stocks', exchange],
       queryFn: async ({ signal }) => (await http.get<Stocks>('/stocks', { signal, params: { exchange } })).data,
-      staleTime: 1000 * 30,
-      refetchInterval: 1000 * 30
+      staleTime: staleTimes.THIRTY_SECONDS,
+      refetchInterval: staleTimes.THIRTY_SECONDS
     }),
   lookup: (exchange?: string) =>
     queryOptions({
