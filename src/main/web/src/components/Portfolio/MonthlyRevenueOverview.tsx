@@ -52,7 +52,7 @@ function MonthlyRevenueOverviewCard({ children, ...props }: CardProps) {
       <Text fw={700} size={rem(22)}>
         Monthly Revenue Overview
       </Text>
-      <Card shadow="sm" radius="md" p="0" pt="xs" withBorder {...props}>
+      <Card shadow="sm" radius="md" p="lg" withBorder {...props}>
         {children}
       </Card>
     </>
@@ -76,7 +76,7 @@ function Inner({ data }: { data: MonthlyRevenueOverviewType }) {
   });
 
   return (
-    <MonthlyRevenueOverviewCard>
+    <MonthlyRevenueOverviewCard p={0} pt="xs">
       <ScrollArea scrollbars="x" type="auto" offsetScrollbars>
         <div
           style={{
