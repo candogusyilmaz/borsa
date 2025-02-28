@@ -145,7 +145,7 @@ function Inner({ data: { stocks, totalValue } }: { data: Balance }) {
       <Text fw={700} size={rem(22)}>
         Holdings
       </Text>
-      <Group hiddenFrom="xs">
+      <Group display="none">
         <Popover shadow="md" width={200} position="bottom-end">
           <Popover.Target>
             <ActionIcon ml="auto" variant="default">
@@ -174,7 +174,7 @@ function Inner({ data: { stocks, totalValue } }: { data: Balance }) {
         </Popover>
       </Group>
       <Card shadow="sm" radius="md" p={0} withBorder>
-        <ScrollArea h="100%" scrollbars="x">
+        <ScrollArea h="100%" scrollbars="x" offsetScrollbars type="auto">
           <Table
             verticalSpacing="md"
             horizontalSpacing="sm"

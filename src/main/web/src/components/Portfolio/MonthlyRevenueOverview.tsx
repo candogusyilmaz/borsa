@@ -1,6 +1,7 @@
-import { Box, Card, type CardProps, Center, Group, Loader, Stack, Text, Tooltip, rem } from '@mantine/core';
+import { Box, Card, type CardProps, Center, Loader, ScrollArea, Text, Tooltip, rem } from '@mantine/core';
 import { IconCircle } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
+import React from 'react';
 import { queries } from '~/api';
 import type { MonthlyRevenueOverview as MonthlyRevenueOverviewType } from '~/api/queries/types';
 import { constants } from '~/lib/constants';
@@ -51,7 +52,7 @@ function MonthlyRevenueOverviewCard({ children, ...props }: CardProps) {
       <Text fw={700} size={rem(22)}>
         Monthly Revenue Overview
       </Text>
-      <Card shadow="sm" radius="md" p="lg" withBorder {...props}>
+      <Card shadow="sm" radius="md" p="0" pt="xs" withBorder {...props}>
         {children}
       </Card>
     </>
@@ -76,53 +77,87 @@ function Inner({ data }: { data: MonthlyRevenueOverviewType }) {
 
   return (
     <MonthlyRevenueOverviewCard>
-      <div style={{ overflowX: 'auto' }}>
-        <Stack justify="center" h="100%" miw="max-content" gap="xs">
+      <ScrollArea scrollbars="x" type="auto" offsetScrollbars>
+        <div
+          style={{
+            paddingInline: '--var(mantine-spacing-sm)',
+            display: 'grid',
+            gridTemplateColumns: 'auto repeat(12, minmax(35px, 1fr))',
+            gap: 'var(--mantine-spacing-xs)',
+            alignItems: 'center',
+            padding: 'var(--mantine-spacing-xs)',
+            minWidth: 'max-content'
+          }}>
+          {/* Year rows */}
           {fullData.map((s) => (
-            <Group key={`${s.year}`} justify="center" grow wrap="nowrap" preventGrowOverflow gap="xs">
-              <Text ta="center">{s.year}</Text>
+            <React.Fragment key={s.year}>
+              <Text
+                ta="center"
+                size="sm"
+                fw={600}
+                style={{
+                  whiteSpace: 'nowrap',
+                  paddingRight: 8,
+                  letterSpacing: '0.075rem'
+                }}>
+                {s.year}
+              </Text>
               {s.data.map((m) => (
-                <Tooltip key={`${m.month}-${s.year}`} label={m.profit === 0 ? 'No data found' : format.toCurrency(m.profit)}>
+                <Tooltip key={`${m.month}-${s.year}`} label={m.profit === 0 ? 'No data found' : format.toCurrency(m.profit, false)}>
                   <Box
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       height: 35,
-                      padding: '10px',
+                      padding: '4px',
                       backgroundColor:
                         m.profit === 0
                           ? 'var(--mantine-color-gray-8)'
                           : m.profit > 0
                             ? 'var(--mantine-color-teal-9)'
                             : 'var(--mantine-color-red-9)',
-                      borderRadius: '5px',
+                      borderRadius: 'var(--mantine-radius-sm)',
                       cursor: 'pointer',
-                      minWidth: '50px'
+                      minWidth: 50,
+                      flexShrink: 0
                     }}>
                     {m.profit === 0 ? (
-                      <IconCircle size="18px" />
+                      <IconCircle size="14px" />
                     ) : (
                       <Text
-                        style={{ overflow: 'hidden' }}
-                        fz="xs"
-                        fw={400}>{`${m.profit > 0 ? '+' : ''}${format.toHumanizedNumber(m.profit)}`}</Text>
+                        size="xs"
+                        style={{
+                          overflow: 'hidden',
+                          lineHeight: 1.2,
+                          textOverflow: 'ellipsis'
+                        }}>
+                        {`${m.profit > 0 ? '+' : ''}${format.toHumanizedNumber(m.profit)}`}
+                      </Text>
                     )}
                   </Box>
                 </Tooltip>
               ))}
-            </Group>
+            </React.Fragment>
           ))}
-          <Group align="center" grow>
-            <Box />
-            {monthShortNames.map((name) => (
-              <Text key={name} size="xs" style={{ minWidth: 50, textAlign: 'center' }}>
-                {name}
-              </Text>
-            ))}
-          </Group>
-        </Stack>
-      </div>
+          {/* Month names row */}
+          <div /> {/* Empty cell for year column */}
+          {monthShortNames.map((name) => (
+            <Text
+              key={name}
+              size="xs"
+              ta="center"
+              fw={600}
+              style={{
+                whiteSpace: 'nowrap',
+                lineHeight: 1.2,
+                letterSpacing: '0.05rem'
+              }}>
+              {name}
+            </Text>
+          ))}
+        </div>
+      </ScrollArea>
     </MonthlyRevenueOverviewCard>
   );
 }

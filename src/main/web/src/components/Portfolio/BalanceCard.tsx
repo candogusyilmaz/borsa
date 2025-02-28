@@ -1,5 +1,5 @@
 import { DonutChart } from '@mantine/charts';
-import { Box, Card, type CardProps, Divider, Group, Stack, Text, rem } from '@mantine/core';
+import { Box, Card, type CardProps, Divider, Group, Stack, Text, rem, useMatches } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { queries } from '~/api';
@@ -46,6 +46,10 @@ function BalanceContainer({ children, ...props }: CardProps) {
 }
 
 function Inner({ data }: { data: Balance }) {
+  const chartSize = useMatches({
+    base: 200,
+    sm: 250
+  });
   const [activeSegment, setActiveSegment] = useState<{
     name: string;
     value: number;
@@ -96,7 +100,7 @@ function Inner({ data }: { data: Balance }) {
         <Box pos="relative">
           <DonutChart
             data={pieData}
-            size={250}
+            size={chartSize}
             thickness={15}
             paddingAngle={3}
             pieProps={{
