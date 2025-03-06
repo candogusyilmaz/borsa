@@ -74,8 +74,6 @@ function Inner({ data }: { data: Balance }) {
               </Group>
               <Group mt="sm" justify="space-between" align="center" gap="lg">
                 <BuyStockModal
-                  symbol={s.symbol}
-                  price={s.currentPrice}
                   stockId={s.id}
                   buttonProps={{
                     flex: 1,
@@ -83,8 +81,6 @@ function Inner({ data }: { data: Balance }) {
                   }}
                 />
                 <SellStockModal
-                  symbol={s.symbol}
-                  price={s.currentPrice}
                   stockId={s.id}
                   buttonProps={{
                     flex: 1,
