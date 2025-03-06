@@ -18,14 +18,14 @@ import { LoadingView } from '../LoadingView';
 
 const PAGE_SIZE = 5;
 
-export function RecentTransactions() {
+export function TransactionHistory() {
   const { data, status } = useQuery(queries.member.tradeHistory());
 
   if (status === 'pending') {
     return (
       <Stack>
         <Text fw={700} size={rem(22)}>
-          Recent Transactions
+          Transaction History
         </Text>
         <Card shadow="sm" radius="md" p="lg" withBorder>
           <LoadingView />
@@ -38,7 +38,7 @@ export function RecentTransactions() {
     return (
       <Stack>
         <Text fw={700} size={rem(22)}>
-          Recent Transactions
+          Transaction History
         </Text>
         <Card shadow="sm" radius="md" p="lg" withBorder style={{ borderColor: 'var(--mantine-color-red-5)' }}>
           <ErrorView />
@@ -51,7 +51,7 @@ export function RecentTransactions() {
     return (
       <Stack>
         <Text fw={700} size={rem(22)}>
-          Recent Transactions
+          Transaction History
         </Text>
         <Card shadow="sm" radius="md" withBorder>
           <Text c="dimmed" size="xs" fw={600} ta="center">
@@ -92,7 +92,7 @@ function Inner({ data }: { data: TradeHistory }) {
       <Group justify="space-between" align="center">
         <Group>
           <Text fw={700} size={rem(22)}>
-            Recent Transactions
+            Transaction History
           </Text>
           {data.trades.length > 0 && (
             <Badge variant="light" color="blue.2">

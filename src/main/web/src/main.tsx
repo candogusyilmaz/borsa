@@ -1,7 +1,11 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ErrorComponent, RouterProvider, createRouter } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ErrorComponent, RouterProvider, createRouter } from '@tanstack/react-router';
+
+import { GlobalModals } from '~/components/GlobalModals';
 import { AuthenticationProvider, useAuthentication } from '~/lib/AuthenticationContext.tsx';
 import { AxiosProvider } from '~/lib/axios.ts';
 import { routeTree } from '~/routeTree.gen';
@@ -17,7 +21,6 @@ import '@mantine/spotlight/styles.css';
 import '@mantine/notifications/styles.css';
 
 import '~/styles/global.css';
-import { GoogleOAuthProvider } from '@react-oauth/google';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -73,6 +76,7 @@ createRoot(document.getElementById('root')!).render(
             <Notifications />
             <DatesProvider settings={{}}>
               <Main />
+              <GlobalModals />
             </DatesProvider>
           </MantineProvider>
         </AuthenticationProvider>

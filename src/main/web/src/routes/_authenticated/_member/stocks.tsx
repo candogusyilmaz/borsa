@@ -112,19 +112,9 @@ function RouteComponent() {
                   </Text>
                 </Group>
                 <Stack gap={0} justify="center" align="flex-end">
-                  <BuyStockModal
-                    key={`buy-${filteredSymbols[item.index].id}`}
-                    price={filteredSymbols[item.index].last}
-                    stockId={filteredSymbols[item.index].id}
-                    symbol={filteredSymbols[item.index].symbol}
-                  />
+                  <BuyStockModal key={`buy-${filteredSymbols[item.index].id}`} stockId={filteredSymbols[item.index].id} />
                   {balance?.stocks?.find((s) => s.symbol === filteredSymbols[item.index].symbol) && (
-                    <SellStockModal
-                      key={`sell-${filteredSymbols[item.index].id}`}
-                      price={filteredSymbols[item.index].last}
-                      stockId={filteredSymbols[item.index].id}
-                      symbol={filteredSymbols[item.index].symbol}
-                    />
+                    <SellStockModal key={`sell-${filteredSymbols[item.index].id}`} stockId={filteredSymbols[item.index].id} />
                   )}
                 </Stack>
               </Paper>

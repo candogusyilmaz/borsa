@@ -1,13 +1,12 @@
-import { ActionIcon, Card, Checkbox, Group, Popover, ScrollArea, Stack, Table, Text, rem } from '@mantine/core';
-import { IconEye } from '@tabler/icons-react';
+import { Button, Card, Group, ScrollArea, Stack, Table, Text, rem } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { createColumnHelper, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { useState } from 'react';
 import { queries } from '~/api';
 import type { Balance } from '~/api/queries/types';
 import { format } from '~/lib/format';
 import { ErrorView } from '../ErrorView';
 import { LoadingView } from '../LoadingView';
+import { useTransactionModalStore } from '../Transaction/TransactionModal';
 
 export function HoldingsTable() {
   const { data, status } = useQuery(queries.member.balance());
@@ -60,7 +59,6 @@ function Inner({ data: { stocks, totalValue } }: { data: Balance }) {
   'use no memo';
   type Stock = (typeof stocks)[0];
   const columnHelper = createColumnHelper<Stock>();
-  const [columnVisibility, setColumnVisibility] = useState({});
 
   const columns = [
     columnHelper.accessor('symbol', {
@@ -133,45 +131,16 @@ function Inner({ data: { stocks, totalValue } }: { data: Balance }) {
   const table = useReactTable({
     data: stocks,
     columns,
-    getCoreRowModel: getCoreRowModel(),
-    state: {
-      columnVisibility
-    },
-    onColumnVisibilityChange: setColumnVisibility
+    getCoreRowModel: getCoreRowModel()
   });
 
   return (
     <Stack>
-      <Text fw={700} size={rem(22)}>
-        Holdings
-      </Text>
-      <Group display="none">
-        <Popover shadow="md" width={200} position="bottom-end">
-          <Popover.Target>
-            <ActionIcon ml="auto" variant="default">
-              <IconEye style={{ width: '75%' }} />
-            </ActionIcon>
-          </Popover.Target>
-
-          <Popover.Dropdown p={0}>
-            <ScrollArea h={200} offsetScrollbars type="auto" scrollbars="y">
-              <Stack p="xs">
-                {table
-                  .getAllLeafColumns()
-                  .filter((column) => column.getCanHide())
-                  .map((column) => (
-                    <Checkbox
-                      color="gray"
-                      key={column.id}
-                      label={column.columnDef.header?.toString()}
-                      checked={column.getIsVisible()}
-                      onChange={column.getToggleVisibilityHandler()}
-                    />
-                  ))}
-              </Stack>
-            </ScrollArea>
-          </Popover.Dropdown>
-        </Popover>
+      <Group>
+        <Text fw={700} size={rem(22)}>
+          Holdings
+        </Text>
+        <BuySellButtonGroup />
       </Group>
       <Card shadow="sm" radius="md" p={0} withBorder>
         <ScrollArea h="100%" scrollbars="x" offsetScrollbars type="auto">
@@ -222,5 +191,20 @@ function Inner({ data: { stocks, totalValue } }: { data: Balance }) {
         </ScrollArea>
       </Card>
     </Stack>
+  );
+}
+
+function BuySellButtonGroup() {
+  const openModal = useTransactionModalStore((state) => state.open);
+
+  return (
+    <Button.Group ml="auto">
+      <Button size="xs" variant="default" onClick={() => openModal('Buy')} c="teal">
+        Buy
+      </Button>
+      <Button size="xs" variant="default" onClick={() => openModal('Sell')} c="red">
+        Sell
+      </Button>
+    </Button.Group>
   );
 }

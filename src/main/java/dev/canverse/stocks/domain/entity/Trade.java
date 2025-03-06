@@ -74,7 +74,7 @@ public class Trade implements Serializable {
         if (type == Type.SELL) {
             performance = new TradePerformance(this,
                     price.subtract(holding.getAveragePrice()).multiply(BigDecimal.valueOf(quantity)),
-                    price.subtract(holding.getAveragePrice()).divide(holding.getAveragePrice(), RoundingMode.HALF_UP));
+                    price.subtract(holding.getAveragePrice()).divide(holding.getAveragePrice(), RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)));
         }
     }
 

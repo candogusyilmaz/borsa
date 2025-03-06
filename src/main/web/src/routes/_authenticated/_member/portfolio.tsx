@@ -5,7 +5,7 @@ import { BalanceCard } from '~/components/Portfolio/BalanceCard';
 import { HoldingsCard } from '~/components/Portfolio/HoldingsCard';
 import { HoldingsTable } from '~/components/Portfolio/HoldingsTable';
 import { MonthlyRevenueOverview } from '~/components/Portfolio/MonthlyRevenueOverview';
-import { RecentTransactions } from '~/components/Portfolio/RecentTransactions';
+import { TransactionHistory } from '~/components/Portfolio/TransactionHistory';
 
 export const Route = createFileRoute('/_authenticated/_member/portfolio')({
   component: RouteComponent
@@ -24,7 +24,7 @@ function RouteComponent() {
       <Space />
       <MonthlyRevenueOverview />
       <Space />
-      <RecentTransactions />
+      <TransactionHistory />
       <Space />
       <ClearMyDataModal />
     </Stack>

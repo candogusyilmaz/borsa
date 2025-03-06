@@ -9,25 +9,27 @@ export type SelectItemGroup = {
 };
 
 export type Balance = {
-  stocks: Array<{
-    id: string;
-    symbol: string;
-    dailyChange: number;
-    dailyChangePercent: number;
-    quantity: number;
-    averagePrice: number;
-    currentPrice: number;
-    value: number;
-    profitPercentage: number;
-    profit: number;
-    previousClose: number;
-    cost: number;
-    dailyProfit: number;
-  }>;
+  stocks: Array<BalanceStock>;
   totalValue: number;
   totalProfit: number;
   totalCost: number;
   totalProfitPercentage: number;
+};
+
+export type BalanceStock = {
+  id: string;
+  symbol: string;
+  dailyChange: number;
+  dailyChangePercent: number;
+  quantity: number;
+  averagePrice: number;
+  currentPrice: number;
+  value: number;
+  profitPercentage: number;
+  profit: number;
+  previousClose: number;
+  cost: number;
+  dailyProfit: number;
 };
 
 export type BalanceHistory = Array<{

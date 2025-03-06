@@ -77,7 +77,7 @@ function Inner({ data }: { data: MonthlyRevenueOverviewType }) {
 
   return (
     <MonthlyRevenueOverviewCard p={0} pt="xs">
-      <ScrollArea scrollbars="x" type="auto" offsetScrollbars>
+      <ScrollArea scrollbars="x" type="auto" offsetScrollbars px="xs">
         <div
           style={{
             paddingInline: '--var(mantine-spacing-sm)',
@@ -97,8 +97,7 @@ function Inner({ data }: { data: MonthlyRevenueOverviewType }) {
                 fw={600}
                 style={{
                   whiteSpace: 'nowrap',
-                  paddingRight: 8,
-                  letterSpacing: '0.075rem'
+                  paddingRight: 12
                 }}>
                 {s.year}
               </Text>
@@ -150,8 +149,7 @@ function Inner({ data }: { data: MonthlyRevenueOverviewType }) {
               fw={600}
               style={{
                 whiteSpace: 'nowrap',
-                lineHeight: 1.2,
-                letterSpacing: '0.05rem'
+                lineHeight: 1.2
               }}>
               {name}
             </Text>

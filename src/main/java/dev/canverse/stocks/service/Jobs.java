@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 public class Jobs {
     private final StockService stockService;
 
-    @Scheduled(cron = "0/30 * 7-15 ? * MON-FRI")
+    @Scheduled(cron = "0/30 15-30 10-18 ? * MON-FRI", zone = "GMT+3")
     public void updateBIST() {
         stockService.updateBIST();
     }

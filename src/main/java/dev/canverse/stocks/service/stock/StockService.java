@@ -103,7 +103,8 @@ public class StockService {
                             s.time().atOffset(ZoneOffset.UTC), // created_at
                             s.time().atOffset(ZoneOffset.UTC), // updated_at
                             s.change(),
-                            s.changePercent()
+                            s.changePercent(),
+                            s.price().subtract(s.change())
                     };
                 })
                 .filter(Objects::nonNull)
@@ -112,13 +113,14 @@ public class StockService {
 
     private void batchInsertStockSnapshots(List<Object[]> batchArgs) {
         jdbcTemplate.batchUpdate(
-                "INSERT INTO stock_snapshots (stock_id, last, created_at, updated_at, daily_change, daily_change_percent) VALUES (?, ?, ?, ?, ?, ?)",
+                "INSERT INTO stock_snapshots (stock_id, last, created_at, updated_at, daily_change, daily_change_percent, close) VALUES (?, ?, ?, ?, ?, ?, ?)",
                 batchArgs,
                 new int[]{
                         Types.INTEGER,
                         Types.NUMERIC,
                         Types.TIMESTAMP_WITH_TIMEZONE,
                         Types.TIMESTAMP_WITH_TIMEZONE,
+                        Types.NUMERIC,
                         Types.NUMERIC,
                         Types.NUMERIC
                 }
