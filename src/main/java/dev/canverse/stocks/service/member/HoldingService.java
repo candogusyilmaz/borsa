@@ -5,12 +5,14 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import dev.canverse.stocks.domain.entity.QHolding;
 import dev.canverse.stocks.domain.entity.QHoldingHistory;
 import dev.canverse.stocks.domain.entity.QTrade;
+import dev.canverse.stocks.repository.HoldingDailySnapshotRepository;
 import dev.canverse.stocks.repository.HoldingRepository;
 import dev.canverse.stocks.security.AuthenticationProvider;
 import dev.canverse.stocks.service.member.model.Balance;
 import dev.canverse.stocks.service.member.model.BalanceHistory;
 import dev.canverse.stocks.service.member.model.TradeHistory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,11 +20,15 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class HoldingService {
+
+
     private final JPAQueryFactory queryFactory;
     private final HoldingRepository holdingRepository;
+    private final HoldingDailySnapshotRepository holdingDailySnapshotRepository;
 
     @Transactional
     public void deleteAllHoldings() {
@@ -95,5 +101,10 @@ public class HoldingService {
                 .fetch();
 
         return new TradeHistory(query);
+    }
+
+    public void generateDailyHoldingSnapshots() {
+        log.info("Generating daily holding snapshots");
+        holdingDailySnapshotRepository.generateDailyHoldingSnapshots();
     }
 }

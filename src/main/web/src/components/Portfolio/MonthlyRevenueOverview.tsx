@@ -1,7 +1,23 @@
-import { Box, Card, type CardProps, Center, Loader, ScrollArea, Text, Tooltip, rem } from '@mantine/core';
+import { BarChart } from '@mantine/charts';
+import {
+  Box,
+  Button,
+  Card,
+  type CardProps,
+  Center,
+  Group,
+  Loader,
+  ScrollArea,
+  SegmentedControl,
+  Stack,
+  Text,
+  Tooltip,
+  rem,
+  useMatches
+} from '@mantine/core';
 import { IconCircle } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
-import React from 'react';
+import React, { useState } from 'react';
 import { queries } from '~/api';
 import type { MonthlyRevenueOverview as MonthlyRevenueOverviewType } from '~/api/queries/types';
 import { constants } from '~/lib/constants';
@@ -60,9 +76,7 @@ function MonthlyRevenueOverviewCard({ children, ...props }: CardProps) {
 }
 
 function Inner({ data }: { data: MonthlyRevenueOverviewType }) {
-  const monthShortNames = Array.from({ length: 12 }, (_, index) =>
-    new Intl.DateTimeFormat(constants.locale(), { month: 'short' }).format(new Date(2000, index, 1))
-  );
+  const [view, setView] = useState<'heatmap' | 'bar'>('heatmap');
 
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
 
@@ -77,85 +91,167 @@ function Inner({ data }: { data: MonthlyRevenueOverviewType }) {
 
   return (
     <MonthlyRevenueOverviewCard p={0} pt="xs">
+      <SegmentedControl
+        mx="auto"
+        mb="sm"
+        size="xs"
+        data={[
+          {
+            label: 'Grid View',
+            value: 'heatmap'
+          },
+          { label: 'Chart View', value: 'bar' }
+        ]}
+        onChange={(value) => setView(value as 'heatmap' | 'bar')}
+        value={view}
+      />
       <ScrollArea scrollbars="x" type="auto" offsetScrollbars px="xs">
-        <div
-          style={{
-            paddingInline: '--var(mantine-spacing-sm)',
-            display: 'grid',
-            gridTemplateColumns: 'auto repeat(12, minmax(35px, 1fr))',
-            gap: 'var(--mantine-spacing-xs)',
-            alignItems: 'center',
-            padding: 'var(--mantine-spacing-xs)',
-            minWidth: 'max-content'
-          }}>
-          {/* Year rows */}
-          {fullData.map((s) => (
-            <React.Fragment key={s.year}>
-              <Text
-                ta="center"
-                size="sm"
-                fw={600}
-                style={{
-                  whiteSpace: 'nowrap',
-                  paddingRight: 12
-                }}>
-                {s.year}
-              </Text>
-              {s.data.map((m) => (
-                <Tooltip key={`${m.month}-${s.year}`} label={m.profit === 0 ? 'No data found' : format.toCurrency(m.profit, false)}>
-                  <Box
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      height: 35,
-                      padding: '4px',
-                      backgroundColor:
-                        m.profit === 0
-                          ? 'var(--mantine-color-gray-8)'
-                          : m.profit > 0
-                            ? 'var(--mantine-color-teal-9)'
-                            : 'var(--mantine-color-red-9)',
-                      borderRadius: 'var(--mantine-radius-sm)',
-                      cursor: 'pointer',
-                      minWidth: 50,
-                      flexShrink: 0
-                    }}>
-                    {m.profit === 0 ? (
-                      <IconCircle size="14px" />
-                    ) : (
-                      <Text
-                        size="xs"
-                        style={{
-                          overflow: 'hidden',
-                          lineHeight: 1.2,
-                          textOverflow: 'ellipsis'
-                        }}>
-                        {`${m.profit > 0 ? '+' : ''}${format.toHumanizedNumber(m.profit)}`}
-                      </Text>
-                    )}
-                  </Box>
-                </Tooltip>
-              ))}
-            </React.Fragment>
-          ))}
-          {/* Month names row */}
-          <div /> {/* Empty cell for year column */}
-          {monthShortNames.map((name) => (
-            <Text
-              key={name}
-              size="xs"
-              ta="center"
-              fw={600}
-              style={{
-                whiteSpace: 'nowrap',
-                lineHeight: 1.2
-              }}>
-              {name}
-            </Text>
-          ))}
-        </div>
+        {view === 'heatmap' ? <MonthlyRevenueHeatmap data={fullData} /> : <MonthlyRevenueBarChart data={fullData} />}
       </ScrollArea>
     </MonthlyRevenueOverviewCard>
+  );
+}
+
+const monthShortNames = Array.from({ length: 12 }, (_, index) =>
+  new Intl.DateTimeFormat(constants.locale(), { month: 'short' }).format(new Date(2000, index, 1))
+);
+
+type ChartProps = {
+  data: MonthlyRevenueOverviewType;
+};
+
+function MonthlyRevenueHeatmap({ data }: ChartProps) {
+  return (
+    <div
+      style={{
+        paddingInline: '--var(mantine-spacing-sm)',
+        display: 'grid',
+        gridTemplateColumns: 'auto repeat(12, minmax(35px, 1fr))',
+        gap: 'var(--mantine-spacing-xs)',
+        alignItems: 'center',
+        padding: 'var(--mantine-spacing-xs)',
+        minWidth: 'max-content'
+      }}>
+      {/* Year rows */}
+      {data.map((s) => (
+        <React.Fragment key={s.year}>
+          <Text
+            ta="center"
+            size="sm"
+            fw={600}
+            style={{
+              whiteSpace: 'nowrap',
+              paddingRight: 12
+            }}>
+            {s.year}
+          </Text>
+          {s.data.map((m) => (
+            <Tooltip key={`${m.month}-${s.year}`} label={m.profit === 0 ? 'No data found' : format.toCurrency(m.profit, false)}>
+              <Box
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: 35,
+                  padding: '4px',
+                  backgroundColor:
+                    m.profit === 0
+                      ? 'var(--mantine-color-gray-8)'
+                      : m.profit > 0
+                        ? 'var(--mantine-color-teal-9)'
+                        : 'var(--mantine-color-red-9)',
+                  borderRadius: 'var(--mantine-radius-sm)',
+                  cursor: 'pointer',
+                  minWidth: 50,
+                  flexShrink: 0
+                }}>
+                {m.profit === 0 ? (
+                  <IconCircle size="14px" />
+                ) : (
+                  <Text
+                    size="xs"
+                    style={{
+                      overflow: 'hidden',
+                      lineHeight: 1.2,
+                      textOverflow: 'ellipsis'
+                    }}>
+                    {`${m.profit > 0 ? '+' : ''}${format.toHumanizedNumber(m.profit)}`}
+                  </Text>
+                )}
+              </Box>
+            </Tooltip>
+          ))}
+        </React.Fragment>
+      ))}
+      <div />
+      {monthShortNames.map((name) => (
+        <Text
+          key={name}
+          size="xs"
+          ta="center"
+          fw={600}
+          style={{
+            whiteSpace: 'nowrap',
+            lineHeight: 1.2
+          }}>
+          {name}
+        </Text>
+      ))}
+    </div>
+  );
+}
+
+function MonthlyRevenueBarChart({ data }: ChartProps) {
+  const justify = useMatches({
+    base: 'center',
+    xs: 'space-between'
+  });
+  const [selectedYear, setSelectedYear] = useState(data[data.length - 1].year);
+
+  const yearData = data
+    .filter((s) => s.year === selectedYear)
+    .flatMap((s) => s.data)
+    .map((s) => ({ month: monthShortNames[s.month - 1], profit: s.profit }));
+
+  const totalProfit = yearData.reduce((acc, s) => acc + s.profit, 0);
+
+  return (
+    <Stack>
+      <Group px="sm" justify={justify}>
+        <Text size="md">
+          <Text fw={600} span>
+            {selectedYear}
+          </Text>{' '}
+          Total Profit{' '}
+          <Text span c={totalProfit > 0 ? 'teal' : 'red'} fw={600}>
+            {format.toCurrency(totalProfit, false)}
+          </Text>
+        </Text>
+        <Group gap={8}>
+          {data.length > 1 &&
+            data.map((s) => (
+              <Button
+                key={s.year}
+                onClick={() => setSelectedYear(s.year)}
+                variant="light"
+                color={s.year === selectedYear ? 'gray' : 'dark'}
+                size="compact-xs">
+                {s.year}
+              </Button>
+            ))}
+        </Group>
+      </Group>
+      <BarChart
+        w={'100%'}
+        p={'lg'}
+        minBarSize={3}
+        h={300}
+        data={yearData}
+        dataKey="month"
+        series={[{ name: 'profit', label: 'Profit' }]}
+        valueFormatter={(value) => format.toCurrency(value, false)}
+        getBarColor={(value) => (value > 0 ? 'teal' : value === 0 ? 'dimmed' : 'red')}
+      />
+    </Stack>
   );
 }

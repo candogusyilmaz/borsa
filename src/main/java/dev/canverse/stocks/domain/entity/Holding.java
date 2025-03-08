@@ -56,6 +56,9 @@ public class Holding implements Serializable {
     @OneToMany(mappedBy = "holding", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<HoldingHistory> history = new HashSet<>();
 
+    @OneToMany(mappedBy = "holding", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<HoldingDailySnapshot> dailySnapshots = new HashSet<>();
+
     protected Holding() {
     }
 
