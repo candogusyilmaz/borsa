@@ -24,8 +24,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class HoldingService {
-
-
     private final JPAQueryFactory queryFactory;
     private final HoldingRepository holdingRepository;
     private final HoldingDailySnapshotRepository holdingDailySnapshotRepository;
@@ -107,4 +105,5 @@ public class HoldingService {
         log.info("Generating daily holding snapshots");
         holdingDailySnapshotRepository.generateDailyHoldingSnapshots();
     }
+
 }

@@ -1,6 +1,7 @@
 package dev.canverse.stocks.repository;
 
 import dev.canverse.stocks.domain.entity.Holding;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -10,4 +11,12 @@ public interface HoldingRepository extends BaseJpaRepository<Holding, Long> {
     Optional<Holding> findByUserIdAndStockId(Long userId, Long stockId);
 
     void deleteAllByUserId(Long userId);
+
+    @Query("""
+            select h from Holding h
+            left join fetch h.trades t on t.id = (select max(tr.id) from Trade tr where tr.holding.id = h.id)
+            left join fetch h.history his on his.id = (select max(hi.id) from HoldingHistory hi where hi.holding.id = h.id)
+            where h.id = :id and h.user.id = :userId
+            """)
+    Optional<Holding> findByIdWithLatestTradeAndHistory(Long id, Long userId);
 }

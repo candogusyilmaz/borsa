@@ -11,7 +11,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Getter
@@ -50,14 +50,14 @@ public class Holding implements Serializable {
     @Column(nullable = false)
     private Instant updatedAt;
 
-    @OneToMany(mappedBy = "holding", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<Trade> trades = new HashSet<>();
+    @OneToMany(mappedBy = "holding", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private Set<Trade> trades = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "holding", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<HoldingHistory> history = new HashSet<>();
+    @OneToMany(mappedBy = "holding", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private Set<HoldingHistory> history = new LinkedHashSet<>();
 
-    @OneToMany(mappedBy = "holding", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<HoldingDailySnapshot> dailySnapshots = new HashSet<>();
+    @OneToMany(mappedBy = "holding", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private Set<HoldingDailySnapshot> dailySnapshots = new LinkedHashSet<>();
 
     protected Holding() {
     }
@@ -96,6 +96,34 @@ public class Holding implements Serializable {
 
         history.add(new HoldingHistory(this));
         trades.add(new Trade(this, Trade.Type.SELL, quantity, price, tax, actionDate));
+    }
+
+    public void undo() {
+        var latestTrade = this.trades.stream().findFirst().orElseThrow(() -> new IllegalStateException("No trades found"));
+
+        if (latestTrade.getType() == Trade.Type.BUY) {
+            int newQuantity = this.quantity - latestTrade.getQuantity();
+            this.totalTax = this.totalTax.subtract(latestTrade.getTax());
+
+            if (newQuantity > 0) {
+                // Calculate total value before the latest trade
+                BigDecimal currentTotal = this.averagePrice.multiply(BigDecimal.valueOf(this.quantity));
+                BigDecimal tradeTotal = latestTrade.getPrice().multiply(BigDecimal.valueOf(latestTrade.getQuantity()));
+                BigDecimal newTotal = currentTotal.subtract(tradeTotal);
+
+                // Update average price based on new total and quantity
+                this.averagePrice = newTotal.divide(BigDecimal.valueOf(newQuantity), 5, RoundingMode.HALF_EVEN);
+            } else if (newQuantity == 0) {
+                this.averagePrice = BigDecimal.ZERO;
+            }
+
+            this.quantity = newQuantity;
+        } else {
+            this.quantity += latestTrade.getQuantity();
+            this.totalTax = this.totalTax.subtract(latestTrade.getTax());
+        }
+
+        this.trades.remove(latestTrade);
     }
 
     private void calculateAveragePrice(BigDecimal price, int quantity) {

@@ -25,4 +25,10 @@ public class TradeController {
     public void buy(@Valid @RequestBody SellTradeRequest req) {
         tradeService.sell(req);
     }
+
+    @PostMapping("/undo/{holdingId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void undo(@PathVariable Long holdingId) {
+        tradeService.undoLatestTrade(holdingId);
+    }
 }

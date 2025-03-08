@@ -54,6 +54,14 @@ public class TradeService {
         holdingRepository.save(holding);
     }
 
+    @Transactional
+    public void undoLatestTrade(Long holdingId) {
+        var holding = holdingRepository.findByIdWithLatestTradeAndHistory(holdingId, AuthenticationProvider.getUser().getId())
+                .orElseThrow(() -> new NotFoundException("No holding found"));
+
+        holding.undo();
+        holdingRepository.save(holding);
+    }
 
     public List<MonthlyRevenueOverview> getMonthlyRevenueOverview() {
         var trade = QTrade.trade;

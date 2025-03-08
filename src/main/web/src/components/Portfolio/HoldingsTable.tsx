@@ -10,6 +10,7 @@ import { useTransactionModalStore } from '../Transaction/TransactionModal';
 
 export function HoldingsTable() {
   const { data, status } = useQuery(queries.member.balance());
+  const openModal = useTransactionModalStore((state) => state.open);
 
   if (status === 'pending') {
     return (
@@ -40,9 +41,15 @@ export function HoldingsTable() {
   if (data.stocks.length === 0) {
     return (
       <Stack>
-        <Text fw={700} size={rem(22)}>
-          Holdings
-        </Text>
+        <Group>
+          <Text fw={700} size={rem(22)}>
+            Holdings
+          </Text>
+          <Button ml="auto" size="xs" variant="default" onClick={() => openModal('Buy')} c="teal">
+            Buy
+          </Button>
+        </Group>
+
         <Card shadow="sm" radius="md" withBorder>
           <Text c="dimmed" size="xs" fw={600} ta="center">
             You don't have any holdings at the moment
