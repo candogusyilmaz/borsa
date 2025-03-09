@@ -35,7 +35,7 @@ public class Holding implements Serializable {
     private int quantity;
 
     @PositiveOrZero
-    @Column(nullable = false, precision = 15, scale = 6)
+    @Column(nullable = false, precision = 20, scale = 6)
     private BigDecimal total;
 
     @PositiveOrZero
