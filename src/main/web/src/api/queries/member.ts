@@ -1,7 +1,7 @@
 import { queryOptions } from '@tanstack/react-query';
 import { http } from '~/lib/axios';
 import { queryKeys, staleTimes } from './config';
-import type { Balance, BalanceHistory, TradeHistory } from './types';
+import type { Balance, BalanceHistory } from './types';
 
 export const memberQueries = {
   balance: () =>
@@ -14,12 +14,6 @@ export const memberQueries = {
     queryOptions({
       queryKey: ['/member/balance/history', lastDays, queryKeys.portfolio],
       queryFn: async ({ signal }) => (await http.get<BalanceHistory>(`/member/balance/history/${lastDays}`, { signal })).data,
-      staleTime: staleTimes.FIVE_MINUTES
-    }),
-  tradeHistory: () =>
-    queryOptions({
-      queryKey: ['/member/trades/history', queryKeys.portfolio],
-      queryFn: async ({ signal }) => (await http.get<TradeHistory>('/member/trades/history', { signal })).data,
       staleTime: staleTimes.FIVE_MINUTES
     })
 };

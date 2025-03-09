@@ -1,7 +1,8 @@
 package dev.canverse.stocks.service.member.model;
 
+import dev.canverse.stocks.domain.Calculator;
+
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 
 public record Balance(List<Stock> stocks) {
@@ -17,7 +18,7 @@ public record Balance(List<Stock> stocks) {
         if (getTotalProfit().equals(BigDecimal.ZERO))
             return BigDecimal.ZERO;
 
-        return getTotalProfit().divide(getTotalCost(), RoundingMode.HALF_UP);
+        return Calculator.calculatePercentage(getTotalProfit(), getTotalCost());
     }
 
     public BigDecimal getTotalValue() {
@@ -25,17 +26,23 @@ public record Balance(List<Stock> stocks) {
     }
 
     public record Stock(String id, String symbol, BigDecimal dailyChange, BigDecimal dailyChangePercent, int quantity,
-                        BigDecimal averagePrice, BigDecimal currentPrice) {
+                        BigDecimal total, BigDecimal currentPrice) {
         public BigDecimal getPreviousClose() {
             return currentPrice.subtract(dailyChange);
         }
 
+        public BigDecimal getAveragePrice() {
+            return Calculator.divide(total, BigDecimal.valueOf(quantity));
+        }
+
         public BigDecimal getProfit() {
-            return currentPrice.subtract(averagePrice).multiply(BigDecimal.valueOf(quantity));
+            return currentPrice.subtract(getAveragePrice()).multiply(BigDecimal.valueOf(quantity));
         }
 
         public BigDecimal getProfitPercentage() {
-            return currentPrice.subtract(averagePrice).multiply(BigDecimal.valueOf(100)).divide(averagePrice, RoundingMode.HALF_UP);
+            var diff = currentPrice.subtract(getAveragePrice());
+
+            return Calculator.calculatePercentage(getAveragePrice(), diff);
         }
 
         public BigDecimal getDailyProfit() {
@@ -47,7 +54,7 @@ public record Balance(List<Stock> stocks) {
         }
 
         public BigDecimal getCost() {
-            return averagePrice.multiply(BigDecimal.valueOf(quantity));
+            return getAveragePrice().multiply(BigDecimal.valueOf(quantity));
         }
     }
 }

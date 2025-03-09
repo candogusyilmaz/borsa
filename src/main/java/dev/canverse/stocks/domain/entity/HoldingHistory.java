@@ -26,12 +26,16 @@ public class HoldingHistory implements Serializable {
     private int quantity;
 
     @NotNull
-    @Column(nullable = false, precision = 15, scale = 2)
-    private BigDecimal averagePrice;
+    @Column(nullable = false, precision = 15, scale = 6)
+    private BigDecimal total;
 
     @NotNull
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal totalTax;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private HoldingHistory.ActionType actionType;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
@@ -40,10 +44,17 @@ public class HoldingHistory implements Serializable {
     protected HoldingHistory() {
     }
 
-    protected HoldingHistory(Holding holding) {
+    protected HoldingHistory(Holding holding, ActionType actionType) {
         this.holding = holding;
         this.quantity = holding.getQuantity();
-        this.averagePrice = holding.getAveragePrice();
+        this.total = holding.getTotal();
         this.totalTax = holding.getTotalTax();
+        this.actionType = actionType;
+    }
+
+    public enum ActionType {
+        BUY,
+        SELL,
+        UNDO
     }
 }

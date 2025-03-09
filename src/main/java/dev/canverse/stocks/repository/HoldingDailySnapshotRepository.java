@@ -29,7 +29,7 @@ public interface HoldingDailySnapshotRepository extends JpaRepository<HoldingDai
                 GROUP BY h.user_id)
             SELECT h.id,
                    h.quantity,
-                   h.average_price,
+                   round(h.total / h.quantity, 2),
                    ss.last,
                    ss.close,
                    CASE

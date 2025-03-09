@@ -1,5 +1,6 @@
 package dev.canverse.stocks.domain.entity;
 
+import dev.canverse.stocks.domain.Calculator;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -9,7 +10,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -35,8 +35,8 @@ public class Holding implements Serializable {
     private int quantity;
 
     @PositiveOrZero
-    @Column(nullable = false, precision = 15, scale = 2)
-    private BigDecimal averagePrice;
+    @Column(nullable = false, precision = 15, scale = 6)
+    private BigDecimal total;
 
     @PositiveOrZero
     @Column(nullable = false, precision = 15, scale = 2)
@@ -62,28 +62,27 @@ public class Holding implements Serializable {
     protected Holding() {
     }
 
-    public Holding(User user, Stock stock, int quantity, BigDecimal averagePrice, BigDecimal totalTax) {
+    public Holding(User user, Stock stock) {
         this.user = user;
         this.stock = stock;
-        this.quantity = quantity;
-        this.averagePrice = averagePrice;
-        this.totalTax = totalTax;
+        this.quantity = 0;
+        this.total = BigDecimal.ZERO;
+        this.totalTax = BigDecimal.ZERO;
     }
 
-    public BigDecimal getTotal() {
-        return getTotalWithoutTax().add(totalTax);
-    }
+    public BigDecimal getAveragePrice() {
+        if (this.quantity == 0) return BigDecimal.ZERO;
 
-    public BigDecimal getTotalWithoutTax() {
-        return averagePrice.multiply(BigDecimal.valueOf(quantity));
+        return Calculator.divide(this.total, BigDecimal.valueOf(this.quantity));
     }
 
     public void buy(int quantity, BigDecimal price, BigDecimal tax, Instant actionDate) {
-        calculateAveragePrice(price, quantity);
+        this.quantity += quantity;
+        this.total = this.total.add(price.multiply(BigDecimal.valueOf(quantity)));
         this.totalTax = this.totalTax == null ? tax : this.totalTax.add(tax);
 
-        trades.add(new Trade(this, Trade.Type.BUY, quantity, price, tax, actionDate));
-        history.add(new HoldingHistory(this));
+        this.trades.add(new Trade(this, Trade.Type.BUY, quantity, price, tax, actionDate));
+        this.history.add(new HoldingHistory(this, HoldingHistory.ActionType.BUY));
     }
 
     public void sell(int quantity, BigDecimal price, BigDecimal tax, Instant actionDate) {
@@ -92,51 +91,42 @@ public class Holding implements Serializable {
         }
 
         this.quantity -= quantity;
+        this.total = this.total.subtract(price.multiply(BigDecimal.valueOf(quantity)));
         this.totalTax = this.totalTax.add(tax);
 
-        history.add(new HoldingHistory(this));
-        trades.add(new Trade(this, Trade.Type.SELL, quantity, price, tax, actionDate));
+        this.history.add(new HoldingHistory(this, HoldingHistory.ActionType.SELL));
+        this.trades.add(new Trade(this, Trade.Type.SELL, quantity, price, tax, actionDate));
     }
 
     public void undo() {
         var latestTrade = this.trades.stream().findFirst().orElseThrow(() -> new IllegalStateException("No trades found"));
 
         if (latestTrade.getType() == Trade.Type.BUY) {
-            int newQuantity = this.quantity - latestTrade.getQuantity();
-            this.totalTax = this.totalTax.subtract(latestTrade.getTax());
-
-            if (newQuantity > 0) {
-                // Calculate total value before the latest trade
-                BigDecimal currentTotal = this.averagePrice.multiply(BigDecimal.valueOf(this.quantity));
-                BigDecimal tradeTotal = latestTrade.getPrice().multiply(BigDecimal.valueOf(latestTrade.getQuantity()));
-                BigDecimal newTotal = currentTotal.subtract(tradeTotal);
-
-                // Update average price based on new total and quantity
-                this.averagePrice = newTotal.divide(BigDecimal.valueOf(newQuantity), 5, RoundingMode.HALF_EVEN);
-            } else if (newQuantity == 0) {
-                this.averagePrice = BigDecimal.ZERO;
-            }
-
-            this.quantity = newQuantity;
+            undoBuy(latestTrade);
         } else {
-            this.quantity += latestTrade.getQuantity();
-            this.totalTax = this.totalTax.subtract(latestTrade.getTax());
+            undoSell(latestTrade);
         }
 
         this.trades.remove(latestTrade);
+        this.history.add(new HoldingHistory(this, HoldingHistory.ActionType.UNDO));
     }
 
-    private void calculateAveragePrice(BigDecimal price, int quantity) {
-        if (this.averagePrice == null || this.averagePrice.equals(BigDecimal.ZERO) || this.quantity == 0) {
-            this.quantity += quantity;
-            this.averagePrice = price;
-            return;
-        }
+    private void undoSell(Trade latestTrade) {
+        this.quantity += latestTrade.getQuantity();
+        this.total = this.total.add(latestTrade.getTotal());
+        this.totalTax = this.totalTax.add(latestTrade.getTax());
+    }
 
-        // ORDER MATTERS!
-        this.averagePrice = this.averagePrice.multiply(BigDecimal.valueOf(this.quantity))
-                .add(price.multiply(BigDecimal.valueOf(quantity)))
-                .divide(BigDecimal.valueOf(this.quantity + quantity), RoundingMode.HALF_UP);
-        this.quantity += quantity;
+    private void undoBuy(Trade latestTrade) {
+        this.quantity = this.quantity - latestTrade.getQuantity();
+
+        if (this.quantity == 0) {
+            this.total = BigDecimal.ZERO;
+            this.totalTax = BigDecimal.ZERO;
+        } else {
+            var tradeTotal = latestTrade.getTotal();
+            this.total = this.total.subtract(tradeTotal);
+            this.totalTax = this.totalTax.subtract(latestTrade.getTax());
+        }
     }
 }

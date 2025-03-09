@@ -1,11 +1,14 @@
 package dev.canverse.stocks.service.stock;
 
+import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import dev.canverse.stocks.domain.entity.*;
 import dev.canverse.stocks.domain.exception.NotFoundException;
 import dev.canverse.stocks.repository.HoldingRepository;
 import dev.canverse.stocks.repository.StockRepository;
 import dev.canverse.stocks.security.AuthenticationProvider;
+import dev.canverse.stocks.service.member.model.TradeHistory;
 import dev.canverse.stocks.service.stock.model.BuyTradeRequest;
 import dev.canverse.stocks.service.stock.model.MonthlyRevenueOverview;
 import dev.canverse.stocks.service.stock.model.SellTradeRequest;
@@ -13,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,10 +33,7 @@ public class TradeService {
                 req.stockId()
         ).orElseGet(() -> holdingRepository.save(new Holding(
                 AuthenticationProvider.getUser(),
-                stockRepository.getReference(req.stockId()),
-                0,
-                BigDecimal.ZERO,
-                BigDecimal.ZERO
+                stockRepository.getReference(req.stockId())
         )));
 
         holding.buy(req.quantity(), req.price(), req.tax(), req.actionDate());
@@ -56,7 +55,7 @@ public class TradeService {
 
     @Transactional
     public void undoLatestTrade(Long holdingId) {
-        var holding = holdingRepository.findByIdWithLatestTradeAndHistory(holdingId, AuthenticationProvider.getUser().getId())
+        var holding = holdingRepository.findByIdWithLatestTrade(holdingId, AuthenticationProvider.getUser().getId())
                 .orElseThrow(() -> new NotFoundException("No holding found"));
 
         holding.undo();
@@ -100,5 +99,39 @@ public class TradeService {
                     return new MonthlyRevenueOverview(year2, months);
                 })
                 .collect(Collectors.toList());
+    }
+
+    public TradeHistory fetchTrades() {
+        var trade = QTrade.trade;
+        var subTrade = new QTrade("subTrade");
+
+        var isLatestExpr = JPAExpressions
+                .selectOne()
+                .from(subTrade)
+                .where(subTrade.holding.eq(trade.holding).and(subTrade.id.gt(trade.id)))
+                .notExists();
+
+        var query = queryFactory.select(
+                        Projections.constructor(TradeHistory.Item.class,
+                                trade.actionDate,
+                                trade.createdAt,
+                                trade.type,
+                                trade.holding.id.stringValue(),
+                                trade.holding.stock.symbol,
+                                trade.price,
+                                trade.quantity,
+                                trade.performance.profit,
+                                trade.performance.returnPercentage,
+                                trade.performance.performanceCategory,
+                                isLatestExpr
+                        )
+                )
+                .from(trade)
+                .leftJoin(trade.performance)
+                .where(trade.holding.user.id.eq(AuthenticationProvider.getUser().getId()))
+                .orderBy(trade.createdAt.desc())
+                .fetch();
+
+        return new TradeHistory(query);
     }
 }

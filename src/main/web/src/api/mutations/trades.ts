@@ -7,5 +7,8 @@ export const tradeMutations = {
   },
   sell: {
     mutationFn: (body: SellTradeRequest) => http.post('/trades/sell', body)
+  },
+  undo: {
+    mutationFn: (holdingId) => http.post(`/trades/undo/${holdingId}`)
   }
 };

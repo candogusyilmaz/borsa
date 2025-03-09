@@ -4,13 +4,11 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import dev.canverse.stocks.domain.entity.QHolding;
 import dev.canverse.stocks.domain.entity.QHoldingHistory;
-import dev.canverse.stocks.domain.entity.QTrade;
 import dev.canverse.stocks.repository.HoldingDailySnapshotRepository;
 import dev.canverse.stocks.repository.HoldingRepository;
 import dev.canverse.stocks.security.AuthenticationProvider;
 import dev.canverse.stocks.service.member.model.Balance;
 import dev.canverse.stocks.service.member.model.BalanceHistory;
-import dev.canverse.stocks.service.member.model.TradeHistory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -43,7 +41,7 @@ public class HoldingService {
                                 holding.stock.snapshot.dailyChange,
                                 holding.stock.snapshot.dailyChangePercent,
                                 holding.quantity,
-                                holding.averagePrice,
+                                holding.total,
                                 holding.stock.snapshot.last)
                 )
                 .from(holding)
@@ -51,7 +49,7 @@ public class HoldingService {
                 .orderBy(holding.stock.symbol.asc())
                 .fetch();
 
-        return query.isEmpty() ? new Balance(List.of()) : new Balance(query);
+        return new Balance(query);
     }
 
     public List<BalanceHistory> fetchBalanceHistory(int lastDays) {
@@ -66,7 +64,7 @@ public class HoldingService {
                                 BalanceHistory.class,
                                 holdingHistory.createdAt,
                                 holdingHistory.holding.stock.symbol,
-                                holdingHistory.averagePrice.multiply(holdingHistory.quantity).sumBigDecimal()
+                                holdingHistory.total
                         )
                 )
                 .from(holdingHistory)
@@ -76,34 +74,8 @@ public class HoldingService {
                 .fetch();
     }
 
-    public TradeHistory fetchTradeHistory() {
-        var trade = QTrade.trade;
-
-        var query = queryFactory.select(
-                        Projections.constructor(TradeHistory.Item.class,
-                                trade.actionDate,
-                                trade.createdAt,
-                                trade.type,
-                                trade.holding.stock.symbol,
-                                trade.price,
-                                trade.quantity,
-                                trade.performance.profit,
-                                trade.performance.returnPercentage,
-                                trade.performance.performanceCategory
-                        )
-                )
-                .from(trade)
-                .leftJoin(trade.performance)
-                .where(trade.holding.user.id.eq(AuthenticationProvider.getUser().getId()))
-                .orderBy(trade.createdAt.desc())
-                .fetch();
-
-        return new TradeHistory(query);
-    }
-
     public void generateDailyHoldingSnapshots() {
         log.info("Generating daily holding snapshots");
         holdingDailySnapshotRepository.generateDailyHoldingSnapshots();
     }
-
 }

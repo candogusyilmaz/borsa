@@ -13,6 +13,7 @@ public record TradeHistory(List<Item> trades) {
             Instant date,
             Instant createdAt,
             Trade.Type type,
+            String holdingId,
             String symbol,
             BigDecimal price,
             int quantity,
@@ -21,7 +22,8 @@ public record TradeHistory(List<Item> trades) {
             @JsonInclude(JsonInclude.Include.NON_NULL)
             BigDecimal returnPercentage,
             @JsonInclude(JsonInclude.Include.NON_NULL)
-            TradePerformance.PerformanceCategory performanceCategory
+            TradePerformance.PerformanceCategory performanceCategory,
+            boolean latest
     ) {
         public BigDecimal getTotal() {
             return price.multiply(BigDecimal.valueOf(quantity));

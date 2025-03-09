@@ -62,7 +62,11 @@ export function HoldingsTable() {
   return <Inner data={data} />;
 }
 
-function Inner({ data: { stocks, totalValue } }: { data: Balance }) {
+function Inner({
+  data: { stocks, totalValue, totalCost, totalProfitPercentage }
+}: {
+  data: Balance;
+}) {
   'use no memo';
   type Stock = (typeof stocks)[0];
   const columnHelper = createColumnHelper<Stock>();
@@ -141,6 +145,24 @@ function Inner({ data: { stocks, totalValue } }: { data: Balance }) {
     getCoreRowModel: getCoreRowModel()
   });
 
+  const totals = stocks.reduce(
+    (acc, stock) => {
+      acc.value += stock.value;
+      acc.cost += stock.cost;
+      acc.profit += stock.profit;
+      acc.dailyProfit += stock.dailyProfit;
+      return acc;
+    },
+    {
+      value: 0,
+      cost: 0,
+      profit: 0,
+      dailyProfit: 0
+    }
+  );
+
+  const totalDailyChangePercent = totals.cost !== 0 ? (totals.dailyProfit / totals.cost) * 100 : 0;
+
   return (
     <Stack>
       <Group>
@@ -193,6 +215,32 @@ function Inner({ data: { stocks, totalValue } }: { data: Balance }) {
                   ))}
                 </Table.Tr>
               ))}
+              <Table.Tr
+                style={{
+                  borderTop: '1px solid var(--mantine-color-dark-5)'
+                }}>
+                <Table.Td ta="left" fw={700}>
+                  TOTAL
+                </Table.Td>
+                <Table.Td />
+                <Table.Td />
+                <Table.Td />
+                <Table.Td ta="right">{format.toCurrency(totalValue)}</Table.Td>
+                <Table.Td ta="right">{format.toCurrency(totalCost)}</Table.Td>
+                <Table.Td ta="right" c={totals.dailyProfit >= 0 ? 'teal' : 'red'}>
+                  {format.toCurrency(totals.dailyProfit)}
+                </Table.Td>
+                <Table.Td ta="right" c={totalDailyChangePercent >= 0 ? 'teal' : 'red'}>
+                  {format.toLocalePercentage(totalDailyChangePercent)}
+                </Table.Td>
+                <Table.Td ta="right" c={totals.profit >= 0 ? 'teal' : 'red'}>
+                  {format.toCurrency(totals.profit)}
+                </Table.Td>
+                <Table.Td ta="right" c={totalProfitPercentage >= 0 ? 'teal' : 'red'}>
+                  {format.toLocalePercentage(totalProfitPercentage)}
+                </Table.Td>
+                <Table.Td ta="right">{format.toLocalePercentage(100)}</Table.Td>
+              </Table.Tr>
             </Table.Tbody>
           </Table>
         </ScrollArea>

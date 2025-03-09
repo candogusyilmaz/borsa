@@ -15,8 +15,7 @@ public interface HoldingRepository extends BaseJpaRepository<Holding, Long> {
     @Query("""
             select h from Holding h
             left join h.trades t on t.id = (select max(tr.id) from Trade tr where tr.holding.id = h.id)
-            left join h.history his on his.id = (select max(hi.id) from HoldingHistory hi where hi.holding.id = h.id)
             where h.id = :id and h.user.id = :userId
             """)
-    Optional<Holding> findByIdWithLatestTradeAndHistory(Long id, Long userId);
+    Optional<Holding> findByIdWithLatestTrade(Long id, Long userId);
 }

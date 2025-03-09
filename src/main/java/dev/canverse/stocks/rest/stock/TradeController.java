@@ -1,5 +1,6 @@
 package dev.canverse.stocks.rest.stock;
 
+import dev.canverse.stocks.service.member.model.TradeHistory;
 import dev.canverse.stocks.service.stock.TradeService;
 import dev.canverse.stocks.service.stock.model.BuyTradeRequest;
 import dev.canverse.stocks.service.stock.model.SellTradeRequest;
@@ -13,6 +14,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/trades")
 public class TradeController {
     private final TradeService tradeService;
+
+    @GetMapping
+    public TradeHistory fetchTrades() {
+        return tradeService.fetchTrades();
+    }
 
     @PostMapping("/buy")
     @ResponseStatus(HttpStatus.CREATED)

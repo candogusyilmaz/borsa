@@ -1,6 +1,7 @@
 package dev.canverse.stocks.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import dev.canverse.stocks.domain.Calculator;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -11,7 +12,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Instant;
 
 @Getter
@@ -72,9 +72,10 @@ public class Trade implements Serializable {
         this.actionDate = actionDate;
 
         if (type == Type.SELL) {
-            performance = new TradePerformance(this,
-                    price.subtract(holding.getAveragePrice()).multiply(BigDecimal.valueOf(quantity)),
-                    price.subtract(holding.getAveragePrice()).divide(holding.getAveragePrice(), RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100)));
+            var profit = price.subtract(holding.getAveragePrice()).multiply(BigDecimal.valueOf(quantity));
+            var returnPercentage = Calculator.divide(price.subtract(holding.getAveragePrice()).multiply(BigDecimal.valueOf(100)), holding.getAveragePrice());
+
+            this.performance = new TradePerformance(this, profit, returnPercentage);
         }
     }
 
@@ -83,11 +84,7 @@ public class Trade implements Serializable {
         SELL
     }
 
-    public BigDecimal getTotalWithoutTax() {
-        return price.multiply(BigDecimal.valueOf(quantity));
-    }
-
     public BigDecimal getTotal() {
-        return getTotalWithoutTax().add(tax);
+        return this.price.multiply(BigDecimal.valueOf(this.quantity));
     }
 }

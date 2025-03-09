@@ -39,25 +39,27 @@ export type BalanceHistory = Array<{
 }>;
 
 export type TradeHistory = {
-  trades: Array<
-    {
-      date: string;
-      createdAt: string;
-      symbol: string;
-      price: number;
-      quantity: number;
-      total: number;
-    } & (
-      | { type: 'BUY' }
-      | {
-          type: 'SELL';
-          profit: number;
-          returnPercentage: number;
-          performanceCategory: string;
-        }
-    )
-  >;
+  trades: Array<TradeHistoryTrade>;
 };
+
+export type TradeHistoryTrade = {
+  date: string;
+  createdAt: string;
+  holdingId: string;
+  symbol: string;
+  price: number;
+  quantity: number;
+  total: number;
+  latest: boolean;
+} & (
+  | { type: 'BUY' }
+  | {
+      type: 'SELL';
+      profit: number;
+      returnPercentage: number;
+      performanceCategory: string;
+    }
+);
 
 export type Stocks = {
   exchange: string;
