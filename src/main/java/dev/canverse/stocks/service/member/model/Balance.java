@@ -46,7 +46,7 @@ public record Balance(List<Stock> stocks) {
         }
 
         public BigDecimal getDailyProfit() {
-            return dailyChange.multiply(BigDecimal.valueOf(quantity));
+            return currentPrice.subtract(getAveragePrice()).multiply(BigDecimal.valueOf(quantity));
         }
 
         public BigDecimal getValue() {
