@@ -64,25 +64,27 @@ function Inner({ data }: { data: Balance }) {
   const topStocks = filteredStocks.slice(0, 3);
 
   // Calculate "Other" category
-  const otherStocks = filteredStocks.slice(3); // Remaining stocks after top 3
+  const otherStocks = sortedStocks.slice(topStocks.length); // Remaining stocks after top 3
   const otherValue = otherStocks.reduce((sum, stock) => sum + stock.value, 0);
+
+  console.log(otherValue);
 
   const pieData = [
     ...topStocks.map((stock, idx) => ({
       name: stock.symbol,
       value: stock.value,
       color: COLORS.find((s) => s.id === idx)?.color!
-    })),
-    ...(otherValue > 0
-      ? [
-          {
-            name: 'Other',
-            value: otherValue,
-            color: 'lightgray'
-          }
-        ]
-      : [])
+    }))
   ];
+
+  if (otherValue > 0) {
+    pieData.push({
+      name: 'Other',
+      value: otherValue,
+      color: 'lightgray'
+    });
+  }
+
   const handleMouseEnter = (segment: {
     name: string;
     value: number;
@@ -104,9 +106,10 @@ function Inner({ data }: { data: Balance }) {
             thickness={15}
             paddingAngle={3}
             pieProps={{
-              cornerRadius: 5,
+              cornerRadius: 10,
               onMouseEnter: (segment) => handleMouseEnter(segment),
-              onMouseLeave: handleMouseLeave
+              onMouseLeave: handleMouseLeave,
+              minAngle: 10
             }}
             withTooltip={false}
           />
