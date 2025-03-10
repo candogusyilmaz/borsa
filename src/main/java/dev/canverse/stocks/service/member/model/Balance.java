@@ -18,7 +18,7 @@ public record Balance(List<Stock> stocks) {
         if (getTotalProfit().equals(BigDecimal.ZERO))
             return BigDecimal.ZERO;
 
-        return Calculator.calculatePercentage(getTotalProfit(), getTotalCost());
+        return Calculator.calculatePercentage(getTotalCost(), getTotalProfit());
     }
 
     public BigDecimal getTotalValue() {
