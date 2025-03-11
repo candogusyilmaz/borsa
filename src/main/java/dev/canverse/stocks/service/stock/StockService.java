@@ -64,15 +64,17 @@ public class StockService {
     }
 
     public void updateBISTSync() {
-        jdbcTemplate.execute("TRUNCATE TABLE stock_snapshots");
-
         var resp = sabahClient.fetchBIST();
+
+        if (resp.data().isEmpty())
+            return;
 
         var stockIdMap = fetchStockIdMap();
 
         var batchArgs = prepareBatchArgs(resp, stockIdMap);
 
         if (!batchArgs.isEmpty()) {
+            jdbcTemplate.execute("TRUNCATE TABLE stock_snapshots");
             batchInsertStockSnapshots(batchArgs);
         }
     }

@@ -1,7 +1,10 @@
 package dev.canverse.stocks.service.client;
 
 import dev.canverse.stocks.service.client.model.CanliBorsaVerileri;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
@@ -16,6 +19,7 @@ import java.util.List;
 
 @Service
 public class SabahClient {
+    private static final Logger log = LoggerFactory.getLogger(SabahClient.class);
     private final RestTemplate client;
 
     public SabahClient() {
@@ -23,7 +27,12 @@ public class SabahClient {
     }
 
     public CanliBorsaVerileri fetchBIST() {
-        var result = client.getForObject("https://www.sabah.com.tr/json/canli-borsa-verileri", String.class);
+        String result = null;
+        try {
+            result = client.getForObject("https://www.sabah.com.tr/json/canli-borsa-verileri", String.class);
+        } catch (RestClientException e) {
+            log.error("Error while fetching BIST data.", e);
+        }
 
         if (result == null) {
             return new CanliBorsaVerileri(List.of());
