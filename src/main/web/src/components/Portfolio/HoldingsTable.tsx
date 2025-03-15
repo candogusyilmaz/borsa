@@ -48,7 +48,7 @@ export function HoldingsTable() {
           <Text fw={700} size={rem(22)}>
             Holdings
           </Text>
-          <Button size="xs" variant="default" onClick={() => openModal('Buy')} c="teal">
+          <Button size="xs" variant="default" onClick={() => openModal('Buy')} c="teal" ml="auto">
             Buy
           </Button>
         </Group>
@@ -167,7 +167,8 @@ function Inner({
     }
   );
 
-  const totalDailyChangePercent = totals.cost !== 0 ? (totals.dailyProfit / totals.cost) * 100 : 0;
+  const totalDailyChangePercent =
+    totals.value - totals.dailyProfit !== 0 ? (totals.dailyProfit / (totals.value - totals.dailyProfit)) * 100 : 0;
 
   return (
     <Stack>

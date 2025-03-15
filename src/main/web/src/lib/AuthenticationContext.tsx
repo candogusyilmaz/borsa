@@ -3,11 +3,13 @@ import { type ReactNode, createContext, useContext, useState } from 'react';
 import { http } from './axios.ts';
 
 export interface LoginResponse {
+  name: string;
   token: string;
   permissions: string[];
 }
 
 export interface AuthContext {
+  user: LoginResponse | null;
   isAuthenticated: boolean;
   login: UseMutationResult<
     LoginResponse,
@@ -64,6 +66,7 @@ export function AuthenticationProvider({ children }: Readonly<AuthProviderProps>
   return (
     <AuthContext
       value={{
+        user,
         isAuthenticated: !!user,
         login,
         logout,

@@ -76,28 +76,31 @@ public class Holding implements Serializable {
         return Calculator.divide(this.total, BigDecimal.valueOf(this.quantity));
     }
 
-    public void buy(int quantity, BigDecimal price, BigDecimal tax, Instant actionDate) {
+    public void buy(int quantity, BigDecimal price, BigDecimal commission, Instant actionDate) {
         this.quantity += quantity;
         this.total = this.total.add(price.multiply(BigDecimal.valueOf(quantity)));
-        this.totalTax = this.totalTax == null ? tax : this.totalTax.add(tax);
+        this.totalTax = this.totalTax == null ? commission : this.totalTax.add(commission);
 
-        this.trades.add(new Trade(this, Trade.Type.BUY, quantity, price, tax, actionDate));
+        this.trades.add(new Trade(this, Trade.Type.BUY, quantity, price, commission, actionDate));
         this.history.add(new HoldingHistory(this, HoldingHistory.ActionType.BUY));
     }
 
-    public void sell(int quantity, BigDecimal price, BigDecimal tax, Instant actionDate) {
+    public void sell(int quantity, BigDecimal price, BigDecimal commission, Instant actionDate) {
         if (this.quantity < quantity) {
             throw new IllegalArgumentException("Not enough quantity");
         }
 
-        this.quantity -= quantity;
-        this.total = this.total.subtract(price.multiply(BigDecimal.valueOf(quantity)));
+        this.trades.add(new Trade(this, Trade.Type.SELL, quantity, price, commission, actionDate));
 
-        var averageTaxPerUnit = Calculator.divide(this.totalTax, BigDecimal.valueOf(this.quantity));
-        this.totalTax = this.totalTax.subtract(averageTaxPerUnit.multiply(BigDecimal.valueOf(quantity)));
+        this.total = this.total.subtract(Calculator.divide(this.total.multiply(BigDecimal.valueOf(quantity)), BigDecimal.valueOf(this.quantity)));
+        this.quantity -= quantity;
+
+        if (this.totalTax.compareTo(BigDecimal.ZERO) > 0) {
+            var avgCommissionPerUnit = Calculator.divide(this.totalTax, BigDecimal.valueOf(this.quantity));
+            this.totalTax = this.totalTax.subtract(avgCommissionPerUnit.multiply(BigDecimal.valueOf(quantity)));
+        }
 
         this.history.add(new HoldingHistory(this, HoldingHistory.ActionType.SELL));
-        this.trades.add(new Trade(this, Trade.Type.SELL, quantity, price, tax, actionDate));
     }
 
     public void undo() {
@@ -117,8 +120,8 @@ public class Holding implements Serializable {
         this.quantity += latestTrade.getQuantity();
         this.total = this.total.add(latestTrade.getTotal());
 
-        var averageTaxPerUnit = Calculator.divide(this.totalTax, BigDecimal.valueOf(this.quantity));
-        this.totalTax = this.totalTax.add(averageTaxPerUnit.multiply(BigDecimal.valueOf(latestTrade.getQuantity())));
+        var averageCommissionPerUnit = Calculator.divide(this.totalTax, BigDecimal.valueOf(this.quantity));
+        this.totalTax = this.totalTax.add(averageCommissionPerUnit.multiply(BigDecimal.valueOf(latestTrade.getQuantity())));
     }
 
     private void undoBuy(Trade latestTrade) {

@@ -1,4 +1,4 @@
-import { Group, Paper, Stack, Text, TextInput, ThemeIcon, Title, useMatches } from '@mantine/core';
+import { Container, Group, Paper, Stack, Text, TextInput, ThemeIcon, Title, useMatches } from '@mantine/core';
 import { useDebouncedState } from '@mantine/hooks';
 import { IconArrowNarrowDownDashed, IconArrowNarrowUpDashed, IconSearch } from '@tabler/icons-react';
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
@@ -44,7 +44,7 @@ function RouteComponent() {
   });
 
   return (
-    <>
+    <Container size="lg">
       <Title mb="xl">Stocks</Title>
       <TextInput
         size="md"
@@ -122,6 +122,6 @@ function RouteComponent() {
           ))}
         </div>
       </div>
-    </>
+    </Container>
   );
 }

@@ -16,7 +16,8 @@
     "indentWidth": 2,
     "indentStyle": "space",
     "lineWidth": 140,
-    "attributePosition": "auto"
+    "attributePosition": "auto",
+    "formatWithErrors": true
   },
   "javascript": {
     "formatter": {

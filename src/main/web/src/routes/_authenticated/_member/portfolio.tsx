@@ -1,6 +1,5 @@
-import { Flex, Space, Stack, Title } from '@mantine/core';
+import { Container, Flex, Space, Stack, Title } from '@mantine/core';
 import { createFileRoute } from '@tanstack/react-router';
-import { ClearMyDataModal } from '~/components/ClearMyData';
 import { BalanceCard } from '~/components/Portfolio/BalanceCard';
 import { HoldingsCard } from '~/components/Portfolio/HoldingsCard';
 import { HoldingsTable } from '~/components/Portfolio/HoldingsTable';
@@ -13,20 +12,20 @@ export const Route = createFileRoute('/_authenticated/_member/portfolio')({
 
 function RouteComponent() {
   return (
-    <Stack>
-      <Title>Portfolio</Title>
-      <Flex gap="md" direction={{ base: 'column', sm: 'row' }}>
-        <BalanceCard />
-        <HoldingsCard />
-      </Flex>
-      <Space />
-      <HoldingsTable />
-      <Space />
-      <MonthlyRevenueOverview />
-      <Space />
-      <TransactionHistory />
-      <Space />
-      <ClearMyDataModal />
-    </Stack>
+    <Container size="lg">
+      <Stack>
+        <Title>Portfolio</Title>
+        <Flex gap="md" direction={{ base: 'column', sm: 'row' }}>
+          <BalanceCard />
+          <HoldingsCard />
+        </Flex>
+        <Space />
+        <HoldingsTable />
+        <Space />
+        <MonthlyRevenueOverview />
+        <Space />
+        <TransactionHistory />
+      </Stack>
+    </Container>
   );
 }
