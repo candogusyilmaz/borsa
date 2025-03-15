@@ -1,4 +1,4 @@
-import { type UseMutationResult, useMutation } from '@tanstack/react-query';
+import { type UseMutationResult, useMutation, useQueryClient } from '@tanstack/react-query';
 import { type ReactNode, createContext, useContext, useState } from 'react';
 import { http } from './axios.ts';
 
@@ -38,6 +38,7 @@ function getStoredUser(): LoginResponse | null {
 const AuthContext = createContext<AuthContext>(null!);
 
 export function AuthenticationProvider({ children }: Readonly<AuthProviderProps>) {
+  const client = useQueryClient();
   const [user, setUser] = useState<LoginResponse | null>(getStoredUser());
 
   const login = useMutation({
@@ -53,6 +54,7 @@ export function AuthenticationProvider({ children }: Readonly<AuthProviderProps>
 
   const logout = async () => {
     localStorage.removeItem('user');
+    client.removeQueries();
     setUser(null);
   };
 
