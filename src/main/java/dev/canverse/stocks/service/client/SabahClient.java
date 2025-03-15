@@ -28,13 +28,15 @@ public class SabahClient {
 
     public CanliBorsaVerileri fetchBIST() {
         String result = null;
+
         try {
             result = client.getForObject("https://www.sabah.com.tr/json/canli-borsa-verileri", String.class);
         } catch (RestClientException e) {
-            log.error("Error while fetching BIST data.", e);
+            log.error("Failed to fetch BIST data due to RestClientException.", e);
         }
 
         if (result == null) {
+            log.error("Error while fetching BIST data. Returned data is null. Cannot parse or save BIST data. Skipping.");
             return new CanliBorsaVerileri(List.of());
         }
 

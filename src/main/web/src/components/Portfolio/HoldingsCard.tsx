@@ -1,7 +1,7 @@
 import { Card, type CardProps, Center, Group, ScrollArea, SimpleGrid, Text, Title } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { queries } from '~/api';
-import type { Balance } from '~/api/queries/types';
+import type { Portfolio } from '~/api/queries/types';
 import { ErrorView } from '~/components/ErrorView';
 import { LoadingView } from '~/components/LoadingView';
 import { format } from '~/lib/format';
@@ -9,7 +9,7 @@ import { BuyStockModal } from '../Stocks/BuyStockModal';
 import { SellStockModal } from '../Stocks/SellStockModal';
 
 export function HoldingsCard() {
-  const { data, status } = useQuery(queries.member.balance());
+  const { data, status } = useQuery(queries.portfolio.fetchPortfolio(false));
 
   if (status === 'pending') {
     return (
@@ -51,7 +51,7 @@ function HoldingsContainer({ children, ...props }: CardProps) {
   );
 }
 
-function Inner({ data }: { data: Balance }) {
+function Inner({ data }: { data: Portfolio }) {
   return (
     <HoldingsContainer>
       <ScrollArea mt="md">

@@ -3,7 +3,7 @@ import { Box, Card, type CardProps, Divider, Group, Stack, Text, rem, useMatches
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { queries } from '~/api';
-import type { Balance } from '~/api/queries/types';
+import type { Portfolio } from '~/api/queries/types';
 import { format } from '~/lib/format';
 import Currency from '../Currency';
 import { ErrorView } from '../ErrorView';
@@ -16,7 +16,7 @@ const COLORS = [
 ];
 
 export function BalanceCard() {
-  const { data, status } = useQuery(queries.member.balance());
+  const { data, status } = useQuery(queries.portfolio.fetchPortfolio(false));
 
   if (status === 'pending') {
     return (
@@ -45,7 +45,7 @@ function BalanceContainer({ children, ...props }: CardProps) {
   );
 }
 
-function Inner({ data }: { data: Balance }) {
+function Inner({ data }: { data: Portfolio }) {
   const chartSize = useMatches({
     base: 200,
     sm: 250
@@ -66,8 +66,6 @@ function Inner({ data }: { data: Balance }) {
   // Calculate "Other" category
   const otherStocks = sortedStocks.slice(topStocks.length); // Remaining stocks after top 3
   const otherValue = otherStocks.reduce((sum, stock) => sum + stock.value, 0);
-
-  console.log(otherValue);
 
   const pieData = [
     ...topStocks.map((stock, idx) => ({

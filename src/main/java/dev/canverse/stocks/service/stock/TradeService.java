@@ -55,7 +55,7 @@ public class TradeService {
 
     @Transactional
     public void undoLatestTrade(Long holdingId) {
-        var holding = holdingRepository.findByIdWithLatestTrade(holdingId, AuthenticationProvider.getUser().getId())
+        var holding = holdingRepository.findByIdWithLatestTrade(holdingId)
                 .orElseThrow(() -> new NotFoundException("No holding found"));
 
         holding.undo();

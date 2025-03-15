@@ -1,7 +1,6 @@
 package dev.canverse.stocks.rest.member;
 
 import dev.canverse.stocks.service.member.HoldingService;
-import dev.canverse.stocks.service.member.model.Balance;
 import dev.canverse.stocks.service.member.model.BalanceHistory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -13,11 +12,6 @@ import java.util.List;
 @RequestMapping("/api/member")
 public class MemberController {
     private final HoldingService holdingService;
-
-    @GetMapping("/balance")
-    public Balance fetchBalance() {
-        return holdingService.fetchBalance();
-    }
 
     @GetMapping("/balance/history/{lastDays}")
     public List<BalanceHistory> fetchBalanceHistory(@PathVariable int lastDays) {

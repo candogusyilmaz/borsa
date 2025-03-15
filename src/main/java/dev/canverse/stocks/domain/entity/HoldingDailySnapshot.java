@@ -25,6 +25,10 @@ public class HoldingDailySnapshot {
     @Column(nullable = false)
     private int quantity;
 
+    @PositiveOrZero
+    @Column(nullable = true, precision = 15, scale = 2)
+    private BigDecimal totalCommission;
+
     // Recorded average cost price per unit at the snapshot time.
     @PositiveOrZero
     @Column(nullable = false, precision = 15, scale = 2)

@@ -8,15 +8,15 @@ export type SelectItemGroup = {
   items: Array<SelectItem>;
 };
 
-export type Balance = {
-  stocks: Array<BalanceStock>;
+export type Portfolio = {
+  stocks: Array<PortfolioStock>;
   totalValue: number;
   totalProfit: number;
   totalCost: number;
   totalProfitPercentage: number;
 };
 
-export type BalanceStock = {
+export type PortfolioStock = {
   id: string;
   symbol: string;
   dailyChange: number;

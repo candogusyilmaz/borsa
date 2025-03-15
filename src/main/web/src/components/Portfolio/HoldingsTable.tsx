@@ -1,15 +1,18 @@
-import { Button, Card, Group, ScrollArea, Stack, Table, Text, rem } from '@mantine/core';
+import { ActionIcon, Button, Card, Group, Popover, ScrollArea, Stack, Switch, Table, Text, rem } from '@mantine/core';
+import { IconSettings } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { createColumnHelper, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import { useState } from 'react';
 import { queries } from '~/api';
-import type { Balance } from '~/api/queries/types';
+import type { Portfolio, PortfolioStock } from '~/api/queries/types';
 import { format } from '~/lib/format';
 import { ErrorView } from '../ErrorView';
 import { LoadingView } from '../LoadingView';
 import { useTransactionModalStore } from '../Transaction/TransactionModal';
 
 export function HoldingsTable() {
-  const { data, status } = useQuery(queries.member.balance());
+  const [includeCommission, setIncludeCommission] = useState(false);
+  const { data, status } = useQuery(queries.portfolio.fetchPortfolio(includeCommission));
   const openModal = useTransactionModalStore((state) => state.open);
 
   if (status === 'pending') {
@@ -45,7 +48,7 @@ export function HoldingsTable() {
           <Text fw={700} size={rem(22)}>
             Holdings
           </Text>
-          <Button ml="auto" size="xs" variant="default" onClick={() => openModal('Buy')} c="teal">
+          <Button size="xs" variant="default" onClick={() => openModal('Buy')} c="teal">
             Buy
           </Button>
         </Group>
@@ -59,17 +62,20 @@ export function HoldingsTable() {
     );
   }
 
-  return <Inner data={data} />;
+  return <Inner data={data} includeCommission={includeCommission} onToggleCommission={setIncludeCommission} />;
 }
 
 function Inner({
-  data: { stocks, totalValue, totalCost, totalProfitPercentage }
+  data: { stocks, totalValue, totalCost, totalProfitPercentage },
+  includeCommission,
+  onToggleCommission
 }: {
-  data: Balance;
+  data: Portfolio;
+  includeCommission: boolean;
+  onToggleCommission: (value: boolean) => void;
 }) {
   'use no memo';
-  type Stock = (typeof stocks)[0];
-  const columnHelper = createColumnHelper<Stock>();
+  const columnHelper = createColumnHelper<PortfolioStock>();
 
   const columns = [
     columnHelper.accessor('symbol', {
@@ -165,11 +171,28 @@ function Inner({
 
   return (
     <Stack>
-      <Group>
+      <Group gap={4}>
         <Text fw={700} size={rem(22)}>
           Holdings
         </Text>
         <BuySellButtonGroup />
+        <Popover width={200} position="bottom-end" withArrow shadow="md">
+          <Popover.Target>
+            <ActionIcon variant="transparent" color="gray">
+              <IconSettings style={{ width: '75%' }} />
+            </ActionIcon>
+          </Popover.Target>
+          <Popover.Dropdown>
+            <Switch
+              size="xs"
+              color="green"
+              label="Include commission"
+              labelPosition="left"
+              checked={includeCommission}
+              onChange={(event) => onToggleCommission(event.target.checked)}
+            />
+          </Popover.Dropdown>
+        </Popover>
       </Group>
       <Card shadow="sm" radius="md" p={0} withBorder>
         <ScrollArea h="100%" scrollbars="x" offsetScrollbars type="auto">
@@ -245,6 +268,10 @@ function Inner({
           </Table>
         </ScrollArea>
       </Card>
+
+      <Text c="dimmed" size="xs">
+        * Last prices are calculated with a 15-minute delay and updated every 30 seconds
+      </Text>
     </Stack>
   );
 }

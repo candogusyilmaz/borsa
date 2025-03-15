@@ -2,6 +2,8 @@ import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { type ReactNode, useEffect } from 'react';
 import { useAuthentication } from './AuthenticationContext.tsx';
 
+const AUTH_ENDPOINTS = ['/auth/token', '/auth/google', '/auth/refresh-token'];
+
 export const http = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080/api/',
   withCredentials: true,
@@ -15,7 +17,7 @@ http.interceptors.request.use((config) => {
     throw new Error("Expected 'config' and 'config.headers' not to be undefined");
   }
 
-  if (config.url === '/auth/token' || config.url === '/auth/google' || config.url === '/auth/refresh-token') {
+  if (config.url && AUTH_ENDPOINTS.includes(config.url)) {
     config.headers.Authorization = undefined;
   } else {
     const user = JSON.parse(localStorage.getItem('user') ?? '');
@@ -45,13 +47,19 @@ export function AxiosProvider({ children }: { children?: ReactNode }) {
   };
 
   const responseErrorHandler = async (error: AxiosError) => {
-    if (error.message === 'TOKEN_NOT_FOUND') {
-      await logout();
-      return;
+    if (!error.response) {
+      return Promise.reject(error);
     }
 
-    if (error.response?.status === 401 && error.response?.headers['www-authenticate']?.startsWith('Bearer error')) {
-      return handleTokenRefresh(error.config!);
+    // Handle token not found error
+    if (error.message === 'TOKEN_NOT_FOUND') {
+      await logout();
+      return Promise.reject(new Error('Authentication required'));
+    }
+
+    // Handle token expiration/invalid token
+    if (error.response.status === 401 && error.response.headers['www-authenticate']?.startsWith('Bearer error') && error.config) {
+      return handleTokenRefresh(error.config);
     }
 
     return Promise.reject(error);

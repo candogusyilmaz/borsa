@@ -19,13 +19,14 @@ type BuyTransactionFormProps = {
 export function BuyTransactionForm({ stockId, close }: BuyTransactionFormProps) {
   const client = useQueryClient();
   const { data } = useQuery(queries.stocks.fetchAll('BIST'));
-  const { data: balance } = useQuery(queries.member.balance());
+  const { data: balance } = useQuery(queries.portfolio.fetchPortfolio(false));
   const form = useForm({
     mode: 'controlled',
     initialValues: {
       stockId,
       price: 0,
       quantity: 1,
+      tax: 0,
       actionDate: new Date()
     },
     validate: {
@@ -63,9 +64,9 @@ export function BuyTransactionForm({ stockId, close }: BuyTransactionFormProps) 
   const handleFormSubmit = form.onSubmit((values) =>
     mutation.mutate({
       stockId: Number(values.stockId),
-      price: values.price!,
-      quantity: values.quantity!,
-      tax: 0,
+      price: values.price,
+      quantity: values.quantity,
+      tax: values.tax,
       actionDate: values.actionDate.toJSON()
     })
   );
@@ -79,6 +80,12 @@ export function BuyTransactionForm({ stockId, close }: BuyTransactionFormProps) 
   const priceRightSection = selectedStock && (
     <Text c="dimmed" size="xs" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
       {format.toCurrency(selectedStock.last, false)}
+    </Text>
+  );
+
+  const commissionRightSection = selectedStock && (
+    <Text c="dimmed" size="xs" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
+      {format.toCurrency(form.values.quantity * form.values.price * 0.002, false)}
     </Text>
   );
 
@@ -148,6 +155,23 @@ export function BuyTransactionForm({ stockId, close }: BuyTransactionFormProps) 
             {...form.getInputProps('price')}
           />
         </SimpleGrid>
+        <NumberInput
+          inputWrapperOrder={['label', 'error', 'input', 'description']}
+          disabled={!form.values.stockId}
+          prefix={getCurrencySymbol('TRY')}
+          label="Commission"
+          hideControls
+          thousandSeparator="."
+          fixedDecimalScale
+          decimalScale={2}
+          decimalSeparator=","
+          min={0}
+          rightSectionWidth="auto"
+          rightSectionProps={{ style: { paddingRight: 10 } }}
+          rightSection={commissionRightSection}
+          description={form.values.quantity && form.values.price && 'Broker commission was calculated at 0.2%'}
+          {...form.getInputProps('tax')}
+        />
         <BuyTransactionSummary
           stockInHolding={stockInHolding}
           newQuantity={form.values.quantity}

@@ -1,9 +1,9 @@
 import { Card, Group, Skeleton, Stack, Text } from '@mantine/core';
-import type { BalanceStock } from '~/api/queries/types';
+import type { PortfolioStock } from '~/api/queries/types';
 import { format } from '~/lib/format';
 
 type SellTransactionSummaryProps = {
-  stockInHolding?: BalanceStock;
+  stockInHolding?: PortfolioStock;
   newQuantity: number | null;
   newPrice: number | null;
   isValid: boolean;

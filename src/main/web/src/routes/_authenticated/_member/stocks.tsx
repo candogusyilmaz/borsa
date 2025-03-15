@@ -19,7 +19,7 @@ export const Route = createFileRoute('/_authenticated/_member/stocks')({
 
 function RouteComponent() {
   const { data: stocks } = useSuspenseQuery(queries.stocks.fetchAll('BIST'));
-  const { data: balance } = useQuery(queries.member.balance());
+  const { data: balance } = useQuery(queries.portfolio.fetchPortfolio(false));
   const [filteredSymbols, setFilteredSymbols] = useState(stocks.symbols);
   const nameSize = useMatches({
     base: 75,

@@ -92,7 +92,9 @@ public class Holding implements Serializable {
 
         this.quantity -= quantity;
         this.total = this.total.subtract(price.multiply(BigDecimal.valueOf(quantity)));
-        this.totalTax = this.totalTax.add(tax);
+
+        var averageTaxPerUnit = Calculator.divide(this.totalTax, BigDecimal.valueOf(this.quantity));
+        this.totalTax = this.totalTax.subtract(averageTaxPerUnit.multiply(BigDecimal.valueOf(quantity)));
 
         this.history.add(new HoldingHistory(this, HoldingHistory.ActionType.SELL));
         this.trades.add(new Trade(this, Trade.Type.SELL, quantity, price, tax, actionDate));
@@ -114,7 +116,9 @@ public class Holding implements Serializable {
     private void undoSell(Trade latestTrade) {
         this.quantity += latestTrade.getQuantity();
         this.total = this.total.add(latestTrade.getTotal());
-        this.totalTax = this.totalTax.add(latestTrade.getTax());
+
+        var averageTaxPerUnit = Calculator.divide(this.totalTax, BigDecimal.valueOf(this.quantity));
+        this.totalTax = this.totalTax.add(averageTaxPerUnit.multiply(BigDecimal.valueOf(latestTrade.getQuantity())));
     }
 
     private void undoBuy(Trade latestTrade) {
@@ -124,8 +128,7 @@ public class Holding implements Serializable {
             this.total = BigDecimal.ZERO;
             this.totalTax = BigDecimal.ZERO;
         } else {
-            var tradeTotal = latestTrade.getTotal();
-            this.total = this.total.subtract(tradeTotal);
+            this.total = this.total.subtract(latestTrade.getTotal());
             this.totalTax = this.totalTax.subtract(latestTrade.getTax());
         }
     }
