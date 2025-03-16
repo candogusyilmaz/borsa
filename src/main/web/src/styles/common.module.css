@@ -25,15 +25,16 @@
   border-radius: var(--mantine-radius-sm);
   color: light-dark(var(--mantine-color-black), var(--mantine-color-dark-0));
   text-decoration: inherit;
+  transition: background-color 200ms ease;
 
   @mixin hover {
-    background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
-    border-left: 3px solid var(--mantine-color-gray-6);
+    background-color: light-dark(var(--mantine-color-teal-0), var(--mantine-color-dark-7));
+    border-left: 3px solid var(--mantine-color-teal-6);
   }
 
   &[data-status="active"] {
     color: var(--mantine-color-white);
-    background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
-    border-left: 3px solid var(--mantine-color-white);
+    background-color: light-dark(var(--mantine-color-teal-0), var(--mantine-color-teal-9));
+    border-left: 3px solid var(--mantine-color-teal-5);
   }
 }

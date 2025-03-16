@@ -12,7 +12,7 @@ export const Route = createFileRoute('/_authenticated/_member/portfolio')({
 
 function RouteComponent() {
   return (
-    <Container size="lg">
+    <Container size="lg" my="lg">
       <Stack>
         <Title>Portfolio</Title>
         <Flex gap="md" direction={{ base: 'column', sm: 'row' }}>

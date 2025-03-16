@@ -95,7 +95,7 @@ function Inner({ data }: { data: Portfolio }) {
     setActiveSegment(null);
   };
   return (
-    <BalanceContainer>
+    <BalanceContainer miw={275}>
       <Group justify="center">
         <Box pos="relative">
           <DonutChart

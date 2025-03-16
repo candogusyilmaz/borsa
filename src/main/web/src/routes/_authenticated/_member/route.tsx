@@ -1,11 +1,8 @@
-import { AppShell, Avatar, Burger, Flex, Group, Menu, Stack, Text, TextInput, UnstyledButton } from '@mantine/core';
+import { ActionIcon, AppShell, Flex, Group, Overlay, Stack, Text, TextInput, UnstyledButton } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { IconChevronDown, IconExchange, IconHome, IconLogout, IconSearch, IconSettings, IconTrash } from '@tabler/icons-react';
+import { IconExchange, IconHome, IconLayoutSidebarLeftCollapse, IconLayoutSidebarLeftExpand, IconSearch } from '@tabler/icons-react';
 import { Link, Outlet, createFileRoute, linkOptions } from '@tanstack/react-router';
-import cx from 'clsx';
-import { useState } from 'react';
-import Logo from '~/components/Logo';
-import { useAuthentication } from '~/lib/AuthenticationContext';
+import { UserAvatarMenu } from '~/components/UserAvatarMenu';
 import common from '~/styles/common.module.css';
 
 export const Route = createFileRoute('/_authenticated/_member')({
@@ -30,77 +27,73 @@ const NAV_LINKS = [
 ];
 
 function RouteComponent() {
-  const { user, logout } = useAuthentication();
   const [opened, { toggle }] = useDisclosure();
-
-  const [userMenuOpened, setUserMenuOpened] = useState(false);
-  const navigate = Route.useNavigate();
+  const [mobileOpened, { toggle: toggleMobile }] = useDisclosure();
 
   return (
-    <AppShell header={{ height: 60 }} navbar={{ width: 275, breakpoint: 'md', collapsed: { mobile: !opened } }} padding="md" layout="alt">
+    <AppShell
+      header={{ height: 60 }}
+      navbar={{
+        width: 280,
+        breakpoint: 'sm',
+        collapsed: { mobile: mobileOpened, desktop: opened }
+      }}
+      layout="alt">
       <AppShell.Header>
         <Flex align="center" h="100%" justify="space-between" px="md">
           <Group>
-            <Burger opened={opened} onClick={toggle} hiddenFrom="md" size="sm" />
+            <ActionIcon size="sm" variant="transparent" color="gray.6" onClick={toggle} visibleFrom="sm">
+              {opened ? (
+                <IconLayoutSidebarLeftExpand style={{ width: '100%' }} />
+              ) : (
+                <IconLayoutSidebarLeftCollapse style={{ width: '100%' }} />
+              )}
+            </ActionIcon>
+            <ActionIcon size="sm" variant="transparent" color="gray.6" onClick={toggleMobile} hiddenFrom="sm">
+              <IconLayoutSidebarLeftExpand style={{ width: '100%' }} />
+            </ActionIcon>
             <TextInput fz="lg" variant="unstyled" placeholder="Search..." leftSection={<IconSearch size={20} />} />
           </Group>
 
-          <Menu
-            width={260}
-            position="bottom-end"
-            transitionProps={{ transition: 'pop-top-right' }}
-            withinPortal
-            onClose={() => setUserMenuOpened(false)}
-            onOpen={() => setUserMenuOpened(true)}>
-            <Menu.Target>
-              <UnstyledButton
-                className={cx(common.user, {
-                  [common.userActive]: userMenuOpened
-                })}>
-                <Group gap={7}>
-                  <Avatar size={24} />
-                  <Text fw={500} size="sm" lh={1} mr={3}>
-                    {user?.name}
-                  </Text>
-                  <IconChevronDown size={12} stroke={1.5} />
-                </Group>
-              </UnstyledButton>
-            </Menu.Target>
-
-            <Menu.Dropdown>
-              <Menu.Label>Settings</Menu.Label>
-              <Menu.Item leftSection={<IconSettings size={16} stroke={1.5} />} disabled>
-                Account settings
-              </Menu.Item>
-              <Menu.Item
-                leftSection={<IconLogout size={16} stroke={1.5} />}
-                onClick={() => {
-                  logout();
-                  navigate({ to: '/login' });
-                }}>
-                Logout
-              </Menu.Item>
-
-              <Menu.Divider />
-
-              <Menu.Label>Danger zone</Menu.Label>
-
-              <Menu.Item color="red" leftSection={<IconTrash size={16} stroke={1.5} />}>
-                Clear my data
-              </Menu.Item>
-            </Menu.Dropdown>
-          </Menu>
+          <UserAvatarMenu />
         </Flex>
       </AppShell.Header>
-      <AppShell.Navbar>
+      <AppShell.Navbar
+        bg="dark.9"
+        styles={{
+          navbar: {
+            maxWidth: 280,
+            zIndex: '105'
+          }
+        }}>
         <Stack>
-          <UnstyledButton mx="lg" mt="lg">
-            <Logo />
-          </UnstyledButton>
-          <Stack gap={8} p={0} mx="xs" mt="lg">
+          <Group h={60} align="center" mx="md" pt="sm" pb={3}>
+            <UnstyledButton h="95%">
+              <img
+                src="/assets/logo.png"
+                alt="Canverse"
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  objectFit: 'contain'
+                }}
+              />
+            </UnstyledButton>
+            <Text size="xl" fw={500} lts={1.7}>
+              CANVERSE
+            </Text>
+            <ActionIcon hiddenFrom="sm" size="sm" variant="transparent" color="gray.6" onClick={toggleMobile} ml="auto" pb={3}>
+              <IconLayoutSidebarLeftCollapse style={{ width: '100%' }} />
+            </ActionIcon>
+          </Group>
+
+          <Stack gap={8} p={0} mx="sm" mt="lg">
+            <Text c="dimmed" fw={700} fz={12} lts={1.4}>
+              MENU
+            </Text>
             {NAV_LINKS.map((s) => {
               return (
-                <Link key={s.options.to} {...s.options} className={common.navLink} onClick={toggle}>
+                <Link key={s.options.to} {...s.options} className={common.navLink}>
                   <Group align="center">
                     {s.icon}
                     {s.label}
@@ -112,6 +105,18 @@ function RouteComponent() {
         </Stack>
       </AppShell.Navbar>
       <AppShell.Main>
+        {!mobileOpened && (
+          <Overlay
+            hiddenFrom="sm"
+            onClick={toggleMobile}
+            zIndex="104"
+            style={{
+              transition: 'opacity 200ms ease-in-out, backdrop-filter 200ms ease-in-out'
+            }}
+            opacity={0.6}
+            blur={2}
+          />
+        )}
         <Outlet />
       </AppShell.Main>
     </AppShell>

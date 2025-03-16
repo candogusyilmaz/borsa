@@ -8,8 +8,31 @@ import { format } from '~/lib/format';
 import { BuyStockModal } from '../Stocks/BuyStockModal';
 import { SellStockModal } from '../Stocks/SellStockModal';
 
+const UPCOMING_FEATURE = true;
+
 export function HoldingsCard() {
   const { data, status } = useQuery(queries.portfolio.fetchPortfolio(false));
+
+  if (UPCOMING_FEATURE) {
+    return (
+      <Card
+        shadow="sm"
+        padding="lg"
+        radius="md"
+        withBorder
+        w="100%"
+        style={{
+          borderColor: 'var(--mantine-color-orange-5)',
+          whiteSpace: 'nowrap'
+        }}>
+        <Center h="100%" mih={100}>
+          <Text c="dimmed" size="xs" fw={600} ta="center">
+            This feature is coming soon
+          </Text>
+        </Center>
+      </Card>
+    );
+  }
 
   if (status === 'pending') {
     return (
