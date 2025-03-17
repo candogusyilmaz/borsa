@@ -115,7 +115,7 @@ public class StockService {
 
     private void batchInsertStockSnapshots(List<Object[]> batchArgs) {
         jdbcTemplate.batchUpdate(
-                "INSERT INTO stock_snapshots (stock_id, last, created_at, updated_at, daily_change, daily_change_percent, close) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO stock_snapshots (stock_id, last, created_at, updated_at, daily_change, daily_change_percent, previous_close) VALUES (?, ?, ?, ?, ?, ?, ?)",
                 batchArgs,
                 new int[]{
                         Types.INTEGER,
