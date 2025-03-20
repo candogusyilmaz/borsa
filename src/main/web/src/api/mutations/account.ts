@@ -1,5 +1,5 @@
-import {http} from '~/lib/axios';
+import { http } from '~/lib/axios';
 
 export const clearMyData = {
-    mutationFn: () => http.post('/account/clear-my-data')
+  mutationFn: () => http.post('/account/clear-my-data')
 };

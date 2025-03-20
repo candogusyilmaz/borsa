@@ -8,14 +8,14 @@ import * as stocks from '~/api/queries/stocks';
 import * as trades from '~/api/queries/trades';
 
 export const queries = {
-    portfolio,
-    analytics,
-    trades,
-    stocks
+  portfolio,
+  analytics,
+  trades,
+  stocks
 };
 
 export const mutations = {
-    stocks: stockMutations,
-    trades: tradeMutations,
-    account: accountMutations
+  stocks: stockMutations,
+  trades: tradeMutations,
+  account: accountMutations
 };
