@@ -53,8 +53,7 @@ function ClearMyDataForm() {
     return (
         <Stack>
             <Text size="sm">This action cannot be undone. Please type "{confirmText}" to confirm that you want to clear
-                all
-                of your data.</Text>
+                all of your data.</Text>
             <TextInput placeholder={confirmText} value={confirmInput}
                        onChange={(e) => setConfirmInput(e.currentTarget.value)}/>
             <Button

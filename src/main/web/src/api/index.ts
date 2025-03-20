@@ -1,16 +1,17 @@
-import {accountMutations} from './mutations/member';
-import {stockMutations} from './mutations/stocks';
-import {tradeMutations} from './mutations/trades';
-import {analyticsQueries} from './queries/analytics';
-import {portfolioQueries} from './queries/portfolio';
-import {stockQueries} from './queries/stocks';
-import {tradeQueries} from './queries/trades';
+import * as accountMutations from '~/api/mutations/account';
+import * as stockMutations from '~/api/mutations/stocks';
+import * as tradeMutations from '~/api/mutations/trades';
+
+import * as analytics from '~/api/queries/analytics';
+import * as portfolio from '~/api/queries/portfolio';
+import * as stocks from '~/api/queries/stocks';
+import * as trades from '~/api/queries/trades';
 
 export const queries = {
-    stocks: stockQueries,
-    analytics: analyticsQueries,
-    trades: tradeQueries,
-    portfolio: portfolioQueries
+    portfolio,
+    analytics,
+    trades,
+    stocks
 };
 
 export const mutations = {
