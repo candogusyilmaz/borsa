@@ -10,6 +10,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -39,8 +40,8 @@ public class Holding implements Serializable {
     private BigDecimal total;
 
     @PositiveOrZero
-    @Column(nullable = false, precision = 15, scale = 2)
-    private BigDecimal totalTax;
+    @Column(name = "total_tax", nullable = false, precision = 15, scale = 2)
+    private BigDecimal commission;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
@@ -67,7 +68,7 @@ public class Holding implements Serializable {
         this.stock = stock;
         this.quantity = 0;
         this.total = BigDecimal.ZERO;
-        this.totalTax = BigDecimal.ZERO;
+        this.commission = BigDecimal.ZERO;
     }
 
     public BigDecimal getAveragePrice() {
@@ -79,7 +80,7 @@ public class Holding implements Serializable {
     public void buy(int quantity, BigDecimal price, BigDecimal commission, Instant actionDate) {
         this.quantity += quantity;
         this.total = this.total.add(price.multiply(BigDecimal.valueOf(quantity)));
-        this.totalTax = this.totalTax == null ? commission : this.totalTax.add(commission);
+        this.commission = this.commission == null ? commission : this.commission.add(commission);
 
         this.trades.add(new Trade(this, Trade.Type.BUY, quantity, price, commission, actionDate));
         this.history.add(new HoldingHistory(this, HoldingHistory.ActionType.BUY));
@@ -95,9 +96,9 @@ public class Holding implements Serializable {
         this.total = this.total.subtract(Calculator.divide(this.total.multiply(BigDecimal.valueOf(quantity)), BigDecimal.valueOf(this.quantity)));
         this.quantity -= quantity;
 
-        if (this.totalTax.compareTo(BigDecimal.ZERO) > 0) {
-            var avgCommissionPerUnit = Calculator.divide(this.totalTax, BigDecimal.valueOf(this.quantity));
-            this.totalTax = this.totalTax.subtract(avgCommissionPerUnit.multiply(BigDecimal.valueOf(quantity)));
+        if (this.commission.compareTo(BigDecimal.ZERO) > 0) {
+            var avgCommissionPerUnit = Calculator.divide(this.commission, BigDecimal.valueOf(this.quantity));
+            this.commission = this.commission.subtract(avgCommissionPerUnit.multiply(BigDecimal.valueOf(quantity)));
         }
 
         this.history.add(new HoldingHistory(this, HoldingHistory.ActionType.SELL));
@@ -120,8 +121,8 @@ public class Holding implements Serializable {
         this.quantity += latestTrade.getQuantity();
         this.total = this.total.add(latestTrade.getTotal());
 
-        var averageCommissionPerUnit = Calculator.divide(this.totalTax, BigDecimal.valueOf(this.quantity));
-        this.totalTax = this.totalTax.add(averageCommissionPerUnit.multiply(BigDecimal.valueOf(latestTrade.getQuantity())));
+        var averageCommissionPerUnit = Calculator.divide(this.commission, BigDecimal.valueOf(this.quantity));
+        this.commission = this.commission.add(averageCommissionPerUnit.multiply(BigDecimal.valueOf(latestTrade.getQuantity())));
     }
 
     private void undoBuy(Trade latestTrade) {
@@ -129,10 +130,19 @@ public class Holding implements Serializable {
 
         if (this.quantity == 0) {
             this.total = BigDecimal.ZERO;
-            this.totalTax = BigDecimal.ZERO;
+            this.commission = BigDecimal.ZERO;
         } else {
             this.total = this.total.subtract(latestTrade.getTotal());
-            this.totalTax = this.totalTax.subtract(latestTrade.getTax());
+            this.commission = this.commission.subtract(latestTrade.getCommission());
         }
+    }
+
+    public void adjustStockSplit(BigDecimal ratio) {
+        this.quantity = BigDecimal.valueOf(quantity)
+                .multiply(ratio)
+                .setScale(0, RoundingMode.HALF_UP)
+                .intValue();
+
+        this.history.add(new HoldingHistory(this, HoldingHistory.ActionType.STOCK_SPLIT));
     }
 }

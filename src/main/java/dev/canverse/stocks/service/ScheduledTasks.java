@@ -1,6 +1,6 @@
 package dev.canverse.stocks.service;
 
-import dev.canverse.stocks.service.member.HoldingService;
+import dev.canverse.stocks.service.portfolio.HoldingService;
 import dev.canverse.stocks.service.stock.StockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -20,5 +20,10 @@ public class ScheduledTasks {
     @Scheduled(cron = "0 30 18 ? * MON-FRI", zone = "GMT+3")
     public void generateDailyHoldingSnapshots() {
         holdingService.generateDailyHoldingSnapshots();
+    }
+
+    @Scheduled(cron = "0 0 9,20 * * *", zone = "GMT+3")
+    public void processMorningStockSplits() {
+        stockService.processStockSplits();
     }
 }

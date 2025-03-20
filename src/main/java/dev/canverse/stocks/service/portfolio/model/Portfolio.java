@@ -1,4 +1,4 @@
-package dev.canverse.stocks.service.member.model;
+package dev.canverse.stocks.service.portfolio.model;
 
 import dev.canverse.stocks.domain.Calculator;
 

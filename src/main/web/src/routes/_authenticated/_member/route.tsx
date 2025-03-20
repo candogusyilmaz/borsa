@@ -1,35 +1,35 @@
-import {ActionIcon, AppShell, Flex, Group, Stack, Text, TextInput, UnstyledButton,} from "@mantine/core";
-import {useDisclosure} from "@mantine/hooks";
+import {ActionIcon, AppShell, Flex, Group, Stack, Text, TextInput, UnstyledButton} from '@mantine/core';
+import {useDisclosure} from '@mantine/hooks';
 import {
-  IconExchange,
-  IconHome,
-  IconLayoutSidebarLeftCollapse,
-  IconLayoutSidebarLeftExpand,
-  IconSearch,
-} from "@tabler/icons-react";
-import {createFileRoute, Link, linkOptions, Outlet,} from "@tanstack/react-router";
-import {UserAvatarMenu} from "~/components/UserAvatarMenu";
-import common from "~/styles/common.module.css";
+    IconExchange,
+    IconHome,
+    IconLayoutSidebarLeftCollapse,
+    IconLayoutSidebarLeftExpand,
+    IconSearch
+} from '@tabler/icons-react';
+import {createFileRoute, Link, linkOptions, Outlet} from '@tanstack/react-router';
+import {UserAvatarMenu} from '~/components/UserAvatarMenu';
+import common from '~/styles/common.module.css';
 
-export const Route = createFileRoute("/_authenticated/_member")({
-    component: RouteComponent,
+export const Route = createFileRoute('/_authenticated/_member')({
+    component: RouteComponent
 });
 
 const NAV_LINKS = [
     {
-        label: "Portfolio",
+        label: 'Portfolio',
         icon: <IconHome size={20}/>,
         options: linkOptions({
-            to: "/portfolio",
-        }),
+            to: '/portfolio'
+        })
     },
     {
-        label: "Stocks",
+        label: 'Stocks',
         icon: <IconExchange size={20}/>,
         options: linkOptions({
-            to: "/stocks",
-        }),
-    },
+            to: '/stocks'
+        })
+    }
 ];
 
 function RouteComponent() {
@@ -41,42 +41,26 @@ function RouteComponent() {
             header={{height: 60}}
             navbar={{
                 width: 280,
-                breakpoint: "sm",
-                collapsed: {mobile: mobileOpened, desktop: opened},
+                breakpoint: 'sm',
+                collapsed: {mobile: mobileOpened, desktop: opened}
             }}
-            layout="alt"
-        >
+            layout="alt">
             <AppShell.Header>
                 <Flex align="center" h="100%" justify="space-between" px="md">
                     <Group>
-                        <ActionIcon
-                            size="sm"
-                            variant="transparent"
-                            color="gray.6"
-                            onClick={toggle}
-                            visibleFrom="sm"
-                        >
+                        <ActionIcon size="sm" variant="transparent" color="gray.6" onClick={toggle} visibleFrom="sm">
                             {opened ? (
-                                <IconLayoutSidebarLeftExpand style={{width: "100%"}}/>
+                                <IconLayoutSidebarLeftExpand style={{width: '100%'}}/>
                             ) : (
-                                <IconLayoutSidebarLeftCollapse style={{width: "100%"}}/>
+                                <IconLayoutSidebarLeftCollapse style={{width: '100%'}}/>
                             )}
                         </ActionIcon>
-                        <ActionIcon
-                            size="sm"
-                            variant="transparent"
-                            color="gray.6"
-                            onClick={toggleMobile}
-                            hiddenFrom="sm"
-                        >
-                            <IconLayoutSidebarLeftExpand style={{width: "100%"}}/>
+                        <ActionIcon size="sm" variant="transparent" color="gray.6" onClick={toggleMobile}
+                                    hiddenFrom="sm">
+                            <IconLayoutSidebarLeftExpand style={{width: '100%'}}/>
                         </ActionIcon>
-                        <TextInput
-                            fz="lg"
-                            variant="unstyled"
-                            placeholder="Search..."
-                            leftSection={<IconSearch size={20}/>}
-                        />
+                        <TextInput fz="lg" variant="unstyled" placeholder="Search..."
+                                   leftSection={<IconSearch size={20}/>}/>
                     </Group>
 
                     <UserAvatarMenu/>
@@ -90,25 +74,18 @@ function RouteComponent() {
                                 src="/assets/logo.png"
                                 alt="Canverse"
                                 style={{
-                                    maxWidth: "100%",
-                                    maxHeight: "100%",
-                                    objectFit: "contain",
+                                    maxWidth: '100%',
+                                    maxHeight: '100%',
+                                    objectFit: 'contain'
                                 }}
                             />
                         </UnstyledButton>
                         <Text size="xl" fw={500} lts={1.7}>
                             CANVERSE
                         </Text>
-                        <ActionIcon
-                            hiddenFrom="sm"
-                            size="sm"
-                            variant="transparent"
-                            color="gray.6"
-                            onClick={toggleMobile}
-                            ml="auto"
-                            pb={3}
-                        >
-                            <IconLayoutSidebarLeftCollapse style={{width: "100%"}}/>
+                        <ActionIcon hiddenFrom="sm" size="sm" variant="transparent" color="gray.6"
+                                    onClick={toggleMobile} ml="auto" pb={3}>
+                            <IconLayoutSidebarLeftCollapse style={{width: '100%'}}/>
                         </ActionIcon>
                     </Group>
 
@@ -118,11 +95,7 @@ function RouteComponent() {
                         </Text>
                         {NAV_LINKS.map((s) => {
                             return (
-                                <Link
-                                    key={s.options.to}
-                                    {...s.options}
-                                    className={common.navLink}
-                                >
+                                <Link key={s.options.to} {...s.options} className={common.navLink}>
                                     <Group align="center">
                                         {s.icon}
                                         {s.label}

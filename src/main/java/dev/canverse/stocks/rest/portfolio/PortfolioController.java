@@ -1,7 +1,7 @@
 package dev.canverse.stocks.rest.portfolio;
 
-import dev.canverse.stocks.service.member.HoldingService;
-import dev.canverse.stocks.service.member.model.Portfolio;
+import dev.canverse.stocks.service.portfolio.HoldingService;
+import dev.canverse.stocks.service.portfolio.model.Portfolio;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

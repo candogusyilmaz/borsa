@@ -1,7 +1,7 @@
-package dev.canverse.stocks.rest.member;
+package dev.canverse.stocks.rest.portfolio;
 
-import dev.canverse.stocks.service.stock.TradeService;
-import dev.canverse.stocks.service.stock.model.MonthlyRevenueOverview;
+import dev.canverse.stocks.service.portfolio.AnalyticsService;
+import dev.canverse.stocks.service.portfolio.model.MonthlyRevenueOverview;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,10 +13,10 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/analytics")
 public class AnalyticsController {
-    private final TradeService tradeService;
+    private final AnalyticsService analyticsService;
 
     @GetMapping("/monthly-revenue-overview")
     public List<MonthlyRevenueOverview> getMonthlyRevenueOverview() {
-        return tradeService.getMonthlyRevenueOverview();
+        return analyticsService.getMonthlyRevenueOverview();
     }
 }

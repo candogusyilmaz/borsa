@@ -1,68 +1,27 @@
-package dev.canverse.stocks.service.stock;
+package dev.canverse.stocks.repository.custom;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import dev.canverse.stocks.domain.entity.*;
-import dev.canverse.stocks.domain.exception.NotFoundException;
-import dev.canverse.stocks.repository.HoldingRepository;
-import dev.canverse.stocks.repository.StockRepository;
-import dev.canverse.stocks.security.AuthenticationProvider;
-import dev.canverse.stocks.service.member.model.TradeHistory;
-import dev.canverse.stocks.service.stock.model.BuyTradeRequest;
-import dev.canverse.stocks.service.stock.model.MonthlyRevenueOverview;
-import dev.canverse.stocks.service.stock.model.SellTradeRequest;
+import dev.canverse.stocks.domain.entity.QHolding;
+import dev.canverse.stocks.domain.entity.QTrade;
+import dev.canverse.stocks.domain.entity.QUser;
+import dev.canverse.stocks.domain.entity.Trade;
+import dev.canverse.stocks.service.portfolio.model.MonthlyRevenueOverview;
+import dev.canverse.stocks.service.portfolio.model.TradeHistory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Service
+@Repository
 @RequiredArgsConstructor
-public class TradeService {
-    private final StockRepository stockRepository;
-    private final HoldingRepository holdingRepository;
+public class TradeRepositoryCustomImpl implements TradeRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
-    @Transactional
-    public void buy(BuyTradeRequest req) {
-        var holding = holdingRepository.findByUserIdAndStockId(
-                AuthenticationProvider.getUser().getId(),
-                req.stockId()
-        ).orElseGet(() -> holdingRepository.save(new Holding(
-                AuthenticationProvider.getUser(),
-                stockRepository.getReference(req.stockId())
-        )));
-
-        holding.buy(req.quantity(), req.price(), req.tax(), req.actionDate());
-
-        holdingRepository.save(holding);
-    }
-
-    @Transactional
-    public void sell(SellTradeRequest req) {
-        var holding = holdingRepository.findByUserIdAndStockId(
-                AuthenticationProvider.getUser().getId(),
-                req.stockId()
-        ).orElseThrow(() -> new NotFoundException("No holding found"));
-
-        holding.sell(req.quantity(), req.price(), req.tax(), req.actionDate());
-
-        holdingRepository.save(holding);
-    }
-
-    @Transactional
-    public void undoLatestTrade(Long holdingId) {
-        var holding = holdingRepository.findByIdWithLatestTrade(holdingId)
-                .orElseThrow(() -> new NotFoundException("No holding found"));
-
-        holding.undo();
-        holdingRepository.save(holding);
-    }
-
-    public List<MonthlyRevenueOverview> getMonthlyRevenueOverview() {
+    @Override
+    public List<MonthlyRevenueOverview> getMonthlyRevenueOverview(Long userId) {
         var trade = QTrade.trade;
         var holding = QHolding.holding;
         var user = QUser.user;
@@ -80,7 +39,7 @@ public class TradeService {
                 .from(trade)
                 .join(trade.holding, holding)
                 .join(holding.user, user)
-                .where(trade.type.eq(Trade.Type.SELL).and(user.id.eq(AuthenticationProvider.getUser().getId())))
+                .where(trade.type.eq(Trade.Type.SELL).and(user.id.eq(userId)))
                 .groupBy(year, month)
                 .fetch();
 
@@ -101,7 +60,8 @@ public class TradeService {
                 .collect(Collectors.toList());
     }
 
-    public TradeHistory fetchTrades() {
+    @Override
+    public TradeHistory getTradeHistory(Long userId) {
         var trade = QTrade.trade;
         var subTrade = new QTrade("subTrade");
 
@@ -128,7 +88,7 @@ public class TradeService {
                 )
                 .from(trade)
                 .leftJoin(trade.performance)
-                .where(trade.holding.user.id.eq(AuthenticationProvider.getUser().getId()))
+                .where(trade.holding.user.id.eq(userId))
                 .orderBy(trade.createdAt.desc())
                 .fetch();
 

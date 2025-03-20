@@ -1,4 +1,4 @@
-package dev.canverse.stocks.service.member.model;
+package dev.canverse.stocks.service.portfolio.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import dev.canverse.stocks.domain.entity.Trade;

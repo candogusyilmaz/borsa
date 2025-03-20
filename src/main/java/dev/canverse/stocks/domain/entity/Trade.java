@@ -40,8 +40,8 @@ public class Trade implements Serializable {
     private BigDecimal price;
 
     @PositiveOrZero
-    @Column(nullable = false, precision = 15, scale = 2)
-    private BigDecimal tax;
+    @Column(name = "tax", nullable = false, precision = 15, scale = 2)
+    private BigDecimal commission;
 
     @NotNull
     @Column(nullable = false)
@@ -63,12 +63,12 @@ public class Trade implements Serializable {
     protected Trade() {
     }
 
-    protected Trade(Holding holding, Type type, int quantity, BigDecimal price, BigDecimal tax, Instant actionDate) {
+    protected Trade(Holding holding, Type type, int quantity, BigDecimal price, BigDecimal commission, Instant actionDate) {
         this.holding = holding;
         this.type = type;
         this.quantity = quantity;
         this.price = price;
-        this.tax = tax;
+        this.commission = commission;
         this.actionDate = actionDate;
 
         if (type == Type.SELL) {

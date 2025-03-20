@@ -1,9 +1,9 @@
-package dev.canverse.stocks.rest.stock;
+package dev.canverse.stocks.rest.portfolio;
 
-import dev.canverse.stocks.service.member.model.TradeHistory;
-import dev.canverse.stocks.service.stock.TradeService;
-import dev.canverse.stocks.service.stock.model.BuyTradeRequest;
-import dev.canverse.stocks.service.stock.model.SellTradeRequest;
+import dev.canverse.stocks.service.portfolio.TradeService;
+import dev.canverse.stocks.service.portfolio.model.BuyTradeRequest;
+import dev.canverse.stocks.service.portfolio.model.SellTradeRequest;
+import dev.canverse.stocks.service.portfolio.model.TradeHistory;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
