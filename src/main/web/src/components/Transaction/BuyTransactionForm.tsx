@@ -2,7 +2,6 @@ import { Button, type ButtonProps, NumberInput, Select, SimpleGrid, Stack, Text 
 import { DateTimePicker } from '@mantine/dates';
 import { useForm } from '@mantine/form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
 import { mutations, queries } from '~/api';
 import { queryKeys } from '~/api/queries/config';
 import { alerts } from '~/lib/alert';
