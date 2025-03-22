@@ -17,7 +17,7 @@ public record BuyTradeRequest(
         @Positive
         BigDecimal price,
         @PositiveOrZero
-        BigDecimal tax,
+        BigDecimal commission,
         @NotNull
         Instant actionDate
 ) {

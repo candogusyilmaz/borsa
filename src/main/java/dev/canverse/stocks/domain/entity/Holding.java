@@ -12,8 +12,8 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Entity
@@ -36,11 +36,11 @@ public class Holding implements Serializable {
     private int quantity;
 
     @PositiveOrZero
-    @Column(nullable = false, precision = 20, scale = 6)
+    @Column(nullable = false, precision = 20, scale = 8)
     private BigDecimal total;
 
     @PositiveOrZero
-    @Column(name = "total_tax", nullable = false, precision = 15, scale = 2)
+    @Column(name = "total_tax", nullable = false, precision = 20, scale = 8)
     private BigDecimal commission;
 
     @CreationTimestamp
@@ -52,13 +52,13 @@ public class Holding implements Serializable {
     private Instant updatedAt;
 
     @OneToMany(mappedBy = "holding", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private Set<Trade> trades = new LinkedHashSet<>();
+    private List<Trade> trades = new ArrayList<>();
 
     @OneToMany(mappedBy = "holding", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private Set<HoldingHistory> history = new LinkedHashSet<>();
+    private List<HoldingHistory> history = new ArrayList<>();
 
     @OneToMany(mappedBy = "holding", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private Set<HoldingDailySnapshot> dailySnapshots = new LinkedHashSet<>();
+    private List<HoldingDailySnapshot> dailySnapshots = new ArrayList<>();
 
     protected Holding() {
     }
@@ -78,11 +78,12 @@ public class Holding implements Serializable {
     }
 
     public void buy(int quantity, BigDecimal price, BigDecimal commission, Instant actionDate) {
+        this.trades.add(new Trade(this, Trade.Type.BUY, quantity, price, commission, actionDate));
+
         this.quantity += quantity;
         this.total = this.total.add(price.multiply(BigDecimal.valueOf(quantity)));
-        this.commission = this.commission == null ? commission : this.commission.add(commission);
+        this.commission = this.commission.add(commission);
 
-        this.trades.add(new Trade(this, Trade.Type.BUY, quantity, price, commission, actionDate));
         this.history.add(new HoldingHistory(this, HoldingHistory.ActionType.BUY));
     }
 

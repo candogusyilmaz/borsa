@@ -7,6 +7,7 @@ const ReactCompilerConfig = {
 };
 
 export default defineConfig({
+  
   plugins: [
     TanStackRouterVite({ autoCodeSplitting: true }),
     react({

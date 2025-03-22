@@ -26,7 +26,7 @@ export function BuyTransactionForm({ stockId, close }: BuyTransactionFormProps) 
       stockId,
       price: 0,
       quantity: 1,
-      tax: 0,
+      commission: 0,
       actionDate: new Date()
     },
     validate: {
@@ -66,7 +66,7 @@ export function BuyTransactionForm({ stockId, close }: BuyTransactionFormProps) 
       stockId: Number(values.stockId),
       price: values.price,
       quantity: values.quantity,
-      tax: values.tax,
+      commission: values.commission,
       actionDate: values.actionDate.toJSON()
     })
   );
@@ -170,7 +170,7 @@ export function BuyTransactionForm({ stockId, close }: BuyTransactionFormProps) 
           rightSectionProps={{ style: { paddingRight: 10 } }}
           rightSection={commissionRightSection}
           description={form.values.quantity && form.values.price && 'Broker commission was calculated at 0.2%'}
-          {...form.getInputProps('tax')}
+          {...form.getInputProps('commission')}
         />
         <BuyTransactionSummary
           stockInHolding={stockInHolding}

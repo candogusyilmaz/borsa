@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.chrono.ChronoLocalDate;
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +34,7 @@ public class TradeService {
                 stockRepository.getReference(req.stockId())
         )));
 
-        holding.buy(req.quantity(), req.price(), req.tax(), req.actionDate());
+        holding.buy(req.quantity(), req.price(), req.commission(), req.actionDate());
 
         holdingRepository.save(holding);
     }
@@ -46,7 +46,7 @@ public class TradeService {
                 req.stockId()
         ).orElseThrow(() -> new NotFoundException("No holding found"));
 
-        holding.sell(req.quantity(), req.price(), req.tax(), req.actionDate());
+        holding.sell(req.quantity(), req.price(), req.commission(), req.actionDate());
 
         holdingRepository.save(holding);
     }
@@ -59,10 +59,7 @@ public class TradeService {
         var latestSplit = stockSplitRepository.findLatestProcessedSplitByStockId(holding.getStock().getId());
 
         if (latestSplit.isPresent() && !holding.getTrades().isEmpty()) {
-            var latestTradeDate = holding.getTrades().stream()
-                    .findFirst()
-                    .map(trade -> ChronoLocalDate.from(trade.getActionDate()))
-                    .orElseThrow(() -> new IllegalStateException("Trade has no action date"));
+            var latestTradeDate = LocalDate.from(holding.getTrades().getFirst().getActionDate());
 
             if (latestSplit.get().getEffectiveDate().isAfter(latestTradeDate)) {
                 throw new IllegalStateException("Cannot undo trade after stock split");

@@ -38,7 +38,7 @@ public class User implements UserDetails {
     private String email;
 
     @Column(nullable = false)
-    private Boolean isEnabled = false;
+    private Boolean isEnabled;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserRole> userRoles = new HashSet<>();
@@ -75,10 +75,5 @@ public class User implements UserDetails {
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return this.isEnabled;
     }
 }

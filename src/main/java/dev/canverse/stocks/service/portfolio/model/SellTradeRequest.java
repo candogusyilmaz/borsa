@@ -19,7 +19,7 @@ public record SellTradeRequest(
         @Positive
         BigDecimal price,
         @PositiveOrZero
-        BigDecimal tax,
+        BigDecimal commission,
         @NotNull
         Instant actionDate
 ) {
