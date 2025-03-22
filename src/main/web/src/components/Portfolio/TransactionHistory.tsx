@@ -13,10 +13,10 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { queries } from '~/api';
 import type { TradeHistory, TradeHistoryTrade } from '~/api/queries/types';
+import { ErrorView } from '~/components/ErrorView';
+import { LoadingView } from '~/components/LoadingView';
+import { useUndoTradeModalStore } from '~/components/Transaction/UndoTradeModal';
 import { format } from '~/lib/format';
-import { ErrorView } from '../ErrorView';
-import { LoadingView } from '../LoadingView';
-import { useUndoTradeModalStore } from '../Transaction/UndoTradeModal';
 
 const PAGE_SIZE = 5;
 

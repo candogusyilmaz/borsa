@@ -13,6 +13,7 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated/route'
 import { Route as IndexImport } from './routes/index'
+import { Route as RegisterIndexImport } from './routes/register/index'
 import { Route as LoginIndexImport } from './routes/login/index'
 import { Route as AuthenticatedMemberRouteImport } from './routes/_authenticated/_member/route'
 import { Route as AuthenticatedMemberStocksImport } from './routes/_authenticated/_member/stocks'
@@ -28,6 +29,12 @@ const AuthenticatedRouteRoute = AuthenticatedRouteImport.update({
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const RegisterIndexRoute = RegisterIndexImport.update({
+  id: '/register/',
+  path: '/register/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -87,6 +94,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginIndexImport
       parentRoute: typeof rootRoute
     }
+    '/register/': {
+      id: '/register/'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/_authenticated/_member/portfolio': {
       id: '/_authenticated/_member/portfolio'
       path: '/portfolio'
@@ -137,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '': typeof AuthenticatedMemberRouteRouteWithChildren
   '/login': typeof LoginIndexRoute
+  '/register': typeof RegisterIndexRoute
   '/portfolio': typeof AuthenticatedMemberPortfolioRoute
   '/stocks': typeof AuthenticatedMemberStocksRoute
 }
@@ -145,6 +160,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '': typeof AuthenticatedMemberRouteRouteWithChildren
   '/login': typeof LoginIndexRoute
+  '/register': typeof RegisterIndexRoute
   '/portfolio': typeof AuthenticatedMemberPortfolioRoute
   '/stocks': typeof AuthenticatedMemberStocksRoute
 }
@@ -155,21 +171,23 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/_authenticated/_member': typeof AuthenticatedMemberRouteRouteWithChildren
   '/login/': typeof LoginIndexRoute
+  '/register/': typeof RegisterIndexRoute
   '/_authenticated/_member/portfolio': typeof AuthenticatedMemberPortfolioRoute
   '/_authenticated/_member/stocks': typeof AuthenticatedMemberStocksRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '' | '/login' | '/portfolio' | '/stocks'
+  fullPaths: '/' | '' | '/login' | '/register' | '/portfolio' | '/stocks'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '' | '/login' | '/portfolio' | '/stocks'
+  to: '/' | '' | '/login' | '/register' | '/portfolio' | '/stocks'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/_authenticated/_member'
     | '/login/'
+    | '/register/'
     | '/_authenticated/_member/portfolio'
     | '/_authenticated/_member/stocks'
   fileRoutesById: FileRoutesById
@@ -179,12 +197,14 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   LoginIndexRoute: typeof LoginIndexRoute
+  RegisterIndexRoute: typeof RegisterIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   LoginIndexRoute: LoginIndexRoute,
+  RegisterIndexRoute: RegisterIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -199,7 +219,8 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/_authenticated",
-        "/login/"
+        "/login/",
+        "/register/"
       ]
     },
     "/": {
@@ -221,6 +242,9 @@ export const routeTree = rootRoute
     },
     "/login/": {
       "filePath": "login/index.tsx"
+    },
+    "/register/": {
+      "filePath": "register/index.tsx"
     },
     "/_authenticated/_member/portfolio": {
       "filePath": "_authenticated/_member/portfolio.tsx",

@@ -37,13 +37,6 @@ export function BuyTransactionForm({ stockId, close }: BuyTransactionFormProps) 
     }
   });
 
-  useEffect(() => {
-    if (data && stockId) {
-      const stock = data.symbols.find((s) => s.id === stockId);
-      form.setFieldValue('price', stock?.last || 0);
-    }
-  }, [data, form, stockId]);
-
   const mutation = useMutation({
     ...mutations.trades.buy,
     onSuccess: (_, variables) => {

@@ -10,16 +10,10 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends BaseJpaRepository<User, Long> {
-
-    @Cacheable(value = "userCacheByUsername", key = "#username")
-    @Query("select u from User u where u.username = :username")
-    @EntityGraph(attributePaths = {"userRoles.role.rolePermissions.permission"})
-    Optional<User> findByUsernameIncludePermissions(String username);
-
     @Cacheable(value = "userCacheByEmail", key = "#email")
-    @Query("select u from User u where u.email = :email")
+    @Query("select u from User u where lower(u.email) = lower(:email)")
     @EntityGraph(attributePaths = {"userRoles.role.rolePermissions.permission"})
     Optional<User> findByEmailIncludePermissions(String email);
 
-    Optional<User> findByUsername(String username);
+    boolean existsByEmailIgnoreCase(String email);
 }

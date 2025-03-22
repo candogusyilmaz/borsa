@@ -2,7 +2,7 @@ import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { type ReactNode, useEffect } from 'react';
 import { useAuthentication } from './AuthenticationContext.tsx';
 
-const AUTH_ENDPOINTS = ['/auth/token', '/auth/google', '/auth/refresh-token'];
+const AUTH_ENDPOINTS = ['/auth/token', '/auth/google', '/auth/refresh-token', '/auth/register'];
 
 export const http = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080/api/',

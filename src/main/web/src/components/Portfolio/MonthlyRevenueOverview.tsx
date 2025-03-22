@@ -20,9 +20,9 @@ import { useQuery } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import { queries } from '~/api';
 import type { MonthlyRevenueOverview as MonthlyRevenueOverviewType } from '~/api/queries/types';
+import { ErrorView } from '~/components/ErrorView';
 import { constants } from '~/lib/constants';
 import { format } from '~/lib/format';
-import { ErrorView } from '../ErrorView';
 
 export function MonthlyRevenueOverview() {
   const { data, status } = useQuery(queries.analytics.monthlyRevenueOverview());

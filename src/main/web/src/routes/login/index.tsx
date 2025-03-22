@@ -1,8 +1,8 @@
-import { Button, Center, Paper, PasswordInput, Space, Stack, Text, TextInput, useMatches } from '@mantine/core';
+import { Button, Center, Divider, Paper, PasswordInput, Stack, Text, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { type CredentialResponse, GoogleLogin } from '@react-oauth/google';
-import { createFileRoute, redirect } from '@tanstack/react-router';
-import { useAuthentication } from '../../lib/AuthenticationContext';
+import { Link, createFileRoute, redirect } from '@tanstack/react-router';
+import { useAuthentication } from '~/lib/AuthenticationContext';
 
 export const Route = createFileRoute('/login/')({
   component: RouteComponent,
@@ -12,10 +12,6 @@ export const Route = createFileRoute('/login/')({
 });
 
 function RouteComponent() {
-  const bordered = useMatches({
-    base: false,
-    sm: true
-  });
   const navigate = Route.useNavigate();
   const { login } = useAuthentication();
 
@@ -23,10 +19,6 @@ function RouteComponent() {
     initialValues: {
       username: '',
       password: ''
-    },
-
-    validate: {
-      password: (val) => (val.length <= 2 ? 'Password should include at least 3 characters' : null)
     }
   });
 
@@ -50,14 +42,30 @@ function RouteComponent() {
 
   return (
     <Center h="100dvh">
-      <Stack>
-        <Paper w={400} radius="md" p="xl" withBorder={bordered}>
-          <Text size="lg" fw={500} ta="center">
-            Welcome to Canverse
-          </Text>
-
-          <Space my="lg" />
-
+      <Paper w={425} radius="md" p="xl">
+        <Stack gap="lg">
+          <Stack gap={0}>
+            <Text fz={26} fw={600}>
+              Log in to your account
+            </Text>
+            <Text c="gray.5" fz={16} fw={400}>
+              Connect to Canverse with:
+            </Text>
+          </Stack>
+          <div style={{ colorScheme: 'light', marginBottom: '6px' }}>
+            <GoogleLogin
+              theme="filled_black"
+              width={361}
+              onSuccess={handleSuccess}
+              context="signin"
+              ux_mode="popup"
+              itp_support={true}
+              logo_alignment="left"
+              useOneTap
+              auto_select={true}
+            />
+          </div>
+          <Divider label="OR LOG IN WITH YOUR EMAIL" />
           <form
             onSubmit={form.onSubmit((data) =>
               login.mutate(data, {
@@ -68,9 +76,8 @@ function RouteComponent() {
             )}>
             <Stack gap="lg">
               <TextInput
-                required
-                label="Username"
-                placeholder="canverse"
+                label="Email"
+                placeholder="me@canverse.com"
                 value={form.values.username}
                 onChange={(event) => form.setFieldValue('username', event.currentTarget.value)}
                 error={form.errors.email && 'Invalid username'}
@@ -78,7 +85,6 @@ function RouteComponent() {
               />
 
               <PasswordInput
-                required
                 label="Password"
                 placeholder="********"
                 value={form.values.password}
@@ -86,28 +92,30 @@ function RouteComponent() {
                 error={form.errors.password && 'Password should include at least 6 characters'}
                 radius="md"
               />
-              <Button loading={login.isPending} type="submit" variant="default" disabled={login.isPending}>
+              <Button
+                loading={login.isPending}
+                type="submit"
+                variant="default"
+                disabled={login.isPending || !form.values.username || !form.values.password}>
                 Login
               </Button>
-              <div style={{ colorScheme: 'light' }}>
-                <GoogleLogin
-                  theme="filled_black"
-                  width={334}
-                  onSuccess={handleSuccess}
-                  context="signin"
-                  ux_mode="popup"
-                  itp_support={true}
-                  logo_alignment="left"
-                  useOneTap
-                />
-              </div>
             </Stack>
           </form>
-        </Paper>
-        <Text ta="center" c="dimmed" size="sm">
-          Early development, work in progress
-        </Text>
-      </Stack>
+          <Text c="gray" size="sm">
+            New to Canverse?{' '}
+            <Text span fw={600} c="blue">
+              <Link
+                to="/register"
+                style={{
+                  color: 'inherit',
+                  textDecoration: 'none'
+                }}>
+                Sign up for an account
+              </Link>
+            </Text>
+          </Text>
+        </Stack>
+      </Paper>
     </Center>
   );
 }

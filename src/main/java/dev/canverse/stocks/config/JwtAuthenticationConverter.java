@@ -16,7 +16,7 @@ public class JwtAuthenticationConverter implements Converter<Jwt, AbstractAuthen
     @Override
     @SuppressWarnings("NullableProblems")
     public AbstractAuthenticationToken convert(Jwt source) {
-        var user = userRepository.findByUsernameIncludePermissions(source.getSubject())
+        var user = userRepository.findByEmailIncludePermissions(source.getSubject())
                 .orElseThrow(() -> new IllegalArgumentException("User not found."));
 
         return UsernamePasswordAuthenticationToken.authenticated(user, null, user.getAuthorities());

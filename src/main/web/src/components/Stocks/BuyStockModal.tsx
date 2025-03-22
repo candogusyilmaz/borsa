@@ -1,5 +1,5 @@
 import { Button, type ButtonProps } from '@mantine/core';
-import { useTransactionModalStore } from '../Transaction/TransactionModal';
+import { useTransactionModalStore } from '~/components/Transaction/TransactionModal';
 
 type BuyStockModalProps = {
   stockId: string;

@@ -1,0 +1,95 @@
+package dev.canverse.stocks.rest.account;
+
+import dev.canverse.stocks.domain.entity.User;
+import dev.canverse.stocks.service.account.TokenService;
+import dev.canverse.stocks.service.account.UserService;
+import dev.canverse.stocks.service.account.model.GoogleTokenRequest;
+import dev.canverse.stocks.service.account.model.TokenCreateRequest;
+import dev.canverse.stocks.service.account.model.TokenCreateResponse;
+import dev.canverse.stocks.service.account.model.UserRegistrationRequest;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtException;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/auth")
+public class TokenController {
+    private final TokenService tokenService;
+    private final UserService userService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri("https://www.googleapis.com/oauth2/v3/certs").build();
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/register")
+    public ResponseEntity<TokenCreateResponse> register(@RequestBody UserRegistrationRequest request) {
+        var user = userService.register(request);
+        var body = tokenService.createAccessToken(user);
+        var cookie = tokenService.createRefreshTokenCookie(user);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie)
+                .body(body);
+    }
+
+    @PostMapping("/token")
+    public ResponseEntity<TokenCreateResponse> createAccessToken(@RequestBody TokenCreateRequest login) {
+        var token = new UsernamePasswordAuthenticationToken(login.username(), login.password());
+        var auth = authenticationManager.authenticate(token);
+        var user = (User) auth.getPrincipal();
+
+        var body = tokenService.createAccessToken(user);
+        var cookie = tokenService.createRefreshTokenCookie(user);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie)
+                .body(body);
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<TokenCreateResponse> refreshAccessToken(@CookieValue(name = "refresh-token") Optional<String> refreshToken) {
+        if (refreshToken.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        var user = tokenService.getSecurityUser(refreshToken.get());
+        var body = tokenService.createAccessToken(user);
+        var cookie = tokenService.createRefreshTokenCookie(user);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie)
+                .body(body);
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<TokenCreateResponse> googleLogin(@RequestBody GoogleTokenRequest request) {
+        String idToken = request.token();
+
+        try {
+            var decodedToken = jwtDecoder.decode(idToken);
+            String email = decodedToken.getClaim("email");
+            String name = decodedToken.getClaim("name");
+            String username = email.split("@")[0];
+
+            var user = userService.loadUserByEmail(email)
+                    .orElseGet(() -> userService.createUser(name, email, "!"));
+            var body = tokenService.createAccessToken(user);
+            var cookie = tokenService.createRefreshTokenCookie(user);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, cookie)
+                    .body(body);
+        } catch (JwtException e) {
+            throw new RuntimeException("Invalid Google token");
+        }
+    }
+}

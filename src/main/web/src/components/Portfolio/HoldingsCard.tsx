@@ -4,9 +4,9 @@ import { queries } from '~/api';
 import type { Portfolio } from '~/api/queries/types';
 import { ErrorView } from '~/components/ErrorView';
 import { LoadingView } from '~/components/LoadingView';
+import { BuyStockModal } from '~/components/Stocks/BuyStockModal';
+import { SellStockModal } from '~/components/Stocks/SellStockModal';
 import { format } from '~/lib/format';
-import { BuyStockModal } from '../Stocks/BuyStockModal';
-import { SellStockModal } from '../Stocks/SellStockModal';
 
 const UPCOMING_FEATURE = true;
 

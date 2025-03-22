@@ -5,10 +5,10 @@ import { createColumnHelper, flexRender, getCoreRowModel, useReactTable } from '
 import { useState } from 'react';
 import { queries } from '~/api';
 import type { Portfolio, PortfolioStock } from '~/api/queries/types';
+import { ErrorView } from '~/components/ErrorView';
+import { LoadingView } from '~/components/LoadingView';
+import { useTransactionModalStore } from '~/components/Transaction/TransactionModal';
 import { format } from '~/lib/format';
-import { ErrorView } from '../ErrorView';
-import { LoadingView } from '../LoadingView';
-import { useTransactionModalStore } from '../Transaction/TransactionModal';
 
 export function HoldingsTable() {
   const [includeCommission, setIncludeCommission] = useState(false);

@@ -21,6 +21,7 @@ export interface AuthContext {
     | { token: string },
     unknown
   >;
+  register: UseMutationResult<LoginResponse, Error, { name: string; email: string; password: string }, unknown>;
   logout: () => Promise<void>;
   updateToken: (token: string) => void;
 }
@@ -52,6 +53,20 @@ export function AuthenticationProvider({ children }: Readonly<AuthProviderProps>
     }
   });
 
+  const register = useMutation({
+    mutationFn: async (credentials: {
+      name: string;
+      email: string;
+      password: string;
+    }) => {
+      return (await http.post<LoginResponse>('/auth/register', credentials)).data;
+    },
+    onSuccess: async (data) => {
+      localStorage.setItem('user', JSON.stringify(data));
+      setUser(data);
+    }
+  });
+
   const logout = async () => {
     localStorage.removeItem('user');
     client.removeQueries();
@@ -71,6 +86,7 @@ export function AuthenticationProvider({ children }: Readonly<AuthProviderProps>
         user,
         isAuthenticated: !!user,
         login,
+        register,
         logout,
         updateToken
       }}>

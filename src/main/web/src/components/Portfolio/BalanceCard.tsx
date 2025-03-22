@@ -4,10 +4,10 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { queries } from '~/api';
 import type { Portfolio } from '~/api/queries/types';
+import Currency from '~/components/Currency';
+import { ErrorView } from '~/components/ErrorView';
+import { LoadingView } from '~/components/LoadingView';
 import { format } from '~/lib/format';
-import Currency from '../Currency';
-import { ErrorView } from '../ErrorView';
-import { LoadingView } from '../LoadingView';
 
 const COLORS = [
   { id: 0, color: '#0066ff' },

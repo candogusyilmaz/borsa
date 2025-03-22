@@ -3,7 +3,6 @@ package dev.canverse.stocks.domain.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
@@ -22,12 +21,9 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
-
     @NotEmpty
-    @Size(min = 4, max = 20)
-    @Column(nullable = false, unique = true)
-    private String username;
+    @Column(nullable = false)
+    private String name;
 
     @NotEmpty
     @Column(nullable = false)
@@ -46,10 +42,9 @@ public class User implements UserDetails {
     protected User() {
     }
 
-    public User(String username, String password, String email) {
-        this.username = username;
-        this.password = password;
+    public User(String email, String password) {
         this.email = email;
+        this.password = password;
         this.isEnabled = true;
     }
 
@@ -60,6 +55,11 @@ public class User implements UserDetails {
                 .flatMap(ur -> ur.getRole().getRolePermissions().stream())
                 .map(RolePermission::getPermission)
                 .toList();
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
     }
 
     @Override
