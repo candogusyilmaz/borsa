@@ -66,12 +66,13 @@ public class StockService {
 
     @Async
     @Transactional(timeout = 25)
-    public void updateBIST() {
-        updateBISTSync();
+    public void updateBist() {
+        updateBistSync();
     }
 
-    public void updateBISTSync() {
-        var resp = sabahClient.fetchBIST();
+    public void updateBistSync() {
+        log.info("Updating stock snapshots from BIST");
+        var resp = sabahClient.fetchBistStocks();
 
         if (resp.data().isEmpty())
             return;
@@ -81,8 +82,10 @@ public class StockService {
         var batchArgs = prepareBatchArgs(resp, stockIdMap);
 
         if (!batchArgs.isEmpty()) {
+            log.info("Updating stock snapshots for {} stocks", batchArgs.size());
             jdbcTemplate.execute("TRUNCATE TABLE stock_snapshots");
             batchInsertStockSnapshots(batchArgs);
+            log.info("Stock snapshots updated successfully");
         }
     }
 

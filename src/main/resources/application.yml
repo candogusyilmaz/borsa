@@ -30,6 +30,11 @@ spring:
             client-secret: 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
             scope:
               - email
+  batch:
+    jdbc:
+      initialize-schema: always
+    job:
+      enabled: false
 logging:
   level:
     org:

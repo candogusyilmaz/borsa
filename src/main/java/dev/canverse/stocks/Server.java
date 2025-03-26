@@ -11,8 +11,8 @@ import static org.springframework.data.web.config.EnableSpringDataWebSupport.Pag
 @SpringBootApplication
 @EnableConfigurationProperties({RsaKeyProperties.class})
 @EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO)
-public class StocksApplication {
+public class Server {
     public static void main(String[] args) {
-        SpringApplication.run(StocksApplication.class, args);
+        SpringApplication.run(Server.class, args);
     }
 }

@@ -26,20 +26,20 @@ public class HoldingDailySnapshot {
     private int quantity;
 
     @PositiveOrZero
-    @Column(nullable = true, precision = 15, scale = 2)
+    @Column(nullable = true, precision = 20, scale = 8)
     private BigDecimal totalCommission;
 
     // Recorded average cost price per unit at the snapshot time.
     @PositiveOrZero
-    @Column(nullable = false, precision = 15, scale = 2)
+    @Column(nullable = false, precision = 20, scale = 8)
     private BigDecimal averagePrice;
 
     @PositiveOrZero
-    @Column(nullable = false, precision = 15, scale = 2)
+    @Column(nullable = false, precision = 20, scale = 8)
     private BigDecimal marketPrice;
 
     @PositiveOrZero
-    @Column(nullable = false, precision = 15, scale = 2)
+    @Column(nullable = false, precision = 20, scale = 8)
     private BigDecimal previousMarketPrice;
 
     // Portfolio weight percentage (to be calculated externally)

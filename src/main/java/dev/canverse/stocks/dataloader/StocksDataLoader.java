@@ -47,7 +47,7 @@ public class StocksDataLoader implements ApplicationListener<ApplicationReadyEve
             var exchange = exchangeRepository.findByCode("BIST");
 
             for (var stock : stocks) {
-                var entity = new Stock(exchange, stock.description(), stock.symbolCode(), stock.isinCode(), turkiye);
+                var entity = new Stock(exchange, stock.description(), stock.symbolCode(), turkiye);
                 stockEntities.add(entity);
             }
 

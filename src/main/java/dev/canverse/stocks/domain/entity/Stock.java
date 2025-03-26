@@ -22,16 +22,15 @@ public class Stock implements Serializable {
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Exchange exchange;
 
+    @Setter
     @NotEmpty
     @Column(nullable = false)
     private String name;
 
+    @Setter
     @NotEmpty
     @Column(nullable = false)
     private String symbol;
-
-    @Column(unique = true, length = 12)
-    private String isin;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Country country;
@@ -50,17 +49,15 @@ public class Stock implements Serializable {
     protected Stock() {
     }
 
-    public Stock(Exchange exchange, String name, String symbol, String isin, Country country) {
+    public Stock(Exchange exchange, String name, String symbol, Country country) {
         this.exchange = exchange;
         this.name = name;
         this.symbol = symbol;
-        this.isin = isin;
         this.country = country;
-        //this.snapshot = new StockSnapshot(this);
     }
 
-    public Stock(Exchange exchange, String name, String symbol, String isin, Country country, String description) {
-        this(exchange, name, symbol, isin, country);
+    public Stock(Exchange exchange, String name, String symbol, Country country, String description) {
+        this(exchange, name, symbol, country);
         this.description = description;
     }
 }

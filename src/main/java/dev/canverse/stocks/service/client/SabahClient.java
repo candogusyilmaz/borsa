@@ -26,7 +26,8 @@ public class SabahClient {
         this.client = new RestTemplate();
     }
 
-    public CanliBorsaVerileri fetchBIST() {
+    public CanliBorsaVerileri fetchBistStocks() {
+        log.info("Fetching BIST stocks data from Sabah API...");
         String result = null;
 
         try {
