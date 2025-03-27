@@ -78,7 +78,6 @@ public class TokenController {
             var decodedToken = jwtDecoder.decode(idToken);
             String email = decodedToken.getClaim("email");
             String name = decodedToken.getClaim("name");
-            String username = email.split("@")[0];
 
             var user = userService.loadUserByEmail(email)
                     .orElseGet(() -> userService.createUser(name, email, "!"));
