@@ -15,6 +15,14 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
+    private final static String[] ALLOWED_DOMAINS = {
+            "gmail.com",
+            "yahoo.com",
+            "hotmail.com",
+            "outlook.com",
+            "icloud.com"
+    };
+
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
 
@@ -39,6 +47,8 @@ public class UserService implements UserDetailsService {
     }
 
     public User register(UserRegistrationRequest request) {
+        verifyEmailDomain(request.email());
+
         if (userRepository.existsByEmailIgnoreCase(request.email())) {
             throw new IllegalArgumentException("A user with this email already exists.");
         }
@@ -46,5 +56,17 @@ public class UserService implements UserDetailsService {
         var user = new User(request.email(), passwordEncoder.encode(request.password()));
         user.setName(request.name());
         return userRepository.save(user);
+    }
+
+    private void verifyEmailDomain(String email) {
+        var domain = email.substring(email.indexOf('@') + 1);
+
+        for (String allowedDomain : ALLOWED_DOMAINS) {
+            if (domain.equalsIgnoreCase(allowedDomain)) {
+                return;
+            }
+        }
+
+        throw new IllegalArgumentException("Email domain is not allowed.");
     }
 }

@@ -3,7 +3,9 @@ package dev.canverse.stocks.service.account;
 import dev.canverse.stocks.domain.entity.User;
 import dev.canverse.stocks.service.account.model.TokenCreateResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -29,6 +31,15 @@ public class TokenService {
         var jwt = jwtDecoder.decode(refreshToken);
         var username = jwt.getClaimAsString("sub");
         return (User) userService.loadUserByUsername(username);
+    }
+
+    public ResponseEntity<TokenCreateResponse> create(User principal) {
+        var body = this.createAccessToken(principal);
+        var cookie = this.createRefreshTokenCookie(principal);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie)
+                .body(body);
     }
 
     public String createRefreshTokenCookie(User principal) {

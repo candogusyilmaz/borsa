@@ -47,7 +47,7 @@ public class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<Object> handleBadCredentialsException(BadCredentialsException ex, ServletWebRequest request) {
-        var detail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Kullanıcı adı veya şifre hatalı.");
+        var detail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Email or password is incorrect.");
         detail.setInstance(URI.create(request.getRequest().getRequestURI()));
 
         return ResponseEntity.status(detail.getStatus()).body(detail);

@@ -7,8 +7,8 @@ import dev.canverse.stocks.service.account.model.GoogleTokenRequest;
 import dev.canverse.stocks.service.account.model.TokenCreateRequest;
 import dev.canverse.stocks.service.account.model.TokenCreateResponse;
 import dev.canverse.stocks.service.account.model.UserRegistrationRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,14 +31,10 @@ public class TokenController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/register")
-    public ResponseEntity<TokenCreateResponse> register(@RequestBody UserRegistrationRequest request) {
+    public ResponseEntity<TokenCreateResponse> register(@Valid @RequestBody UserRegistrationRequest request) {
         var user = userService.register(request);
-        var body = tokenService.createAccessToken(user);
-        var cookie = tokenService.createRefreshTokenCookie(user);
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie)
-                .body(body);
+        return tokenService.create(user);
     }
 
     @PostMapping("/token")
@@ -47,12 +43,7 @@ public class TokenController {
         var auth = authenticationManager.authenticate(token);
         var user = (User) auth.getPrincipal();
 
-        var body = tokenService.createAccessToken(user);
-        var cookie = tokenService.createRefreshTokenCookie(user);
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie)
-                .body(body);
+        return tokenService.create(user);
     }
 
     @PostMapping("/refresh-token")
@@ -62,12 +53,8 @@ public class TokenController {
         }
 
         var user = tokenService.getSecurityUser(refreshToken.get());
-        var body = tokenService.createAccessToken(user);
-        var cookie = tokenService.createRefreshTokenCookie(user);
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie)
-                .body(body);
+        return tokenService.create(user);
     }
 
     @PostMapping("/google")
@@ -81,12 +68,8 @@ public class TokenController {
 
             var user = userService.loadUserByEmail(email)
                     .orElseGet(() -> userService.createUser(name, email, "!"));
-            var body = tokenService.createAccessToken(user);
-            var cookie = tokenService.createRefreshTokenCookie(user);
 
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.SET_COOKIE, cookie)
-                    .body(body);
+            return tokenService.create(user);
         } catch (JwtException e) {
             throw new RuntimeException("Invalid Google token");
         }
