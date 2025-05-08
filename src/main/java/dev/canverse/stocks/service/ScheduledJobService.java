@@ -30,8 +30,7 @@ public class ScheduledJobService {
         stockService.processStockSplits();
     }
 
-    // every 30 seconds
-    @Scheduled(fixedDelay = 240000, zone = "GMT+3")
+    @Scheduled(cron = "0 0 7 * * MON-FRI", zone = "GMT+3")
     public void runImportStocksJob() {
         asyncJobService.runImportStocksJobAsync();
     }

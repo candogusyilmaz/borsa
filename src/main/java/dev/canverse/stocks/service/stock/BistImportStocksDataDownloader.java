@@ -14,6 +14,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -23,8 +24,11 @@ import java.util.zip.ZipInputStream;
 public class BistImportStocksDataDownloader implements Tasklet {
 
     @Override
-    public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) { // Removed 'throws Exception' to force local handling or explicit rethrow
-        var date = LocalDate.now().minusDays(1); // Uses container's default timezone
+    public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {
+        var date = LocalDate.now().getDayOfWeek().equals(DayOfWeek.MONDAY)
+                ? LocalDate.now().minusDays(3)
+                : LocalDate.now().minusDays(1);
+
         var url = buildUrl(date);
         log.info("Tasklet execution started. Generated URL for download: {}", url);
 
