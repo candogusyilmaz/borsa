@@ -15,7 +15,7 @@ public class ScheduledJobService {
     private final HoldingService holdingService;
     private final AsyncJobService asyncJobService;
 
-    @Scheduled(cron = "0/30 15-30 10-18 ? * MON-FRI", zone = "GMT+3")
+    @Scheduled(cron = "0/30 15-30 7-15 ? * MON-FRI")
     public void updateBist() {
         log.info("updateBist() method started");
         stockService.updateBist();
