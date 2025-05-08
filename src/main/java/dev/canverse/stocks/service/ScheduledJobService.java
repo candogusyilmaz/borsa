@@ -17,7 +17,10 @@ public class ScheduledJobService {
 
     @Scheduled(cron = "0/30 15-30 10-18 ? * MON-FRI", zone = "GMT+3")
     public void updateBist() {
+        log.info("updateBist() method started");
         stockService.updateBist();
+        log.info("updateBist() method completed");
+
     }
 
     //@Scheduled(cron = "0 30 18 ? * MON-FRI", zone = "GMT+3")
