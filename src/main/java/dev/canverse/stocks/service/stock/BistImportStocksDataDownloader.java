@@ -24,7 +24,7 @@ public class BistImportStocksDataDownloader implements Tasklet {
 
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) { // Removed 'throws Exception' to force local handling or explicit rethrow
-        var date = LocalDate.now(); // Uses container's default timezone
+        var date = LocalDate.now().minusDays(1); // Uses container's default timezone
         var url = buildUrl(date);
         log.info("Tasklet execution started. Generated URL for download: {}", url);
 
