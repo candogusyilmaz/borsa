@@ -32,15 +32,31 @@ public class BistImportStockProcessor implements ItemProcessor<BistImportStockCs
 
         var stock = stockRepository.findBySymbol(record.getIslemKodu(), BIST.getId());
 
-        if (stock.isPresent())
-            return null;
+        if (stock.isPresent()) {
+            stock.get().updateSnapshot(
+                    record.kapanisFiyati(),
+                    record.kapanisFiyati().subtract(record.oncekiKapanisFiyati()),
+                    record.degisim()
+            );
 
-        return new Stock(
+            stockRepository.save(stock.get());
+            return null;
+        }
+
+        var newStock = new Stock(
                 BIST,
                 record.bultenAdi(),
                 record.getIslemKodu(),
                 TURKEY,
                 record.enstrumanGrubu()
         );
+
+        newStock.updateSnapshot(
+                record.kapanisFiyati(),
+                record.kapanisFiyati().subtract(record.oncekiKapanisFiyati()),
+                record.degisim()
+        );
+
+        return newStock;
     }
 }

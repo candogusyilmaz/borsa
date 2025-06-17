@@ -8,6 +8,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Getter
@@ -59,5 +60,16 @@ public class Stock implements Serializable {
     public Stock(Exchange exchange, String name, String symbol, Country country, String description) {
         this(exchange, name, symbol, country);
         this.description = description;
+    }
+
+    public void updateSnapshot(BigDecimal last, BigDecimal dailyChange, BigDecimal dailyChangePercent) {
+        if (snapshot == null) {
+            snapshot = new StockSnapshot(this);
+        }
+        snapshot.setLast(last);
+        snapshot.setDailyChange(dailyChange);
+        snapshot.setDailyChangePercent(dailyChangePercent);
+        snapshot.setPreviousClose(last.subtract(dailyChange));
+        snapshot.setUpdatedAt(Instant.now());
     }
 }

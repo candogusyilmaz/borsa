@@ -1,10 +1,15 @@
 package dev.canverse.stocks.service.stock.model;
 
+import java.math.BigDecimal;
+
 public record BistImportStockCsvRecord(
         String islemKodu,
         String bultenAdi,
         String enstrumanGrubu,
-        String enstrumanTipi
+        String enstrumanTipi,
+        BigDecimal kapanisFiyati,
+        BigDecimal oncekiKapanisFiyati,
+        BigDecimal degisim
 ) {
     public static final String INSTRUMENT_GROUP_EQUITY = "EQT";
 

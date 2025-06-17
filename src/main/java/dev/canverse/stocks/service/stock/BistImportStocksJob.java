@@ -67,7 +67,10 @@ public class BistImportStocksJob {
                             s.readString(1),
                             s.readString(2),
                             s.readString(6),
-                            s.readString(7)
+                            s.readString(7),
+                            s.readBigDecimal(21),
+                            s.readBigDecimal(16),
+                            s.readBigDecimal(23)
                     ));
                 }})
                 .build();
