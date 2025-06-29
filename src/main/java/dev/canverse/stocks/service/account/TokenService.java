@@ -19,7 +19,7 @@ import java.time.temporal.ChronoUnit;
 @Service
 @RequiredArgsConstructor
 public class TokenService {
-    private final static long ACCESS_TOKEN_EXPIRATION_IN_SECONDS = 60 * 60 * 24;
+    private final static long ACCESS_TOKEN_EXPIRATION_IN_SECONDS = 60 * 60 * 1;
     private final static long REFRESH_TOKEN_EXPIRATION_IN_SECONDS = 60 * 60 * 24 * 7;
 
     private final UserDetailsService userService;

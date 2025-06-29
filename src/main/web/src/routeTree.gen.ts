@@ -8,117 +8,152 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-// Import Routes
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as RegisterIndexRouteImport } from './routes/register/index'
+import { Route as LoginIndexRouteImport } from './routes/login/index'
+import { Route as AuthenticatedMemberRouteRouteImport } from './routes/_authenticated/_member/route'
+import { Route as AuthenticatedMemberStocksRouteImport } from './routes/_authenticated/_member/stocks'
+import { Route as AuthenticatedMemberPortfolioRouteImport } from './routes/_authenticated/_member/portfolio'
 
-import { Route as rootRoute } from './routes/__root'
-import { Route as AuthenticatedRouteImport } from './routes/_authenticated/route'
-import { Route as IndexImport } from './routes/index'
-import { Route as RegisterIndexImport } from './routes/register/index'
-import { Route as LoginIndexImport } from './routes/login/index'
-import { Route as AuthenticatedMemberRouteImport } from './routes/_authenticated/_member/route'
-import { Route as AuthenticatedMemberStocksImport } from './routes/_authenticated/_member/stocks'
-import { Route as AuthenticatedMemberPortfolioImport } from './routes/_authenticated/_member/portfolio'
-
-// Create/Update Routes
-
-const AuthenticatedRouteRoute = AuthenticatedRouteImport.update({
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const IndexRoute = IndexImport.update({
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const RegisterIndexRoute = RegisterIndexImport.update({
+const RegisterIndexRoute = RegisterIndexRouteImport.update({
   id: '/register/',
   path: '/register/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const LoginIndexRoute = LoginIndexImport.update({
+const LoginIndexRoute = LoginIndexRouteImport.update({
   id: '/login/',
   path: '/login/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const AuthenticatedMemberRouteRoute = AuthenticatedMemberRouteImport.update({
-  id: '/_member',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-
-const AuthenticatedMemberStocksRoute = AuthenticatedMemberStocksImport.update({
-  id: '/stocks',
-  path: '/stocks',
-  getParentRoute: () => AuthenticatedMemberRouteRoute,
-} as any)
-
+const AuthenticatedMemberRouteRoute =
+  AuthenticatedMemberRouteRouteImport.update({
+    id: '/_member',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMemberStocksRoute =
+  AuthenticatedMemberStocksRouteImport.update({
+    id: '/stocks',
+    path: '/stocks',
+    getParentRoute: () => AuthenticatedMemberRouteRoute,
+  } as any)
 const AuthenticatedMemberPortfolioRoute =
-  AuthenticatedMemberPortfolioImport.update({
+  AuthenticatedMemberPortfolioRouteImport.update({
     id: '/portfolio',
     path: '/portfolio',
     getParentRoute: () => AuthenticatedMemberRouteRoute,
   } as any)
 
-// Populate the FileRoutesByPath interface
+export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
+  '/login': typeof LoginIndexRoute
+  '/register': typeof RegisterIndexRoute
+  '/portfolio': typeof AuthenticatedMemberPortfolioRoute
+  '/stocks': typeof AuthenticatedMemberStocksRoute
+}
+export interface FileRoutesByTo {
+  '/': typeof IndexRoute
+  '/login': typeof LoginIndexRoute
+  '/register': typeof RegisterIndexRoute
+  '/portfolio': typeof AuthenticatedMemberPortfolioRoute
+  '/stocks': typeof AuthenticatedMemberStocksRoute
+}
+export interface FileRoutesById {
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/_authenticated/_member': typeof AuthenticatedMemberRouteRouteWithChildren
+  '/login/': typeof LoginIndexRoute
+  '/register/': typeof RegisterIndexRoute
+  '/_authenticated/_member/portfolio': typeof AuthenticatedMemberPortfolioRoute
+  '/_authenticated/_member/stocks': typeof AuthenticatedMemberStocksRoute
+}
+export interface FileRouteTypes {
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '/' | '/login' | '/register' | '/portfolio' | '/stocks'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/' | '/login' | '/register' | '/portfolio' | '/stocks'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/_authenticated/_member'
+    | '/login/'
+    | '/register/'
+    | '/_authenticated/_member/portfolio'
+    | '/_authenticated/_member/stocks'
+  fileRoutesById: FileRoutesById
+}
+export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  LoginIndexRoute: typeof LoginIndexRoute
+  RegisterIndexRoute: typeof RegisterIndexRoute
+}
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexImport
-      parentRoute: typeof rootRoute
-    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
       fullPath: ''
-      preLoaderRoute: typeof AuthenticatedRouteImport
-      parentRoute: typeof rootRoute
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/_member': {
-      id: '/_authenticated/_member'
-      path: ''
-      fullPath: ''
-      preLoaderRoute: typeof AuthenticatedMemberRouteImport
-      parentRoute: typeof AuthenticatedRouteImport
-    }
-    '/login/': {
-      id: '/login/'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginIndexImport
-      parentRoute: typeof rootRoute
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/register/': {
       id: '/register/'
       path: '/register'
       fullPath: '/register'
-      preLoaderRoute: typeof RegisterIndexImport
-      parentRoute: typeof rootRoute
+      preLoaderRoute: typeof RegisterIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/_member/portfolio': {
-      id: '/_authenticated/_member/portfolio'
-      path: '/portfolio'
-      fullPath: '/portfolio'
-      preLoaderRoute: typeof AuthenticatedMemberPortfolioImport
-      parentRoute: typeof AuthenticatedMemberRouteImport
+    '/login/': {
+      id: '/login/'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/_member': {
+      id: '/_authenticated/_member'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthenticatedMemberRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/_member/stocks': {
       id: '/_authenticated/_member/stocks'
       path: '/stocks'
       fullPath: '/stocks'
-      preLoaderRoute: typeof AuthenticatedMemberStocksImport
-      parentRoute: typeof AuthenticatedMemberRouteImport
+      preLoaderRoute: typeof AuthenticatedMemberStocksRouteImport
+      parentRoute: typeof AuthenticatedMemberRouteRoute
+    }
+    '/_authenticated/_member/portfolio': {
+      id: '/_authenticated/_member/portfolio'
+      path: '/portfolio'
+      fullPath: '/portfolio'
+      preLoaderRoute: typeof AuthenticatedMemberPortfolioRouteImport
+      parentRoute: typeof AuthenticatedMemberRouteRoute
     }
   }
 }
-
-// Create and export the route tree
 
 interface AuthenticatedMemberRouteRouteChildren {
   AuthenticatedMemberPortfolioRoute: typeof AuthenticatedMemberPortfolioRoute
@@ -147,113 +182,12 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
-export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '': typeof AuthenticatedMemberRouteRouteWithChildren
-  '/login': typeof LoginIndexRoute
-  '/register': typeof RegisterIndexRoute
-  '/portfolio': typeof AuthenticatedMemberPortfolioRoute
-  '/stocks': typeof AuthenticatedMemberStocksRoute
-}
-
-export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '': typeof AuthenticatedMemberRouteRouteWithChildren
-  '/login': typeof LoginIndexRoute
-  '/register': typeof RegisterIndexRoute
-  '/portfolio': typeof AuthenticatedMemberPortfolioRoute
-  '/stocks': typeof AuthenticatedMemberStocksRoute
-}
-
-export interface FileRoutesById {
-  __root__: typeof rootRoute
-  '/': typeof IndexRoute
-  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
-  '/_authenticated/_member': typeof AuthenticatedMemberRouteRouteWithChildren
-  '/login/': typeof LoginIndexRoute
-  '/register/': typeof RegisterIndexRoute
-  '/_authenticated/_member/portfolio': typeof AuthenticatedMemberPortfolioRoute
-  '/_authenticated/_member/stocks': typeof AuthenticatedMemberStocksRoute
-}
-
-export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '' | '/login' | '/register' | '/portfolio' | '/stocks'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '' | '/login' | '/register' | '/portfolio' | '/stocks'
-  id:
-    | '__root__'
-    | '/'
-    | '/_authenticated'
-    | '/_authenticated/_member'
-    | '/login/'
-    | '/register/'
-    | '/_authenticated/_member/portfolio'
-    | '/_authenticated/_member/stocks'
-  fileRoutesById: FileRoutesById
-}
-
-export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
-  LoginIndexRoute: typeof LoginIndexRoute
-  RegisterIndexRoute: typeof RegisterIndexRoute
-}
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   LoginIndexRoute: LoginIndexRoute,
   RegisterIndexRoute: RegisterIndexRoute,
 }
-
-export const routeTree = rootRoute
+export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-/* ROUTE_MANIFEST_START
-{
-  "routes": {
-    "__root__": {
-      "filePath": "__root.tsx",
-      "children": [
-        "/",
-        "/_authenticated",
-        "/login/",
-        "/register/"
-      ]
-    },
-    "/": {
-      "filePath": "index.tsx"
-    },
-    "/_authenticated": {
-      "filePath": "_authenticated/route.tsx",
-      "children": [
-        "/_authenticated/_member"
-      ]
-    },
-    "/_authenticated/_member": {
-      "filePath": "_authenticated/_member/route.tsx",
-      "parent": "/_authenticated",
-      "children": [
-        "/_authenticated/_member/portfolio",
-        "/_authenticated/_member/stocks"
-      ]
-    },
-    "/login/": {
-      "filePath": "login/index.tsx"
-    },
-    "/register/": {
-      "filePath": "register/index.tsx"
-    },
-    "/_authenticated/_member/portfolio": {
-      "filePath": "_authenticated/_member/portfolio.tsx",
-      "parent": "/_authenticated/_member"
-    },
-    "/_authenticated/_member/stocks": {
-      "filePath": "_authenticated/_member/stocks.tsx",
-      "parent": "/_authenticated/_member"
-    }
-  }
-}
-ROUTE_MANIFEST_END */

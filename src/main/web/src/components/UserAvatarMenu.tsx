@@ -1,63 +1,86 @@
-import { Avatar, Group, Menu, Text, UnstyledButton } from '@mantine/core';
-import { IconChevronDown, IconLogout, IconSettings, IconTrash } from '@tabler/icons-react';
-import { useNavigate } from '@tanstack/react-router';
-import cx from 'clsx';
-import { useState } from 'react';
-import { useAuthentication } from '~/lib/AuthenticationContext';
+import {Avatar, Group, Menu, Text, UnstyledButton} from '@mantine/core';
+import {IconDotsVertical, IconLogout, IconSettings, IconTrash} from '@tabler/icons-react';
+import {useNavigate} from '@tanstack/react-router';
+import {useAuthentication} from '~/lib/AuthenticationContext';
 import common from '~/styles/common.module.css';
-import { useClearMyDataModal } from './ClearMyData';
+import {useClearMyDataModal} from './ClearMyData';
 
-export function UserAvatarMenu() {
-  const { user, logout } = useAuthentication();
-  const [opened, setOpened] = useState(false);
-  const navigate = useNavigate();
-  const { open: openClearMyDataModal } = useClearMyDataModal();
+export function UserNavbar() {
+    const {user, logout} = useAuthentication();
+    const navigate = useNavigate();
+    const {open: openClearMyDataModal} = useClearMyDataModal();
 
-  return (
-    <Menu
-      width={260}
-      position="bottom-end"
-      transitionProps={{ transition: 'pop-top-right' }}
-      withinPortal
-      onClose={() => setOpened(false)}
-      onOpen={() => setOpened(true)}>
-      <Menu.Target>
-        <UnstyledButton
-          className={cx(common.user, {
-            [common.userActive]: opened
-          })}>
-          <Group gap={7}>
-            <Avatar size={24} />
-            <Text fw={500} size="sm" lh={1} mr={3}>
-              {user?.name}
-            </Text>
-            <IconChevronDown size={12} stroke={1.5} />
-          </Group>
-        </UnstyledButton>
-      </Menu.Target>
+    const avatarLink = 'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-8.png';
+    const name = user?.name;
+    const email = user?.email;
 
-      <Menu.Dropdown>
-        <Menu.Label>Settings</Menu.Label>
-        <Menu.Item leftSection={<IconSettings size={16} stroke={1.5} />} disabled>
-          Account settings
-        </Menu.Item>
-        <Menu.Item
-          leftSection={<IconLogout size={16} stroke={1.5} />}
-          onClick={() => {
-            logout();
-            navigate({ to: '/login' });
-          }}>
-          Logout
-        </Menu.Item>
+    return (
+        <Menu withArrow width={280} offset={0} transitionProps={{transition: 'pop'}} withinPortal>
+            <Menu.Target>
+                <UnstyledButton className={common.navUser}>
+                    <Group mx={10} my="xs" gap="xs">
+                        <Avatar size={33} src={avatarLink} radius="xl"/>
+                        <div
+                            style={{
+                                flex: 1,
+                                overflow: 'hidden',
+                                whiteSpace: 'nowrap'
+                            }}>
+                            <Text
+                                size="sm"
+                                fw={500}
+                                style={{
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis'
+                                }}>
+                                {name}
+                            </Text>
 
-        <Menu.Divider />
+                            <Text c="dimmed" size="xs" style={{overflow: 'hidden', textOverflow: 'ellipsis'}}>
+                                {email}
+                            </Text>
+                        </div>
+                        <IconDotsVertical style={{marginLeft: 'auto'}} size={18} stroke={1.5}/>
+                    </Group>
+                </UnstyledButton>
+            </Menu.Target>
+            <Menu.Dropdown>
+                <Menu.Item>
+                    <Group style={{width: 220}}>
+                        <Avatar radius="xl" src={avatarLink}/>
+                        <div style={{flex: 1, overflow: 'hidden', whiteSpace: 'nowrap'}}>
+                            <Text fw={500} style={{overflow: 'hidden', textOverflow: 'ellipsis'}}>
+                                {name}
+                            </Text>
+                            <Text size="xs" c="dimmed" style={{overflow: 'hidden', textOverflow: 'ellipsis'}}>
+                                {email}
+                            </Text>
+                        </div>
+                    </Group>
+                </Menu.Item>
 
-        <Menu.Label>Danger zone</Menu.Label>
+                <Menu.Divider/>
 
-        <Menu.Item color="red" leftSection={<IconTrash size={16} stroke={1.5} />} onClick={openClearMyDataModal}>
-          Clear my data
-        </Menu.Item>
-      </Menu.Dropdown>
-    </Menu>
-  );
+                <Menu.Label>Settings</Menu.Label>
+                <Menu.Item disabled leftSection={<IconSettings size={16} stroke={1.5}/>}>
+                    Account settings
+                </Menu.Item>
+                <Menu.Item
+                    leftSection={<IconLogout size={16} stroke={1.5}/>}
+                    onClick={() => {
+                        logout();
+                        navigate({to: '/login'});
+                    }}>
+                    Logout
+                </Menu.Item>
+
+                <Menu.Divider/>
+
+                <Menu.Label>Danger zone</Menu.Label>
+                <Menu.Item color="red" leftSection={<IconTrash size={16} stroke={1.5}/>} onClick={openClearMyDataModal}>
+                    Delete my data
+                </Menu.Item>
+            </Menu.Dropdown>
+        </Menu>
+    );
 }

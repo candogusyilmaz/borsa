@@ -18,7 +18,7 @@ public class ScheduledJobService {
         stockService.updateBist();
     }
 
-    @Scheduled(cron = "0 0 7,17 ? * MON-FRI")
+    @Scheduled(cron = "0 0 7,16 ? * MON-FRI")
     public void runImportStocksJob() {
         asyncJobService.runImportStocksJobAsync();
     }

@@ -1,9 +1,11 @@
 import {useMutation, type UseMutationResult, useQueryClient} from '@tanstack/react-query';
 import {createContext, type ReactNode, useContext, useState} from 'react';
 import {http} from './axios.ts';
+import {sleep} from './sleep.ts';
 
 export interface LoginResponse {
     name: string;
+    email: string;
     token: string;
     permissions: string[];
 }
@@ -54,11 +56,7 @@ export function AuthenticationProvider({children}: Readonly<AuthProviderProps>) 
     });
 
     const register = useMutation({
-        mutationFn: async (credentials: {
-            name: string;
-            email: string;
-            password: string;
-        }) => {
+        mutationFn: async (credentials: { name: string; email: string; password: string }) => {
             return (await http.post<LoginResponse>('/auth/register', credentials)).data;
         },
         onSuccess: async (data) => {
@@ -71,6 +69,7 @@ export function AuthenticationProvider({children}: Readonly<AuthProviderProps>) 
         localStorage.removeItem('user');
         client.removeQueries();
         setUser(null);
+        await sleep(1);
     };
 
     const updateToken = (token: string) => {
