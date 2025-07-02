@@ -82,7 +82,6 @@ public class Holding implements Serializable {
 
         this.quantity += quantity;
         this.total = this.total.add(price.multiply(BigDecimal.valueOf(quantity)));
-        this.commission = this.commission.add(commission);
 
         this.history.add(new HoldingHistory(this, HoldingHistory.ActionType.BUY));
     }
@@ -96,11 +95,6 @@ public class Holding implements Serializable {
 
         this.total = this.total.subtract(Calculator.divide(this.total.multiply(BigDecimal.valueOf(quantity)), BigDecimal.valueOf(this.quantity)));
         this.quantity -= quantity;
-
-        if (this.commission.compareTo(BigDecimal.ZERO) > 0) {
-            var avgCommissionPerUnit = Calculator.divide(this.commission, BigDecimal.valueOf(this.quantity));
-            this.commission = this.commission.subtract(avgCommissionPerUnit.multiply(BigDecimal.valueOf(quantity)));
-        }
 
         this.history.add(new HoldingHistory(this, HoldingHistory.ActionType.SELL));
     }
