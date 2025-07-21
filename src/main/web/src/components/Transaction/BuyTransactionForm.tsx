@@ -75,11 +75,11 @@ export function BuyTransactionForm({ stockId, close }: BuyTransactionFormProps) 
     </Text>
   );
 
-  const _commissionRightSection = selectedStock && (
+  /* const _commissionRightSection = selectedStock && (
     <Text c="dimmed" size="xs" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
       {format.toCurrency(form.values.quantity * form.values.price * 0.002, false)}
     </Text>
-  );
+  ); */
 
   const selectOptions = data?.symbols.map((s) => ({
     value: s.id,
