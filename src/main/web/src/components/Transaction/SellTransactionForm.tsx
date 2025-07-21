@@ -65,8 +65,8 @@ export function SellTransactionForm({ stockId, close }: SellTransactionFormProps
       stockId: Number(values.stockId),
       price: values.price,
       quantity: values.quantity,
-      commission: values.commission,
-      actionDate: values.actionDate.toJSON()
+      commission: 0,
+      actionDate: new Date(values.actionDate).toJSON()
     })
   );
 
@@ -99,7 +99,7 @@ export function SellTransactionForm({ stockId, close }: SellTransactionFormProps
     </Text>
   );
 
-  const commissionRightSection = selectedStock && (
+  const _commissionRightSection = selectedStock && (
     <Text c="dimmed" size="xs" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
       {format.toCurrency(form.values.quantity * form.values.price * 0.002, false)}
     </Text>
@@ -151,10 +151,10 @@ export function SellTransactionForm({ stockId, close }: SellTransactionFormProps
             {...form.getInputProps('price')}
           />
         </SimpleGrid>
-        <NumberInput
-          inputWrapperOrder={['label', 'error', 'input', 'description']}
+        {/* <NumberInput
+          inputWrapperOrder={["label", "error", "input", "description"]}
           disabled={!form.values.stockId}
-          prefix={getCurrencySymbol('TRY')}
+          prefix={getCurrencySymbol("TRY")}
           label="Commission"
           hideControls
           thousandSeparator="."
@@ -165,9 +165,13 @@ export function SellTransactionForm({ stockId, close }: SellTransactionFormProps
           rightSectionWidth="auto"
           rightSectionProps={{ style: { paddingRight: 10 } }}
           rightSection={commissionRightSection}
-          description={form.values.quantity && form.values.price && 'Broker commission was calculated at 0.2%'}
-          {...form.getInputProps('commission')}
-        />
+          description={
+            form.values.quantity &&
+            form.values.price &&
+            "Broker commission was calculated at 0.2%"
+          }
+          {...form.getInputProps("commission")}
+        /> */}
         <SellTransactionSummary
           stockInHolding={stockInHolding}
           newQuantity={form.values.quantity}
