@@ -1,10 +1,12 @@
 package dev.canverse.stocks.service.portfolio;
 
+import dev.canverse.stocks.domain.exception.NotFoundException;
 import dev.canverse.stocks.repository.HoldingDailySnapshotRepository;
 import dev.canverse.stocks.repository.HoldingRepository;
+import dev.canverse.stocks.repository.PortfolioRepository;
 import dev.canverse.stocks.security.AuthenticationProvider;
 import dev.canverse.stocks.service.portfolio.model.BalanceHistory;
-import dev.canverse.stocks.service.portfolio.model.Portfolio;
+import dev.canverse.stocks.service.portfolio.model.PortfolioInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class HoldingService {
+    private final PortfolioRepository portfolioRepository;
     private final HoldingRepository holdingRepository;
     private final HoldingDailySnapshotRepository holdingDailySnapshotRepository;
 
@@ -24,8 +27,12 @@ public class HoldingService {
         holdingRepository.deleteAllByUserId(AuthenticationProvider.getUser().getId());
     }
 
-    public Portfolio fetchPortfolio(boolean includeCommission) {
-        return holdingRepository.fetchPortfolio(includeCommission, AuthenticationProvider.getUser().getId());
+    public PortfolioInfo fetchPortfolio(long portfolioId) {
+        if (!portfolioRepository.isPortfolioOwnedByPrincipal(portfolioId)) {
+            throw new NotFoundException("Portfolio not found");
+        }
+
+        return holdingRepository.fetchPortfolio(portfolioId);
     }
 
     public List<BalanceHistory> fetchBalanceHistory(int lastDays) {

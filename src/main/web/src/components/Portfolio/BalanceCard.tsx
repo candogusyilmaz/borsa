@@ -1,9 +1,10 @@
 import { DonutChart } from '@mantine/charts';
 import { Box, Card, type CardProps, Divider, Group, rem, Stack, Text, useMatches } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
+import { useParams } from '@tanstack/react-router';
 import { useState } from 'react';
 import { queries } from '~/api';
-import type { Portfolio } from '~/api/queries/types';
+import type { PortfolioInfo } from '~/api/queries/types';
 import Currency from '~/components/Currency';
 import { ErrorView } from '~/components/ErrorView';
 import { LoadingView } from '~/components/LoadingView';
@@ -16,7 +17,8 @@ const COLORS = [
 ];
 
 export function BalanceCard() {
-  const { data, status } = useQuery(queries.portfolio.fetchPortfolio(false));
+  const { portfolioId } = useParams({ strict: false });
+  const { data, status } = useQuery(queries.portfolio.fetchPortfolio({ portfolioId: Number(portfolioId) }));
 
   if (status === 'pending') {
     return (
@@ -45,7 +47,7 @@ function BalanceContainer({ children, ...props }: CardProps) {
   );
 }
 
-function Inner({ data }: { data: Portfolio }) {
+function Inner({ data }: { data: PortfolioInfo }) {
   const chartSize = useMatches({
     base: 200,
     sm: 250

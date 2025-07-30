@@ -1,5 +1,6 @@
 import { Alert, Button, Card, Checkbox, Group, Stack, Text } from '@mantine/core';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useParams } from '@tanstack/react-router';
 import { useState } from 'react';
 import { mutations } from '~/api';
 import { queryKeys } from '~/api/queries/config';
@@ -21,6 +22,7 @@ function DetailLine({ label, value, color }: { label: string; value: React.React
 }
 
 export function UndoTradeForm() {
+  const { portfolioId } = useParams({ strict: false });
   const client = useQueryClient();
   const { trade, close } = useUndoTradeModalStore();
   const [hasConfirmed, setHasConfirmed] = useState(false);
@@ -40,7 +42,11 @@ export function UndoTradeForm() {
   });
 
   const handleFormSubmit = () => {
-    mutation.mutate(trade.holdingId);
+    if (!portfolioId) {
+      alerts.error('Portfolio ID is required to perform this action.');
+      return;
+    }
+    mutation.mutate({ portfolioId: Number(portfolioId), holdingId: trade.holdingId });
   };
 
   return (

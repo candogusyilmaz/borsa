@@ -4,9 +4,11 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import dev.canverse.stocks.domain.entity.QHolding;
+import dev.canverse.stocks.domain.entity.QPortfolio;
 import dev.canverse.stocks.domain.entity.QTrade;
-import dev.canverse.stocks.domain.entity.QUser;
 import dev.canverse.stocks.domain.entity.Trade;
+import dev.canverse.stocks.domain.exception.NotFoundException;
+import dev.canverse.stocks.repository.PortfolioRepository;
 import dev.canverse.stocks.service.portfolio.model.MonthlyRevenueOverview;
 import dev.canverse.stocks.service.portfolio.model.TradeHistory;
 import lombok.RequiredArgsConstructor;
@@ -19,12 +21,17 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TradeRepositoryCustomImpl implements TradeRepositoryCustom {
     private final JPAQueryFactory queryFactory;
+    private final PortfolioRepository portfolioRepository;
 
     @Override
-    public List<MonthlyRevenueOverview> getMonthlyRevenueOverview(Long userId) {
+    public List<MonthlyRevenueOverview> getMonthlyRevenueOverview(long portfolioId) {
+        if (!portfolioRepository.isPortfolioOwnedByPrincipal(portfolioId)) {
+            throw new NotFoundException("Portfolio not found");
+        }
+
         var trade = QTrade.trade;
         var holding = QHolding.holding;
-        var user = QUser.user;
+        var portfolio = QPortfolio.portfolio;
 
         var month = trade.actionDate.month();
         var year = trade.actionDate.year();
@@ -38,8 +45,8 @@ public class TradeRepositoryCustomImpl implements TradeRepositoryCustom {
                 )
                 .from(trade)
                 .join(trade.holding, holding)
-                .join(holding.user, user)
-                .where(trade.type.eq(Trade.Type.SELL).and(user.id.eq(userId)))
+                .join(holding.portfolio, portfolio)
+                .where(trade.type.eq(Trade.Type.SELL).and(portfolio.id.eq(portfolioId)))
                 .groupBy(year, month)
                 .fetch();
 
@@ -61,7 +68,7 @@ public class TradeRepositoryCustomImpl implements TradeRepositoryCustom {
     }
 
     @Override
-    public TradeHistory getTradeHistory(Long userId) {
+    public TradeHistory getTradeHistory(long portfolioId) {
         var trade = QTrade.trade;
         var subTrade = new QTrade("subTrade");
 
@@ -88,7 +95,7 @@ public class TradeRepositoryCustomImpl implements TradeRepositoryCustom {
                 )
                 .from(trade)
                 .leftJoin(trade.performance)
-                .where(trade.holding.user.id.eq(userId))
+                .where(trade.holding.portfolio.id.eq(portfolioId))
                 .orderBy(trade.createdAt.desc())
                 .fetch();
 

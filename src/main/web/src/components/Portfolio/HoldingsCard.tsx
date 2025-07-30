@@ -1,7 +1,8 @@
 import { Card, type CardProps, Center, Group, ScrollArea, SimpleGrid, Text, Title } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
+import { useParams } from '@tanstack/react-router';
 import { queries } from '~/api';
-import type { Portfolio } from '~/api/queries/types';
+import type { PortfolioInfo } from '~/api/queries/types';
 import { ErrorView } from '~/components/ErrorView';
 import { LoadingView } from '~/components/LoadingView';
 import { BuyStockModal } from '~/components/Stocks/BuyStockModal';
@@ -11,7 +12,8 @@ import { format } from '~/lib/format';
 const UPCOMING_FEATURE = true;
 
 export function HoldingsCard() {
-  const { data, status } = useQuery(queries.portfolio.fetchPortfolio(false));
+  const { portfolioId } = useParams({ strict: false });
+  const { data, status } = useQuery(queries.portfolio.fetchPortfolio({ portfolioId: Number(portfolioId) }));
 
   if (UPCOMING_FEATURE) {
     return (
@@ -74,7 +76,7 @@ function HoldingsContainer({ children, ...props }: CardProps) {
   );
 }
 
-function Inner({ data }: { data: Portfolio }) {
+function Inner({ data }: { data: PortfolioInfo }) {
   return (
     <HoldingsContainer>
       <ScrollArea mt="md">

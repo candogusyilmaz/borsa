@@ -2,6 +2,7 @@ import { Button, type ButtonProps, NumberInput, Select, SimpleGrid, Stack, Text 
 import { DateTimePicker } from '@mantine/dates';
 import { useForm } from '@mantine/form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useParams } from '@tanstack/react-router';
 import { mutations, queries } from '~/api';
 import { queryKeys } from '~/api/queries/config';
 import { alerts } from '~/lib/alert';
@@ -16,9 +17,11 @@ type SellTransactionFormProps = {
 };
 
 export function SellTransactionForm({ stockId, close }: SellTransactionFormProps) {
+  const { portfolioId } = useParams({ strict: false });
+
   const client = useQueryClient();
   const { data } = useQuery(queries.stocks.fetchAll('BIST'));
-  const { data: balance } = useQuery(queries.portfolio.fetchPortfolio(false));
+  const { data: balance } = useQuery(queries.portfolio.fetchPortfolio({ portfolioId: Number(portfolioId) }));
   const form = useForm({
     mode: 'controlled',
     initialValues: {
@@ -60,15 +63,21 @@ export function SellTransactionForm({ stockId, close }: SellTransactionFormProps
       label: `${s.name} (${s.symbol})`
     }));
 
-  const handleFormSubmit = form.onSubmit((values) =>
+  const handleFormSubmit = form.onSubmit((values) => {
+    if (!portfolioId) {
+      alerts.error('Portfolio ID is required to perform this action.');
+      return;
+    }
+
     mutation.mutate({
+      portfolioId: Number(portfolioId),
       stockId: Number(values.stockId),
       price: values.price,
       quantity: values.quantity,
       commission: 0,
       actionDate: new Date(values.actionDate).toJSON()
-    })
-  );
+    });
+  });
 
   const onStockChange = (s) => {
     const stock = data?.symbols.find((a) => a.id === s);

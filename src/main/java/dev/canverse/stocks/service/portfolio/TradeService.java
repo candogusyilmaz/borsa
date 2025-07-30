@@ -1,12 +1,9 @@
 package dev.canverse.stocks.service.portfolio;
 
 import dev.canverse.stocks.domain.entity.Holding;
+import dev.canverse.stocks.domain.entity.Portfolio;
 import dev.canverse.stocks.domain.exception.NotFoundException;
-import dev.canverse.stocks.repository.HoldingRepository;
-import dev.canverse.stocks.repository.StockRepository;
-import dev.canverse.stocks.repository.StockSplitRepository;
-import dev.canverse.stocks.repository.TradeRepository;
-import dev.canverse.stocks.security.AuthenticationProvider;
+import dev.canverse.stocks.repository.*;
 import dev.canverse.stocks.service.portfolio.model.BuyTradeRequest;
 import dev.canverse.stocks.service.portfolio.model.SellTradeRequest;
 import dev.canverse.stocks.service.portfolio.model.TradeHistory;
@@ -23,14 +20,18 @@ public class TradeService {
     private final StockSplitRepository stockSplitRepository;
     private final HoldingRepository holdingRepository;
     private final TradeRepository tradeRepository;
+    private final PortfolioRepository portfolioRepository;
 
     @Transactional
-    public void buy(BuyTradeRequest req) {
-        var holding = holdingRepository.findByUserIdAndStockId(
-                AuthenticationProvider.getUser().getId(),
+    public void buy(long portfolioId, BuyTradeRequest req) {
+        Portfolio portfolio = portfolioRepository.findPortfolioByPrincipal(portfolioId)
+                .orElseThrow(() -> new NotFoundException("Portfolio not found"));
+
+        var holding = holdingRepository.findByPortfolioIdAndStockIdForPrincipal(
+                portfolio.getId(),
                 req.stockId()
         ).orElseGet(() -> holdingRepository.save(new Holding(
-                AuthenticationProvider.getUser(),
+                portfolio,
                 stockRepository.getReference(req.stockId())
         )));
 
@@ -40,9 +41,9 @@ public class TradeService {
     }
 
     @Transactional
-    public void sell(SellTradeRequest req) {
-        var holding = holdingRepository.findByUserIdAndStockId(
-                AuthenticationProvider.getUser().getId(),
+    public void sell(long portfolioId, SellTradeRequest req) {
+        var holding = holdingRepository.findByPortfolioIdAndStockIdForPrincipal(
+                portfolioId,
                 req.stockId()
         ).orElseThrow(() -> new NotFoundException("No holding found"));
 
@@ -52,8 +53,8 @@ public class TradeService {
     }
 
     @Transactional
-    public void undoLatestTrade(Long holdingId) {
-        var holding = holdingRepository.findByIdWithLatestTrade(holdingId)
+    public void undoLatestTrade(long portfolioId, long holdingId) {
+        var holding = holdingRepository.findByIdWithLatestTradeForPrincipal(holdingId)
                 .orElseThrow(() -> new NotFoundException("No holding found"));
 
         var latestSplit = stockSplitRepository.findLatestProcessedSplitByStockId(holding.getStock().getId());
@@ -70,7 +71,11 @@ public class TradeService {
         holdingRepository.save(holding);
     }
 
-    public TradeHistory fetchTrades() {
-        return tradeRepository.getTradeHistory(AuthenticationProvider.getUser().getId());
+    public TradeHistory fetchTrades(long portfolioId) {
+        if (!portfolioRepository.isPortfolioOwnedByPrincipal(portfolioId)) {
+            throw new NotFoundException("Portfolio not found");
+        }
+
+        return tradeRepository.getTradeHistory(portfolioId);
     }
 }

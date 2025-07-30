@@ -14,8 +14,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as RegisterIndexRouteImport } from './routes/register/index'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as AuthenticatedMemberRouteRouteImport } from './routes/_authenticated/_member/route'
-import { Route as AuthenticatedMemberStocksRouteImport } from './routes/_authenticated/_member/stocks'
-import { Route as AuthenticatedMemberPortfolioRouteImport } from './routes/_authenticated/_member/portfolio'
+import { Route as AuthenticatedMemberOverviewRouteImport } from './routes/_authenticated/_member/overview'
+import { Route as AuthenticatedMemberPortfoliosPortfolioIdRouteImport } from './routes/_authenticated/_member/portfolios/$portfolioId'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -41,16 +41,16 @@ const AuthenticatedMemberRouteRoute =
     id: '/_member',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedMemberStocksRoute =
-  AuthenticatedMemberStocksRouteImport.update({
-    id: '/stocks',
-    path: '/stocks',
+const AuthenticatedMemberOverviewRoute =
+  AuthenticatedMemberOverviewRouteImport.update({
+    id: '/overview',
+    path: '/overview',
     getParentRoute: () => AuthenticatedMemberRouteRoute,
   } as any)
-const AuthenticatedMemberPortfolioRoute =
-  AuthenticatedMemberPortfolioRouteImport.update({
-    id: '/portfolio',
-    path: '/portfolio',
+const AuthenticatedMemberPortfoliosPortfolioIdRoute =
+  AuthenticatedMemberPortfoliosPortfolioIdRouteImport.update({
+    id: '/portfolios/$portfolioId',
+    path: '/portfolios/$portfolioId',
     getParentRoute: () => AuthenticatedMemberRouteRoute,
   } as any)
 
@@ -58,15 +58,15 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginIndexRoute
   '/register': typeof RegisterIndexRoute
-  '/portfolio': typeof AuthenticatedMemberPortfolioRoute
-  '/stocks': typeof AuthenticatedMemberStocksRoute
+  '/overview': typeof AuthenticatedMemberOverviewRoute
+  '/portfolios/$portfolioId': typeof AuthenticatedMemberPortfoliosPortfolioIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginIndexRoute
   '/register': typeof RegisterIndexRoute
-  '/portfolio': typeof AuthenticatedMemberPortfolioRoute
-  '/stocks': typeof AuthenticatedMemberStocksRoute
+  '/overview': typeof AuthenticatedMemberOverviewRoute
+  '/portfolios/$portfolioId': typeof AuthenticatedMemberPortfoliosPortfolioIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -75,14 +75,19 @@ export interface FileRoutesById {
   '/_authenticated/_member': typeof AuthenticatedMemberRouteRouteWithChildren
   '/login/': typeof LoginIndexRoute
   '/register/': typeof RegisterIndexRoute
-  '/_authenticated/_member/portfolio': typeof AuthenticatedMemberPortfolioRoute
-  '/_authenticated/_member/stocks': typeof AuthenticatedMemberStocksRoute
+  '/_authenticated/_member/overview': typeof AuthenticatedMemberOverviewRoute
+  '/_authenticated/_member/portfolios/$portfolioId': typeof AuthenticatedMemberPortfoliosPortfolioIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/register' | '/portfolio' | '/stocks'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/register'
+    | '/overview'
+    | '/portfolios/$portfolioId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/register' | '/portfolio' | '/stocks'
+  to: '/' | '/login' | '/register' | '/overview' | '/portfolios/$portfolioId'
   id:
     | '__root__'
     | '/'
@@ -90,8 +95,8 @@ export interface FileRouteTypes {
     | '/_authenticated/_member'
     | '/login/'
     | '/register/'
-    | '/_authenticated/_member/portfolio'
-    | '/_authenticated/_member/stocks'
+    | '/_authenticated/_member/overview'
+    | '/_authenticated/_member/portfolios/$portfolioId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -138,32 +143,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMemberRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/_member/stocks': {
-      id: '/_authenticated/_member/stocks'
-      path: '/stocks'
-      fullPath: '/stocks'
-      preLoaderRoute: typeof AuthenticatedMemberStocksRouteImport
+    '/_authenticated/_member/overview': {
+      id: '/_authenticated/_member/overview'
+      path: '/overview'
+      fullPath: '/overview'
+      preLoaderRoute: typeof AuthenticatedMemberOverviewRouteImport
       parentRoute: typeof AuthenticatedMemberRouteRoute
     }
-    '/_authenticated/_member/portfolio': {
-      id: '/_authenticated/_member/portfolio'
-      path: '/portfolio'
-      fullPath: '/portfolio'
-      preLoaderRoute: typeof AuthenticatedMemberPortfolioRouteImport
+    '/_authenticated/_member/portfolios/$portfolioId': {
+      id: '/_authenticated/_member/portfolios/$portfolioId'
+      path: '/portfolios/$portfolioId'
+      fullPath: '/portfolios/$portfolioId'
+      preLoaderRoute: typeof AuthenticatedMemberPortfoliosPortfolioIdRouteImport
       parentRoute: typeof AuthenticatedMemberRouteRoute
     }
   }
 }
 
 interface AuthenticatedMemberRouteRouteChildren {
-  AuthenticatedMemberPortfolioRoute: typeof AuthenticatedMemberPortfolioRoute
-  AuthenticatedMemberStocksRoute: typeof AuthenticatedMemberStocksRoute
+  AuthenticatedMemberOverviewRoute: typeof AuthenticatedMemberOverviewRoute
+  AuthenticatedMemberPortfoliosPortfolioIdRoute: typeof AuthenticatedMemberPortfoliosPortfolioIdRoute
 }
 
 const AuthenticatedMemberRouteRouteChildren: AuthenticatedMemberRouteRouteChildren =
   {
-    AuthenticatedMemberPortfolioRoute: AuthenticatedMemberPortfolioRoute,
-    AuthenticatedMemberStocksRoute: AuthenticatedMemberStocksRoute,
+    AuthenticatedMemberOverviewRoute: AuthenticatedMemberOverviewRoute,
+    AuthenticatedMemberPortfoliosPortfolioIdRoute:
+      AuthenticatedMemberPortfoliosPortfolioIdRoute,
   }
 
 const AuthenticatedMemberRouteRouteWithChildren =

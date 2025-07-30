@@ -3,9 +3,10 @@ import { http } from '~/lib/axios';
 import { queryKeys, staleTimes } from './config';
 import type { MonthlyRevenueOverview } from './types';
 
-export const monthlyRevenueOverview = () =>
+export const monthlyRevenueOverview = ({ portfolioId }: { portfolioId: number }) =>
   queryOptions({
-    queryKey: ['/analytics/monthly-revenue-overview', queryKeys.portfolio],
-    queryFn: async ({ signal }) => (await http.get<MonthlyRevenueOverview>('/analytics/monthly-revenue-overview', { signal })).data,
+    queryKey: [`/portfolios/${portfolioId}/analytics/monthly-revenue-overview`, queryKeys.portfolio],
+    queryFn: async ({ signal }) =>
+      (await http.get<MonthlyRevenueOverview>(`/portfolios/${portfolioId}/analytics/monthly-revenue-overview`, { signal })).data,
     staleTime: staleTimes.FIVE_MINUTES
   });

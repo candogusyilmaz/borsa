@@ -6,7 +6,7 @@ import dev.canverse.stocks.service.portfolio.model.TradeHistory;
 import java.util.List;
 
 public interface TradeRepositoryCustom {
-    List<MonthlyRevenueOverview> getMonthlyRevenueOverview(Long userId);
+    List<MonthlyRevenueOverview> getMonthlyRevenueOverview(long portfolioId);
 
-    TradeHistory getTradeHistory(Long userId);
+    TradeHistory getTradeHistory(long portfolioId);
 }

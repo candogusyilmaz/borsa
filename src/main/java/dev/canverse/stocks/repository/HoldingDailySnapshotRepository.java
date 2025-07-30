@@ -15,7 +15,6 @@ public interface HoldingDailySnapshotRepository extends JpaRepository<HoldingDai
     @Query(value = """
             INSERT INTO holding_daily_snapshots (holding_id,
                                                    quantity,
-                                                   total_commission,
                                                    average_price,
                                                    market_price,
                                                    previous_market_price,
@@ -30,7 +29,6 @@ public interface HoldingDailySnapshotRepository extends JpaRepository<HoldingDai
                 GROUP BY h.user_id)
             SELECT h.id,
                    h.quantity,
-                   h.total_tax,
                    round(h.total / h.quantity, 2),
                    ss.last,
                    ss.close,

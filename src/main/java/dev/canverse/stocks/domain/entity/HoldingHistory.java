@@ -30,10 +30,6 @@ public class HoldingHistory implements Serializable {
     private BigDecimal total;
 
     @NotNull
-    @Column(name = "total_tax", nullable = false, precision = 15, scale = 2)
-    private BigDecimal commission;
-
-    @NotNull
     @Enumerated(EnumType.STRING)
     private HoldingHistory.ActionType actionType;
 
@@ -48,7 +44,6 @@ public class HoldingHistory implements Serializable {
         this.holding = holding;
         this.quantity = holding.getQuantity();
         this.total = holding.getTotal();
-        this.commission = holding.getCommission();
         this.actionType = actionType;
     }
 

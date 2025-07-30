@@ -8,7 +8,12 @@ export type SelectItemGroup = {
   items: Array<SelectItem>;
 };
 
-export type Portfolio = {
+export type BasicPortfolioView = {
+  id: string;
+  name: string;
+};
+
+export type PortfolioInfo = {
   stocks: Array<PortfolioStock>;
   totalValue: number;
   totalProfit: number;

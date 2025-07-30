@@ -1,13 +1,21 @@
 import { Container, Flex, Space, Stack, Title } from '@mantine/core';
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, redirect } from '@tanstack/react-router';
+import { queries } from '~/api';
 import { BalanceCard } from '~/components/Portfolio/BalanceCard';
 import { HoldingsCard } from '~/components/Portfolio/HoldingsCard';
 import { HoldingsTable } from '~/components/Portfolio/HoldingsTable';
 import { MonthlyRevenueOverview } from '~/components/Portfolio/MonthlyRevenueOverview';
 import { TransactionHistory } from '~/components/Portfolio/TransactionHistory';
 
-export const Route = createFileRoute('/_authenticated/_member/portfolio')({
-  component: RouteComponent
+export const Route = createFileRoute('/_authenticated/_member/portfolios/$portfolioId')({
+  component: RouteComponent,
+  beforeLoad: async ({ context: { queryClient }, params }) => {
+    try {
+      await queryClient.fetchQuery(queries.portfolio.fetchPortfolio({ portfolioId: Number(params.portfolioId) }));
+    } catch (_error) {
+      throw redirect({ to: '/overview' });
+    }
+  }
 });
 
 function RouteComponent() {

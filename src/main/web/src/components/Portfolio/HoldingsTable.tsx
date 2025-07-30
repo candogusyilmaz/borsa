@@ -1,18 +1,17 @@
-import { ActionIcon, Button, Card, Group, Popover, rem, ScrollArea, Stack, Switch, Table, Text } from '@mantine/core';
-import { IconSettings } from '@tabler/icons-react';
+import { Button, Card, Group, rem, ScrollArea, Stack, Table, Text } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
+import { useParams } from '@tanstack/react-router';
 import { createColumnHelper, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { useState } from 'react';
 import { queries } from '~/api';
-import type { Portfolio, PortfolioStock } from '~/api/queries/types';
+import type { PortfolioInfo, PortfolioStock } from '~/api/queries/types';
 import { ErrorView } from '~/components/ErrorView';
 import { LoadingView } from '~/components/LoadingView';
 import { useTransactionModalStore } from '~/components/Transaction/TransactionModal';
 import { format } from '~/lib/format';
 
 export function HoldingsTable() {
-  const [includeCommission, setIncludeCommission] = useState(false);
-  const { data, status } = useQuery(queries.portfolio.fetchPortfolio(includeCommission));
+  const { portfolioId } = useParams({ strict: false });
+  const { data, status } = useQuery(queries.portfolio.fetchPortfolio({ portfolioId: Number(portfolioId) }));
   const openModal = useTransactionModalStore((state) => state.open);
 
   if (status === 'pending') {
@@ -62,18 +61,10 @@ export function HoldingsTable() {
     );
   }
 
-  return <Inner data={data} includeCommission={includeCommission} onToggleCommission={setIncludeCommission} />;
+  return <Inner data={data} />;
 }
 
-function Inner({
-  data: { stocks, totalValue, totalCost, totalProfitPercentage },
-  includeCommission,
-  onToggleCommission
-}: {
-  data: Portfolio;
-  includeCommission: boolean;
-  onToggleCommission: (value: boolean) => void;
-}) {
+function Inner({ data: { stocks, totalValue, totalCost, totalProfitPercentage } }: { data: PortfolioInfo }) {
   'use no memo';
   const columnHelper = createColumnHelper<PortfolioStock>();
 
@@ -177,23 +168,6 @@ function Inner({
           Holdings
         </Text>
         <BuySellButtonGroup />
-        <Popover width={200} position="bottom-end" withArrow shadow="md">
-          <Popover.Target>
-            <ActionIcon variant="transparent" color="gray">
-              <IconSettings style={{ width: '75%' }} />
-            </ActionIcon>
-          </Popover.Target>
-          <Popover.Dropdown>
-            <Switch
-              size="xs"
-              color="green"
-              label="Include commission"
-              labelPosition="left"
-              checked={includeCommission}
-              onChange={(event) => onToggleCommission(event.target.checked)}
-            />
-          </Popover.Dropdown>
-        </Popover>
       </Group>
       <Card shadow="sm" radius="md" p={0} withBorder>
         <ScrollArea h="100%" scrollbars="x" type="auto">

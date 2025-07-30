@@ -1,4 +1,5 @@
 import * as accountMutations from '~/api/mutations/account';
+import * as portfolioMutations from '~/api/mutations/portfolio';
 import * as stockMutations from '~/api/mutations/stocks';
 import * as tradeMutations from '~/api/mutations/trades';
 
@@ -17,5 +18,6 @@ export const queries = {
 export const mutations = {
   stocks: stockMutations,
   trades: tradeMutations,
-  account: accountMutations
+  account: accountMutations,
+  portfolio: portfolioMutations
 };

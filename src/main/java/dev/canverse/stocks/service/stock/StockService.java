@@ -154,7 +154,7 @@ public class StockService {
                 holding.adjustStockSplit(split.getRatio());
 
                 holdingRepository.save(holding);
-                log.info("Updated holding for user {} - Stock: {}", holding.getUser().getId(), split.getStock().getSymbol());
+                log.info("Updated holding for portfolio {} - Stock: {}", holding.getPortfolio().getId(), split.getStock().getSymbol());
             }
 
             split.setProcessed(true);

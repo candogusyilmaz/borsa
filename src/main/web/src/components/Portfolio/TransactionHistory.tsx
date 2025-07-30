@@ -10,6 +10,7 @@ import {
   IconTrendingUp3
 } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
+import { useParams } from '@tanstack/react-router';
 import { useState } from 'react';
 import { queries } from '~/api';
 import type { TradeHistory, TradeHistoryTrade } from '~/api/queries/types';
@@ -21,7 +22,8 @@ import { format } from '~/lib/format';
 const PAGE_SIZE = 5;
 
 export function TransactionHistory() {
-  const { data, status } = useQuery(queries.trades.fetchAll());
+  const { portfolioId } = useParams({ strict: false });
+  const { data, status } = useQuery(queries.trades.fetchAll({ portfolioId: Number(portfolioId) }));
 
   if (status === 'pending') {
     return (

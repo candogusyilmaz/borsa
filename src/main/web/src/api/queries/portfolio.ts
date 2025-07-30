@@ -1,18 +1,25 @@
 import { queryOptions } from '@tanstack/react-query';
 import { http } from '~/lib/axios';
 import { queryKeys, staleTimes } from './config';
-import type { Portfolio } from './types';
+import type { BasicPortfolioView, PortfolioInfo } from './types';
 
-export const fetchPortfolio = (includeCommission: boolean) =>
+export const fetchPortfolio = ({ portfolioId }: { portfolioId: number }) =>
   queryOptions({
-    queryKey: ['/portfolio', queryKeys.portfolio, includeCommission],
+    queryKey: ['/portfolios', portfolioId, queryKeys.portfolio],
     queryFn: async ({ signal }) =>
       (
-        await http.get<Portfolio>('/portfolio', {
-          signal,
-          params: { includeCommission }
+        await http.get<PortfolioInfo>(`/portfolios/${portfolioId}`, {
+          signal
         })
       ).data,
+    staleTime: staleTimes.FIVE_MINUTES,
+    placeholderData: (prev) => prev
+  });
+
+export const fetchPortfolios = () =>
+  queryOptions({
+    queryKey: ['/portfolios'],
+    queryFn: async ({ signal }) => (await http.get<BasicPortfolioView[]>(`/portfolios`, { signal })).data,
     staleTime: staleTimes.FIVE_MINUTES,
     placeholderData: (prev) => prev
   });

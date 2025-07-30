@@ -11,30 +11,30 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/trades")
+@RequestMapping("/api/portfolios/{portfolioId}/trades")
 public class TradeController {
     private final TradeService tradeService;
 
     @GetMapping
-    public TradeHistory fetchTrades() {
-        return tradeService.fetchTrades();
+    public TradeHistory fetchTrades(@PathVariable long portfolioId) {
+        return tradeService.fetchTrades(portfolioId);
     }
 
     @PostMapping("/buy")
     @ResponseStatus(HttpStatus.CREATED)
-    public void buy(@Valid @RequestBody BuyTradeRequest req) {
-        tradeService.buy(req);
+    public void buy(@Valid @RequestBody BuyTradeRequest req, @PathVariable long portfolioId) {
+        tradeService.buy(portfolioId, req);
     }
 
     @PostMapping("/sell")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void buy(@Valid @RequestBody SellTradeRequest req) {
-        tradeService.sell(req);
+    public void buy(@Valid @RequestBody SellTradeRequest req, @PathVariable long portfolioId) {
+        tradeService.sell(portfolioId, req);
     }
 
     @PostMapping("/undo/{holdingId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void undo(@PathVariable Long holdingId) {
-        tradeService.undoLatestTrade(holdingId);
+    public void undo(@PathVariable long holdingId, @PathVariable long portfolioId) {
+        tradeService.undoLatestTrade(portfolioId, holdingId);
     }
 }

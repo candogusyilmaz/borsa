@@ -17,7 +17,9 @@ import java.util.List;
 
 @Getter
 @Entity
-@Table(name = "holdings")
+@Table(name = "holdings", indexes = {
+        @Index(name = "idx_holdings_portfolio_id", columnList = "portfolio_id")
+})
 public class Holding implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,7 +27,7 @@ public class Holding implements Serializable {
 
     @NotNull
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    private User user;
+    private Portfolio portfolio;
 
     @NotNull
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
@@ -39,10 +41,6 @@ public class Holding implements Serializable {
     @Column(nullable = false, precision = 20, scale = 8)
     private BigDecimal total;
 
-    @PositiveOrZero
-    @Column(name = "total_tax", nullable = false, precision = 20, scale = 8)
-    private BigDecimal commission;
-
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
@@ -51,24 +49,26 @@ public class Holding implements Serializable {
     @Column(nullable = false)
     private Instant updatedAt;
 
+    @OrderBy("id DESC")
     @OneToMany(mappedBy = "holding", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Trade> trades = new ArrayList<>();
 
+    @OrderBy("id DESC")
     @OneToMany(mappedBy = "holding", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<HoldingHistory> history = new ArrayList<>();
 
+    @OrderBy("id DESC")
     @OneToMany(mappedBy = "holding", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<HoldingDailySnapshot> dailySnapshots = new ArrayList<>();
 
     protected Holding() {
     }
 
-    public Holding(User user, Stock stock) {
-        this.user = user;
+    public Holding(Portfolio portfolio, Stock stock) {
+        this.portfolio = portfolio;
         this.stock = stock;
         this.quantity = 0;
         this.total = BigDecimal.ZERO;
-        this.commission = BigDecimal.ZERO;
     }
 
     public BigDecimal getAveragePrice() {
@@ -93,8 +93,14 @@ public class Holding implements Serializable {
 
         this.trades.add(new Trade(this, Trade.Type.SELL, quantity, price, commission, actionDate));
 
-        this.total = this.total.subtract(Calculator.divide(this.total.multiply(BigDecimal.valueOf(quantity)), BigDecimal.valueOf(this.quantity)));
-        this.quantity -= quantity;
+        // In order to preserve the cost basis when undoing a sell
+        // we keep the total as is and adjust it based on the quantity sold
+        if (this.quantity == quantity) {
+            this.quantity = 0;
+        } else {
+            this.total = this.total.subtract(Calculator.divide(this.total.multiply(BigDecimal.valueOf(quantity)), BigDecimal.valueOf(this.quantity)));
+            this.quantity -= quantity;
+        }
 
         this.history.add(new HoldingHistory(this, HoldingHistory.ActionType.SELL));
     }
@@ -113,11 +119,21 @@ public class Holding implements Serializable {
     }
 
     private void undoSell(Trade latestTrade) {
-        this.quantity += latestTrade.getQuantity();
-        this.total = this.total.add(latestTrade.getTotal());
+        // If quantity is zero this means in last trade we sold all shares
+        // Since when we sell all shares we set quantity to zero but total remains
+        // Thus we can just add the latest trade's quantity
+        if (this.quantity == 0) {
+            this.quantity = latestTrade.getQuantity();
+            return;
+        }
 
-        var averageCommissionPerUnit = Calculator.divide(this.commission, BigDecimal.valueOf(this.quantity));
-        this.commission = this.commission.add(averageCommissionPerUnit.multiply(BigDecimal.valueOf(latestTrade.getQuantity())));
+        int previousQuantity = this.quantity;
+        this.quantity += latestTrade.getQuantity();
+
+        this.total = Calculator.divide(
+                this.total.multiply(BigDecimal.valueOf(this.quantity)),
+                BigDecimal.valueOf(previousQuantity)
+        );
     }
 
     private void undoBuy(Trade latestTrade) {
@@ -125,18 +141,13 @@ public class Holding implements Serializable {
 
         if (this.quantity == 0) {
             this.total = BigDecimal.ZERO;
-            this.commission = BigDecimal.ZERO;
         } else {
             this.total = this.total.subtract(latestTrade.getTotal());
-            this.commission = this.commission.subtract(latestTrade.getCommission());
         }
     }
 
     public void adjustStockSplit(BigDecimal ratio) {
-        this.quantity = BigDecimal.valueOf(quantity)
-                .multiply(ratio)
-                .setScale(0, RoundingMode.HALF_UP)
-                .intValue();
+        this.quantity = BigDecimal.valueOf(quantity).multiply(ratio).setScale(0, RoundingMode.HALF_UP).intValue();
 
         this.history.add(new HoldingHistory(this, HoldingHistory.ActionType.STOCK_SPLIT));
     }

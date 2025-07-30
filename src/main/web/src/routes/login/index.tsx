@@ -29,7 +29,7 @@ export const Route = createFileRoute('/login/')({
   }),
   component: RouteComponent,
   beforeLoad: (p) => {
-    if (p.context.auth.isAuthenticated) throw redirect({ to: '/portfolio' });
+    if (p.context.auth.isAuthenticated) throw redirect({ to: '/overview' });
   }
 });
 
@@ -64,7 +64,7 @@ function RouteComponent() {
       { token: idToken },
       {
         onSuccess: () => {
-          navigate({ to: '/portfolio' });
+          navigate({ to: '/overview' });
         }
       }
     );
@@ -102,7 +102,7 @@ function RouteComponent() {
             onSubmit={form.onSubmit((data) =>
               login.mutate(data, {
                 onSuccess: () => {
-                  navigate({ to: '/portfolio' });
+                  navigate({ to: '/overview' });
                 },
                 onError: (error) => {
                   const res = error as AxiosError;

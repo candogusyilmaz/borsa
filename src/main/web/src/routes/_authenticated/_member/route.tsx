@@ -1,13 +1,18 @@
-import { ActionIcon, AppShell, Button, Flex, Group, ScrollArea, Stack, Text, UnstyledButton } from '@mantine/core';
+import { ActionIcon, AppShell, Button, Divider, Flex, Group, ScrollArea, Stack, Text, UnstyledButton } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {
+  IconBriefcase,
   IconCirclePlusFilled,
-  IconExchange,
+  IconCircleXFilled,
   IconHome,
   IconLayoutSidebarLeftCollapse,
   IconLayoutSidebarLeftExpand
 } from '@tabler/icons-react';
-import { createFileRoute, Link, linkOptions, Outlet } from '@tanstack/react-router';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { createFileRoute, Link, linkOptions, Outlet, useParams } from '@tanstack/react-router';
+import { queries } from '~/api';
+import type { BasicPortfolioView } from '~/api/queries/types';
+import { CreatePortfolioButton } from '~/components/Portfolio/CreatePortfolio';
 import { useTransactionModalStore } from '~/components/Transaction/TransactionModal';
 import { UserNavbar } from '~/components/UserAvatarMenu';
 import common from '~/styles/common.module.css';
@@ -18,25 +23,36 @@ export const Route = createFileRoute('/_authenticated/_member')({
 
 const NAV_LINKS = [
   {
-    label: 'Portfolio',
+    label: 'Overview',
     icon: <IconHome size={20} />,
     options: linkOptions({
-      to: '/portfolio'
-    })
-  },
-  {
-    label: 'Stocks',
-    icon: <IconExchange size={20} />,
-    options: linkOptions({
-      to: '/stocks'
+      to: '/overview'
     })
   }
 ];
 
+function createPortfolioLink(portfolio: BasicPortfolioView) {
+  return {
+    label: portfolio.name,
+    icon: <IconBriefcase size={20} />,
+    options: linkOptions({
+      to: '/portfolios/$portfolioId',
+      params: { portfolioId: portfolio.id }
+    })
+  };
+}
+
 function RouteComponent() {
+  const { portfolioId } = useParams({ strict: false });
+
   const [opened, { toggle }] = useDisclosure();
   const [mobileOpened, { toggle: toggleMobile }] = useDisclosure(true);
   const { open } = useTransactionModalStore();
+
+  const { data: portfolioLinks } = useSuspenseQuery({
+    ...queries.portfolio.fetchPortfolios(),
+    select: (data) => data.map((portfolio) => createPortfolioLink(portfolio))
+  });
 
   return (
     <AppShell
@@ -121,31 +137,46 @@ function RouteComponent() {
             </Text>
             <Button
               justify={'left'}
-              size="compact-xs"
-              variant="subtle"
-              color="gray"
-              leftSection={<IconCirclePlusFilled size={16} color="teal" />}
-              onClick={() => open('Buy')}>
+              leftSection={<IconCirclePlusFilled size={18} color="var(--mantine-color-teal-5)" />}
+              onClick={() => open('Buy')}
+              className={common.quickActionLink}
+              disabled={!portfolioId}>
               Buy Stock
             </Button>
             <Button
               justify={'left'}
-              size="compact-xs"
-              variant="subtle"
-              color="gray"
-              leftSection={<IconCirclePlusFilled size={16} color="red" />}
-              onClick={() => open('Sell')}>
+              className={common.quickActionLink}
+              leftSection={<IconCircleXFilled size={18} color="var(--mantine-color-red-5)" />}
+              onClick={() => open('Sell')}
+              disabled={!portfolioId}>
               Sell Stock
             </Button>
           </Stack>
-          <Stack gap={8} p={0} mx="sm" mt="lg">
+          <Stack gap={4} p={0} mx="sm" mt="lg">
             <Text c="dimmed" fw={600} fz={12}>
               Menu
             </Text>
             {NAV_LINKS.map((s) => {
               return (
                 <Link key={s.options.to} {...s.options} className={common.navLink}>
-                  <Group align="center">
+                  <Group gap="xs" align="center">
+                    {s.icon}
+                    {s.label}
+                  </Group>
+                </Link>
+              );
+            })}
+          </Stack>
+          <Divider my="sm" mx="xs" />
+          <Stack gap={4} p={0} mx="sm" mt="lg">
+            <Text c="dimmed" fw={600} fz={12}>
+              Portfolios
+            </Text>
+            <CreatePortfolioButton />
+            {portfolioLinks.map((s) => {
+              return (
+                <Link key={s.options.to + s.options.params.portfolioId} {...s.options} className={common.navLinkPortfolio}>
+                  <Group gap="xs" align="center">
                     {s.icon}
                     {s.label}
                   </Group>

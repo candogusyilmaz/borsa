@@ -17,6 +17,7 @@ import {
 } from '@mantine/core';
 import { IconCircle } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
+import { useParams } from '@tanstack/react-router';
 import React, { useState } from 'react';
 import { queries } from '~/api';
 import type { MonthlyRevenueOverview as MonthlyRevenueOverviewType } from '~/api/queries/types';
@@ -25,7 +26,8 @@ import { constants } from '~/lib/constants';
 import { format } from '~/lib/format';
 
 export function MonthlyRevenueOverview() {
-  const { data, status } = useQuery(queries.analytics.monthlyRevenueOverview());
+  const { portfolioId } = useParams({ strict: false });
+  const { data, status } = useQuery(queries.analytics.monthlyRevenueOverview({ portfolioId: Number(portfolioId) }));
 
   if (status === 'pending') {
     return (

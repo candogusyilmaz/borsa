@@ -15,7 +15,7 @@ export function UserNavbar() {
   const email = user?.email;
 
   return (
-    <Menu withArrow width={280} offset={0} transitionProps={{ transition: 'pop' }} withinPortal>
+    <Menu withArrow width={240} offset={0} transitionProps={{ transition: 'pop' }} withinPortal>
       <Menu.Target>
         <UnstyledButton className={common.navUser}>
           <Group mx={10} my="xs" gap="xs">
@@ -46,13 +46,13 @@ export function UserNavbar() {
       </Menu.Target>
       <Menu.Dropdown>
         <Menu.Item>
-          <Group style={{ width: 220 }}>
-            <Avatar radius="xl" src={avatarLink} />
+          <Group style={{ width: 200 }}>
+            <Avatar size={30} radius="xl" src={avatarLink} />
             <div style={{ flex: 1, overflow: 'hidden', whiteSpace: 'nowrap' }}>
-              <Text fw={500} style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <Text fz="xs" fw={500} style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {name}
               </Text>
-              <Text size="xs" c="dimmed" style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <Text fz="xs" c="dimmed" style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {email}
               </Text>
             </div>
@@ -62,10 +62,11 @@ export function UserNavbar() {
         <Menu.Divider />
 
         <Menu.Label>Settings</Menu.Label>
-        <Menu.Item disabled leftSection={<IconSettings size={16} stroke={1.5} />}>
+        <Menu.Item fz="xs" disabled leftSection={<IconSettings size={16} stroke={1.5} />}>
           Account settings
         </Menu.Item>
         <Menu.Item
+          fz="xs"
           leftSection={<IconLogout size={16} stroke={1.5} />}
           onClick={() => {
             logout();
@@ -77,7 +78,7 @@ export function UserNavbar() {
         <Menu.Divider />
 
         <Menu.Label>Danger zone</Menu.Label>
-        <Menu.Item color="red" leftSection={<IconTrash size={16} stroke={1.5} />} onClick={openClearMyDataModal}>
+        <Menu.Item fz="xs" color="red" leftSection={<IconTrash size={16} stroke={1.5} />} onClick={openClearMyDataModal}>
           Delete my data
         </Menu.Item>
       </Menu.Dropdown>

@@ -5,17 +5,13 @@ import dev.canverse.stocks.domain.Calculator;
 import java.math.BigDecimal;
 import java.util.List;
 
-public record Portfolio(List<Stock> stocks) {
+public record PortfolioInfo(List<Stock> stocks) {
     public BigDecimal getTotalProfit() {
         return stocks.stream().map(Stock::getProfit).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public BigDecimal getTotalCost() {
         return stocks.stream().map(Stock::getCost).reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    public BigDecimal getTotalCommission() {
-        return stocks.stream().map(Stock::commission).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public BigDecimal getTotalProfitPercentage() {
@@ -37,7 +33,6 @@ public record Portfolio(List<Stock> stocks) {
             BigDecimal dailyChangePercent,
             int quantity,
             BigDecimal total,
-            BigDecimal commission,
             BigDecimal currentPrice,
             BigDecimal averagePrice,
             BigDecimal dailyProfit,

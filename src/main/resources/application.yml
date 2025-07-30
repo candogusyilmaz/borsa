@@ -5,6 +5,7 @@ rsa:
 spring:
   application:
     name: Finance
+
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/stocks}
     username: ${DB_USERNAME:postgres}
@@ -12,22 +13,41 @@ spring:
     driver-class-name: org.postgresql.Driver
     hikari:
       auto-commit: false
+      maximum-pool-size: ${DB_POOL_SIZE:20}
+      minimum-idle: ${DB_MIN_IDLE:5}
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
+
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     properties:
       hibernate:
         format_sql: true
         generate_statistics: false
         fail_on_pagination_over_collection_fetch: true
+        jdbc:
+          batch_size: 20
+          order_inserts: true
+          order_updates: true
+
+  flyway:
+    enabled: false
+    locations: classpath:db/migrations
+    baseline-on-migrate: true
+    out-of-order: false
+    validate-on-migrate: true
+    clean-disabled: true
   security:
     oauth2:
       client:
         registration:
           google:
-            client-id: 11207596743-8ql23qmgre6sssabg68hvsrcioucd686.apps.googleusercontent.com
-            client-secret: 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
+            client-id: ${GOOGLE_CLIENT_ID:11207596743-8ql23qmgre6sssabg68hvsrcioucd686.apps.googleusercontent.com}
+            client-secret: ${GOOGLE_CLIENT_SECRET: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}
             scope:
               - email
   batch:
@@ -35,9 +55,35 @@ spring:
       initialize-schema: always
     job:
       enabled: false
+  task:
+    scheduling:
+      pool:
+        size: ${SCHEDULER_POOL_SIZE:5}
+      thread-name-prefix: "scheduler-"
+    execution:
+      pool:
+        core-size: ${EXECUTOR_CORE_SIZE:5}
+        max-size: ${EXECUTOR_MAX_SIZE:10}
+        queue-capacity: ${EXECUTOR_QUEUE_SIZE:100}
+      thread-name-prefix: "async-"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+
 logging:
   level:
-    org:
-      hibernate:
-        stat: debug
-        SQL: debug
+    root: INFO
+    dev.canverse: ${LOG_LEVEL:INFO}
+    org.hibernate.sql: ${SQL_LOG_LEVEL:DEBUG}
+    org.hibernate.stat: INFO
