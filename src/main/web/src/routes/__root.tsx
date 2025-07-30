@@ -1,5 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query';
-import { createRootRouteWithContext, DefaultGlobalNotFound, HeadContent, Outlet } from '@tanstack/react-router';
+import { createRootRouteWithContext, HeadContent, Outlet } from '@tanstack/react-router';
+import { NotFound } from '~/components/NotFound/NotFound';
 import type { AuthContext } from '~/lib/AuthenticationContext.tsx';
 
 export const Route = createRootRouteWithContext<{
@@ -7,7 +8,7 @@ export const Route = createRootRouteWithContext<{
   auth: AuthContext;
 }>()({
   component: RootComponent,
-  notFoundComponent: () => <DefaultGlobalNotFound />
+  notFoundComponent: () => <NotFound />
 });
 
 function RootComponent() {
