@@ -13,7 +13,8 @@ export const fetchPortfolio = ({ portfolioId }: { portfolioId: number }) =>
         })
       ).data,
     staleTime: staleTimes.FIVE_MINUTES,
-    placeholderData: (prev) => prev
+    placeholderData: (prev) => prev,
+    retry: false
   });
 
 export const fetchPortfolios = () =>

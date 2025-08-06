@@ -1,7 +1,15 @@
 import { Button, Card, Group, rem, ScrollArea, Stack, Table, Text } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from '@tanstack/react-router';
-import { createColumnHelper, flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
+import {
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  type SortingState,
+  useReactTable
+} from '@tanstack/react-table';
+import { useState } from 'react';
 import { queries } from '~/api';
 import type { PortfolioInfo, PortfolioStock } from '~/api/queries/types';
 import { ErrorView } from '~/components/ErrorView';
@@ -67,6 +75,7 @@ export function HoldingsTable() {
 function Inner({ data: { stocks, totalValue, totalCost, totalProfitPercentage } }: { data: PortfolioInfo }) {
   'use no memo';
   const columnHelper = createColumnHelper<PortfolioStock>();
+  const [sorting, setSorting] = useState<SortingState>([]);
 
   const columns = [
     columnHelper.accessor('symbol', {
@@ -139,7 +148,12 @@ function Inner({ data: { stocks, totalValue, totalCost, totalProfitPercentage } 
   const table = useReactTable({
     data: stocks,
     columns,
-    getCoreRowModel: getCoreRowModel()
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    onSortingChange: setSorting,
+    state: {
+      sorting
+    }
   });
 
   const totals = stocks.reduce(
@@ -196,7 +210,15 @@ function Inner({ data: { stocks, totalValue, totalCost, totalProfitPercentage } 
               {table.getHeaderGroups().map((headerGroup) => (
                 <Table.Tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
-                    <Table.Th key={header.id} ta={header.id === 'symbol' ? 'left' : 'right'}>
+                    <Table.Th
+                      key={header.id}
+                      ta={header.id === 'symbol' ? 'left' : 'right'}
+                      style={{ cursor: header.column.getCanSort() ? 'pointer' : 'default' }}
+                      onClick={() => {
+                        if (header.column.getCanSort()) {
+                          header.column.toggleSorting();
+                        }
+                      }}>
                       {flexRender(header.column.columnDef.header, header.getContext())}
                     </Table.Th>
                   ))}
