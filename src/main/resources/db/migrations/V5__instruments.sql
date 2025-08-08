@@ -56,22 +56,6 @@ CREATE TABLE instrument.instruments
     CONSTRAINT fk_instruments_on_market FOREIGN KEY (market_id) REFERENCES instrument.markets (id)
 );
 
-INSERT INTO instrument.instruments (name, symbol, type, denomination_currency, market_id, is_active, created_at,
-                                    updated_at)
-SELECT s.name,
-       s.symbol,
-       'STOCK',
-       'TRY',
-       3,
-       true,
-       now(),
-       now()
-FROM stocks s;
-
-INSERT INTO instrument.stock_instruments (instrument_id, isin)
-SELECT s.id, null
-FROM instrument.instruments s;
-
 CREATE INDEX idx_instruments_symbol ON instrument.instruments (symbol);
 CREATE INDEX idx_instruments_type ON instrument.instruments (type);
 CREATE INDEX idx_instruments_market ON instrument.instruments (market_id);
@@ -95,3 +79,20 @@ CREATE TABLE instrument.stock_instruments
     CONSTRAINT pk_stock_instruments PRIMARY KEY (instrument_id),
     CONSTRAINT fk_stock_instruments_on_instrument FOREIGN KEY (instrument_id) REFERENCES instrument.instruments (id)
 );
+
+
+INSERT INTO instrument.instruments (name, symbol, type, denomination_currency, market_id, is_active, created_at,
+                                    updated_at)
+SELECT s.name,
+       s.symbol,
+       'STOCK',
+       'TRY',
+       3,
+       true,
+       now(),
+       now()
+FROM stocks s;
+
+INSERT INTO instrument.stock_instruments (instrument_id, isin)
+SELECT s.id, null
+FROM instrument.instruments s;
