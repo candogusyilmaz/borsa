@@ -10,8 +10,6 @@ ALTER TABLE public.permissions
     SET SCHEMA account;
 ALTER TABLE public.roles
     SET SCHEMA account;
-ALTER TABLE public.user_roles
-    SET SCHEMA account;
 ALTER TABLE public.role_permissions
     SET SCHEMA account;
 
