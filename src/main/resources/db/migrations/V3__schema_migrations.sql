@@ -2,31 +2,31 @@ CREATE SCHEMA IF NOT EXISTS account;
 CREATE SCHEMA IF NOT EXISTS portfolio;
 
 -- Move user-related tables to accounts schema
-ALTER TABLE users
+ALTER TABLE public.users
     SET SCHEMA account;
-ALTER TABLE user_roles
+ALTER TABLE public.user_roles
     SET SCHEMA account;
-ALTER TABLE permissions
+ALTER TABLE public.permissions
     SET SCHEMA account;
-ALTER TABLE roles
+ALTER TABLE public.roles
     SET SCHEMA account;
-ALTER TABLE user_roles
+ALTER TABLE public.user_roles
     SET SCHEMA account;
-ALTER TABLE role_permissions
+ALTER TABLE public.role_permissions
     SET SCHEMA account;
 
 -- Move portfolio tables to portfolio schema
-ALTER TABLE holdings
+ALTER TABLE public.holdings
     SET SCHEMA portfolio;
-ALTER TABLE holding_daily_snapshots
+ALTER TABLE public.holding_daily_snapshots
     SET SCHEMA portfolio;
-ALTER TABLE holding_history
+ALTER TABLE public.holding_history
     SET SCHEMA portfolio;
-ALTER TABLE portfolios
+ALTER TABLE public.portfolios
     SET SCHEMA portfolio;
-ALTER TABLE trades
+ALTER TABLE public.trades
     SET SCHEMA portfolio;
-ALTER TABLE trade_performance
+ALTER TABLE public.trade_performance
     SET SCHEMA portfolio;
 
 -- Rename holdings and related tables to positions
