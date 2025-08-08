@@ -1,6 +1,6 @@
 package dev.canverse.stocks.repository;
 
-import dev.canverse.stocks.domain.entity.Portfolio;
+import dev.canverse.stocks.domain.entity.portfolio.Portfolio;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 

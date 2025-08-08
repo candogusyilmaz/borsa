@@ -1,4 +1,4 @@
-package dev.canverse.stocks.domain.entity;
+package dev.canverse.stocks.domain.entity.portfolio;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import dev.canverse.stocks.domain.Calculator;
@@ -16,15 +16,15 @@ import java.time.Instant;
 
 @Getter
 @Entity
-@Table(name = "trades")
-public class Trade implements Serializable {
+@Table(schema = "portfolio", name = "transactions")
+public class Transaction implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotNull
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    private Holding holding;
+    private Position position;
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -56,15 +56,15 @@ public class Trade implements Serializable {
     private Instant updatedAt;
 
     @JsonManagedReference
-    @OneToOne(mappedBy = "trade", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "transaction", cascade = CascadeType.ALL)
     @JoinColumn(name = "id", referencedColumnName = "trade_id")
-    private TradePerformance performance;
+    private TransactionPerformance performance;
 
-    protected Trade() {
+    protected Transaction() {
     }
 
-    protected Trade(Holding holding, Type type, int quantity, BigDecimal price, BigDecimal commission, Instant actionDate) {
-        this.holding = holding;
+    protected Transaction(Position position, Type type, int quantity, BigDecimal price, BigDecimal commission, Instant actionDate) {
+        this.position = position;
         this.type = type;
         this.quantity = quantity;
         this.price = price;
@@ -72,10 +72,10 @@ public class Trade implements Serializable {
         this.actionDate = actionDate;
 
         if (type == Type.SELL) {
-            var profit = price.subtract(holding.getAveragePrice()).multiply(BigDecimal.valueOf(quantity));
-            var returnPercentage = Calculator.divide(price.subtract(holding.getAveragePrice()).multiply(BigDecimal.valueOf(100)), holding.getAveragePrice());
+            var profit = price.subtract(position.getAveragePrice()).multiply(BigDecimal.valueOf(quantity));
+            var returnPercentage = Calculator.divide(price.subtract(position.getAveragePrice()).multiply(BigDecimal.valueOf(100)), position.getAveragePrice());
 
-            this.performance = new TradePerformance(this, profit, returnPercentage);
+            this.performance = new TransactionPerformance(this, profit, returnPercentage);
         }
     }
 

@@ -1,4 +1,4 @@
-package dev.canverse.stocks.domain.entity;
+package dev.canverse.stocks.domain.entity.portfolio;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -11,15 +11,15 @@ import java.time.Instant;
 
 @Getter
 @Entity
-@Table(name = "holding_history")
-public class HoldingHistory implements Serializable {
+@Table(schema = "portfolio", name = "position_history")
+public class PositionHistory implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotNull
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    private Holding holding;
+    private Position position;
 
     @NotNull
     @Column(nullable = false)
@@ -31,19 +31,19 @@ public class HoldingHistory implements Serializable {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    private HoldingHistory.ActionType actionType;
+    private PositionHistory.ActionType actionType;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    protected HoldingHistory() {
+    protected PositionHistory() {
     }
 
-    protected HoldingHistory(Holding holding, ActionType actionType) {
-        this.holding = holding;
-        this.quantity = holding.getQuantity();
-        this.total = holding.getTotal();
+    protected PositionHistory(Position position, ActionType actionType) {
+        this.position = position;
+        this.quantity = position.getQuantity();
+        this.total = position.getTotal();
         this.actionType = actionType;
     }
 

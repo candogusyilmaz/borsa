@@ -1,6 +1,6 @@
 package dev.canverse.stocks.service.account;
 
-import dev.canverse.stocks.domain.entity.User;
+import dev.canverse.stocks.domain.entity.account.User;
 import dev.canverse.stocks.service.account.model.TokenCreateResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;

@@ -1,6 +1,6 @@
 package dev.canverse.stocks.repository;
 
-import dev.canverse.stocks.domain.entity.HoldingDailySnapshot;
+import dev.canverse.stocks.domain.entity.portfolio.PositionDailySnapshot;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 @Repository
-public interface HoldingDailySnapshotRepository extends JpaRepository<HoldingDailySnapshot, Long>, JpaSpecificationExecutor<HoldingDailySnapshot> {
+public interface PositionDailySnapshotRepository extends JpaRepository<PositionDailySnapshot, Long>, JpaSpecificationExecutor<PositionDailySnapshot> {
     @Modifying
     @Transactional(timeout = 25)
     @Query(value = """

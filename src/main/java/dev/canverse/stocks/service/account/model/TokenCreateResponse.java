@@ -1,6 +1,6 @@
 package dev.canverse.stocks.service.account.model;
 
-import dev.canverse.stocks.domain.entity.User;
+import dev.canverse.stocks.domain.entity.account.User;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.List;

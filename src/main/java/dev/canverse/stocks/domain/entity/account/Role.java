@@ -1,4 +1,4 @@
-package dev.canverse.stocks.domain.entity;
+package dev.canverse.stocks.domain.entity.account;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
@@ -13,7 +13,7 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
-@Table(name = "roles")
+@Table(schema = "account", name = "roles")
 public class Role implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,4 +1,4 @@
-package dev.canverse.stocks.domain.entity;
+package dev.canverse.stocks.domain.entity.portfolio;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
@@ -12,8 +12,8 @@ import java.time.Instant;
 
 @Getter
 @Entity
-@Table(name = "trade_performance")
-public class TradePerformance {
+@Table(schema = "portfolio", name = "transaction_performance")
+public class TransactionPerformance {
     @Id
     @Column(name = "trade_id")
     private Long id;
@@ -22,7 +22,7 @@ public class TradePerformance {
     @Setter(AccessLevel.NONE)
     @JsonBackReference
     @OneToOne(optional = false, fetch = FetchType.LAZY)
-    private Trade trade;
+    private Transaction transaction;
 
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal profit;
@@ -38,11 +38,11 @@ public class TradePerformance {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    protected TradePerformance() {
+    protected TransactionPerformance() {
     }
 
-    protected TradePerformance(Trade trade, BigDecimal profit, BigDecimal returnPercentage) {
-        this.trade = trade;
+    protected TransactionPerformance(Transaction transaction, BigDecimal profit, BigDecimal returnPercentage) {
+        this.transaction = transaction;
         this.profit = profit;
         this.returnPercentage = returnPercentage;
         this.performanceCategory = calculatePerformanceCategory(returnPercentage);

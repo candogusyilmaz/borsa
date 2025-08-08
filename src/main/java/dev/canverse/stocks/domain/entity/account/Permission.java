@@ -1,4 +1,4 @@
-package dev.canverse.stocks.domain.entity;
+package dev.canverse.stocks.domain.entity.account;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
@@ -14,7 +14,7 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
-@Table(name = "permissions")
+@Table(schema = "account", name = "permissions")
 @NoArgsConstructor
 public class Permission implements GrantedAuthority, Serializable {
     @Id

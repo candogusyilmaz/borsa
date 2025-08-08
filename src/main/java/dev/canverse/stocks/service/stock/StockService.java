@@ -4,8 +4,6 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import dev.canverse.stocks.domain.common.SelectItem;
 import dev.canverse.stocks.domain.entity.QStock;
-import dev.canverse.stocks.repository.HoldingRepository;
-import dev.canverse.stocks.repository.StockSplitRepository;
 import dev.canverse.stocks.service.client.SabahClient;
 import dev.canverse.stocks.service.client.model.CanliBorsaVerileri;
 import dev.canverse.stocks.service.stock.model.Stocks;
@@ -17,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Types;
-import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -29,8 +26,6 @@ public class StockService {
     private final JPAQueryFactory queryFactory;
     private final SabahClient sabahClient;
     private final JdbcTemplate jdbcTemplate;
-    private final StockSplitRepository stockSplitRepository;
-    private final HoldingRepository holdingRepository;
 
     public Stocks fetchStocks(String exchange) {
         var stock = QStock.stock;
@@ -137,30 +132,5 @@ public class StockService {
                         Types.NUMERIC
                 }
         );
-    }
-
-    @Transactional
-    public void processStockSplits() {
-        log.info("Processing stock splits");
-        var today = LocalDate.now();
-        var pendingSplits = stockSplitRepository.findPendingSplits(today);
-
-        for (var split : pendingSplits) {
-            log.info("Processing stock split for {}: ratio {}", split.getStock().getSymbol(), split.getRatio());
-
-            var affectedHoldings = holdingRepository.findByStockId(split.getStock().getId());
-
-            for (var holding : affectedHoldings) {
-                holding.adjustStockSplit(split.getRatio());
-
-                holdingRepository.save(holding);
-                log.info("Updated holding for portfolio {} - Stock: {}", holding.getPortfolio().getId(), split.getStock().getSymbol());
-            }
-
-            split.setProcessed(true);
-        }
-
-        stockSplitRepository.saveAll(pendingSplits);
-        log.info("Finished processing stock splits");
     }
 }

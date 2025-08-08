@@ -1,30 +1,32 @@
-package dev.canverse.stocks.domain.entity;
+package dev.canverse.stocks.domain.entity.account;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
+import java.io.Serializable;
+
 @Getter
 @Entity
-@Table(name = "user_roles")
-public class UserRole {
+@Table(schema = "account", name = "role_permissions")
+public class RolePermission implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotNull
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    private User user;
+    private Role role;
 
     @NotNull
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    private Role role;
+    private Permission permission;
 
-    protected UserRole() {
+    protected RolePermission() {
     }
 
-    public UserRole(User user, Role role) {
-        this.user = user;
+    public RolePermission(Role role, Permission permission) {
         this.role = role;
+        this.permission = permission;
     }
 }

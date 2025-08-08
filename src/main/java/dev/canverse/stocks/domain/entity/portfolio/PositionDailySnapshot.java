@@ -1,4 +1,4 @@
-package dev.canverse.stocks.domain.entity;
+package dev.canverse.stocks.domain.entity.portfolio;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -11,15 +11,15 @@ import java.time.Instant;
 
 @Getter
 @Entity
-@Table(name = "holding_daily_snapshots")
-public class HoldingDailySnapshot {
+@Table(schema = "portfolio", name = "position_daily_snapshots")
+public class PositionDailySnapshot {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotNull
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    private Holding holding;
+    private Position position;
 
     @PositiveOrZero
     @Column(nullable = false)
@@ -82,11 +82,11 @@ public class HoldingDailySnapshot {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    protected HoldingDailySnapshot() {
+    protected PositionDailySnapshot() {
     }
 
-    public HoldingDailySnapshot(Holding holding, int quantity, BigDecimal averagePrice, BigDecimal marketPrice, BigDecimal previousMarketPrice, BigDecimal portfolioWeightPercentage) {
-        this.holding = holding;
+    public PositionDailySnapshot(Position position, int quantity, BigDecimal averagePrice, BigDecimal marketPrice, BigDecimal previousMarketPrice, BigDecimal portfolioWeightPercentage) {
+        this.position = position;
         this.quantity = quantity;
         this.averagePrice = averagePrice;
         this.marketPrice = marketPrice;

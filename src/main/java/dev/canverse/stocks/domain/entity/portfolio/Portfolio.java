@@ -1,5 +1,6 @@
-package dev.canverse.stocks.domain.entity;
+package dev.canverse.stocks.domain.entity.portfolio;
 
+import dev.canverse.stocks.domain.entity.account.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -14,7 +15,7 @@ import java.util.List;
 
 @Getter
 @Entity
-@Table(name = "portfolios", indexes = {
+@Table(schema = "portfolio", name = "portfolios", indexes = {
         @Index(name = "idx_portfolios_user_id", columnList = "user_id")
 })
 public class Portfolio implements Serializable {
@@ -39,7 +40,7 @@ public class Portfolio implements Serializable {
     private Instant updatedAt;
 
     @OneToMany(mappedBy = "portfolio", fetch = FetchType.LAZY)
-    private List<Holding> holdings = new ArrayList<>();
+    private List<Position> positions = new ArrayList<>();
 
     protected Portfolio() {
     }

@@ -3,14 +3,14 @@ package dev.canverse.stocks.repository.custom;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import dev.canverse.stocks.domain.entity.QHolding;
-import dev.canverse.stocks.domain.entity.QPortfolio;
-import dev.canverse.stocks.domain.entity.QTrade;
-import dev.canverse.stocks.domain.entity.Trade;
+import dev.canverse.stocks.domain.entity.portfolio.QPortfolio;
+import dev.canverse.stocks.domain.entity.portfolio.QPosition;
+import dev.canverse.stocks.domain.entity.portfolio.QTransaction;
+import dev.canverse.stocks.domain.entity.portfolio.Transaction;
 import dev.canverse.stocks.domain.exception.NotFoundException;
 import dev.canverse.stocks.repository.PortfolioRepository;
 import dev.canverse.stocks.service.portfolio.model.MonthlyRevenueOverview;
-import dev.canverse.stocks.service.portfolio.model.TradeHistory;
+import dev.canverse.stocks.service.portfolio.model.TransactionHistory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -29,13 +29,13 @@ public class TradeRepositoryCustomImpl implements TradeRepositoryCustom {
             throw new NotFoundException("Portfolio not found");
         }
 
-        var trade = QTrade.trade;
-        var holding = QHolding.holding;
+        var transaction = QTransaction.transaction;
+        var position = QPosition.position;
         var portfolio = QPortfolio.portfolio;
 
-        var month = trade.actionDate.month();
-        var year = trade.actionDate.year();
-        var q = trade.performance.profit.sumBigDecimal();
+        var month = transaction.actionDate.month();
+        var year = transaction.actionDate.year();
+        var q = transaction.performance.profit.sumBigDecimal();
 
         var groupedData = queryFactory
                 .select(
@@ -43,10 +43,10 @@ public class TradeRepositoryCustomImpl implements TradeRepositoryCustom {
                         year,
                         q
                 )
-                .from(trade)
-                .join(trade.holding, holding)
-                .join(holding.portfolio, portfolio)
-                .where(trade.type.eq(Trade.Type.SELL).and(portfolio.id.eq(portfolioId)))
+                .from(transaction)
+                .join(transaction.position, position)
+                .join(position.portfolio, portfolio)
+                .where(transaction.type.eq(Transaction.Type.SELL).and(portfolio.id.eq(portfolioId)))
                 .groupBy(year, month)
                 .fetch();
 
@@ -68,37 +68,37 @@ public class TradeRepositoryCustomImpl implements TradeRepositoryCustom {
     }
 
     @Override
-    public TradeHistory getTradeHistory(long portfolioId) {
-        var trade = QTrade.trade;
-        var subTrade = new QTrade("subTrade");
+    public TransactionHistory getTransactionHistory(long portfolioId) {
+        var transaction = QTransaction.transaction;
+        var subTransaction = new QTransaction("subTrade");
 
         var isLatestExpr = JPAExpressions
                 .selectOne()
-                .from(subTrade)
-                .where(subTrade.holding.eq(trade.holding).and(subTrade.id.gt(trade.id)))
+                .from(subTransaction)
+                .where(subTransaction.position.eq(transaction.position).and(subTransaction.id.gt(transaction.id)))
                 .notExists();
 
         var query = queryFactory.select(
-                        Projections.constructor(TradeHistory.Item.class,
-                                trade.actionDate,
-                                trade.createdAt,
-                                trade.type,
-                                trade.holding.id.stringValue(),
-                                trade.holding.stock.symbol,
-                                trade.price,
-                                trade.quantity,
-                                trade.performance.profit,
-                                trade.performance.returnPercentage,
-                                trade.performance.performanceCategory,
+                        Projections.constructor(TransactionHistory.Item.class,
+                                transaction.actionDate,
+                                transaction.createdAt,
+                                transaction.type,
+                                transaction.position.id.stringValue(),
+                                transaction.position.stock.symbol,
+                                transaction.price,
+                                transaction.quantity,
+                                transaction.performance.profit,
+                                transaction.performance.returnPercentage,
+                                transaction.performance.performanceCategory,
                                 isLatestExpr
                         )
                 )
-                .from(trade)
-                .leftJoin(trade.performance)
-                .where(trade.holding.portfolio.id.eq(portfolioId))
-                .orderBy(trade.createdAt.desc())
+                .from(transaction)
+                .leftJoin(transaction.performance)
+                .where(transaction.position.portfolio.id.eq(portfolioId))
+                .orderBy(transaction.createdAt.desc())
                 .fetch();
 
-        return new TradeHistory(query);
+        return new TransactionHistory(query);
     }
 }

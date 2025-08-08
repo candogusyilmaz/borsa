@@ -1,6 +1,6 @@
 package dev.canverse.stocks.rest.account;
 
-import dev.canverse.stocks.domain.entity.User;
+import dev.canverse.stocks.domain.entity.account.User;
 import dev.canverse.stocks.service.account.TokenService;
 import dev.canverse.stocks.service.account.UserService;
 import dev.canverse.stocks.service.account.model.GoogleTokenRequest;

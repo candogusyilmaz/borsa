@@ -1,7 +1,7 @@
 package dev.canverse.stocks.rest.portfolio;
 
-import dev.canverse.stocks.service.portfolio.HoldingService;
 import dev.canverse.stocks.service.portfolio.PortfolioService;
+import dev.canverse.stocks.service.portfolio.PositionService;
 import dev.canverse.stocks.service.portfolio.model.BasicPortfolioView;
 import dev.canverse.stocks.service.portfolio.model.CreatePortfolioRequest;
 import dev.canverse.stocks.service.portfolio.model.PortfolioInfo;
@@ -14,7 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/portfolios")
 public class PortfolioController {
-    private final HoldingService holdingService;
+    private final PositionService positionService;
     private final PortfolioService portfolioService;
 
     @GetMapping
@@ -24,7 +24,7 @@ public class PortfolioController {
 
     @GetMapping("/{portfolioId}")
     public PortfolioInfo fetchPortfolio(@PathVariable long portfolioId) {
-        return holdingService.fetchPortfolio(portfolioId);
+        return positionService.fetchPortfolio(portfolioId);
     }
 
     @PostMapping
