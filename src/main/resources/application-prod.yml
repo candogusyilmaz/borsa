@@ -1,3 +1,11 @@
+app:
+  market-updaters:
+    markets:
+      bist:
+        enabled: true
+        cron: '0/30 15-30 10-18 ? * MON-FRI'
+        timezone: 'Europe/Istanbul'
+
 spring:
   flyway:
     enabled: true
@@ -8,3 +16,4 @@ logging:
       hibernate:
         stat: info
         SQL: info
+

@@ -46,7 +46,7 @@ function RouteComponent() {
   const { portfolioId } = useParams({ strict: false });
 
   const [opened, { toggle }] = useDisclosure();
-  const [mobileOpened, { toggle: toggleMobile }] = useDisclosure(true);
+  const [mobileCollapsed, { toggle: toggleMobile }] = useDisclosure(true);
   const { open } = useTransactionModalStore();
 
   const { data: portfolioLinks } = useSuspenseQuery({
@@ -54,13 +54,19 @@ function RouteComponent() {
     select: (data) => data.map((portfolio) => createPortfolioLink(portfolio))
   });
 
+  function closeSidebarOnMobileLinkClick() {
+    if (!mobileCollapsed) {
+      toggleMobile();
+    }
+  }
+
   return (
     <AppShell
       header={{ height: 50 }}
       navbar={{
         width: 280,
         breakpoint: 'sm',
-        collapsed: { mobile: mobileOpened, desktop: opened }
+        collapsed: { mobile: mobileCollapsed, desktop: opened }
       }}
       layout="alt">
       <AppShell.Header>
@@ -158,7 +164,7 @@ function RouteComponent() {
             </Text>
             {NAV_LINKS.map((s) => {
               return (
-                <Link key={s.options.to} {...s.options} className={common.navLink}>
+                <Link key={s.options.to} {...s.options} className={common.navLink} onClick={closeSidebarOnMobileLinkClick}>
                   <Group gap="xs" align="center">
                     {s.icon}
                     {s.label}
@@ -175,7 +181,11 @@ function RouteComponent() {
             <CreatePortfolioButton />
             {portfolioLinks.map((s) => {
               return (
-                <Link key={s.options.to + s.options.params.portfolioId} {...s.options} className={common.navLinkPortfolio}>
+                <Link
+                  key={s.options.to + s.options.params.portfolioId}
+                  {...s.options}
+                  className={common.navLinkPortfolio}
+                  onClick={closeSidebarOnMobileLinkClick}>
                   <Group gap="xs" align="center">
                     {s.icon}
                     {s.label}

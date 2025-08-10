@@ -1,7 +1,7 @@
 package dev.canverse.stocks.domain.entity.portfolio;
 
 import dev.canverse.stocks.domain.Calculator;
-import dev.canverse.stocks.domain.entity.Stock;
+import dev.canverse.stocks.domain.entity.instrument.Instrument;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -32,7 +32,7 @@ public class Position implements Serializable {
 
     @NotNull
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    private Stock stock;
+    private Instrument instrument;
 
     @PositiveOrZero
     @Column(nullable = false)
@@ -65,9 +65,9 @@ public class Position implements Serializable {
     protected Position() {
     }
 
-    public Position(Portfolio portfolio, Stock stock) {
+    public Position(Portfolio portfolio, Instrument instrument) {
         this.portfolio = portfolio;
-        this.stock = stock;
+        this.instrument = instrument;
         this.quantity = 0;
         this.total = BigDecimal.ZERO;
     }

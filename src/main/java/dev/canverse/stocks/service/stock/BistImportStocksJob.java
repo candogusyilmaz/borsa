@@ -1,6 +1,6 @@
 package dev.canverse.stocks.service.stock;
 
-import dev.canverse.stocks.domain.entity.Stock;
+import dev.canverse.stocks.domain.entity.instrument.StockInstrument;
 import dev.canverse.stocks.service.stock.model.BistImportStockCsvRecord;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
@@ -44,9 +44,9 @@ public class BistImportStocksJob {
 
     @Bean
     public Step processStep(FlatFileItemReader<BistImportStockCsvRecord> reader, BistImportStockProcessor processor,
-                            JpaItemWriter<Stock> writer) {
+                            JpaItemWriter<StockInstrument> writer) {
         return new StepBuilder("processStep", jobRepository)
-                .<BistImportStockCsvRecord, Stock>chunk(100, transactionManager)
+                .<BistImportStockCsvRecord, StockInstrument>chunk(100, transactionManager)
                 .reader(reader)
                 .processor(processor)
                 .writer(writer)
@@ -77,8 +77,8 @@ public class BistImportStocksJob {
     }
 
     @Bean
-    public JpaItemWriter<Stock> writer() {
-        var writer = new JpaItemWriter<Stock>();
+    public JpaItemWriter<StockInstrument> writer() {
+        var writer = new JpaItemWriter<StockInstrument>();
         writer.setEntityManagerFactory(entityManagerFactory);
 
         return writer;

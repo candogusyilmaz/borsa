@@ -2,6 +2,14 @@ rsa:
   private-key: classpath:certs/private.pem
   public-key: classpath:certs/public.pem
 
+app:
+  market-updaters:
+    markets:
+      bist:
+        enabled: false
+        cron: '*/20 * * * * *'
+        timezone: 'Europe/Istanbul'
+
 spring:
   application:
     name: Finance

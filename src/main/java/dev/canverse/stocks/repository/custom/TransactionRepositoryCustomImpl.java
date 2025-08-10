@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
-public class TradeRepositoryCustomImpl implements TradeRepositoryCustom {
+public class TransactionRepositoryCustomImpl implements TransactionRepositoryCustom {
     private final JPAQueryFactory queryFactory;
     private final PortfolioRepository portfolioRepository;
 
@@ -84,7 +84,7 @@ public class TradeRepositoryCustomImpl implements TradeRepositoryCustom {
                                 transaction.createdAt,
                                 transaction.type,
                                 transaction.position.id.stringValue(),
-                                transaction.position.stock.symbol,
+                                transaction.position.instrument.symbol,
                                 transaction.price,
                                 transaction.quantity,
                                 transaction.performance.profit,

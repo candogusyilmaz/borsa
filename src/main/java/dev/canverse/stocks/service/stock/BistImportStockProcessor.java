@@ -1,60 +1,53 @@
 package dev.canverse.stocks.service.stock;
 
 
-import dev.canverse.stocks.domain.entity.Country;
-import dev.canverse.stocks.domain.entity.Exchange;
-import dev.canverse.stocks.domain.entity.Stock;
-import dev.canverse.stocks.repository.CountryRepository;
-import dev.canverse.stocks.repository.ExchangeRepository;
-import dev.canverse.stocks.repository.StockRepository;
+import dev.canverse.stocks.domain.entity.instrument.Market;
+import dev.canverse.stocks.domain.entity.instrument.StockInstrument;
+import dev.canverse.stocks.repository.MarketRepository;
+import dev.canverse.stocks.repository.StockInstrumentRepository;
 import dev.canverse.stocks.service.stock.model.BistImportStockCsvRecord;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 
 @Component
-public class BistImportStockProcessor implements ItemProcessor<BistImportStockCsvRecord, Stock> {
-    private final Exchange BIST;
-    private final Country TURKEY;
+public class BistImportStockProcessor implements ItemProcessor<BistImportStockCsvRecord, StockInstrument> {
+    private final Market BIST;
 
-    private final StockRepository stockRepository;
+    private final StockInstrumentRepository stockInstrumentRepository;
 
-    public BistImportStockProcessor(ExchangeRepository exchangeRepository, CountryRepository countryRepository, StockRepository stockRepository) {
-        this.stockRepository = stockRepository;
-        this.BIST = exchangeRepository.findByCode("BIST");
-        this.TURKEY = countryRepository.findByIsoCode("TR");
+    public BistImportStockProcessor(MarketRepository marketRepository, StockInstrumentRepository stockInstrumentRepository) {
+        this.stockInstrumentRepository = stockInstrumentRepository;
+        this.BIST = marketRepository.findByCode("BIST");
     }
 
     @Override
-    public Stock process(BistImportStockCsvRecord record) {
+    public StockInstrument process(BistImportStockCsvRecord record) {
         if (!record.isEquity()) {
             return null;
         }
 
-        var stock = stockRepository.findBySymbol(record.getIslemKodu(), BIST.getId());
+        var stock = stockInstrumentRepository.findBySymbol(record.getIslemKodu(), BIST.getId());
 
         if (stock.isPresent()) {
             stock.get().updateSnapshot(
                     record.kapanisFiyati(),
-                    record.kapanisFiyati().subtract(record.oncekiKapanisFiyati()),
-                    record.degisim()
+                    record.oncekiKapanisFiyati()
             );
 
-            stockRepository.save(stock.get());
+            stockInstrumentRepository.save(stock.get());
             return null;
         }
 
-        var newStock = new Stock(
-                BIST,
+        var newStock = new StockInstrument(
                 record.bultenAdi(),
                 record.getIslemKodu(),
-                TURKEY,
-                record.enstrumanGrubu()
+                BIST,
+                "TRY"
         );
 
         newStock.updateSnapshot(
                 record.kapanisFiyati(),
-                record.kapanisFiyati().subtract(record.oncekiKapanisFiyati()),
-                record.degisim()
+                record.oncekiKapanisFiyati()
         );
 
         return newStock;

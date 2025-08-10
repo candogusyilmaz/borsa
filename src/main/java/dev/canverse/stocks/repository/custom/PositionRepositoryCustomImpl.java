@@ -26,25 +26,26 @@ public class PositionRepositoryCustomImpl implements PositionRepositoryCustom {
 
         var result = queryFactory.select(
                         Projections.constructor(PortfolioInfo.Stock.class,
-                                position.stock.id.stringValue(),
-                                position.stock.symbol,
-                                position.stock.snapshot.dailyChange,
-                                position.stock.snapshot.previousClose,
-                                position.stock.snapshot.dailyChangePercent,
+                                position.instrument.id.stringValue(),
+                                position.instrument.symbol,
+                                position.instrument.snapshot.dailyChange,
+                                position.instrument.snapshot.previousClose,
+                                position.instrument.snapshot.dailyChangePercent,
                                 position.quantity,
                                 position.total,
-                                position.stock.snapshot.last,
+                                position.instrument.snapshot.last,
                                 position.total.divide(position.quantity).castToNum(BigDecimal.class),
-                                position.stock.snapshot.dailyChange.multiply(position.quantity),
-                                position.stock.snapshot.last.multiply(position.quantity)
+                                position.instrument.snapshot.dailyChange.multiply(position.quantity),
+                                position.instrument.snapshot.last.multiply(position.quantity)
                         )
                 )
                 .from(position)
+                .leftJoin(position.instrument.snapshot)
                 .where(position.portfolio.id.eq(portfolioId)
                         .and(position.quantity.gt(0))
                         .and(position.portfolio.user.id.eq(AuthenticationProvider.getUser().getId()))
                 )
-                .orderBy(position.stock.symbol.asc())
+                .orderBy(position.instrument.symbol.asc())
                 .fetch();
 
         return new PortfolioInfo(result);
@@ -62,13 +63,13 @@ public class PositionRepositoryCustomImpl implements PositionRepositoryCustom {
                         Projections.constructor(
                                 BalanceHistory.class,
                                 positionHistory.createdAt,
-                                positionHistory.position.stock.symbol,
+                                positionHistory.position.instrument.symbol,
                                 positionHistory.total
                         )
                 )
                 .from(positionHistory)
                 .where(positionHistory.createdAt.after(startInstant).and(positionHistory.position.portfolio.id.eq(portfolioId)))
-                .groupBy(positionHistory.createdAt, positionHistory.position.stock.symbol)
+                .groupBy(positionHistory.createdAt, positionHistory.position.instrument.symbol)
                 .orderBy(positionHistory.createdAt.desc())
                 .fetch();
     }
