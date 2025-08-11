@@ -3,8 +3,8 @@ app:
     markets:
       bist:
         enabled: true
-        cron: '0/30 15-30 10-18 ? * MON-FRI'
-        timezone: 'Europe/Istanbul'
+        cron: ${BIST_CRON:'0/30 15-30 10-18 ? * MON-FRI'}
+        timezone: ${BIST_TIMEZONE:'Europe/Istanbul'}
 
 spring:
   flyway:
