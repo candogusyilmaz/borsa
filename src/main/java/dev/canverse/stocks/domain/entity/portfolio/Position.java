@@ -11,7 +11,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,11 +34,11 @@ public class Position implements Serializable {
     private Instrument instrument;
 
     @PositiveOrZero
-    @Column(nullable = false)
-    private int quantity;
+    @Column(nullable = false, precision = 38, scale = 18)
+    private BigDecimal quantity;
 
     @PositiveOrZero
-    @Column(nullable = false, precision = 20, scale = 8)
+    @Column(nullable = false, precision = 38, scale = 18)
     private BigDecimal total;
 
     @CreationTimestamp
@@ -68,27 +67,27 @@ public class Position implements Serializable {
     public Position(Portfolio portfolio, Instrument instrument) {
         this.portfolio = portfolio;
         this.instrument = instrument;
-        this.quantity = 0;
+        this.quantity = BigDecimal.ZERO;
         this.total = BigDecimal.ZERO;
     }
 
     public BigDecimal getAveragePrice() {
-        if (this.quantity == 0) return BigDecimal.ZERO;
+        if (BigDecimal.ZERO.equals(this.quantity)) return BigDecimal.ZERO;
 
-        return Calculator.divide(this.total, BigDecimal.valueOf(this.quantity));
+        return Calculator.divide(this.total, this.quantity);
     }
 
-    public void buy(int quantity, BigDecimal price, BigDecimal commission, Instant actionDate) {
+    public void buy(BigDecimal quantity, BigDecimal price, BigDecimal commission, Instant actionDate) {
         this.transactions.add(new Transaction(this, Transaction.Type.BUY, quantity, price, commission, actionDate));
 
-        this.quantity += quantity;
-        this.total = this.total.add(price.multiply(BigDecimal.valueOf(quantity)));
+        this.quantity = this.quantity.add(quantity);
+        this.total = this.total.add(price.multiply(quantity));
 
         this.history.add(new PositionHistory(this, PositionHistory.ActionType.BUY));
     }
 
-    public void sell(int quantity, BigDecimal price, BigDecimal commission, Instant actionDate) {
-        if (this.quantity < quantity) {
+    public void sell(BigDecimal quantity, BigDecimal price, BigDecimal commission, Instant actionDate) {
+        if (quantity.compareTo(this.quantity) > 0) {
             throw new IllegalArgumentException("Not enough quantity");
         }
 
@@ -96,11 +95,11 @@ public class Position implements Serializable {
 
         // In order to preserve the cost basis when undoing a sell
         // we keep the total as is and adjust it based on the quantity sold
-        if (this.quantity == quantity) {
-            this.quantity = 0;
+        if (this.quantity.equals(quantity)) {
+            this.quantity = BigDecimal.ZERO;
         } else {
-            this.total = this.total.subtract(Calculator.divide(this.total.multiply(BigDecimal.valueOf(quantity)), BigDecimal.valueOf(this.quantity)));
-            this.quantity -= quantity;
+            this.total = this.total.subtract(Calculator.divide(this.total.multiply(quantity), this.quantity));
+            this.quantity = this.quantity.subtract(quantity);
         }
 
         this.history.add(new PositionHistory(this, PositionHistory.ActionType.SELL));
@@ -122,33 +121,24 @@ public class Position implements Serializable {
         // If quantity is zero this means in last trade we sold all shares
         // Since when we sell all shares we set quantity to zero but total remains
         // Thus we can just add the latest trade's quantity
-        if (this.quantity == 0) {
+        if (BigDecimal.ZERO.equals(this.quantity)) {
             this.quantity = latestTransaction.getQuantity();
             return;
         }
 
-        int previousQuantity = this.quantity;
-        this.quantity += latestTransaction.getQuantity();
+        var previousQuantity = new BigDecimal(this.quantity.unscaledValue(), this.quantity.scale());
+        this.quantity = this.quantity.add(latestTransaction.getQuantity());
 
-        this.total = Calculator.divide(
-                this.total.multiply(BigDecimal.valueOf(this.quantity)),
-                BigDecimal.valueOf(previousQuantity)
-        );
+        this.total = Calculator.divide(this.total.multiply(this.quantity), previousQuantity);
     }
 
     private void undoBuy(Transaction latestTransaction) {
-        this.quantity = this.quantity - latestTransaction.getQuantity();
+        this.quantity = this.quantity.subtract(latestTransaction.getQuantity());
 
-        if (this.quantity == 0) {
+        if (BigDecimal.ZERO.equals(this.quantity)) {
             this.total = BigDecimal.ZERO;
         } else {
             this.total = this.total.subtract(latestTransaction.getTotal());
         }
-    }
-
-    public void adjustStockSplit(BigDecimal ratio) {
-        this.quantity = BigDecimal.valueOf(quantity).multiply(ratio).setScale(0, RoundingMode.HALF_UP).intValue();
-
-        this.history.add(new PositionHistory(this, PositionHistory.ActionType.STOCK_SPLIT));
     }
 }

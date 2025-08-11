@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
@@ -69,6 +71,8 @@ public abstract class MarketUpdater {
                 .map(s -> new Object[]{
                         s.last(),
                         s.previousClose(),
+                        s.last().subtract(s.previousClose()),
+                        s.last().subtract(s.previousClose()).multiply(BigDecimal.valueOf(100)).divide(s.previousClose(), RoundingMode.HALF_EVEN),
                         s.updatedAt(),
                         s.instrumentId()
                 })
@@ -77,8 +81,8 @@ public abstract class MarketUpdater {
         jdbcTemplate.batchUpdate("""
                     UPDATE instrument.instrument_snapshots
                     SET last = ?, previous_close = ?,
-                        daily_change = last - previous_close,
-                        daily_change_percent = (last - previous_close) * 100 / previous_close,
+                        daily_change = ?,
+                        daily_change_percent = ?,
                         updated_at = ?
                     WHERE instrument_id = ?
                 """, args);

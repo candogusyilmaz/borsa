@@ -22,11 +22,11 @@ public class PositionHistory implements Serializable {
     private Position position;
 
     @NotNull
-    @Column(nullable = false)
-    private int quantity;
+    @Column(nullable = false, precision = 38, scale = 18)
+    private BigDecimal quantity;
 
     @NotNull
-    @Column(nullable = false, precision = 20, scale = 6)
+    @Column(nullable = false, precision = 38, scale = 18)
     private BigDecimal total;
 
     @NotNull

@@ -32,15 +32,15 @@ public class Transaction implements Serializable {
     private Type type;
 
     @Positive
-    @Column(nullable = false)
-    private int quantity;
+    @Column(nullable = false, precision = 38, scale = 18)
+    private BigDecimal quantity;
 
     @Positive
-    @Column(nullable = false, precision = 15, scale = 2)
+    @Column(nullable = false, precision = 38, scale = 18)
     private BigDecimal price;
 
     @PositiveOrZero
-    @Column(name = "tax", nullable = false, precision = 15, scale = 2)
+    @Column(nullable = false, precision = 38, scale = 18)
     private BigDecimal commission;
 
     @NotNull
@@ -57,13 +57,13 @@ public class Transaction implements Serializable {
 
     @JsonManagedReference
     @OneToOne(mappedBy = "transaction", cascade = CascadeType.ALL)
-    @JoinColumn(name = "id", referencedColumnName = "trade_id")
+    @JoinColumn(name = "id", referencedColumnName = "transaction_id")
     private TransactionPerformance performance;
 
     protected Transaction() {
     }
 
-    protected Transaction(Position position, Type type, int quantity, BigDecimal price, BigDecimal commission, Instant actionDate) {
+    protected Transaction(Position position, Type type, BigDecimal quantity, BigDecimal price, BigDecimal commission, Instant actionDate) {
         this.position = position;
         this.type = type;
         this.quantity = quantity;
@@ -72,7 +72,7 @@ public class Transaction implements Serializable {
         this.actionDate = actionDate;
 
         if (type == Type.SELL) {
-            var profit = price.subtract(position.getAveragePrice()).multiply(BigDecimal.valueOf(quantity));
+            var profit = price.subtract(position.getAveragePrice()).multiply(quantity);
             var returnPercentage = Calculator.divide(price.subtract(position.getAveragePrice()).multiply(BigDecimal.valueOf(100)), position.getAveragePrice());
 
             this.performance = new TransactionPerformance(this, profit, returnPercentage);
@@ -85,6 +85,6 @@ public class Transaction implements Serializable {
     }
 
     public BigDecimal getTotal() {
-        return this.price.multiply(BigDecimal.valueOf(this.quantity));
+        return this.price.multiply(this.quantity);
     }
 }

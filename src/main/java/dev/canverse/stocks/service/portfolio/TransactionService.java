@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+
 @Service
 @RequiredArgsConstructor
 public class TransactionService {
@@ -36,7 +38,7 @@ public class TransactionService {
                 instrumentRepository.getReference(req.stockId())
         )));
 
-        position.buy(req.quantity(), req.price(), req.commission(), req.actionDate());
+        position.buy(BigDecimal.valueOf(req.quantity()), req.price(), req.commission(), req.actionDate());
 
         positionRepository.save(position);
     }
@@ -48,7 +50,7 @@ public class TransactionService {
                 req.stockId()
         ).orElseThrow(() -> new NotFoundException("No holding found"));
 
-        position.sell(req.quantity(), req.price(), req.commission(), req.actionDate());
+        position.sell(BigDecimal.valueOf(req.quantity()), req.price(), req.commission(), req.actionDate());
 
         positionRepository.save(position);
     }

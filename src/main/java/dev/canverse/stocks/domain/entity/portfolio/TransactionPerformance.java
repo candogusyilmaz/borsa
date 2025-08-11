@@ -15,7 +15,7 @@ import java.time.Instant;
 @Table(schema = "portfolio", name = "transaction_performance")
 public class TransactionPerformance {
     @Id
-    @Column(name = "trade_id")
+    @Column(name = "transaction_id")
     private Long id;
 
     @MapsId
@@ -24,10 +24,10 @@ public class TransactionPerformance {
     @OneToOne(optional = false, fetch = FetchType.LAZY)
     private Transaction transaction;
 
-    @Column(nullable = false, precision = 15, scale = 2)
+    @Column(nullable = false, precision = 38, scale = 18)
     private BigDecimal profit;
 
-    @Column(nullable = false, precision = 15, scale = 2)
+    @Column(nullable = false, precision = 38, scale = 18)
     private BigDecimal returnPercentage;
 
     @Enumerated(EnumType.STRING)

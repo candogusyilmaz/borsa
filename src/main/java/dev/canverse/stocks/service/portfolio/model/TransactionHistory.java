@@ -16,7 +16,7 @@ public record TransactionHistory(List<Item> trades) {
             String holdingId,
             String symbol,
             BigDecimal price,
-            int quantity,
+            BigDecimal quantity,
             @JsonInclude(JsonInclude.Include.NON_NULL)
             BigDecimal profit,
             @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -26,7 +26,7 @@ public record TransactionHistory(List<Item> trades) {
             boolean latest
     ) {
         public BigDecimal getTotal() {
-            return price.multiply(BigDecimal.valueOf(quantity));
+            return price.multiply(quantity);
         }
     }
 }

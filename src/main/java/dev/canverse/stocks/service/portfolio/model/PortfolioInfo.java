@@ -31,7 +31,7 @@ public record PortfolioInfo(List<Stock> stocks) {
             BigDecimal dailyChange,
             BigDecimal previousClose,
             BigDecimal dailyChangePercent,
-            int quantity,
+            BigDecimal quantity,
             BigDecimal total,
             BigDecimal currentPrice,
             BigDecimal averagePrice,
@@ -52,7 +52,7 @@ public record PortfolioInfo(List<Stock> stocks) {
         }
 
         public BigDecimal getCost() {
-            return averagePrice.multiply(BigDecimal.valueOf(quantity));
+            return averagePrice.multiply(quantity);
         }
     }
 }
