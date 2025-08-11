@@ -2,9 +2,9 @@ app:
   market-updaters:
     markets:
       bist:
-        enabled: true
+        enabled: ${BIST_ENABLED:true}
         cron: ${BIST_CRON:0/30 15-30 10-18 ? * MON-FRI}
-        timezone: ${BIST_TIMEZONE:Europe/Istanbul}
+        timezone: ${BIST_TIMEZONE}
 
 spring:
   flyway:

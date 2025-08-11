@@ -41,6 +41,10 @@ public class MarketUpdaterScheduler {
     }
 
     private CronTrigger getCron(String cron, String timezone) {
-        return new CronTrigger(cron, timezone != null ? TimeZone.getTimeZone(timezone) : TimeZone.getTimeZone("UTC"));
+        if (timezone == null || timezone.isEmpty()) {
+            return new CronTrigger(cron);
+        }
+
+        return new CronTrigger(cron, TimeZone.getTimeZone(timezone));
     }
 }

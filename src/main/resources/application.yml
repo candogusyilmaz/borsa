@@ -8,7 +8,6 @@ app:
       bist:
         enabled: true
         cron: '*/20 * * * * *'
-        timezone: 'Europe/Istanbul'
 
 spring:
   application:
