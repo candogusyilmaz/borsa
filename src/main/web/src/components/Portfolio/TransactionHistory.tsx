@@ -1,4 +1,17 @@
-import { ActionIcon, Badge, Card, Group, rem, Stack, Text, ThemeIcon, Tooltip, useMatches } from '@mantine/core';
+import {
+  ActionIcon,
+  Badge,
+  Card,
+  Group,
+  rem,
+  SegmentedControl,
+  Stack,
+  Text,
+  TextInput,
+  ThemeIcon,
+  Tooltip,
+  useMatches
+} from '@mantine/core';
 import {
   IconArrowBack,
   IconCalendar,
@@ -6,12 +19,13 @@ import {
   IconChevronLeft,
   IconChevronRight,
   IconCirclePlus,
+  IconSearch,
   IconTrendingDown3,
   IconTrendingUp3
 } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { queries } from '~/api';
 import type { TradeHistory, TradeHistoryTrade } from '~/api/queries/types';
 import { ErrorView } from '~/components/ErrorView';
@@ -19,7 +33,12 @@ import { LoadingView } from '~/components/LoadingView';
 import { useUndoTradeModalStore } from '~/components/Transaction/UndoTradeModal';
 import { format } from '~/lib/format';
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE_OPTIONS = [
+  { value: '5', label: '5' },
+  { value: '10', label: '10' },
+  { value: '20', label: '20' },
+  { value: '50', label: '50' }
+];
 
 export function TransactionHistory() {
   const { portfolioId } = useParams({ strict: false });
@@ -75,13 +94,32 @@ function Inner({ data }: { data: TradeHistory }) {
     sm: DesktopCardContent
   });
   const [currentPage, setCurrentPage] = useState(1);
+  const [symbolFilter, setSymbolFilter] = useState('');
+  const [typeFilter, setTypeFilter] = useState<string>('');
+  const [pageSize, setPageSize] = useState(5);
 
-  const totalPages = Math.ceil(data.trades.length / PAGE_SIZE);
+  // Filter trades based on symbol and type
+  const filteredTrades = useMemo(() => {
+    return data.trades.filter((trade) => {
+      const symbolMatch = symbolFilter === '' || trade.symbol.toLowerCase().includes(symbolFilter.toLowerCase());
+      const typeMatch = typeFilter === '' || trade.type === typeFilter;
+      return symbolMatch && typeMatch;
+    });
+  }, [data.trades, symbolFilter, typeFilter]);
 
-  const startIndex = (currentPage - 1) * PAGE_SIZE;
-  const endIndex = startIndex + PAGE_SIZE;
+  const totalPages = Math.ceil(filteredTrades.length / pageSize);
 
-  const currentTrades = data.trades.slice(startIndex, endIndex);
+  // Reset to first page when filters change
+  useEffect(() => {
+    if (symbolFilter !== '' || typeFilter !== '') {
+      setCurrentPage(1);
+    }
+  }, [symbolFilter, typeFilter]);
+
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+
+  const currentTrades = filteredTrades.slice(startIndex, endIndex);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
@@ -102,9 +140,10 @@ function Inner({ data }: { data: TradeHistory }) {
           <Text fw={700} size={rem(22)}>
             Transaction History
           </Text>
-          {data.trades.length > 0 && (
+          {filteredTrades.length > 0 && (
             <Badge variant="light" color="blue.2" style={{ flex: 1, minWidth: 60 }}>
-              {data.trades.length} trade{data.trades.length === 1 ? '' : 's'}
+              {filteredTrades.length} trade{filteredTrades.length === 1 ? '' : 's'}
+              {filteredTrades.length !== data.trades.length && ` of ${data.trades.length}`}
             </Badge>
           )}
         </Group>
@@ -122,6 +161,39 @@ function Inner({ data }: { data: TradeHistory }) {
           </Group>
         )}
       </Group>
+
+      <Group gap="xs">
+        <SegmentedControl
+          h={36}
+          radius={'md'}
+          value={typeFilter}
+          onChange={(value) => setTypeFilter(value || '')}
+          data={[
+            { value: '', label: 'All' },
+            { value: 'BUY', label: 'Buy' },
+            { value: 'SELL', label: 'Sell' }
+          ]}
+        />
+        <TextInput
+          placeholder="Filter by symbol..."
+          value={symbolFilter}
+          onChange={(event) => setSymbolFilter(event.currentTarget.value)}
+          leftSection={<IconSearch size={16} />}
+          flex={1}
+          miw={100}
+        />
+        <SegmentedControl
+          styles={{
+            root: {
+              background: 'transparent'
+            }
+          }}
+          value={pageSize.toString()}
+          onChange={(value) => setPageSize(Number(value))}
+          data={PAGE_SIZE_OPTIONS}
+        />
+      </Group>
+
       <Stack gap="sm">
         {currentTrades.map((trade) => (
           <Card
@@ -139,6 +211,13 @@ function Inner({ data }: { data: TradeHistory }) {
             <UndoTradeButton trade={trade} />
           </Card>
         ))}
+        {currentTrades.length === 0 && (
+          <Card shadow="sm" radius="md" withBorder>
+            <Text c="dimmed" size="xs" fw={600} ta="center">
+              No trades match the current filters
+            </Text>
+          </Card>
+        )}
       </Stack>
     </Stack>
   );
