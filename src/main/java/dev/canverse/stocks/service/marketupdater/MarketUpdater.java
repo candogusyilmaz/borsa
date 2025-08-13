@@ -2,12 +2,12 @@ package dev.canverse.stocks.service.marketupdater;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import dev.canverse.stocks.domain.Calculator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
@@ -72,7 +72,7 @@ public abstract class MarketUpdater {
                         s.last(),
                         s.previousClose(),
                         s.last().subtract(s.previousClose()),
-                        s.last().subtract(s.previousClose()).multiply(BigDecimal.valueOf(100)).divide(s.previousClose(), RoundingMode.HALF_EVEN),
+                        Calculator.divide(s.last().subtract(s.previousClose()).multiply(BigDecimal.valueOf(100)), s.previousClose()),
                         s.updatedAt(),
                         s.instrumentId()
                 })

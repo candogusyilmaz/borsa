@@ -1,13 +1,15 @@
 package dev.canverse.stocks.domain.entity.instrument;
 
+import dev.canverse.stocks.domain.Calculator;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Instant;
 
 @Getter
@@ -29,8 +31,8 @@ public abstract class Instrument {
     @Column(nullable = false)
     private String symbol;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "instrument_type")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private InstrumentType type;
 
     @Column(nullable = false, length = 3)
@@ -73,7 +75,7 @@ public abstract class Instrument {
 
     public void updateSnapshot(BigDecimal last, BigDecimal previousClose) {
         var dailyChange = last.subtract(previousClose);
-        var dailyChangePercent = dailyChange.divide(previousClose, RoundingMode.HALF_EVEN).multiply(BigDecimal.valueOf(100));
+        var dailyChangePercent = Calculator.divide(last.subtract(previousClose).multiply(BigDecimal.valueOf(100)), previousClose);
 
         this.updateSnapshot(last, previousClose, dailyChange, dailyChangePercent);
     }

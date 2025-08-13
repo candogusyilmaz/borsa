@@ -164,8 +164,7 @@ function Inner({ data }: { data: TradeHistory }) {
 
       <Group gap="xs">
         <SegmentedControl
-          h={36}
-          radius={'md'}
+          bd="1px solid var(--mantine-color-dark-4)"
           value={typeFilter}
           onChange={(value) => setTypeFilter(value || '')}
           data={[
