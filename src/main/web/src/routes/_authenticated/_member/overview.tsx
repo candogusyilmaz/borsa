@@ -1,6 +1,6 @@
 import { Badge, Card, Container, Group, rem, Select, SimpleGrid, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 import { IconArrowDown, IconArrowUp, IconCashBanknote, IconChartLine, IconTrendingDown, IconTrendingUp } from '@tabler/icons-react';
-import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 import { queries } from '~/api';
