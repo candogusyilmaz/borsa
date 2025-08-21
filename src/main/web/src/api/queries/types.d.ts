@@ -86,3 +86,9 @@ export type MonthlyRevenueOverview = Array<{
     profit: number;
   }>;
 }>;
+
+export type RealizedGains = {
+  currentPeriod: number;
+  previousPeriod: number;
+  percentageChange: number | null;
+};

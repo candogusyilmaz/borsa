@@ -20,7 +20,10 @@ export const Route = createFileRoute('/_authenticated/_member/portfolios/$portfo
 
 function RouteComponent() {
   return (
-    <Container size="lg" my="lg">
+    <Container
+      strategy="grid"
+      size="lg"
+      style={{ margin: 'var(--mantine-spacing-lg) var(--mantine-spacing-xl) var(--mantine-spacing-lg) var(--mantine-spacing-lg)' }}>
       <Stack>
         <Title>Portfolio</Title>
         <Flex gap="md" direction={{ base: 'column', sm: 'row' }}>
