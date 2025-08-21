@@ -134,12 +134,8 @@ public class TransactionRepositoryCustomImpl implements TransactionRepositoryCus
                         p.user_id = :userId
                 )
                 SELECT 
-                    COALESCE(current_period_gain, 0) as current_period_gain,
-                    COALESCE(previous_period_gain, 0) as previous_period_gain,
-                    CASE 
-                        WHEN previous_period_gain = 0 THEN NULL
-                        ELSE ((current_period_gain - previous_period_gain) / previous_period_gain) * 100
-                    END as percentage_change
+                    COALESCE(current_period_gain, 0) as cpg,
+                    COALESCE(previous_period_gain, 0) as ppg
                 FROM period_data
                 """.formatted(
                 getPeriodCondition(periodType, true),
@@ -152,9 +148,7 @@ public class TransactionRepositoryCustomImpl implements TransactionRepositoryCus
 
         return namedParameterJdbcTemplate.query(sql, params, rs -> {
             rs.next();
-            return new RealizedGains(rs.getBigDecimal("current_period_gain"),
-                    rs.getBigDecimal("previous_period_gain"),
-                    rs.getBigDecimal("percentage_change"));
+            return new RealizedGains(rs.getBigDecimal("cpg"), rs.getBigDecimal("ppg"));
         });
     }
 
@@ -162,7 +156,7 @@ public class TransactionRepositoryCustomImpl implements TransactionRepositoryCus
         String interval = isCurrent ? "" : " - INTERVAL '1 %s'".formatted(periodType.toLowerCase());
 
         return switch (periodType) {
-            case "day" -> "t.action_date = CURRENT_DATE" + interval;
+            case "day" -> "DATE_TRUNC('day', t.action_date) = CURRENT_DATE" + interval;
             case "week" -> "DATE_TRUNC('week', t.action_date) = DATE_TRUNC('week', CURRENT_DATE" + interval + ")";
             case "month" -> "DATE_TRUNC('month', t.action_date) = DATE_TRUNC('month', CURRENT_DATE" + interval + ")";
             case "year" -> "DATE_TRUNC('year', t.action_date) = DATE_TRUNC('year', CURRENT_DATE" + interval + ")";
