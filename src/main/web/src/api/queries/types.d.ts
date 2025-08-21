@@ -91,4 +91,19 @@ export type RealizedGains = {
   currentPeriod: number;
   previousPeriod: number;
   percentageChange: number | null;
+  currencyCode: string;
+};
+
+export type DailyChange = {
+  currentValue: number;
+  previousValue: number;
+  percentageChange: number | null;
+  currencyCode: string;
+};
+
+export type TotalBalance = {
+  value: number;
+  cost: number;
+  percentageChange: number | null;
+  currencyCode: string;
 };

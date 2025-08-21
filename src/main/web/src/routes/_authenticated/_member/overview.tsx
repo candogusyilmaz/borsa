@@ -1,5 +1,13 @@
-import { Badge, Card, Container, Group, rem, Select, SimpleGrid, Stack, Text, ThemeIcon, Title } from '@mantine/core';
-import { IconArrowDown, IconArrowUp, IconCashBanknote, IconChartLine, IconTrendingDown, IconTrendingUp } from '@tabler/icons-react';
+import { Badge, Card, Center, Container, Group, Loader, rem, Select, SimpleGrid, Stack, Text, ThemeIcon, Title } from '@mantine/core';
+import {
+  IconAlertTriangleFilled,
+  IconArrowDown,
+  IconArrowUp,
+  IconCashBanknote,
+  IconChartLine,
+  IconTrendingDown,
+  IconTrendingUp
+} from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
@@ -15,7 +23,7 @@ function RouteComponent() {
     <Container strategy="grid" size="lg" m="lg">
       <Stack>
         <Title>Dashboard</Title>
-        <SimpleGrid cols={{ base: 1, md: 2, lg: 3 }} spacing="md">
+        <SimpleGrid cols={{ base: 1, md: 2, lg: 3 }} spacing="md" mih={125}>
           <TotalBalanceCard />
           <DailyChangeCard />
           <RealizedGainsCard />
@@ -26,11 +34,35 @@ function RouteComponent() {
 }
 
 function TotalBalanceCard() {
-  const totalValue = 120463600.45;
+  const { data, status } = useQuery(queries.statistics.fetchTotalBalance());
+
+  if (status === 'pending') {
+    return (
+      <Card shadow="md" p="lg" withBorder>
+        <Center h="100%">
+          <Loader type="dots" color="teal" />
+        </Center>
+      </Card>
+    );
+  }
+
+  if (status === 'error') {
+    return (
+      <Card shadow="md" p="lg" withBorder>
+        <Group h="100%" align="center" justify="center">
+          <IconAlertTriangleFilled size={24} color="red" />
+          <Text c="red" fw={600} size="sm">
+            Error loading total balance data
+          </Text>
+        </Group>
+      </Card>
+    );
+  }
+
   return (
     <Card shadow="md" p="lg" withBorder>
       <Group gap="xs" align="center" mb="md">
-        <ThemeIcon variant="transparent" c="gray">
+        <ThemeIcon variant="transparent" c={determinate(data.percentageChange, { naEq: 'dimmed', gt: 'teal', lt: 'red' })}>
           <IconChartLine />
         </ThemeIcon>
         <Text fw={500} size="md" c="gray.3">
@@ -39,18 +71,22 @@ function TotalBalanceCard() {
       </Group>
       <Group gap={10} align="top" mb={4} wrap="nowrap">
         <Text fz={rem(28)} fw={700} lts={rem(1.5)} style={{}}>
-          {format.toCurrency(totalValue, false)}
+          {format.toCurrency(data.value, false)}
         </Text>
         <Text mt={12} c="dimmed" size="xs" fw={400} style={{ verticalAlign: 'middle' }}>
-          USD
+          {data.currencyCode}
         </Text>
       </Group>
       <Group gap={8}>
-        <Badge radius="sm" py={10} variant="light" color="teal">
+        <Badge radius="sm" py={10} variant="light" color={determinate(data.percentageChange, { naEq: 'gray.4', gt: 'teal', lt: 'red' })}>
           <Group gap={8} align="center">
-            <IconArrowUp size={14} />
+            {determinateFn(data.percentageChange, {
+              naEq: () => null,
+              gt: () => <IconArrowUp size={14} />,
+              lt: () => <IconArrowDown size={14} />
+            })}
             <Text span fz="0.75rem" lh={1} fw={600}>
-              {format.toLocalePercentage(5.12)}
+              {determinateFn(data.percentageChange, { naEq: () => 'N/A', gt: format.toLocalePercentage, lt: format.toLocalePercentage })}
             </Text>
           </Group>
         </Badge>
@@ -62,14 +98,55 @@ function TotalBalanceCard() {
   );
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: intentional
+function determinate(value: any, returns: { naEq?: any; gt?: any; lt?: any }) {
+  if (!value || value === 0) return returns.naEq;
+
+  if (value > 0) return returns.gt;
+
+  if (value < 0) return returns.lt;
+}
+
+// biome-ignore lint/suspicious/noExplicitAny: int
+function determinateFn(value: any, returns: { naEq?: (value) => any; gt?: (value) => any; lt?: (value) => any }) {
+  if (!value || value === 0) return returns.naEq?.(value);
+
+  if (value > 0) return returns.gt?.(value);
+
+  if (value < 0) return returns.lt?.(value);
+}
+
 function DailyChangeCard() {
-  const dailyChange = -3531.45;
+  const { data, status } = useQuery(queries.statistics.fetchDailyChange());
+
+  if (status === 'pending') {
+    return (
+      <Card shadow="md" p="lg" withBorder>
+        <Center h="100%">
+          <Loader type="dots" color="teal" />
+        </Center>
+      </Card>
+    );
+  }
+
+  if (status === 'error') {
+    return (
+      <Card shadow="md" p="lg" withBorder>
+        <Group h="100%" align="center" justify="center">
+          <IconAlertTriangleFilled size={24} color="red" />
+          <Text c="red" fw={600} size="sm">
+            Error loading daily change data
+          </Text>
+        </Group>
+      </Card>
+    );
+  }
 
   return (
     <Card shadow="md" p="lg" withBorder>
       <Group gap="xs" align="center" mb="md">
-        <ThemeIcon variant="transparent" c={dailyChange < 0 ? 'red' : 'teal'}>
-          {dailyChange < 0 ? <IconTrendingDown /> : <IconTrendingUp />}
+        <ThemeIcon variant="transparent" c={determinate(data.percentageChange, { naEq: 'dimmed', gt: 'teal', lt: 'red' })}>
+          {determinate(data.percentageChange, { naEq: <IconTrendingUp />, gt: <IconTrendingUp />, lt: <IconTrendingDown /> })}
         </ThemeIcon>
         <Text fw={500} size="md" c="gray.3">
           Daily Change
@@ -77,18 +154,26 @@ function DailyChangeCard() {
       </Group>
       <Group gap={10} align="top" mb={4} wrap="nowrap">
         <Text fz={rem(28)} fw={700} lts={rem(1.5)} style={{}}>
-          {format.toCurrency(dailyChange, false)}
+          {format.toCurrency(data.currentValue - data.previousValue, false)}
         </Text>
         <Text mt={12} c="dimmed" size="xs" fw={400} style={{ verticalAlign: 'middle' }}>
-          TRY
+          {data.currencyCode}
         </Text>
       </Group>
       <Group gap={8}>
-        <Badge radius="sm" py={10} variant="light" color={dailyChange < 0 ? 'red' : 'teal'}>
+        <Badge radius="sm" py={10} variant="light" color={determinate(data.percentageChange, { naEq: 'gray.4', gt: 'teal', lt: 'red' })}>
           <Group gap={8} align="center">
-            {dailyChange < 0 ? <IconArrowDown size={14} /> : <IconArrowUp size={14} />}
+            {determinateFn(data.percentageChange, {
+              naEq: () => null,
+              gt: () => <IconArrowUp size={14} />,
+              lt: () => <IconArrowDown size={14} />
+            })}
             <Text span fz="0.75rem" lh={1} fw={600}>
-              {format.toLocalePercentage(5.12)}
+              {determinateFn(data.percentageChange, {
+                naEq: () => 'N/A',
+                gt: (v) => format.toLocalePercentage(v),
+                lt: (v) => format.toLocalePercentage(v)
+              })}
             </Text>
           </Group>
         </Badge>
@@ -109,7 +194,7 @@ function RealizedGainsCard() {
     { label: 'This Year', value: 'year' }
   ]);
 
-  const { data: rgd } = useQuery(queries.statistics.fetchRealizedGains({ periodType: range }));
+  const { data: rgd, status } = useQuery(queries.statistics.fetchRealizedGains({ periodType: range }));
 
   let badgeText = '';
 
@@ -117,7 +202,7 @@ function RealizedGainsCard() {
     case 'week':
       badgeText = 'from last week';
       break;
-    case 'today':
+    case 'day':
       badgeText = 'from yesterday';
       break;
     case 'month':
@@ -128,14 +213,33 @@ function RealizedGainsCard() {
       break;
   }
 
-  if (!rgd) {
-    return null;
+  if (status === 'pending') {
+    return (
+      <Card shadow="md" p="lg" withBorder>
+        <Center h="100%">
+          <Loader type="dots" color="teal" />
+        </Center>
+      </Card>
+    );
+  }
+
+  if (status === 'error') {
+    return (
+      <Card shadow="md" p="lg" withBorder>
+        <Group h="100%" align="center" justify="center">
+          <IconAlertTriangleFilled size={24} color="red" />
+          <Text c="red" fw={600} size="sm">
+            Error loading realized gains data
+          </Text>
+        </Group>
+      </Card>
+    );
   }
 
   return (
     <Card shadow="md" p="lg" withBorder>
       <Group gap="xs" align="center" mb="md">
-        <ThemeIcon variant="transparent" c={rgd.currentPeriod < 0 ? 'red' : 'teal'}>
+        <ThemeIcon variant="transparent" c={determinate(rgd.percentageChange, { naEq: 'dimmed', gt: 'teal', lt: 'red' })}>
           <IconCashBanknote />
         </ThemeIcon>
         <Text fw={500} size="md" c="gray.3">
@@ -152,39 +256,34 @@ function RealizedGainsCard() {
         />
       </Group>
       <Group gap={10} align="top" mb={4} wrap="nowrap">
-        <Text fz={rem(28)} fw={700} lts={rem(1.5)} style={{}}>
-          {format.toCurrency(rgd.currentPeriod, false)}
+        <Text fz={rem(28)} fw={700} lts={rem(1.5)}>
+          {format.toCurrency(rgd.currentPeriod, false, rgd.currencyCode)}
         </Text>
         <Text mt={12} c="dimmed" size="xs" fw={400} style={{ verticalAlign: 'middle' }}>
-          TRY
+          {rgd.currencyCode}
         </Text>
       </Group>
       <Group gap={8}>
-        {rgd.percentageChange ? (
-          <>
-            <Badge radius="sm" py={10} variant="light" color={rgd.percentageChange < 0 ? 'red' : 'teal'}>
-              <Group gap={8} align="center">
-                {rgd.percentageChange < 0 ? <IconArrowDown size={14} /> : <IconArrowUp size={14} />}
-                <Text span fz="0.75rem" lh={1} fw={600}>
-                  {format.toLocalePercentage(rgd.percentageChange)}
-                </Text>
-              </Group>
-            </Badge>
-            <Text span fz="0.75rem" lh={1} fw={400} c="dimmed">
-              {rgd.percentageChange < 0 ? 'decrease' : 'increase'} {badgeText}
+        <Badge radius="sm" py={10} variant="light" color={determinate(rgd.percentageChange, { naEq: 'gray.4', gt: 'teal', lt: 'red' })}>
+          <Group gap={8} align="center">
+            {determinateFn(rgd.percentageChange, {
+              naEq: () => null,
+              gt: () => <IconArrowUp size={14} />,
+              lt: () => <IconArrowDown size={14} />
+            })}
+            <Text span fz="0.75rem" lh={1} fw={600}>
+              {determinateFn(rgd.percentageChange, {
+                naEq: () => 'N/A',
+                gt: format.toLocalePercentage,
+                lt: format.toLocalePercentage
+              })}
             </Text>
-          </>
-        ) : (
-          <>
-            <Badge radius="sm" py={10} variant="light" color="gray.4">
-              <Group gap={8} align="center">
-                <Text span fz="0.75rem" lh={1} fw={600}>
-                  N/A
-                </Text>
-              </Group>
-            </Badge>
-            <Text span fz="0.75rem" lh={1} fw={400} c="dimmed"></Text>
-          </>
+          </Group>
+        </Badge>
+        {rgd.percentageChange && (
+          <Text span fz="0.75rem" lh={1} fw={400} c="dimmed">
+            {rgd.percentageChange < 0 ? 'decrease' : 'increase'} {badgeText}
+          </Text>
         )}
       </Group>
     </Card>
