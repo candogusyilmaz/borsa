@@ -3,6 +3,7 @@ package dev.canverse.stocks.repository.custom;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import dev.canverse.stocks.domain.Calculator;
 import dev.canverse.stocks.domain.entity.portfolio.QPortfolio;
 import dev.canverse.stocks.domain.entity.portfolio.QPosition;
 import dev.canverse.stocks.domain.entity.portfolio.QTransaction;
@@ -18,6 +19,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -148,8 +150,32 @@ public class TransactionRepositoryCustomImpl implements TransactionRepositoryCus
 
         return namedParameterJdbcTemplate.query(sql, params, rs -> {
             rs.next();
-            return new RealizedGains(rs.getBigDecimal("cpg"), rs.getBigDecimal("ppg"));
+            return new RealizedGains(rs.getBigDecimal("cpg"), rs.getBigDecimal("ppg"),
+                    calculatePercentageChange(rs.getBigDecimal("cpg"), rs.getBigDecimal("ppg")));
         });
+    }
+
+    private BigDecimal calculatePercentageChange(BigDecimal current, BigDecimal previous) {
+        if (previous == null || BigDecimal.ZERO.compareTo(previous) == 0) {
+            return null;
+        }
+
+        var difference = current.subtract(previous);
+
+        if (previous.compareTo(BigDecimal.ZERO) < 0 && current.compareTo(BigDecimal.ZERO) < 0) {
+            var improvementInLoss = previous.subtract(current); // How much loss was reduced/increased
+            return Calculator.divide(improvementInLoss, previous.abs())
+                    .multiply(BigDecimal.valueOf(100));
+        }
+
+        if (previous.compareTo(BigDecimal.ZERO) < 0 && current.compareTo(BigDecimal.ZERO) >= 0) {
+            return Calculator.divide(difference, previous.abs())
+                    .multiply(BigDecimal.valueOf(100));
+        }
+
+        // Standard calculation for other cases
+        return Calculator.divide(difference, previous)
+                .multiply(BigDecimal.valueOf(100));
     }
 
     private String getPeriodCondition(String periodType, boolean isCurrent) {
