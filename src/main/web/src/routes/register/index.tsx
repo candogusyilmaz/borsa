@@ -87,7 +87,7 @@ function RouteComponent() {
       { token: idToken },
       {
         onSuccess: () => {
-          navigate({ to: '/overview' });
+          navigate({ to: '/dashboard' });
         }
       }
     );
@@ -102,7 +102,7 @@ function RouteComponent() {
       },
       {
         onSuccess: () => {
-          navigate({ to: '/overview' });
+          navigate({ to: '/dashboard' });
         },
         onError: (error) => {
           const res = error as AxiosError;
