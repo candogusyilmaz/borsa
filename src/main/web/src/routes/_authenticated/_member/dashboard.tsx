@@ -14,7 +14,7 @@ import { useState } from 'react';
 import { queries } from '~/api';
 import { format } from '~/lib/format';
 
-export const Route = createFileRoute('/_authenticated/_member/overview')({
+export const Route = createFileRoute('/_authenticated/_member/dashboard')({
   component: RouteComponent
 });
 

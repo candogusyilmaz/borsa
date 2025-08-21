@@ -14,7 +14,7 @@ export function NotFound() {
             Page you are trying to open does not exist. You may have mistyped the address, or the page has been moved to another URL. If you
             think this is an error contact support.
           </Text>
-          <Link to="/overview" className={classes.button}>
+          <Link to="/dashboard" className={classes.button}>
             Take me back to home page
           </Link>
         </div>

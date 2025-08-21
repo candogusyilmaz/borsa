@@ -13,7 +13,7 @@ export const Route = createFileRoute('/_authenticated/_member/portfolios/$portfo
     try {
       await queryClient.fetchQuery(queries.portfolio.fetchPortfolio({ portfolioId: Number(params.portfolioId) }));
     } catch (_error) {
-      throw redirect({ to: '/overview' });
+      throw redirect({ to: '/dashboard' });
     }
   }
 });

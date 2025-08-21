@@ -23,10 +23,10 @@ export const Route = createFileRoute('/_authenticated/_member')({
 
 const NAV_LINKS = [
   {
-    label: 'Overview',
+    label: 'Dashboard',
     icon: <IconHome size={20} />,
     options: linkOptions({
-      to: '/overview'
+      to: '/dashboard'
     })
   }
 ];
