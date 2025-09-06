@@ -87,6 +87,21 @@ export type MonthlyRevenueOverview = Array<{
   }>;
 }>;
 
+export type BasicDashboardView = {
+  id: string;
+  name: string;
+  isDefault: boolean;
+};
+
+export type DashboardView = {
+  id: string;
+  name: string;
+  isDefault: boolean;
+  totalBalance: TotalBalance;
+  dailyChange: DailyChange;
+  realizedGains: RealizedGains;
+};
+
 export type RealizedGains = {
   currentPeriod: number;
   previousPeriod: number;

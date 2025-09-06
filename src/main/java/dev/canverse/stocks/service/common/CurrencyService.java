@@ -1,5 +1,6 @@
 package dev.canverse.stocks.service.common;
 
+import dev.canverse.stocks.domain.common.SelectItem;
 import dev.canverse.stocks.integration.forex.ForexWebClient;
 import dev.canverse.stocks.repository.CurrencyRepository;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -15,6 +17,12 @@ import java.time.Instant;
 public class CurrencyService {
     private final ForexWebClient forexWebClient;
     private final CurrencyRepository currencyRepository;
+
+    public List<SelectItem> getAllCurrencies() {
+        return currencyRepository.findAll().stream()
+                .map(c -> new SelectItem(c.getId().toString(), c.getCode() + " - " + c.getName()))
+                .toList();
+    }
 
     @Scheduled(cron = "0 0 20 * * ?")
     protected void updateCurrencyRates() {

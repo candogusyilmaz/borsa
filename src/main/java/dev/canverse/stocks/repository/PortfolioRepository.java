@@ -18,4 +18,7 @@ public interface PortfolioRepository extends BaseJpaRepository<Portfolio, Long> 
 
     @Query("SELECT COUNT(p) > 0 FROM Portfolio p WHERE p.id = :portfolioId AND p.user.id = :#{principal.id}")
     boolean isPortfolioOwnedByPrincipal(long portfolioId);
+
+    @Query("SELECT COUNT(p) > 0 FROM Portfolio p WHERE p.id = :portfolioId AND p.user.id = :userId")
+    boolean existsByUserId(long userId, long portfolioId);
 }

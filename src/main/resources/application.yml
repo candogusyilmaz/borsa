@@ -6,7 +6,7 @@ app:
   market-updaters:
     markets:
       bist:
-        enabled: true
+        enabled: false
         cron: '*/20 * * * * *'
   forex-rate-api:
     base-url: 'https://api.forexrateapi.com'

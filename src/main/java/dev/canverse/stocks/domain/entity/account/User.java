@@ -1,13 +1,17 @@
 package dev.canverse.stocks.domain.entity.account;
 
+import dev.canverse.stocks.domain.entity.portfolio.Dashboard;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -36,8 +40,23 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private Boolean isEnabled;
 
+    @Column(nullable = false)
+    private Instant lastLoginAt;
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private Instant updatedAt;
+
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserRole> userRoles = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Dashboard> dashboards = new HashSet<>();
 
     protected User() {
     }
@@ -75,5 +94,17 @@ public class User implements UserDetails {
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
+    }
+
+    public void addDashboard(Dashboard dashboard) {
+        if (this.dashboards.contains(dashboard)) {
+            return;
+        }
+
+        if (!dashboard.getUser().getId().equals(this.id)) {
+            throw new IllegalArgumentException("Dashboard does not belong to the same user.");
+        }
+
+        this.dashboards.add(dashboard);
     }
 }

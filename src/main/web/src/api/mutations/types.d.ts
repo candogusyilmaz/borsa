@@ -13,3 +13,9 @@ export type SellTradeRequest = {
   commission: number;
   actionDate: string;
 };
+
+export type CreateDashboardRequest = {
+  name: string;
+  currencyId: string;
+  portfolioIds: string[];
+};

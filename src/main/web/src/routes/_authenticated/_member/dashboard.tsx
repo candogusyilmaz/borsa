@@ -1,17 +1,36 @@
-import { Badge, Card, Center, Container, Group, Loader, rem, Select, SimpleGrid, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 import {
-  IconAlertTriangleFilled,
+  Badge,
+  Button,
+  Card,
+  Container,
+  Divider,
+  Group,
+  Menu,
+  rem,
+  SimpleGrid,
+  Skeleton,
+  Stack,
+  Text,
+  ThemeIcon,
+  Title
+} from '@mantine/core';
+import {
   IconArrowDown,
   IconArrowUp,
   IconCashBanknote,
   IconChartLine,
+  IconCheck,
+  IconChevronDown,
+  IconLayoutDashboardFilled,
   IconTrendingDown,
   IconTrendingUp
 } from '@tabler/icons-react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 import { queries } from '~/api';
+import type { DailyChange, RealizedGains, TotalBalance } from '~/api/queries/types';
+import { useCreateNewDashboardModalStore } from '~/components/Dashboard/CreateNewDashboardModal';
 import { format } from '~/lib/format';
 
 export const Route = createFileRoute('/_authenticated/_member/dashboard')({
@@ -19,46 +38,68 @@ export const Route = createFileRoute('/_authenticated/_member/dashboard')({
 });
 
 function RouteComponent() {
+  const { data: dashboards } = useSuspenseQuery(queries.dashboard.getAllDashboards());
+  const [selectedDashboard, setSelectedDashboard] = useState(dashboards.find((s) => s.isDefault)?.id ?? dashboards[0].id);
+  const { data: dashboard, status } = useQuery(queries.dashboard.getDashboard(selectedDashboard));
+  const open = useCreateNewDashboardModalStore((s) => s.open);
+
   return (
     <Container strategy="grid" size="lg" m="lg">
       <Stack>
-        <Title>Dashboard</Title>
-        <SimpleGrid cols={{ base: 1, md: 2, lg: 3 }} spacing="md" mih={125}>
-          <TotalBalanceCard />
-          <DailyChangeCard />
-          <RealizedGainsCard />
-        </SimpleGrid>
+        <Group>
+          <Menu width={250} position="bottom-start" shadow="xl">
+            <Menu.Target>
+              <Button size="compact-xl" variant="subtle" px={5} ml={-5} color="gray" rightSection={<IconChevronDown size={20} />}>
+                <Title component="span" c="white">
+                  {dashboards.find((d) => d.id === selectedDashboard)?.name}
+                </Title>
+              </Button>
+            </Menu.Target>
+            <Menu.Dropdown ml={5} p={0} bdrs="md">
+              {dashboards.map((d, index) => (
+                <Menu.Item
+                  styles={{
+                    item: { borderRadius: index === 0 ? 'var(--mantine-radius-md) var(--mantine-radius-md) 0 0' : '0' }
+                  }}
+                  h={50}
+                  key={d.id}
+                  color="gray"
+                  bg={d.id === selectedDashboard ? 'dark.7' : undefined}
+                  leftSection={d.id === selectedDashboard ? <IconCheck color="green" size={16} /> : null}
+                  onClick={() => setSelectedDashboard(d.id)}>
+                  {d.name}
+                </Menu.Item>
+              ))}
+              <Divider my={0} color="dark.4" />
+              <Menu.Item
+                styles={{
+                  item: { borderRadius: '0 0 var(--mantine-radius-md) var(--mantine-radius-md)' }
+                }}
+                h={50}
+                variant="subtle"
+                color="gray"
+                ta="left"
+                leftSection={<IconLayoutDashboardFilled color="#3195ebc7" size={16} />}
+                onClick={open}>
+                Create new dashboard
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
+        </Group>
+        {status === 'success' && (
+          <SimpleGrid cols={{ base: 1, md: 2, lg: 3 }} spacing="md" mih={125}>
+            <TotalBalanceCard data={dashboard.totalBalance} />
+            <DailyChangeCard data={dashboard.dailyChange} />
+            <RealizedGainsCard rgd={dashboard.realizedGains} />
+          </SimpleGrid>
+        )}
+        {status === 'pending' && <Skeleton height="80vh" />}
       </Stack>
     </Container>
   );
 }
 
-function TotalBalanceCard() {
-  const { data, status } = useQuery(queries.statistics.fetchTotalBalance());
-
-  if (status === 'pending') {
-    return (
-      <Card shadow="md" p="lg" withBorder>
-        <Center h="100%">
-          <Loader type="dots" color="teal" />
-        </Center>
-      </Card>
-    );
-  }
-
-  if (status === 'error') {
-    return (
-      <Card shadow="md" p="lg" withBorder>
-        <Group h="100%" align="center" justify="center">
-          <IconAlertTriangleFilled size={24} color="red" />
-          <Text c="red" fw={600} size="sm">
-            Error loading total balance data
-          </Text>
-        </Group>
-      </Card>
-    );
-  }
-
+function TotalBalanceCard({ data }: { data: TotalBalance }) {
   return (
     <Card shadow="md" p="lg" withBorder>
       <Group gap="xs" align="center" mb="md">
@@ -71,7 +112,7 @@ function TotalBalanceCard() {
       </Group>
       <Group gap={10} align="top" mb={4} wrap="nowrap">
         <Text fz={rem(28)} fw={700} lts={rem(1.5)} style={{}}>
-          {format.toCurrency(data.value, false)}
+          {format.toCurrency(data.value, false, data.currencyCode)}
         </Text>
         <Text mt={12} c="dimmed" size="xs" fw={400} style={{ verticalAlign: 'middle' }}>
           {data.currencyCode}
@@ -116,32 +157,7 @@ function determinateFn(value: any, returns: { naEq?: (value) => any; gt?: (value
   if (value < 0) return returns.lt?.(value);
 }
 
-function DailyChangeCard() {
-  const { data, status } = useQuery(queries.statistics.fetchDailyChange());
-
-  if (status === 'pending') {
-    return (
-      <Card shadow="md" p="lg" withBorder>
-        <Center h="100%">
-          <Loader type="dots" color="teal" />
-        </Center>
-      </Card>
-    );
-  }
-
-  if (status === 'error') {
-    return (
-      <Card shadow="md" p="lg" withBorder>
-        <Group h="100%" align="center" justify="center">
-          <IconAlertTriangleFilled size={24} color="red" />
-          <Text c="red" fw={600} size="sm">
-            Error loading daily change data
-          </Text>
-        </Group>
-      </Card>
-    );
-  }
-
+function DailyChangeCard({ data }: { data: DailyChange }) {
   return (
     <Card shadow="md" p="lg" withBorder>
       <Group gap="xs" align="center" mb="md">
@@ -154,7 +170,7 @@ function DailyChangeCard() {
       </Group>
       <Group gap={10} align="top" mb={4} wrap="nowrap">
         <Text fz={rem(28)} fw={700} lts={rem(1.5)} style={{}}>
-          {format.toCurrency(data.currentValue - data.previousValue, false)}
+          {format.toCurrency(data.currentValue - data.previousValue, false, data.currencyCode)}
         </Text>
         <Text mt={12} c="dimmed" size="xs" fw={400} style={{ verticalAlign: 'middle' }}>
           {data.currencyCode}
@@ -185,16 +201,8 @@ function DailyChangeCard() {
   );
 }
 
-function RealizedGainsCard() {
-  const [range, setRange] = useState<string>('month');
-  const [data] = useState([
-    { label: 'Today', value: 'day' },
-    { label: 'This Week', value: 'week' },
-    { label: 'This Month', value: 'month' },
-    { label: 'This Year', value: 'year' }
-  ]);
-
-  const { data: rgd, status } = useQuery(queries.statistics.fetchRealizedGains({ periodType: range }));
+function RealizedGainsCard({ rgd }: { rgd: RealizedGains }) {
+  const [range] = useState<string>('month');
 
   let badgeText = '';
 
@@ -213,29 +221,6 @@ function RealizedGainsCard() {
       break;
   }
 
-  if (status === 'pending') {
-    return (
-      <Card shadow="md" p="lg" withBorder>
-        <Center h="100%">
-          <Loader type="dots" color="teal" />
-        </Center>
-      </Card>
-    );
-  }
-
-  if (status === 'error') {
-    return (
-      <Card shadow="md" p="lg" withBorder>
-        <Group h="100%" align="center" justify="center">
-          <IconAlertTriangleFilled size={24} color="red" />
-          <Text c="red" fw={600} size="sm">
-            Error loading realized gains data
-          </Text>
-        </Group>
-      </Card>
-    );
-  }
-
   return (
     <Card shadow="md" p="lg" withBorder>
       <Group gap="xs" align="center" mb="md">
@@ -245,15 +230,6 @@ function RealizedGainsCard() {
         <Text fw={500} size="md" c="gray.3">
           Realized Gains
         </Text>
-        <Select
-          ml="auto"
-          size="xs"
-          w={110}
-          allowDeselect={false}
-          value={range}
-          onChange={(_, option) => setRange(option.value)}
-          data={data}
-        />
       </Group>
       <Group gap={10} align="top" mb={4} wrap="nowrap">
         <Text fz={rem(28)} fw={700} lts={rem(1.5)}>

@@ -43,6 +43,8 @@ public class TokenController {
         var auth = authenticationManager.authenticate(token);
         var user = (User) auth.getPrincipal();
 
+        userService.updateLastLogin(user.getId());
+
         return tokenService.create(user);
     }
 
@@ -68,6 +70,8 @@ public class TokenController {
 
             var user = userService.loadUserByEmail(email)
                     .orElseGet(() -> userService.createUser(name, email, "!"));
+
+            userService.updateLastLogin(user.getId());
 
             return tokenService.create(user);
         } catch (JwtException e) {

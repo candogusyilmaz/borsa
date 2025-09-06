@@ -1,6 +1,9 @@
 package dev.canverse.stocks.service.account;
 
 import dev.canverse.stocks.domain.entity.account.User;
+import dev.canverse.stocks.domain.entity.portfolio.Dashboard;
+import dev.canverse.stocks.domain.entity.portfolio.Portfolio;
+import dev.canverse.stocks.repository.CurrencyRepository;
 import dev.canverse.stocks.repository.UserRepository;
 import dev.canverse.stocks.service.account.model.UserRegistrationRequest;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +28,7 @@ public class UserService implements UserDetailsService {
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+    private final CurrencyRepository currencyRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -43,6 +47,12 @@ public class UserService implements UserDetailsService {
 
         var user = new User(email, password);
         user.setName(name);
+
+        var dashboard = new Dashboard(user, "Dashboard", currencyRepository.findByCode("TRY"));
+        dashboard.setDefault(true);
+        dashboard.addPortfolio(new Portfolio(user, "Portfolio"));
+        user.addDashboard(dashboard);
+
         return userRepository.save(user);
     }
 
@@ -55,6 +65,12 @@ public class UserService implements UserDetailsService {
 
         var user = new User(request.email(), passwordEncoder.encode(request.password()));
         user.setName(request.name());
+
+        var dashboard = new Dashboard(user, "Dashboard", currencyRepository.findByCode("TRY"));
+        dashboard.setDefault(true);
+        dashboard.addPortfolio(new Portfolio(user, "Portfolio"));
+        user.addDashboard(dashboard);
+
         return userRepository.save(user);
     }
 
@@ -68,5 +84,9 @@ public class UserService implements UserDetailsService {
         }
 
         throw new IllegalArgumentException("Email domain is not allowed.");
+    }
+
+    public void updateLastLogin(Long userId) {
+        userRepository.updateLastLoginAtById(userId);
     }
 }

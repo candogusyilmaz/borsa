@@ -15,9 +15,7 @@ import java.util.List;
 
 @Getter
 @Entity
-@Table(schema = "portfolio", name = "portfolios", indexes = {
-        @Index(name = "idx_portfolios_user_id", columnList = "user_id")
-})
+@Table(schema = "portfolio", name = "portfolios")
 public class Portfolio implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -67,6 +67,19 @@ createRoot(document.getElementById('root')!).render(
                 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji',
               colors: {
                 dark: ['#c1cbd5', '#96a3af', '#6c7a88', '#49525b', '#262a2e', '#262a2e', '#202325', '#1a1b1d', '#131415', '#0d0d0d']
+              },
+              components: {
+                Modal: {
+                  styles: (theme) => ({
+                    header: {
+                      borderBottom: `1px solid ${theme.colors.dark[5]}`
+                    },
+                    body: {
+                      paddingTop: theme.spacing.md,
+                      paddingBottom: theme.spacing.md
+                    }
+                  })
+                }
               }
             }}>
             <Notifications />
