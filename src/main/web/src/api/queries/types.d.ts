@@ -122,3 +122,13 @@ export type TotalBalance = {
   percentageChange: number | null;
   currencyCode: string;
 };
+
+export type TransactionInfo = {
+  id: string;
+  portfolioId: string;
+  positionId: string;
+  symbol: string;
+  price: number;
+  quantity: number;
+  actionDate: string;
+} & ({ type: 'BUY' } | { type: 'SELL'; profit: number });

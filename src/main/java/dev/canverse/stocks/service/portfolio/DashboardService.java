@@ -2,9 +2,7 @@ package dev.canverse.stocks.service.portfolio;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import dev.canverse.stocks.domain.entity.portfolio.Dashboard;
-import dev.canverse.stocks.domain.entity.portfolio.QDashboard;
-import dev.canverse.stocks.domain.entity.portfolio.QDashboardPortfolio;
+import dev.canverse.stocks.domain.entity.portfolio.*;
 import dev.canverse.stocks.domain.exception.BadRequestException;
 import dev.canverse.stocks.domain.exception.NotFoundException;
 import dev.canverse.stocks.repository.CurrencyRepository;
@@ -15,6 +13,7 @@ import dev.canverse.stocks.security.AuthenticationProvider;
 import dev.canverse.stocks.service.portfolio.model.dashboard.BasicDashboardView;
 import dev.canverse.stocks.service.portfolio.model.dashboard.CreateDashboardRequest;
 import dev.canverse.stocks.service.portfolio.model.dashboard.DashboardView;
+import dev.canverse.stocks.service.portfolio.model.dashboard.TransactionInfo;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -95,5 +94,43 @@ public class DashboardService {
                 realizedGains,
                 totalBalance
         );
+    }
+
+    public List<TransactionInfo> getDashboardTransactions(Long dashboardId) {
+        var d = QDashboard.dashboard;
+        var dashboard = qf.select(d)
+                .from(d)
+                .where(d.id.eq(dashboardId).and(d.user.id.eq(AuthenticationProvider.getUser().getId())))
+                .fetchOne();
+
+        if (dashboard == null) {
+            throw new NotFoundException("Dashboard not found.");
+        }
+
+        var t = QTransaction.transaction;
+        var dp = QDashboardPortfolio.dashboardPortfolio;
+        var p = QPosition.position;
+
+        var sq = qf.select(p.id)
+                .from(dp)
+                .join(dp.portfolio.positions, p)
+                .where(dp.dashboard.id.eq(dashboardId))
+                .fetch();
+
+        return qf.select(Projections.constructor(TransactionInfo.class,
+                        t.id.stringValue(),
+                        t.type,
+                        t.position.portfolio.id.stringValue(),
+                        t.position.id.stringValue(),
+                        t.position.instrument.symbol,
+                        t.price,
+                        t.quantity,
+                        t.performance.profit,
+                        t.actionDate))
+                .from(t)
+                .leftJoin(t.performance)
+                .where(t.position.id.in(sq))
+                .orderBy(t.actionDate.desc())
+                .fetch();
     }
 }

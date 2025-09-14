@@ -33,6 +33,11 @@ public class DashboardController {
         dashboardService.create(request);
     }
 
+    @GetMapping("/{dashboardId}/transactions")
+    public Object getDashboardTransactions(@PathVariable Long dashboardId) {
+        return dashboardService.getDashboardTransactions(dashboardId);
+    }
+
 /*@GetMapping
 
     @PutMapping("/{dashboardId}")
