@@ -1,4 +1,4 @@
-import { LineChart } from '@mantine/charts';
+import { CompositeChart, LineChart } from '@mantine/charts';
 import {
   Badge,
   Button,
@@ -483,17 +483,18 @@ function TransactionsChart({ currencyCode, dashboardId }: { currencyCode: string
               </Text>
             </Stack>
           </Group>
-          <LineChart
+          <CompositeChart
             mt="xl"
-            h={300}
+            h={350}
             data={chartData}
             dataKey="date"
             withDots={false}
             connectNulls
             valueFormatter={(v) => format.toCurrency(v, true, currencyCode)}
+            maxBarWidth={15}
             series={[
-              { name: 'sell', color: 'blue.5', label: 'Profit' },
-              { name: 'cumulative', color: 'purple', label: 'Cumulative' }
+              { name: 'sell', color: 'rgba(18, 120, 255, 0.3)', label: 'Profit', type: 'bar' },
+              { name: 'cumulative', color: 'purple', label: 'Cumulative', type: 'line' }
             ]}
             tooltipAnimationDuration={200}
             yAxisProps={{ tickFormatter: (v: number) => format.toCurrency(v, true, currencyCode, currencyCode, 0, 0) }}
