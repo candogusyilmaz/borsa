@@ -1,6 +1,7 @@
 package dev.canverse.stocks.service.portfolio;
 
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import dev.canverse.stocks.domain.entity.portfolio.*;
 import dev.canverse.stocks.domain.exception.BadRequestException;
@@ -18,6 +19,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -97,15 +99,8 @@ public class DashboardService {
     }
 
     public List<TransactionInfo> getDashboardTransactions(Long dashboardId) {
-        var d = QDashboard.dashboard;
-        var dashboard = qf.select(d)
-                .from(d)
-                .where(d.id.eq(dashboardId).and(d.user.id.eq(AuthenticationProvider.getUser().getId())))
-                .fetchOne();
-
-        if (dashboard == null) {
-            throw new NotFoundException("Dashboard not found.");
-        }
+        var dashboard = dashboardRepository.findByIdAndUserId(dashboardId, AuthenticationProvider.getUser().getId())
+                .orElseThrow(() -> new NotFoundException("Dashboard not found."));
 
         var t = QTransaction.transaction;
         var dp = QDashboardPortfolio.dashboardPortfolio;
@@ -117,6 +112,11 @@ public class DashboardService {
                 .where(dp.dashboard.id.eq(dashboardId))
                 .fetch();
 
+        var currencyConvertedProfit = Expressions.stringTemplate("public.convert_currency({0}, {1}, {2})",
+                t.performance.profit,
+                t.position.instrument.denominationCurrency,
+                dashboard.getCurrency().getCode()).castToNum(BigDecimal.class);
+
         return qf.select(Projections.constructor(TransactionInfo.class,
                         t.id.stringValue(),
                         t.type,
@@ -125,7 +125,7 @@ public class DashboardService {
                         t.position.instrument.symbol,
                         t.price,
                         t.quantity,
-                        t.performance.profit,
+                        currencyConvertedProfit,
                         t.actionDate))
                 .from(t)
                 .leftJoin(t.performance)

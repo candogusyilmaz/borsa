@@ -292,7 +292,7 @@ function RealizedGainsCard({ rgd }: { rgd: RealizedGains }) {
   return (
     <Card shadow="md" p="lg" withBorder>
       <Group gap="xs" align="center" mb="md">
-        <ThemeIcon variant="transparent" c={determinate(rgd.percentageChange, { naEq: 'dimmed', gt: 'teal', lt: 'red' })}>
+        <ThemeIcon variant="transparent" c={determinate(rgd.currentPeriod, { naEq: 'dimmed', gt: 'teal', lt: 'red' })}>
           <IconCashBanknote />
         </ThemeIcon>
         <Text fw={500} size="md" c="gray.3">
@@ -338,18 +338,25 @@ function TransactionsChart({ currencyCode, dashboardId }: { currencyCode: string
   const { data: transactions } = useQuery(queries.dashboard.getTransactions(dashboardId));
 
   const chartData = (() => {
-    if (!transactions) return [] as Array<{ date: string; sell: number }>;
+    if (!transactions) return [] as Array<{ date: string; sell: number; cumulative?: number }>;
     const aggregate = new Map<string, { date: string; sell: number }>();
     for (const t of transactions) {
       if (t.type !== 'SELL') continue; // only SELL transactions per request
       const d = dayjs(t.actionDate);
       const key = d.format('YYYY-MM-DD');
       const rec = aggregate.get(key) ?? { date: key, sell: 0 };
-      const value = t.profit; // notional; could switch to t.profit if desired
+      const value = t.profit;
       rec.sell += value;
       aggregate.set(key, rec);
     }
-    return Array.from(aggregate.values()).sort((a, b) => (a.date < b.date ? -1 : 1));
+    const sorted = Array.from(aggregate.values()).sort((a, b) => (a.date < b.date ? -1 : 1));
+
+    // add cumulative running total to each point
+    let running = 0;
+    return sorted.map((r) => {
+      running += r.sell;
+      return { date: r.date, sell: r.sell, cumulative: running };
+    });
   })();
 
   if (chartData.length === 0) {
@@ -454,7 +461,7 @@ function TransactionsChart({ currencyCode, dashboardId }: { currencyCode: string
                 </Text>
               </Group>
               <Text size="xs" c={'dimmed'} lh={1}>
-                Profit
+                Cumulative Profit
               </Text>
             </Stack>
             <Stack gap={8} ml={'auto'}>
@@ -482,8 +489,12 @@ function TransactionsChart({ currencyCode, dashboardId }: { currencyCode: string
             data={chartData}
             dataKey="date"
             withDots={false}
-            strokeDasharray={1}
-            series={[{ name: 'sell', color: 'blue.5', label: 'Profit' }]}
+            connectNulls
+            valueFormatter={(v) => format.toCurrency(v, true, currencyCode)}
+            series={[
+              { name: 'sell', color: 'blue.5', label: 'Profit' },
+              { name: 'cumulative', color: 'purple', label: 'Cumulative' }
+            ]}
             tooltipAnimationDuration={200}
             yAxisProps={{ tickFormatter: (v: number) => format.toCurrency(v, true, currencyCode, currencyCode, 0, 0) }}
             xAxisProps={{ tickFormatter: (d) => dayjs(d).format('MMM D') }}

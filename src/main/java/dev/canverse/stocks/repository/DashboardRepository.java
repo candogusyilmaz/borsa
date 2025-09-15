@@ -8,6 +8,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface DashboardRepository extends BaseJpaRepository<Dashboard, Long> {
@@ -20,4 +21,7 @@ public interface DashboardRepository extends BaseJpaRepository<Dashboard, Long> 
 
     @Query("select d from Transaction d join d.position.portfolio where d.position.portfolio.id in (:portfolioIds)")
     List<Transaction> getByIdIncludePortfolioTransactions2(List<Long> portfolioIds);
+
+    @EntityGraph(attributePaths = {"currency"})
+    Optional<Dashboard> findByIdAndUserId(@NonNull Long id, @NonNull Long userId);
 }
