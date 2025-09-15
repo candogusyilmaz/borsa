@@ -498,7 +498,10 @@ function TransactionsChart({ currencyCode, dashboardId }: { currencyCode: string
             ]}
             tooltipAnimationDuration={200}
             yAxisProps={{ tickFormatter: (v: number) => format.toCurrency(v, true, currencyCode, currencyCode, 0, 0) }}
-            xAxisProps={{ tickFormatter: (d) => dayjs(d).format('MMM D') }}
+            xAxisProps={{
+              tickFormatter: (d) => dayjs(d).format('MMM D'),
+              minTickGap: 100 // rotate labels slightly for readability when there are several ticks
+            }}
           />
         </>
       )}
