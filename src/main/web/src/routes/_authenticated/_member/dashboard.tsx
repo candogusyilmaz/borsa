@@ -1,4 +1,4 @@
-import { CompositeChart, LineChart } from '@mantine/charts';
+import { CompositeChart } from '@mantine/charts';
 import {
   Badge,
   Button,
