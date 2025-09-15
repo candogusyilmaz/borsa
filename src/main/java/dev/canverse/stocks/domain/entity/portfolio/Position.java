@@ -106,39 +106,16 @@ public class Position implements Serializable {
     }
 
     public void undo() {
-        var latestTrade = this.transactions.getFirst();
+        this.history.removeFirst();
 
-        if (latestTrade.getType() == Transaction.Type.BUY) {
-            undoBuy(latestTrade);
+        if (this.history.isEmpty()) {
+            this.quantity = BigDecimal.ZERO;
+            this.total = BigDecimal.ZERO;
         } else {
-            undoSell(latestTrade);
+            this.quantity = history.getFirst().getQuantity();
+            this.total = history.getFirst().getTotal();
         }
 
         this.transactions.removeFirst();
-    }
-
-    private void undoSell(Transaction latestTransaction) {
-        // If quantity is zero this means in last trade we sold all shares
-        // Since when we sell all shares we set quantity to zero but total remains
-        // Thus we can just add the latest trade's quantity
-        if (BigDecimal.ZERO.equals(this.quantity)) {
-            this.quantity = latestTransaction.getQuantity();
-            return;
-        }
-
-        var previousQuantity = new BigDecimal(this.quantity.unscaledValue(), this.quantity.scale());
-        this.quantity = this.quantity.add(latestTransaction.getQuantity());
-
-        this.total = Calculator.divide(this.total.multiply(this.quantity), previousQuantity);
-    }
-
-    private void undoBuy(Transaction latestTransaction) {
-        this.quantity = this.quantity.subtract(latestTransaction.getQuantity());
-
-        if (BigDecimal.ZERO.equals(this.quantity)) {
-            this.total = BigDecimal.ZERO;
-        } else {
-            this.total = this.total.subtract(latestTransaction.getTotal());
-        }
     }
 }

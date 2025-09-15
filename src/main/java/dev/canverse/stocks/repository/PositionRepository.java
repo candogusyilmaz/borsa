@@ -24,10 +24,7 @@ public interface PositionRepository extends BaseJpaRepository<Position, Long>, P
     @Query("delete from Position h where h.portfolio.user.id = :#{principal.id}")
     void deleteAllByUserId(Long userId);
 
-    @Query("""
-            select h from Position h
-            left join h.transactions t on t.id = (select max(tr.id) from Transaction tr where tr.position.id = h.id)
-            where h.id = :id and h.portfolio.user.id = :#{principal.id}
-            """)
-    Optional<Position> findByIdWithLatestTradeForPrincipal(Long id);
+    @Query("select h from Position h where h.id = :id and h.portfolio.user.id = :userId")
+    Optional<Position> findByIdAndUserId(Long id, Long userId);
+
 }

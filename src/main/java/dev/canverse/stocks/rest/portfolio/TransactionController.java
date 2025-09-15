@@ -35,6 +35,6 @@ public class TransactionController {
     @PostMapping("/undo/{holdingId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void undo(@PathVariable long holdingId, @PathVariable long portfolioId) {
-        transactionService.undoLatestTransaction(portfolioId, holdingId);
+        transactionService.undoLatestTransaction(holdingId);
     }
 }

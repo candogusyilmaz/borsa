@@ -7,6 +7,7 @@ import dev.canverse.stocks.repository.InstrumentRepository;
 import dev.canverse.stocks.repository.PortfolioRepository;
 import dev.canverse.stocks.repository.PositionRepository;
 import dev.canverse.stocks.repository.TransactionRepository;
+import dev.canverse.stocks.security.AuthenticationProvider;
 import dev.canverse.stocks.service.portfolio.model.BuyTransactionRequest;
 import dev.canverse.stocks.service.portfolio.model.SellTransactionRequest;
 import dev.canverse.stocks.service.portfolio.model.TransactionHistory;
@@ -56,9 +57,9 @@ public class TransactionService {
     }
 
     @Transactional
-    public void undoLatestTransaction(long portfolioId, long positionId) {
+    public void undoLatestTransaction(long positionId) {
         var position = positionRepository
-                .findByIdWithLatestTradeForPrincipal(positionId)
+                .findByIdAndUserId(positionId, AuthenticationProvider.getUser().getId())
                 .orElseThrow(() -> new NotFoundException("No holding found"));
 
         position.undo();
