@@ -33,7 +33,6 @@ public class DashboardService {
     private final JPAQueryFactory qf;
 
     public void create(@Valid CreateDashboardRequest request) {
-
         var dashboard = new Dashboard(AuthenticationProvider.getUser(), request.name(), currencyRepository.getReferenceById(Long.valueOf(request.currencyId())));
 
         request.portfolioIds().stream().map(Long::valueOf).forEach(s -> {
@@ -45,6 +44,17 @@ public class DashboardService {
         });
 
         dashboardRepository.save(dashboard);
+    }
+
+    public void delete(Long dashboardId) {
+        var dashboard = dashboardRepository.findByIdAndUserId(dashboardId, AuthenticationProvider.getUser().getId())
+                .orElseThrow(() -> new NotFoundException("Dashboard not found."));
+
+        if (dashboard.isDefault()) {
+            throw new BadRequestException("Cannot delete the default dashboard.");
+        }
+
+        dashboardRepository.delete(dashboard);
     }
 
     public List<BasicDashboardView> getAllDashboards() {
@@ -80,7 +90,7 @@ public class DashboardService {
         var dpf = QDashboardPortfolio.dashboardPortfolio;
         var portfolioIds = qf.select(dpf.portfolio.id)
                 .from(dpf)
-                .where(dpf.dashboard.id.eq(dashboardId))
+                .where(dpf.dashboard.id.eq(dashboardId).and(dpf.portfolio.archived.isFalse()))
                 .fetch();
 
         var realizedGains = statisticsRepository.getRealizedGains(userId, "month", portfolioIds, dashboard.get(d.currency.code));
@@ -109,7 +119,7 @@ public class DashboardService {
         var sq = qf.select(p.id)
                 .from(dp)
                 .join(dp.portfolio.positions, p)
-                .where(dp.dashboard.id.eq(dashboardId))
+                .where(dp.dashboard.id.eq(dashboardId).and(dp.portfolio.archived.isFalse()))
                 .fetch();
 
         var currencyConvertedProfit = Expressions.stringTemplate("public.convert_currency({0}, {1}, {2})",

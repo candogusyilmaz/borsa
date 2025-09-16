@@ -7,13 +7,10 @@ import dev.canverse.stocks.domain.entity.portfolio.QPortfolio;
 import dev.canverse.stocks.domain.entity.portfolio.QPosition;
 import dev.canverse.stocks.domain.entity.portfolio.QTransaction;
 import dev.canverse.stocks.domain.entity.portfolio.Transaction;
-import dev.canverse.stocks.domain.exception.NotFoundException;
-import dev.canverse.stocks.repository.PortfolioRepository;
+import dev.canverse.stocks.service.portfolio.PortfolioAccessValidator;
 import dev.canverse.stocks.service.portfolio.model.MonthlyRevenueOverview;
 import dev.canverse.stocks.service.portfolio.model.TransactionHistory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -23,19 +20,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TransactionRepositoryCustomImpl implements TransactionRepositoryCustom {
     private final JPAQueryFactory queryFactory;
-    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-    private final JdbcTemplate jdbcTemplate;
-    private final PortfolioRepository portfolioRepository;
+    private final PortfolioAccessValidator portfolioAccessValidator;
 
     @Override
     public List<MonthlyRevenueOverview> getMonthlyRevenueOverview(long portfolioId) {
-        if (!portfolioRepository.isPortfolioOwnedByPrincipal(portfolioId)) {
-            throw new NotFoundException("Portfolio not found");
-        }
+        portfolioAccessValidator.validateAccess(portfolioId);
 
         var transaction = QTransaction.transaction;
         var position = QPosition.position;
-        var portfolio = QPortfolio.portfolio;
+        var p = QPortfolio.portfolio;
 
         var month = transaction.actionDate.month();
         var year = transaction.actionDate.year();
@@ -49,8 +42,8 @@ public class TransactionRepositoryCustomImpl implements TransactionRepositoryCus
                 )
                 .from(transaction)
                 .join(transaction.position, position)
-                .join(position.portfolio, portfolio)
-                .where(transaction.type.eq(Transaction.Type.SELL).and(portfolio.id.eq(portfolioId)))
+                .join(position.portfolio, p)
+                .where(transaction.type.eq(Transaction.Type.SELL).and(p.id.eq(portfolioId)))
                 .groupBy(year, month)
                 .fetch();
 

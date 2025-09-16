@@ -38,17 +38,17 @@ public class DashboardController {
         return dashboardService.getDashboardTransactions(dashboardId);
     }
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/{dashboardId}")
+    public void deleteDashboard(@PathVariable Long dashboardId) {
+        dashboardService.delete(dashboardId);
+    }
+
 /*@GetMapping
 
     @PutMapping("/{dashboardId}")
     public Dashboard updateDashboard(@PathVariable Long dashboardId, @Valid @RequestBody DashboardUpdateRequest request) {
         return dashboardService.updateDashboard(dashboardId, request);
-    }
-
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @DeleteMapping("/{dashboardId}")
-    public void deleteDashboard(@PathVariable Long dashboardId) {
-        dashboardService.deleteDashboard(dashboardId);
     }
 
     @PutMapping("/{dashboardId}/portfolios/{portfolioId}")

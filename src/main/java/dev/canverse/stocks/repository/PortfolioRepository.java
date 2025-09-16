@@ -10,8 +10,8 @@ import java.util.Optional;
 @Repository
 public interface PortfolioRepository extends BaseJpaRepository<Portfolio, Long> {
 
-    @Query("SELECT p FROM Portfolio p WHERE p.user.id = :#{principal.id}")
-    List<Portfolio> findMyPortfolios();
+    @Query("SELECT p FROM Portfolio p WHERE p.user.id = :userId")
+    List<Portfolio> findAllByUserId(Long userId);
 
     @Query("SELECT p FROM Portfolio p WHERE p.id = :portfolioId AND p.user.id = :#{principal.id}")
     Optional<Portfolio> findPortfolioByPrincipal(long portfolioId);

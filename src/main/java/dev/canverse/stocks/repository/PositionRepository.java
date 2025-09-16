@@ -1,7 +1,6 @@
 package dev.canverse.stocks.repository;
 
 import dev.canverse.stocks.domain.entity.portfolio.Position;
-import dev.canverse.stocks.repository.custom.PositionRepositoryCustom;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -10,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface PositionRepository extends BaseJpaRepository<Position, Long>, PositionRepositoryCustom {
+public interface PositionRepository extends BaseJpaRepository<Position, Long> {
     @Query("""
                 select h from Position h
                 where h.portfolio.id = :portfolioId and h.instrument.id = :instrumentId

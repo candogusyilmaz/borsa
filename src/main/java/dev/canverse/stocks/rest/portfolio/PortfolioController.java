@@ -6,6 +6,7 @@ import dev.canverse.stocks.service.portfolio.model.BasicPortfolioView;
 import dev.canverse.stocks.service.portfolio.model.CreatePortfolioRequest;
 import dev.canverse.stocks.service.portfolio.model.PortfolioInfo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,11 +25,17 @@ public class PortfolioController {
 
     @GetMapping("/{portfolioId}")
     public PortfolioInfo fetchPortfolio(@PathVariable long portfolioId) {
-        return positionService.fetchPortfolio(portfolioId);
+        return portfolioService.fetchPortfolio(portfolioId);
     }
 
     @PostMapping
     public void createPortfolio(@RequestBody CreatePortfolioRequest req) {
         portfolioService.createPortfolio(req.name().trim().replaceAll("\\s+", " "));
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PostMapping("/{portfolioId}/archive")
+    public void archivePortfolio(@PathVariable long portfolioId) {
+        portfolioService.archivePortfolio(portfolioId);
     }
 }

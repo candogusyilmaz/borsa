@@ -37,6 +37,8 @@ public class Portfolio implements Serializable {
     @Column(nullable = false)
     private Instant updatedAt;
 
+    private boolean archived = false;
+
     @OneToMany(mappedBy = "portfolio", fetch = FetchType.LAZY)
     private List<Position> positions = new ArrayList<>();
 
@@ -46,5 +48,9 @@ public class Portfolio implements Serializable {
     public Portfolio(User user, String name) {
         this.user = user;
         this.name = name;
+    }
+
+    public void archive() {
+        this.archived = true;
     }
 }

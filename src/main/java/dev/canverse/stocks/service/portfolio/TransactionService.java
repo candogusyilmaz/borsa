@@ -1,6 +1,5 @@
 package dev.canverse.stocks.service.portfolio;
 
-import dev.canverse.stocks.domain.entity.portfolio.Portfolio;
 import dev.canverse.stocks.domain.entity.portfolio.Position;
 import dev.canverse.stocks.domain.exception.NotFoundException;
 import dev.canverse.stocks.repository.InstrumentRepository;
@@ -26,10 +25,11 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final PortfolioRepository portfolioRepository;
 
+    private final PortfolioAccessValidator portfolioAccessValidator;
+
     @Transactional
     public void buy(long portfolioId, BuyTransactionRequest req) {
-        Portfolio portfolio = portfolioRepository.findPortfolioByPrincipal(portfolioId)
-                .orElseThrow(() -> new NotFoundException("Portfolio not found"));
+        var portfolio = portfolioAccessValidator.validateAccess(portfolioId);
 
         var position = positionRepository.findByPortfolioAndInstrumentForPrincipal(
                 portfolio.getId(),
@@ -46,6 +46,8 @@ public class TransactionService {
 
     @Transactional
     public void sell(long portfolioId, SellTransactionRequest req) {
+        portfolioAccessValidator.validateAccess(portfolioId);
+
         var position = positionRepository.findByPortfolioAndInstrumentForPrincipal(
                 portfolioId,
                 req.stockId()
@@ -62,14 +64,14 @@ public class TransactionService {
                 .findByIdAndUserId(positionId, AuthenticationProvider.getUser().getId())
                 .orElseThrow(() -> new NotFoundException("No holding found"));
 
+        portfolioAccessValidator.validateAccess(position.getPortfolio().getId());
+
         position.undo();
         positionRepository.save(position);
     }
 
     public TransactionHistory getTransactionHistory(long portfolioId) {
-        if (!portfolioRepository.isPortfolioOwnedByPrincipal(portfolioId)) {
-            throw new NotFoundException("Portfolio not found");
-        }
+        portfolioAccessValidator.validateAccess(portfolioId);
 
         return transactionRepository.getTransactionHistory(portfolioId);
     }
