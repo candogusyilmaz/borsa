@@ -1,5 +1,5 @@
 import { Button, Group, Modal, Stack, Text, TextInput, ThemeIcon, Title } from '@mantine/core';
-import { IconAlertTriangle, IconArchive } from '@tabler/icons-react';
+import { IconArchive } from '@tabler/icons-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
