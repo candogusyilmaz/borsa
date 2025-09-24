@@ -51,7 +51,6 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private Instant updatedAt;
 
-
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserRole> userRoles = new HashSet<>();
 
@@ -65,6 +64,7 @@ public class User implements UserDetails {
         this.email = email;
         this.password = password;
         this.isEnabled = true;
+        this.lastLoginAt = Instant.now();
     }
 
     @Override
@@ -99,10 +99,6 @@ public class User implements UserDetails {
     public void addDashboard(Dashboard dashboard) {
         if (this.dashboards.contains(dashboard)) {
             return;
-        }
-
-        if (!dashboard.getUser().getId().equals(this.id)) {
-            throw new IllegalArgumentException("Dashboard does not belong to the same user.");
         }
 
         this.dashboards.add(dashboard);

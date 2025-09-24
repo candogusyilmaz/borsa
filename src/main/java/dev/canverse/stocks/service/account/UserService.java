@@ -4,6 +4,8 @@ import dev.canverse.stocks.domain.entity.account.User;
 import dev.canverse.stocks.domain.entity.portfolio.Dashboard;
 import dev.canverse.stocks.domain.entity.portfolio.Portfolio;
 import dev.canverse.stocks.repository.CurrencyRepository;
+import dev.canverse.stocks.repository.DashboardRepository;
+import dev.canverse.stocks.repository.PortfolioRepository;
 import dev.canverse.stocks.repository.UserRepository;
 import dev.canverse.stocks.service.account.model.UserRegistrationRequest;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -28,6 +31,8 @@ public class UserService implements UserDetailsService {
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+    private final PortfolioRepository portfolioRepository;
+    private final DashboardRepository dashboardRepository;
     private final CurrencyRepository currencyRepository;
 
     @Override
@@ -40,38 +45,28 @@ public class UserService implements UserDetailsService {
         return userRepository.findByEmailIncludePermissions(email);
     }
 
-    public User createUser(String name, String email, String password) {
-        if (userRepository.existsByEmailIgnoreCase(email)) {
-            throw new IllegalArgumentException("A user with this email already exists.");
-        }
-
-        var user = new User(email, password);
-        user.setName(name);
-
-        var dashboard = new Dashboard(user, "Dashboard", currencyRepository.findByCode("TRY"));
-        dashboard.setDefault(true);
-        dashboard.addPortfolio(new Portfolio(user, "Portfolio"));
-        user.addDashboard(dashboard);
-
-        return userRepository.save(user);
-    }
-
+    @Transactional
     public User register(UserRegistrationRequest request) {
         verifyEmailDomain(request.email());
+        var normalizedEmail = request.email().trim().toLowerCase();
 
-        if (userRepository.existsByEmailIgnoreCase(request.email())) {
+        if (userRepository.existsByEmailIgnoreCase(normalizedEmail)) {
             throw new IllegalArgumentException("A user with this email already exists.");
         }
 
-        var user = new User(request.email(), passwordEncoder.encode(request.password()));
+        var user = new User(normalizedEmail, passwordEncoder.encode(request.password()));
         user.setName(request.name());
+        userRepository.save(user);
+
+        var portfolio = portfolioRepository.save(new Portfolio(user, "Portfolio"));
 
         var dashboard = new Dashboard(user, "Dashboard", currencyRepository.findByCode("TRY"));
         dashboard.setDefault(true);
-        dashboard.addPortfolio(new Portfolio(user, "Portfolio"));
-        user.addDashboard(dashboard);
+        dashboard.addPortfolio(portfolio);
 
-        return userRepository.save(user);
+        dashboardRepository.save(dashboard);
+
+        return user;
     }
 
     private void verifyEmailDomain(String email) {

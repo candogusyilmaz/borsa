@@ -493,14 +493,14 @@ function TransactionsChart({ currencyCode, dashboardId }: { currencyCode: string
             valueFormatter={(v) => format.toCurrency(v, true, currencyCode)}
             maxBarWidth={15}
             series={[
-              { name: 'sell', color: 'rgba(18, 120, 255, 0.3)', label: 'Profit', type: 'bar' },
-              { name: 'cumulative', color: 'purple', label: 'Cumulative', type: 'line' }
+              { name: 'sell', color: 'rgba(0, 123, 255, 0.6)', label: 'Profit', type: 'bar' },
+              { name: 'cumulative', color: '#FFD700', label: 'Cumulative', type: 'line' }
             ]}
             tooltipAnimationDuration={200}
             yAxisProps={{ tickFormatter: (v: number) => format.toCurrency(v, true, currencyCode, currencyCode, 0, 0) }}
             xAxisProps={{
               tickFormatter: (d) => dayjs(d).format('MMM D'),
-              minTickGap: 100 // rotate labels slightly for readability when there are several ticks
+              minTickGap: 100
             }}
           />
         </>

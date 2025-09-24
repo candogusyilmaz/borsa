@@ -19,6 +19,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -61,15 +62,15 @@ public class TokenController {
 
     @PostMapping("/google")
     public ResponseEntity<TokenCreateResponse> googleLogin(@RequestBody GoogleTokenRequest request) {
-        String idToken = request.token();
+        var idToken = request.token();
 
         try {
             var decodedToken = jwtDecoder.decode(idToken);
-            String email = decodedToken.getClaim("email");
-            String name = decodedToken.getClaim("name");
+            var email = decodedToken.getClaimAsString("email");
+            var name = decodedToken.getClaimAsString("name");
 
             var user = userService.loadUserByEmail(email)
-                    .orElseGet(() -> userService.createUser(name, email, "!"));
+                    .orElseGet(() -> userService.register(new UserRegistrationRequest(name, email, UUID.randomUUID().toString())));
 
             userService.updateLastLogin(user.getId());
 
