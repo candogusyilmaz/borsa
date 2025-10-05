@@ -12,6 +12,10 @@ public final class Calculator {
     }
 
     public static BigDecimal calculatePercentage(BigDecimal total, BigDecimal part) {
+        if (total == null || BigDecimal.ZERO.compareTo(total) == 0) {
+            return BigDecimal.ZERO;
+        }
+
         return part.multiply(BigDecimal.valueOf(100)).divide(total, SCALE, ROUNDING_MODE);
     }
 

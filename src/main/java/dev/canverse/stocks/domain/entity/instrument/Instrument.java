@@ -71,6 +71,7 @@ public abstract class Instrument {
         this.market = market;
         this.denominationCurrency = denominationCurrency;
         this.isActive = true;
+        this.snapshot = new InstrumentSnapshot(this);
     }
 
     public void updateSnapshot(BigDecimal last, BigDecimal previousClose) {
