@@ -16,11 +16,13 @@ import { ErrorView } from '~/components/ErrorView';
 import { LoadingView } from '~/components/LoadingView';
 import { useTransactionModalStore } from '~/components/Transaction/TransactionModal';
 import { format } from '~/lib/format';
+import { useBulkTransactionModalStore } from '../Transaction/BulkTransactionModal';
 
 export function HoldingsTable() {
   const { portfolioId } = useParams({ strict: false });
   const { data, status } = useQuery(queries.portfolio.fetchPortfolio({ portfolioId: Number(portfolioId) }));
   const openModal = useTransactionModalStore((state) => state.open);
+  const openBulkTransactionModal = useBulkTransactionModalStore((s) => s.open);
 
   if (status === 'pending') {
     return (
@@ -55,9 +57,15 @@ export function HoldingsTable() {
           <Text fw={700} size={rem(22)}>
             Holdings
           </Text>
-          <Button size="xs" variant="default" onClick={() => openModal('Buy')} c="teal" ml="auto">
-            Buy
-          </Button>
+
+          <Button.Group ml="auto">
+            <Button size="xs" variant="default" onClick={() => openBulkTransactionModal(portfolioId!)}>
+              Bulk
+            </Button>
+            <Button size="xs" variant="default" onClick={() => openModal('Buy')} c="teal" ml="auto">
+              Buy
+            </Button>
+          </Button.Group>
         </Group>
 
         <Card shadow="sm" radius="md" withBorder>
@@ -69,10 +77,16 @@ export function HoldingsTable() {
     );
   }
 
-  return <Inner data={data} />;
+  return <Inner data={data} portfolioId={Number(portfolioId)} />;
 }
 
-function Inner({ data: { stocks, totalValue, totalCost, totalProfitPercentage } }: { data: PortfolioInfo }) {
+function Inner({
+  data: { stocks, totalValue, totalCost, totalProfitPercentage },
+  portfolioId
+}: {
+  data: PortfolioInfo;
+  portfolioId: number;
+}) {
   'use no memo';
   const columnHelper = createColumnHelper<PortfolioStock>();
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -181,7 +195,7 @@ function Inner({ data: { stocks, totalValue, totalCost, totalProfitPercentage } 
         <Text fw={700} size={rem(22)}>
           Holdings
         </Text>
-        <BuySellButtonGroup />
+        <BuySellButtonGroup portfolioId={portfolioId!} />
       </Group>
       <Card shadow="sm" radius="md" p={0} withBorder>
         <ScrollArea h="100%" scrollbars="x" type="auto">
@@ -273,11 +287,15 @@ function Inner({ data: { stocks, totalValue, totalCost, totalProfitPercentage } 
   );
 }
 
-function BuySellButtonGroup() {
+function BuySellButtonGroup({ portfolioId }: { portfolioId: number }) {
   const openModal = useTransactionModalStore((state) => state.open);
+  const openBulkTransactionModal = useBulkTransactionModalStore((s) => s.open);
 
   return (
     <Button.Group ml="auto">
+      <Button size="xs" variant="default" onClick={() => openBulkTransactionModal(portfolioId)}>
+        Bulk
+      </Button>
       <Button size="xs" variant="default" onClick={() => openModal('Buy')} c="teal">
         Buy
       </Button>

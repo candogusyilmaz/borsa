@@ -1,5 +1,6 @@
 package dev.canverse.stocks.service.portfolio.model;
 
+import dev.canverse.stocks.domain.entity.portfolio.Transaction;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -7,12 +8,13 @@ import jakarta.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
 import java.time.Instant;
 
-public record BuyTransactionRequest(
+public record BulkTransactionRequest(
+        Transaction.Type type,
         @NotNull
         Long stockId,
         @NotNull
         @Positive
-        int quantity,
+        BigDecimal quantity,
         @NotNull
         @Positive
         BigDecimal price,
@@ -21,4 +23,13 @@ public record BuyTransactionRequest(
         @NotNull
         Instant actionDate
 ) {
+    public TransactionRequest toTransactionRequest() {
+        return new TransactionRequest(
+                stockId,
+                quantity,
+                price,
+                commission,
+                actionDate
+        );
+    }
 }

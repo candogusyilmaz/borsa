@@ -1,4 +1,4 @@
-export type BuyTradeRequest = {
+export type TransactionRequest = {
   stockId: number;
   price: number;
   quantity: number;
@@ -6,7 +6,8 @@ export type BuyTradeRequest = {
   actionDate: string;
 };
 
-export type SellTradeRequest = {
+export type BulkTransactionRequest = {
+  type: 'BUY' | 'SELL';
   stockId: number;
   price: number;
   quantity: number;

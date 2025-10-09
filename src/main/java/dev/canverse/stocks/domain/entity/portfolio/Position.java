@@ -81,7 +81,7 @@ public class Position implements Serializable {
         this.transactions.add(new Transaction(this, Transaction.Type.BUY, quantity, price, commission, actionDate));
 
         this.quantity = this.quantity.add(quantity);
-        this.total = this.total.add(price.multiply(quantity));
+        this.total = this.quantity.subtract(quantity).equals(BigDecimal.ZERO) ? price.multiply(quantity) : this.total.add(price.multiply(quantity));
 
         this.history.add(new PositionHistory(this, PositionHistory.ActionType.BUY));
     }

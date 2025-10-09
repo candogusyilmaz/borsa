@@ -11,6 +11,7 @@ app:
   forex-rate-api:
     base-url: 'https://api.forexrateapi.com'
     api-key: ${FOREX_RATE_API_KEY:your_api_key_here}
+  gemini-api-key: ${GEMINI_API_KEY:your_api_key_here}
 
 spring:
   application:

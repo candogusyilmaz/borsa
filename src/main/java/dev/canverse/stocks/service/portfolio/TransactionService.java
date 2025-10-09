@@ -3,18 +3,14 @@ package dev.canverse.stocks.service.portfolio;
 import dev.canverse.stocks.domain.entity.portfolio.Position;
 import dev.canverse.stocks.domain.exception.NotFoundException;
 import dev.canverse.stocks.repository.InstrumentRepository;
-import dev.canverse.stocks.repository.PortfolioRepository;
 import dev.canverse.stocks.repository.PositionRepository;
 import dev.canverse.stocks.repository.TransactionRepository;
 import dev.canverse.stocks.security.AuthenticationProvider;
-import dev.canverse.stocks.service.portfolio.model.BuyTransactionRequest;
-import dev.canverse.stocks.service.portfolio.model.SellTransactionRequest;
 import dev.canverse.stocks.service.portfolio.model.TransactionHistory;
+import dev.canverse.stocks.service.portfolio.model.TransactionRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
@@ -23,12 +19,10 @@ public class TransactionService {
     private final InstrumentRepository instrumentRepository;
     private final PositionRepository positionRepository;
     private final TransactionRepository transactionRepository;
-    private final PortfolioRepository portfolioRepository;
-
     private final PortfolioAccessValidator portfolioAccessValidator;
 
     @Transactional
-    public void buy(long portfolioId, BuyTransactionRequest req) {
+    public void buy(long portfolioId, TransactionRequest req) {
         var portfolio = portfolioAccessValidator.validateAccess(portfolioId);
 
         var position = positionRepository.findByPortfolioAndInstrumentForPrincipal(
@@ -39,13 +33,13 @@ public class TransactionService {
                 instrumentRepository.getReference(req.stockId())
         )));
 
-        position.buy(BigDecimal.valueOf(req.quantity()), req.price(), req.commission(), req.actionDate());
+        position.buy(req.quantity(), req.price(), req.commission(), req.actionDate());
 
-        positionRepository.save(position);
+        positionRepository.saveAndFlush(position);
     }
 
     @Transactional
-    public void sell(long portfolioId, SellTransactionRequest req) {
+    public void sell(long portfolioId, TransactionRequest req) {
         portfolioAccessValidator.validateAccess(portfolioId);
 
         var position = positionRepository.findByPortfolioAndInstrumentForPrincipal(
@@ -53,9 +47,9 @@ public class TransactionService {
                 req.stockId()
         ).orElseThrow(() -> new NotFoundException("No holding found"));
 
-        position.sell(BigDecimal.valueOf(req.quantity()), req.price(), req.commission(), req.actionDate());
+        position.sell(req.quantity(), req.price(), req.commission(), req.actionDate());
 
-        positionRepository.save(position);
+        positionRepository.saveAndFlush(position);
     }
 
     @Transactional
