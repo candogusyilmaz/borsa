@@ -27,6 +27,11 @@ public class DashboardController {
         return dashboardService.getDashboard(dashboardId);
     }
 
+    @GetMapping("/default")
+    public DashboardView getDefaultDashboard() {
+        return dashboardService.getDefaultDashboard();
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public void createDashboard(@Valid @RequestBody CreateDashboardRequest request) {

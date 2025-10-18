@@ -13,19 +13,19 @@
     "check": "biome check --write ./src"
   },
   "dependencies": {
-    "@biomejs/biome": "^2.2.5",
-    "@mantine/charts": "^8.3.3",
-    "@mantine/core": "^8.1.1",
-    "@mantine/dates": "^8.3.3",
-    "@mantine/dropzone": "^8.3.3",
-    "@mantine/form": "^8.3.3",
-    "@mantine/hooks": "^8.1.1",
-    "@mantine/notifications": "^8.3.3",
-    "@mantine/spotlight": "^8.3.3",
+    "@biomejs/biome": "^2.2.6",
+    "@mantine/charts": "^8.3.5",
+    "@mantine/core": "^8.3.5",
+    "@mantine/dates": "^8.3.5",
+    "@mantine/dropzone": "^8.3.5",
+    "@mantine/form": "^8.3.5",
+    "@mantine/hooks": "^8.3.5",
+    "@mantine/notifications": "^8.3.5",
+    "@mantine/spotlight": "^8.3.5",
     "@react-oauth/google": "^0.12.2",
     "@tabler/icons-react": "^3.35.0",
-    "@tanstack/react-query": "^5.90.2",
-    "@tanstack/react-router": "^1.132.47",
+    "@tanstack/react-query": "^5.90.5",
+    "@tanstack/react-router": "^1.133.13",
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/react-virtual": "^3.13.12",
     "axios": "^1.12.2",
@@ -41,16 +41,16 @@
     "react-is": "^19.0.0"
   },
   "devDependencies": {
-    "@tanstack/router-devtools": "^1.132.50",
-    "@tanstack/router-plugin": "^1.132.47",
+    "@tanstack/router-devtools": "^1.133.13",
+    "@tanstack/router-plugin": "^1.133.13",
     "@types/react": "^19.2.2",
-    "@types/react-dom": "^19.2.1",
+    "@types/react-dom": "^19.2.2",
     "@vitejs/plugin-react": "^5.0.4",
-    "babel-plugin-react-compiler": "^19.1.0-rc.2",
+    "babel-plugin-react-compiler": "^1.0.0",
     "postcss": "^8.5.6",
     "postcss-preset-mantine": "^1.18.0",
     "postcss-simple-vars": "^7.0.1",
     "typescript": "^5.9.3",
-    "vite": "^7.1.9"
+    "vite": "^7.1.10"
   }
 }

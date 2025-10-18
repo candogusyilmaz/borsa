@@ -6,6 +6,7 @@ import { IconCirclePlus, IconFile, IconTrash, IconUpload, IconX } from '@tabler/
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { create } from 'zustand';
 import { mutations, queries } from '~/api';
+import { alerts } from '~/lib/alert';
 import { getCurrencySymbol } from '~/lib/currency';
 
 interface TransactionModalState {
@@ -142,6 +143,9 @@ function BulkTransactionForm({ portfolioId, close }: { portfolioId: string | num
           actionDate: new Date(t.actionDate)
         }))
       });
+    },
+    onError: () => {
+      alerts.error('We could not process the file. Please make sure it is a valid file.');
     }
   });
 
@@ -186,9 +190,13 @@ function BulkTransactionForm({ portfolioId, close }: { portfolioId: string | num
             <IconFile size={56} color="var(--mantine-color-dimmed)" stroke={1.5} />
           </Dropzone.Idle>
 
-          <div>
+          <div style={{ display: mutation.isPending ? 'none' : 'block' }}>
             <Text>Import transactions from a file</Text>
             <Text c="dimmed">We will process the file and import the transactions for you</Text>
+          </div>
+          <div style={{ display: mutation.isPending ? 'block' : 'none' }}>
+            <Text>We are processing your file</Text>
+            <Text c="dimmed">Please wait a moment while we import your transactions</Text>
           </div>
         </Group>
       </Dropzone>

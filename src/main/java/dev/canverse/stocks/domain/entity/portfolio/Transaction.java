@@ -43,6 +43,14 @@ public class Transaction implements Serializable {
     @Column(nullable = false, precision = 38, scale = 18)
     private BigDecimal commission;
 
+    @PositiveOrZero
+    @Column(nullable = false, precision = 38, scale = 18)
+    private BigDecimal newQuantity;
+
+    @PositiveOrZero
+    @Column(nullable = false, precision = 38, scale = 18)
+    private BigDecimal newTotal;
+
     @NotNull
     @Column(nullable = false)
     private Instant actionDate;
@@ -63,20 +71,42 @@ public class Transaction implements Serializable {
     protected Transaction() {
     }
 
-    protected Transaction(Position position, Type type, BigDecimal quantity, BigDecimal price, BigDecimal commission, Instant actionDate) {
-        this.position = position;
-        this.type = type;
-        this.quantity = quantity;
-        this.price = price;
-        this.commission = commission;
-        this.actionDate = actionDate;
+    protected static Transaction buy(Position position, BigDecimal quantity, BigDecimal price, BigDecimal newQuantity, BigDecimal newTotal, Instant actionDate) {
+        var transaction = new Transaction();
 
-        if (type == Type.SELL) {
-            var profit = price.subtract(position.getAveragePrice()).multiply(quantity);
-            var returnPercentage = Calculator.divide(price.subtract(position.getAveragePrice()).multiply(BigDecimal.valueOf(100)), position.getAveragePrice());
+        transaction.position = position;
+        transaction.type = Type.BUY;
+        transaction.quantity = quantity;
+        transaction.price = price;
+        transaction.commission = BigDecimal.ZERO;
+        transaction.actionDate = actionDate;
+        transaction.newQuantity = newQuantity;
+        transaction.newTotal = newTotal;
 
-            this.performance = new TransactionPerformance(this, profit, returnPercentage);
-        }
+        return transaction;
+    }
+
+    protected static Transaction sell(Position position, BigDecimal quantity, BigDecimal price, BigDecimal newQuantity, BigDecimal newTotal, Instant actionDate) {
+        var transaction = new Transaction();
+        transaction.position = position;
+        transaction.type = Type.SELL;
+        transaction.quantity = quantity;
+        transaction.price = price;
+        transaction.commission = BigDecimal.ZERO;
+        transaction.actionDate = actionDate;
+        transaction.newQuantity = newQuantity;
+        transaction.newTotal = newTotal;
+        transaction.performance = new TransactionPerformance(transaction, calculateProfit(position, quantity, price), calculateReturnPercentage(position, price));
+
+        return transaction;
+    }
+
+    private static BigDecimal calculateReturnPercentage(Position position, BigDecimal price) {
+        return Calculator.divide(price.subtract(position.getAveragePrice()).multiply(BigDecimal.valueOf(100)), position.getAveragePrice());
+    }
+
+    private static BigDecimal calculateProfit(Position position, BigDecimal quantity, BigDecimal price) {
+        return price.subtract(position.getAveragePrice()).multiply(quantity);
     }
 
     public enum Type {

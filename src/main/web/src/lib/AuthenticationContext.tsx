@@ -26,6 +26,7 @@ export interface AuthContext {
   register: UseMutationResult<LoginResponse, unknown, { name: string; email: string; password: string }, unknown>;
   logout: () => Promise<void>;
   updateToken: (token: string) => void;
+  refreshToken: () => Promise<void>;
 }
 
 type AuthProviderProps = {
@@ -33,9 +34,12 @@ type AuthProviderProps = {
 };
 
 function getStoredUser(): LoginResponse | null {
-  const user = localStorage.getItem('user');
-
-  return user ? JSON.parse(user) : null;
+  try {
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
+  } catch {
+    return null;
+  }
 }
 
 const AuthContext = createContext<AuthContext>(null!);
@@ -79,6 +83,18 @@ export function AuthenticationProvider({ children }: Readonly<AuthProviderProps>
     setUser(user);
   };
 
+  const refreshToken = async () => {
+    if (!user) return;
+
+    try {
+      const response = await http.post<{ token: string }>('/auth/refresh-token', { token: user.token });
+      updateToken(response.data.token);
+    } catch (error) {
+      console.error('Failed to refresh token', error);
+      logout();
+    }
+  };
+
   return (
     <AuthContext
       value={{
@@ -87,7 +103,8 @@ export function AuthenticationProvider({ children }: Readonly<AuthProviderProps>
         login,
         register,
         logout,
-        updateToken
+        updateToken,
+        refreshToken
       }}>
       {children}
     </AuthContext>

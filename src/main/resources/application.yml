@@ -11,7 +11,7 @@ app:
   forex-rate-api:
     base-url: 'https://api.forexrateapi.com'
     api-key: ${FOREX_RATE_API_KEY:your_api_key_here}
-  gemini-api-key: ${GEMINI_API_KEY:your_api_key_here}
+  gemini-api-key: ${GEMINI_API_KEY:AIzaSyAMVz1xBwP_ZhnjwcKjNqM4RDvcFd87SBU}
 
 spring:
   application:
@@ -44,6 +44,7 @@ spring:
           batch_size: 20
           order_inserts: true
           order_updates: true
+    show-sql: on
 
   flyway:
     enabled: false
@@ -97,4 +98,4 @@ logging:
     root: INFO
     dev.canverse: ${LOG_LEVEL:INFO}
     org.hibernate.sql: ${SQL_LOG_LEVEL:DEBUG}
-    org.hibernate.stat: INFO
+    org.hibernate.stat: debug

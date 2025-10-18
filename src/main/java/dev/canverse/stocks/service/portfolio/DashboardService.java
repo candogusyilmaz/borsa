@@ -69,6 +69,21 @@ public class DashboardService {
                 .fetch();
     }
 
+    public DashboardView getDefaultDashboard() {
+        var d = QDashboard.dashboard;
+
+        var dashboardId = qf.select(d.id)
+                .from(d)
+                .where(d.user.id.eq(AuthenticationProvider.getUser().getId()).and(d.isDefault.isTrue()))
+                .fetchOne();
+
+        if (dashboardId == null) {
+            throw new NotFoundException("Default dashboard not found.");
+        }
+
+        return getDashboard(dashboardId);
+    }
+
     public DashboardView getDashboard(Long dashboardId) {
         var userId = AuthenticationProvider.getUser().getId();
         var d = QDashboard.dashboard;

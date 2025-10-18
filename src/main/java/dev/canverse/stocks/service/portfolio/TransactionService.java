@@ -45,7 +45,9 @@ public class TransactionService {
         var position = positionRepository.findByPortfolioAndInstrumentForPrincipal(
                 portfolioId,
                 req.stockId()
-        ).orElseThrow(() -> new NotFoundException("No holding found"));
+        ).orElseThrow(() -> new NotFoundException(
+                String.format("No holding found for stock id %s", req.stockId())
+        ));
 
         position.sell(req.quantity(), req.price(), req.commission(), req.actionDate());
 

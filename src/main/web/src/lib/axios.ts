@@ -10,7 +10,7 @@ export const http = axios.create({
   withCredentials: true,
   xsrfHeaderName: 'X-XSRF-TOKEN',
   xsrfCookieName: 'XSRF-TOKEN',
-  timeout: 5000
+  timeout: 20000
 });
 
 http.interceptors.request.use((config) => {

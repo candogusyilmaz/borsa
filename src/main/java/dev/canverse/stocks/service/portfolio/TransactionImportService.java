@@ -3,12 +3,14 @@ package dev.canverse.stocks.service.portfolio;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.genai.Client;
 import com.google.genai.JsonSerializable;
+import com.google.genai.errors.ServerException;
 import com.google.genai.types.Content;
 import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.Part;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import dev.canverse.stocks.domain.entity.instrument.QInstrument;
 import dev.canverse.stocks.domain.entity.portfolio.Transaction;
+import dev.canverse.stocks.domain.exception.BadRequestException;
 import dev.canverse.stocks.service.portfolio.model.BulkTransactionRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,7 +53,7 @@ public class TransactionImportService {
             
             Only include rows or text lines that represent actual trades. Ignore headers, summaries, portfolio holdings, or other sections.
             
-            Dates should be normalized to YYYY-MM-DD'T'hh:mm:ss.SSSZ format if possible.
+            IMPORTANT: Dates should be normalized to YYYY-MM-DD'T'hh:mm:ss.SSSZ
             
             Quantities must be positive numbers only.
             
@@ -93,7 +95,7 @@ public class TransactionImportService {
                 "properties": {
                   "date": {
                     "type": "string",
-                    "pattern": "\\\\d{4}-\\\\d{2}-\\\\d{2}T\\\\d{2}:\\\\d{2}:\\\\d{2}\\\\.\\\\d{3}Z"
+                    "format": "YYYY-MM-DD'T'hh:mm:ss.SSSZ"
                   },
                   "symbol": {
                     "type": "string"
@@ -124,12 +126,13 @@ public class TransactionImportService {
 
     public List<TransactionImportPreview> importTransactions(MultipartFile file) {
         try {
-            var content = Content.fromParts(PROMP_TEMPLATE,
+            var content = Content.fromParts(
+                    PROMP_TEMPLATE,
                     Part.fromBytes(file.getBytes(), file.getContentType())
             );
 
             var config = GenerateContentConfig.builder()
-                    .temperature(0f)
+                    .temperature(0.1f)
                     .responseMimeType("application/json")
                     .responseJsonSchema(JsonSerializable.stringToJsonNode(JSON_SCHEMA))
                     .build();
@@ -137,6 +140,9 @@ public class TransactionImportService {
             var response = gemini.models.generateContent("gemini-2.5-flash-lite", content, config);
 
             return mapper.readValue(response.text(), mapper.getTypeFactory().constructCollectionType(List.class, TransactionImportPreview.class));
+        } catch (ServerException ex) {
+            log.error("AI service error: {}", ex.getMessage(), ex);
+            throw new BadRequestException("Our services are currently unavailable. Please try again later.");
         } catch (Exception ex) {
             log.error("Failed to import transactions", ex);
             throw new RuntimeException("Failed to import transactions", ex);

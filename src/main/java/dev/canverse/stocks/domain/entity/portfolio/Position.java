@@ -78,11 +78,10 @@ public class Position implements Serializable {
     }
 
     public void buy(BigDecimal quantity, BigDecimal price, BigDecimal commission, Instant actionDate) {
-        this.transactions.add(new Transaction(this, Transaction.Type.BUY, quantity, price, commission, actionDate));
-
         this.quantity = this.quantity.add(quantity);
-        this.total = this.quantity.subtract(quantity).equals(BigDecimal.ZERO) ? price.multiply(quantity) : this.total.add(price.multiply(quantity));
+        this.total = this.total.add(price.multiply(quantity));
 
+        this.transactions.add(Transaction.buy(this, quantity, price, this.quantity, this.total, actionDate));
         this.history.add(new PositionHistory(this, PositionHistory.ActionType.BUY));
     }
 
@@ -91,17 +90,15 @@ public class Position implements Serializable {
             throw new IllegalArgumentException("Not enough quantity");
         }
 
-        this.transactions.add(new Transaction(this, Transaction.Type.SELL, quantity, price, commission, actionDate));
-
-        // In order to preserve the cost basis when undoing a sell
-        // we keep the total as is and adjust it based on the quantity sold
         if (this.quantity.equals(quantity)) {
+            this.total = BigDecimal.ZERO;
             this.quantity = BigDecimal.ZERO;
         } else {
             this.total = this.total.subtract(Calculator.divide(this.total.multiply(quantity), this.quantity));
             this.quantity = this.quantity.subtract(quantity);
         }
 
+        this.transactions.add(Transaction.sell(this, quantity, price, this.quantity, this.total, actionDate));
         this.history.add(new PositionHistory(this, PositionHistory.ActionType.SELL));
     }
 

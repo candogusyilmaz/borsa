@@ -24,3 +24,21 @@ export function selectBySign<T>(
     return typeof result === 'function' ? (result as (v: number) => T)(value) : result;
   }
 }
+
+// biome-ignore lint/suspicious/noExplicitAny: int
+export function determinate(value: any, returns: { naEq?: any; gt?: any; lt?: any }) {
+  if (!value || value === 0) return returns.naEq;
+
+  if (value > 0) return returns.gt;
+
+  if (value < 0) return returns.lt;
+}
+
+// biome-ignore lint/suspicious/noExplicitAny: int
+export function determinateFn(value: any, returns: { naEq?: (value) => any; gt?: (value) => any; lt?: (value) => any }) {
+  if (!value || value === 0) return returns.naEq?.(value);
+
+  if (value > 0) return returns.gt?.(value);
+
+  if (value < 0) return returns.lt?.(value);
+}
