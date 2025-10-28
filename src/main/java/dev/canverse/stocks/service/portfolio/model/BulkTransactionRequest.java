@@ -29,7 +29,9 @@ public record BulkTransactionRequest(
                 quantity,
                 price,
                 commission,
-                actionDate
+                actionDate,
+                null,
+                null
         );
     }
 }

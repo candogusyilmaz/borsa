@@ -33,7 +33,9 @@ public class TransactionService {
                 instrumentRepository.getReference(req.stockId())
         )));
 
-        position.buy(req.quantity(), req.price(), req.commission(), req.actionDate());
+        var buy = position.buy(req.quantity(), req.price(), req.commission(), req.actionDate());
+        buy.getMetadata().setNotes(req.notes());
+        buy.getMetadata().setTags(req.tags());
 
         positionRepository.saveAndFlush(position);
     }
@@ -49,7 +51,9 @@ public class TransactionService {
                 String.format("No holding found for stock id %s", req.stockId())
         ));
 
-        position.sell(req.quantity(), req.price(), req.commission(), req.actionDate());
+        var sell = position.sell(req.quantity(), req.price(), req.commission(), req.actionDate());
+        sell.getMetadata().setNotes(req.notes());
+        sell.getMetadata().setTags(req.tags());
 
         positionRepository.saveAndFlush(position);
     }

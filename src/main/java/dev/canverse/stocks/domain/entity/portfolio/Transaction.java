@@ -2,13 +2,17 @@ package dev.canverse.stocks.domain.entity.portfolio;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import dev.canverse.stocks.domain.Calculator;
+import dev.canverse.stocks.domain.valueobject.TransactionMetadata;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -54,6 +58,10 @@ public class Transaction implements Serializable {
     @NotNull
     @Column(nullable = false)
     private Instant actionDate;
+
+    @Setter
+    @JdbcTypeCode(SqlTypes.JSON)
+    private TransactionMetadata metadata = new TransactionMetadata();
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

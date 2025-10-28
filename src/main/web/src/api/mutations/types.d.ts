@@ -4,6 +4,8 @@ export type TransactionRequest = {
   quantity: number;
   commission: number;
   actionDate: string;
+  notes?: string;
+  tags?: string[];
 };
 
 export type BulkTransactionRequest = {

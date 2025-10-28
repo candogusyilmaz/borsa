@@ -1,4 +1,4 @@
-import { Button, type ButtonProps, NumberInput, Select, SimpleGrid, Stack, Text } from '@mantine/core';
+import { Button, type ButtonProps, NumberInput, Select, SimpleGrid, Stack, TagsInput, Text, Textarea } from '@mantine/core';
 import { DateTimePicker } from '@mantine/dates';
 import { useForm } from '@mantine/form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -8,7 +8,6 @@ import { queryKeys } from '~/api/queries/config';
 import { alerts } from '~/lib/alert';
 import { getCurrencySymbol } from '~/lib/currency';
 import { format } from '~/lib/format';
-import { SellTransactionSummary } from './SellTransactionSummary';
 
 type SellTransactionFormProps = {
   stockId?: string;
@@ -29,7 +28,9 @@ export function SellTransactionForm({ stockId, close }: SellTransactionFormProps
       price: 0,
       quantity: 1,
       commission: 0,
-      actionDate: new Date()
+      actionDate: new Date(),
+      notes: '',
+      tags: [] as string[]
     },
     validate: {
       stockId: (s) => (s ? null : true),
@@ -75,7 +76,9 @@ export function SellTransactionForm({ stockId, close }: SellTransactionFormProps
       price: values.price,
       quantity: values.quantity,
       commission: 0,
-      actionDate: new Date(values.actionDate).toJSON()
+      actionDate: new Date(values.actionDate).toJSON(),
+      notes: values.notes,
+      tags: values.tags
     });
   });
 
@@ -107,12 +110,6 @@ export function SellTransactionForm({ stockId, close }: SellTransactionFormProps
       {format.toCurrency(selectedStock.last, false)}
     </Text>
   );
-
-  /* const _commissionRightSection = selectedStock && (
-    <Text c="dimmed" size="xs" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
-      {format.toCurrency(form.values.quantity * form.values.price * 0.002, false)}
-    </Text>
-  ); */
 
   return (
     <form onSubmit={handleFormSubmit}>
@@ -160,34 +157,9 @@ export function SellTransactionForm({ stockId, close }: SellTransactionFormProps
             {...form.getInputProps('price')}
           />
         </SimpleGrid>
-        {/* <NumberInput
-          inputWrapperOrder={["label", "error", "input", "description"]}
-          disabled={!form.values.stockId}
-          prefix={getCurrencySymbol("TRY")}
-          label="Commission"
-          hideControls
-          thousandSeparator="."
-          fixedDecimalScale
-          decimalScale={2}
-          decimalSeparator=","
-          min={0}
-          rightSectionWidth="auto"
-          rightSectionProps={{ style: { paddingRight: 10 } }}
-          rightSection={commissionRightSection}
-          description={
-            form.values.quantity &&
-            form.values.price &&
-            "Broker commission was calculated at 0.2%"
-          }
-          {...form.getInputProps("commission")}
-        /> */}
-        <SellTransactionSummary
-          stockInHolding={stockInHolding}
-          newQuantity={form.values.quantity}
-          newPrice={form.values.price}
-          isValid={form.isValid()}
-        />
         <DateTimePicker label="Date" {...form.getInputProps('actionDate')} />
+        <Textarea label="Notes" placeholder="Add any notes here..." minRows={2} maxRows={3} autosize {...form.getInputProps('notes')} />
+        <TagsInput label="Tags" placeholder="Add tags here..." {...form.getInputProps('tags')} />
         <Button type="submit" color="blue" loading={mutation.isPending || mutation.isSuccess} disabled={!form.isValid()}>
           Sell
           {form.values.quantity && form.values.stockId && ` ${form.values.quantity} share(s) of ${selectedStock?.symbol}`}

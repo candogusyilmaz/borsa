@@ -6,6 +6,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 public record TransactionRequest(
         @NotNull
@@ -19,6 +20,8 @@ public record TransactionRequest(
         @PositiveOrZero
         BigDecimal commission,
         @NotNull
-        Instant actionDate
+        Instant actionDate,
+        String notes,
+        List<String> tags
 ) {
 }

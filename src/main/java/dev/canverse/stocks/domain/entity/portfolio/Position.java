@@ -77,15 +77,19 @@ public class Position implements Serializable {
         return Calculator.divide(this.total, this.quantity);
     }
 
-    public void buy(BigDecimal quantity, BigDecimal price, BigDecimal commission, Instant actionDate) {
+    public Transaction buy(BigDecimal quantity, BigDecimal price, BigDecimal commission, Instant actionDate) {
+
         this.quantity = this.quantity.add(quantity);
         this.total = this.total.add(price.multiply(quantity));
 
-        this.transactions.add(Transaction.buy(this, quantity, price, this.quantity, this.total, actionDate));
+        var transaction = Transaction.buy(this, quantity, price, this.quantity, this.total, actionDate);
+        this.transactions.add(transaction);
         this.history.add(new PositionHistory(this, PositionHistory.ActionType.BUY));
+
+        return transaction;
     }
 
-    public void sell(BigDecimal quantity, BigDecimal price, BigDecimal commission, Instant actionDate) {
+    public Transaction sell(BigDecimal quantity, BigDecimal price, BigDecimal commission, Instant actionDate) {
         if (quantity.compareTo(this.quantity) > 0) {
             throw new IllegalArgumentException("Not enough quantity");
         }
@@ -98,8 +102,11 @@ public class Position implements Serializable {
             this.quantity = this.quantity.subtract(quantity);
         }
 
-        this.transactions.add(Transaction.sell(this, quantity, price, this.quantity, this.total, actionDate));
+        var transaction = Transaction.sell(this, quantity, price, this.quantity, this.total, actionDate);
+        this.transactions.add(transaction);
         this.history.add(new PositionHistory(this, PositionHistory.ActionType.SELL));
+
+        return transaction;
     }
 
     public void undo() {
