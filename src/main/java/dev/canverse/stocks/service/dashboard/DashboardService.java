@@ -1,4 +1,4 @@
-package dev.canverse.stocks.service.portfolio;
+package dev.canverse.stocks.service.dashboard;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;

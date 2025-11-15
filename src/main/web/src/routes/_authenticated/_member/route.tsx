@@ -1,6 +1,7 @@
 import { ActionIcon, AppShell, Button, Divider, Flex, Group, ScrollArea, Stack, Text, UnstyledButton } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import {
+  IconArrowsLeftRight,
   IconBriefcase,
   IconCirclePlusFilled,
   IconCircleXFilled,
@@ -27,6 +28,13 @@ const NAV_LINKS = [
     icon: <IconHome size={20} />,
     options: linkOptions({
       to: '/dashboard'
+    })
+  },
+  {
+    label: 'Trades',
+    icon: <IconArrowsLeftRight size={20} />,
+    options: linkOptions({
+      to: '/trades'
     })
   }
 ];

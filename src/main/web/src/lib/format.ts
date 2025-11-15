@@ -44,6 +44,13 @@ export const format = {
       maximumFractionDigits: maximumFractionDigits
     }).format(value);
   },
+  currency: (value: number, options?: Intl.NumberFormatOptions, locale = 'tr-TR') => {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: 'TRY',
+      ...options
+    }).format(value);
+  },
   toHumanizedNumber: (value: number, locale = 'tr-TR') => {
     return new Intl.NumberFormat(locale, {
       notation: 'compact',

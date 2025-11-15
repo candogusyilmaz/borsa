@@ -10,3 +10,32 @@ export const fetchAll = ({ portfolioId }: { portfolioId: number }) =>
     staleTime: staleTimes.FIVE_MINUTES,
     refetchInterval: staleTimes.FIVE_MINUTES
   });
+
+export type Transaction = {
+  id: number;
+  type: string;
+  quantity: number;
+  price: number;
+  newTotal: number;
+  newQuantity: number;
+  profit: number | null;
+  actionDate: Date;
+  tags: string[];
+  position: {
+    positionId: number;
+    instrumentSymbol: string;
+    currencyCode: string;
+    portfolio: {
+      id: number;
+      name: string;
+    };
+  };
+};
+
+export const fetchAllTransactions = () =>
+  queryOptions({
+    queryKey: ['/transactions'],
+    queryFn: async ({ signal }) => (await http.get<Transaction[]>(`/transactions`, { signal })).data,
+    staleTime: staleTimes.FIVE_MINUTES,
+    refetchInterval: staleTimes.FIVE_MINUTES
+  });

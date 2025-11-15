@@ -4,13 +4,17 @@ import dev.canverse.stocks.domain.entity.portfolio.Position;
 import dev.canverse.stocks.domain.exception.NotFoundException;
 import dev.canverse.stocks.repository.InstrumentRepository;
 import dev.canverse.stocks.repository.PositionRepository;
+import dev.canverse.stocks.repository.TransactionMapper;
 import dev.canverse.stocks.repository.TransactionRepository;
 import dev.canverse.stocks.security.AuthenticationProvider;
 import dev.canverse.stocks.service.portfolio.model.TransactionHistory;
+import dev.canverse.stocks.service.portfolio.model.TransactionInfo;
 import dev.canverse.stocks.service.portfolio.model.TransactionRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +24,8 @@ public class TransactionService {
     private final PositionRepository positionRepository;
     private final TransactionRepository transactionRepository;
     private final PortfolioAccessValidator portfolioAccessValidator;
+
+    private final TransactionMapper transactionMapper;
 
     @Transactional
     public void buy(long portfolioId, TransactionRequest req) {
@@ -74,5 +80,9 @@ public class TransactionService {
         portfolioAccessValidator.validateAccess(portfolioId);
 
         return transactionRepository.getTransactionHistory(portfolioId);
+    }
+
+    public List<TransactionInfo> findTransactions(Long userId) {
+        return transactionMapper.fetchTransactions(userId);
     }
 }

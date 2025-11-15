@@ -1,6 +1,6 @@
 package dev.canverse.stocks.rest.portfolio;
 
-import dev.canverse.stocks.service.portfolio.DashboardService;
+import dev.canverse.stocks.service.dashboard.DashboardService;
 import dev.canverse.stocks.service.portfolio.model.dashboard.BasicDashboardView;
 import dev.canverse.stocks.service.portfolio.model.dashboard.CreateDashboardRequest;
 import dev.canverse.stocks.service.portfolio.model.dashboard.DashboardView;
