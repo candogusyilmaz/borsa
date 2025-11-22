@@ -3,7 +3,7 @@ import { DatesProvider } from '@mantine/dates';
 import { Notifications } from '@mantine/notifications';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { createRouter, ErrorComponent, RouterProvider } from '@tanstack/react-router';
+import { createRouter, RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AuthenticationProvider, useAuthentication } from '~/lib/AuthenticationContext.tsx';
@@ -18,6 +18,7 @@ import '@mantine/notifications/styles.css';
 import '@mantine/dropzone/styles.css';
 
 import '~/styles/global.css';
+import { NetworkError } from './components/network-error/network-error';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,7 +30,7 @@ const queryClient = new QueryClient({
 
 const router = createRouter({
   routeTree,
-  defaultErrorComponent: ({ error }) => <ErrorComponent error={error} />,
+  defaultErrorComponent: ({ error }) => <NetworkError error={error} />,
   context: {
     auth: undefined!,
     queryClient

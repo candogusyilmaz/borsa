@@ -10,7 +10,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class TransactionInfo {
+public class TradeInfo {
     private String id;
     private PositionView position;
     private Transaction.Type type;

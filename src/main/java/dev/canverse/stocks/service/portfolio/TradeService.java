@@ -7,9 +7,9 @@ import dev.canverse.stocks.repository.PositionRepository;
 import dev.canverse.stocks.repository.TradeMapper;
 import dev.canverse.stocks.repository.TradeRepository;
 import dev.canverse.stocks.security.AuthenticationProvider;
-import dev.canverse.stocks.service.portfolio.model.TransactionHistory;
-import dev.canverse.stocks.service.portfolio.model.TransactionInfo;
-import dev.canverse.stocks.service.portfolio.model.TransactionRequest;
+import dev.canverse.stocks.service.portfolio.model.TradeHistory;
+import dev.canverse.stocks.service.portfolio.model.TradeInfo;
+import dev.canverse.stocks.service.portfolio.model.TradeRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +28,7 @@ public class TradeService {
     private final TradeMapper tradeMapper;
 
     @Transactional
-    public void buy(long portfolioId, TransactionRequest req) {
+    public void buy(long portfolioId, TradeRequest req) {
         var portfolio = portfolioAccessValidator.validateAccess(portfolioId);
 
         var position = positionRepository.findByPortfolioAndInstrumentForPrincipal(
@@ -47,7 +47,7 @@ public class TradeService {
     }
 
     @Transactional
-    public void sell(long portfolioId, TransactionRequest req) {
+    public void sell(long portfolioId, TradeRequest req) {
         portfolioAccessValidator.validateAccess(portfolioId);
 
         var position = positionRepository.findByPortfolioAndInstrumentForPrincipal(
@@ -65,7 +65,7 @@ public class TradeService {
     }
 
     @Transactional
-    public void undoLatestTransaction(long positionId) {
+    public void undoLatestTrade(long positionId) {
         var position = positionRepository
                 .findByIdAndUserId(positionId, AuthenticationProvider.getUser().getId())
                 .orElseThrow(() -> new NotFoundException("No holding found"));
@@ -76,17 +76,17 @@ public class TradeService {
         positionRepository.save(position);
     }
 
-    public TransactionHistory getTransactionHistory(long portfolioId) {
+    public TradeHistory fetchTradeHistory(long portfolioId) {
         portfolioAccessValidator.validateAccess(portfolioId);
 
-        return tradeRepository.getTransactionHistory(portfolioId);
+        return tradeRepository.fetchTradeHistory(portfolioId);
     }
 
-    public List<TransactionInfo> fetchTransactions(Long userId) {
+    public List<TradeInfo> fetchTrades(Long userId) {
         return tradeMapper.fetchTrades(userId);
     }
 
-    public List<TransactionInfo> fetchActiveTrades(Long userId, Long positionId) {
+    public List<TradeInfo> fetchActiveTrades(Long userId, Long positionId) {
         return tradeMapper.fetchActiveTrades(userId, positionId);
     }
 }

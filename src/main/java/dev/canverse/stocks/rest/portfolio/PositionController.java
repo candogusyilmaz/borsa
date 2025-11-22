@@ -4,7 +4,7 @@ import dev.canverse.stocks.security.AuthenticationProvider;
 import dev.canverse.stocks.service.portfolio.PositionService;
 import dev.canverse.stocks.service.portfolio.TradeService;
 import dev.canverse.stocks.service.portfolio.model.PositionInfo;
-import dev.canverse.stocks.service.portfolio.model.TransactionInfo;
+import dev.canverse.stocks.service.portfolio.model.TradeInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,7 +26,7 @@ public class PositionController {
     }
 
     @GetMapping("/{positionId}/active-trades")
-    public List<TransactionInfo> fetchActiveTrades(@PathVariable Long positionId) {
+    public List<TradeInfo> fetchActiveTrades(@PathVariable Long positionId) {
         return tradeService.fetchActiveTrades(AuthenticationProvider.getUser().getId(), positionId);
     }
 }

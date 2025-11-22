@@ -1,5 +1,7 @@
 :root[data-mantine-color-scheme="dark"] {
   --mantine-color-text: #fefefe;
+  --mantine-color-dark-4: #303135ff;
+  --mantine-color-default-border: #2c2e33;
 }
 
 html {

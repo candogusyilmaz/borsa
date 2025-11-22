@@ -25,7 +25,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class TransactionImportService {
+public class TradeImportService {
     private final Client gemini;
     private final ObjectMapper mapper;
     private final JPAQueryFactory queryFactory;

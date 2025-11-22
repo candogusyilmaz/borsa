@@ -23,8 +23,8 @@ public record BulkTransactionRequest(
         @NotNull
         Instant actionDate
 ) {
-    public TransactionRequest toTransactionRequest() {
-        return new TransactionRequest(
+    public TradeRequest toTransactionRequest() {
+        return new TradeRequest(
                 stockId,
                 quantity,
                 price,

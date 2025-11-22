@@ -18,11 +18,11 @@ export function EmptyState({ recordCount }: EmptyStateProps) {
           </Text>
           {recordCount > 0 ? (
             <Text c="dimmed" size="sm" ta="center" maw={350}>
-              You don't have any open positions in this portfolio yet. Add a trade to get started.
+              No records match your current filters. Adjust the filters to see more positions.
             </Text>
           ) : (
             <Text c="dimmed" size="sm" ta="center" maw={350}>
-              No records match your current filters. Adjust the filters to see more positions.
+              You don't have any open positions in this portfolio yet. Add a trade to get started.
             </Text>
           )}
         </Stack>

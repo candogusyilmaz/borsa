@@ -9,7 +9,7 @@ import dev.canverse.stocks.domain.entity.portfolio.QTransaction;
 import dev.canverse.stocks.domain.entity.portfolio.Transaction;
 import dev.canverse.stocks.service.portfolio.PortfolioAccessValidator;
 import dev.canverse.stocks.service.portfolio.model.MonthlyRevenueOverview;
-import dev.canverse.stocks.service.portfolio.model.TransactionHistory;
+import dev.canverse.stocks.service.portfolio.model.TradeHistory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
-public class TransactionRepositoryCustomImpl implements TransactionRepositoryCustom {
+public class TradeRepositoryCustomImpl implements TradeRepositoryCustom {
     private final JPAQueryFactory queryFactory;
     private final PortfolioAccessValidator portfolioAccessValidator;
 
@@ -65,7 +65,7 @@ public class TransactionRepositoryCustomImpl implements TransactionRepositoryCus
     }
 
     @Override
-    public TransactionHistory getTransactionHistory(long portfolioId) {
+    public TradeHistory fetchTradeHistory(long portfolioId) {
         var transaction = QTransaction.transaction;
         var subTransaction = new QTransaction("subTrade");
 
@@ -76,7 +76,7 @@ public class TransactionRepositoryCustomImpl implements TransactionRepositoryCus
                 .notExists();
 
         var query = queryFactory.select(
-                        Projections.constructor(TransactionHistory.Item.class,
+                        Projections.constructor(TradeHistory.Item.class,
                                 transaction.actionDate,
                                 transaction.createdAt,
                                 transaction.type,
@@ -96,6 +96,6 @@ public class TransactionRepositoryCustomImpl implements TransactionRepositoryCus
                 .orderBy(transaction.createdAt.desc())
                 .fetch();
 
-        return new TransactionHistory(query);
+        return new TradeHistory(query);
     }
 }

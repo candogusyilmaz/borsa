@@ -12,7 +12,7 @@ import {
   getSortedRowModel,
   useReactTable
 } from '@tanstack/react-table';
-import { Fragment, useMemo } from 'react';
+import React, { Fragment, useMemo } from 'react';
 import { queries } from '~/api';
 import type { PositionInfo } from '~/api/queries/position';
 import { format } from '~/lib/format';
@@ -188,7 +188,7 @@ export function PositionsTable() {
   });
 
   return (
-    <>
+    <React.Fragment>
       <Table.ScrollContainer
         minWidth={900}
         scrollAreaProps={{
@@ -249,6 +249,6 @@ export function PositionsTable() {
           total={table.getPageCount()}
         />
       </Group>
-    </>
+    </React.Fragment>
   );
 }

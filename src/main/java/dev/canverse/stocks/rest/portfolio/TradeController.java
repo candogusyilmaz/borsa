@@ -1,11 +1,11 @@
 package dev.canverse.stocks.rest.portfolio;
 
 import dev.canverse.stocks.domain.entity.portfolio.Transaction;
+import dev.canverse.stocks.service.portfolio.TradeImportService;
 import dev.canverse.stocks.service.portfolio.TradeService;
-import dev.canverse.stocks.service.portfolio.TransactionImportService;
 import dev.canverse.stocks.service.portfolio.model.BulkTransactionRequest;
-import dev.canverse.stocks.service.portfolio.model.TransactionHistory;
-import dev.canverse.stocks.service.portfolio.model.TransactionRequest;
+import dev.canverse.stocks.service.portfolio.model.TradeHistory;
+import dev.canverse.stocks.service.portfolio.model.TradeRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,22 +19,22 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/portfolios/{portfolioId}/trades")
-public class TransactionController {
+public class TradeController {
     private final TradeService tradeService;
-    private final TransactionImportService transactionImportService;
+    private final TradeImportService tradeImportService;
 
     @GetMapping
-    public TransactionHistory fetchTrades(@PathVariable long portfolioId) {
-        return tradeService.getTransactionHistory(portfolioId);
+    public TradeHistory fetchTrades(@PathVariable long portfolioId) {
+        return tradeService.fetchTradeHistory(portfolioId);
     }
 
     @PostMapping("/buy")
-    public void buy(@Valid @RequestBody TransactionRequest req, @PathVariable long portfolioId) {
+    public void buy(@Valid @RequestBody TradeRequest req, @PathVariable long portfolioId) {
         tradeService.buy(portfolioId, req);
     }
 
     @PostMapping("/sell")
-    public void sell(@Valid @RequestBody TransactionRequest req, @PathVariable long portfolioId) {
+    public void sell(@Valid @RequestBody TradeRequest req, @PathVariable long portfolioId) {
         tradeService.sell(portfolioId, req);
     }
 
@@ -55,12 +55,12 @@ public class TransactionController {
     @PostMapping("/undo/{holdingId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void undo(@PathVariable long holdingId, @PathVariable long portfolioId) {
-        tradeService.undoLatestTransaction(holdingId);
+        tradeService.undoLatestTrade(holdingId);
     }
 
     @PostMapping("/import")
     public List<BulkTransactionRequest> importTransactions(@RequestParam("file") MultipartFile file) {
-        var transactionImportPreviews = transactionImportService.importTransactions(file);
-        return transactionImportService.parseImportedTransactions(transactionImportPreviews);
+        var transactionImportPreviews = tradeImportService.importTransactions(file);
+        return tradeImportService.parseImportedTransactions(transactionImportPreviews);
     }
 }

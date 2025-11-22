@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
-public record TransactionRequest(
+public record TradeRequest(
         @NotNull
         Long stockId,
         @NotNull

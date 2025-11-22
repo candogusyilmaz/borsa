@@ -1,12 +1,12 @@
 package dev.canverse.stocks.repository.custom;
 
 import dev.canverse.stocks.service.portfolio.model.MonthlyRevenueOverview;
-import dev.canverse.stocks.service.portfolio.model.TransactionHistory;
+import dev.canverse.stocks.service.portfolio.model.TradeHistory;
 
 import java.util.List;
 
-public interface TransactionRepositoryCustom {
+public interface TradeRepositoryCustom {
     List<MonthlyRevenueOverview> getMonthlyRevenueOverview(long portfolioId);
 
-    TransactionHistory getTransactionHistory(long portfolioId);
+    TradeHistory fetchTradeHistory(long portfolioId);
 }

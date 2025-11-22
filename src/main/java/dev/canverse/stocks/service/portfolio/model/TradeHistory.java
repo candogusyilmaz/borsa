@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
-public record TransactionHistory(List<Item> trades) {
+public record TradeHistory(List<Item> trades) {
     public record Item(
             Instant date,
             Instant createdAt,

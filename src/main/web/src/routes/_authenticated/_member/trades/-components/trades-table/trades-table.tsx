@@ -1,6 +1,6 @@
-import { Container, Group, Pagination, Stack, Table, Text, Title } from '@mantine/core';
+import { Group, Pagination, Table, Text } from '@mantine/core';
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router';
+import { useNavigate, useSearch } from '@tanstack/react-router';
 import {
   type ColumnDef,
   flexRender,
@@ -15,30 +15,13 @@ import { Fragment, useMemo } from 'react';
 import { queries } from '~/api';
 import type { Transaction } from '~/api/queries/trades';
 import { format } from '~/lib/format';
-import classes from './trades.module.css';
+import classes from './trades-table.module.css';
 
-export const Route = createFileRoute('/_authenticated/_member/trades')({
-  loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(queries.trades.fetchAllTransactions()),
-  component: RouteComponent,
-  validateSearch: () => ({}) as { page?: number }
-});
-
-function RouteComponent() {
-  return (
-    <Container strategy="grid" size="lg" m="lg">
-      <Stack>
-        <Title c="white">Trades</Title>
-        <TradesTable />
-      </Stack>
-    </Container>
-  );
-}
-
-function TradesTable() {
+export function TradesTable() {
   'use no memo';
   const { data: transactions } = useSuspenseQuery(queries.trades.fetchAllTransactions());
-  const { page } = Route.useSearch();
-  const navigate = Route.useNavigate();
+  const { page } = useSearch({ from: '/_authenticated/_member/trades' });
+  const navigate = useNavigate();
 
   const columns = useMemo<ColumnDef<Transaction>[]>(
     () => [
