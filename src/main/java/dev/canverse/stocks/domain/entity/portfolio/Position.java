@@ -94,6 +94,11 @@ public class Position implements Serializable {
             throw new IllegalArgumentException("Not enough quantity");
         }
 
+        var transaction = Transaction.sell(this, quantity, price,
+                this.quantity.subtract(quantity),
+                this.total.subtract(Calculator.divide(this.total.multiply(quantity), this.quantity)),
+                actionDate);
+
         if (this.quantity.equals(quantity)) {
             this.total = BigDecimal.ZERO;
             this.quantity = BigDecimal.ZERO;
@@ -102,7 +107,6 @@ public class Position implements Serializable {
             this.quantity = this.quantity.subtract(quantity);
         }
 
-        var transaction = Transaction.sell(this, quantity, price, this.quantity, this.total, actionDate);
         this.transactions.add(transaction);
         this.history.add(new PositionHistory(this, PositionHistory.ActionType.SELL));
 

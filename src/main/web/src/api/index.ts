@@ -8,6 +8,7 @@ import * as analytics from '~/api/queries/analytics';
 import * as currency from '~/api/queries/currency';
 import * as dashboard from '~/api/queries/dashboard';
 import * as portfolio from '~/api/queries/portfolio';
+import * as position from '~/api/queries/position';
 import * as stocks from '~/api/queries/stocks';
 import * as trades from '~/api/queries/trades';
 
@@ -17,7 +18,8 @@ export const queries = {
   trades,
   stocks,
   dashboard,
-  currency
+  currency,
+  position
 };
 
 export const mutations = {

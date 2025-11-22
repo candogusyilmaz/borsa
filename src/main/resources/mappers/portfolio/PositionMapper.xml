@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="dev.canverse.stocks.repository.PositionMapper">
+    <resultMap id="PositionInfo" type="dev.canverse.stocks.service.portfolio.model.PositionInfo">
+        <id column="id" property="id"/>
+        <result column="quantity" property="quantity"/>
+        <result column="total" property="total"/>
+        <result column="avg_cost" property="avgCost"/>
+        <association property="portfolio" columnPrefix="portfolio_"
+                     javaType="dev.canverse.stocks.service.portfolio.model.PositionInfo$PortfolioView">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+        </association>
+        <association property="instrument" columnPrefix="instrument_"
+                     javaType="dev.canverse.stocks.service.portfolio.model.PositionInfo$InstrumentView">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+            <result column="symbol" property="symbol"/>
+            <result column="currency" property="currency"/>
+            <result column="last" property="last"/>
+            <result column="daily_change" property="dailyChange"/>
+        </association>
+    </resultMap>
+    <select id="fetchPositions" resultMap="PositionInfo" parameterType="long">
+        select pos.id,
+               pos.quantity,
+               pos.total,
+               pos.total / pos.quantity  as avg_cost,
+               pf.id                     as portfolio_id,
+               pf.name                   as portfolio_name,
+               ins.id                    as instrument_id,
+               ins.name                  as instrument_name,
+               ins.symbol                as instrument_symbol,
+               ins.denomination_currency as instrument_currency,
+               iss.daily_change          as instrument_daily_change,
+               iss.last                  as instrument_last
+        from portfolio.positions pos
+                 join instrument.instruments ins on pos.instrument_id = ins.id
+                 left join instrument.instrument_snapshots iss on iss.instrument_id = ins.id
+                 join portfolio.portfolios pf on pf.id = pos.portfolio_id and pf.archived = false
+        where pf.user_id = #{userId}
+          and pos.quantity > 0
+    </select>
+</mapper>

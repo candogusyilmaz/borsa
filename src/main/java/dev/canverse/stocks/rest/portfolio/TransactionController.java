@@ -1,8 +1,8 @@
 package dev.canverse.stocks.rest.portfolio;
 
 import dev.canverse.stocks.domain.entity.portfolio.Transaction;
+import dev.canverse.stocks.service.portfolio.TradeService;
 import dev.canverse.stocks.service.portfolio.TransactionImportService;
-import dev.canverse.stocks.service.portfolio.TransactionService;
 import dev.canverse.stocks.service.portfolio.model.BulkTransactionRequest;
 import dev.canverse.stocks.service.portfolio.model.TransactionHistory;
 import dev.canverse.stocks.service.portfolio.model.TransactionRequest;
@@ -20,22 +20,22 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/portfolios/{portfolioId}/trades")
 public class TransactionController {
-    private final TransactionService transactionService;
+    private final TradeService tradeService;
     private final TransactionImportService transactionImportService;
 
     @GetMapping
     public TransactionHistory fetchTrades(@PathVariable long portfolioId) {
-        return transactionService.getTransactionHistory(portfolioId);
+        return tradeService.getTransactionHistory(portfolioId);
     }
 
     @PostMapping("/buy")
     public void buy(@Valid @RequestBody TransactionRequest req, @PathVariable long portfolioId) {
-        transactionService.buy(portfolioId, req);
+        tradeService.buy(portfolioId, req);
     }
 
     @PostMapping("/sell")
     public void sell(@Valid @RequestBody TransactionRequest req, @PathVariable long portfolioId) {
-        transactionService.sell(portfolioId, req);
+        tradeService.sell(portfolioId, req);
     }
 
     @PostMapping("/bulk")
@@ -45,9 +45,9 @@ public class TransactionController {
 
         for (var req : reqs) {
             if (req.type() == Transaction.Type.BUY) {
-                transactionService.buy(portfolioId, req.toTransactionRequest());
+                tradeService.buy(portfolioId, req.toTransactionRequest());
             } else {
-                transactionService.sell(portfolioId, req.toTransactionRequest());
+                tradeService.sell(portfolioId, req.toTransactionRequest());
             }
         }
     }
@@ -55,7 +55,7 @@ public class TransactionController {
     @PostMapping("/undo/{holdingId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void undo(@PathVariable long holdingId, @PathVariable long portfolioId) {
-        transactionService.undoLatestTransaction(holdingId);
+        tradeService.undoLatestTransaction(holdingId);
     }
 
     @PostMapping("/import")

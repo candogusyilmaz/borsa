@@ -6,6 +6,8 @@ import org.apache.ibatis.annotations.Mapper;
 import java.util.List;
 
 @Mapper
-public interface TransactionMapper {
-    List<TransactionInfo> fetchTransactions(Long userId);
+public interface TradeMapper {
+    List<TransactionInfo> fetchTrades(Long userId);
+
+    List<TransactionInfo> fetchActiveTrades(Long userId, Long positionId);
 }

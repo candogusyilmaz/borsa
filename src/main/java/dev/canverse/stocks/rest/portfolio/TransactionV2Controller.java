@@ -1,7 +1,7 @@
 package dev.canverse.stocks.rest.portfolio;
 
 import dev.canverse.stocks.security.AuthenticationProvider;
-import dev.canverse.stocks.service.portfolio.TransactionService;
+import dev.canverse.stocks.service.portfolio.TradeService;
 import dev.canverse.stocks.service.portfolio.model.TransactionInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,10 +14,10 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/transactions")
 public class TransactionV2Controller {
-    private final TransactionService transactionService;
+    private final TradeService tradeService;
 
     @GetMapping
     public List<TransactionInfo> fetchAllTransactions() {
-        return transactionService.findTransactions(AuthenticationProvider.getUser().getId());
+        return tradeService.fetchTransactions(AuthenticationProvider.getUser().getId());
     }
 }

@@ -5,5 +5,5 @@ import dev.canverse.stocks.repository.custom.TransactionRepositoryCustom;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface TransactionRepository extends BaseJpaRepository<Transaction, Long>, TransactionRepositoryCustom {
+public interface TradeRepository extends BaseJpaRepository<Transaction, Long>, TransactionRepositoryCustom {
 }

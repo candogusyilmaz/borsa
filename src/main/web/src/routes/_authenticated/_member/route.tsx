@@ -7,7 +7,8 @@ import {
   IconCircleXFilled,
   IconHome,
   IconLayoutSidebarLeftCollapse,
-  IconLayoutSidebarLeftExpand
+  IconLayoutSidebarLeftExpand,
+  IconListDetails
 } from '@tabler/icons-react';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { createFileRoute, Link, linkOptions, Outlet, useParams } from '@tanstack/react-router';
@@ -28,6 +29,13 @@ const NAV_LINKS = [
     icon: <IconHome size={20} />,
     options: linkOptions({
       to: '/dashboard'
+    })
+  },
+  {
+    label: 'Positions',
+    icon: <IconListDetails size={20} />,
+    options: linkOptions({
+      to: '/positions'
     })
   },
   {

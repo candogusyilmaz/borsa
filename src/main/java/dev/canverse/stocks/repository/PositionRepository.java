@@ -25,5 +25,4 @@ public interface PositionRepository extends BaseJpaRepository<Position, Long> {
 
     @Query("select h from Position h where h.id = :id and h.portfolio.user.id = :userId")
     Optional<Position> findByIdAndUserId(Long id, Long userId);
-
 }

@@ -4,8 +4,8 @@ import dev.canverse.stocks.domain.entity.portfolio.Position;
 import dev.canverse.stocks.domain.exception.NotFoundException;
 import dev.canverse.stocks.repository.InstrumentRepository;
 import dev.canverse.stocks.repository.PositionRepository;
-import dev.canverse.stocks.repository.TransactionMapper;
-import dev.canverse.stocks.repository.TransactionRepository;
+import dev.canverse.stocks.repository.TradeMapper;
+import dev.canverse.stocks.repository.TradeRepository;
 import dev.canverse.stocks.security.AuthenticationProvider;
 import dev.canverse.stocks.service.portfolio.model.TransactionHistory;
 import dev.canverse.stocks.service.portfolio.model.TransactionInfo;
@@ -18,14 +18,14 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class TransactionService {
+public class TradeService {
 
     private final InstrumentRepository instrumentRepository;
     private final PositionRepository positionRepository;
-    private final TransactionRepository transactionRepository;
+    private final TradeRepository tradeRepository;
     private final PortfolioAccessValidator portfolioAccessValidator;
 
-    private final TransactionMapper transactionMapper;
+    private final TradeMapper tradeMapper;
 
     @Transactional
     public void buy(long portfolioId, TransactionRequest req) {
@@ -79,10 +79,14 @@ public class TransactionService {
     public TransactionHistory getTransactionHistory(long portfolioId) {
         portfolioAccessValidator.validateAccess(portfolioId);
 
-        return transactionRepository.getTransactionHistory(portfolioId);
+        return tradeRepository.getTransactionHistory(portfolioId);
     }
 
-    public List<TransactionInfo> findTransactions(Long userId) {
-        return transactionMapper.fetchTransactions(userId);
+    public List<TransactionInfo> fetchTransactions(Long userId) {
+        return tradeMapper.fetchTrades(userId);
+    }
+
+    public List<TransactionInfo> fetchActiveTrades(Long userId, Long positionId) {
+        return tradeMapper.fetchActiveTrades(userId, positionId);
     }
 }

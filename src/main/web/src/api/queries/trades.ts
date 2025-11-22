@@ -19,7 +19,7 @@ export type Transaction = {
   newTotal: number;
   newQuantity: number;
   profit: number | null;
-  actionDate: Date;
+  actionDate: string;
   tags: string[];
   position: {
     positionId: number;
