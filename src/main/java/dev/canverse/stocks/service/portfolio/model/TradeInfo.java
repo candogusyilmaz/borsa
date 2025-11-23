@@ -29,6 +29,7 @@ public class TradeInfo {
     public static class PositionView {
         private String positionId;
         private String instrumentSymbol;
+        private String instrumentName;
         private String currencyCode;
         private PortfolioView portfolio;
 

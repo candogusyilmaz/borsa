@@ -1,90 +1,90 @@
 .table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    white-space: nowrap;
-    background: var(--mantine-color-dark-6);
-    border: 1px solid var(--mantine-color-dark-5);
-    border-radius: var(--mantine-radius-sm);
-    overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    table-layout: fixed;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  white-space: nowrap;
+  background: var(--mantine-color-dark-6);
+  border: 1px solid var(--mantine-color-gray-8);
+  border-radius: var(--mantine-radius-sm);
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  table-layout: fixed;
 }
 
-.table th:nth-child(1),
-.table td:nth-child(1) {
-    width: 120px;
+.tableHeader {
+  text-align: left;
+  padding: 1rem 1rem;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.9);
+  background: var(--mantine-color-dark-7);
+  border-bottom: 1px solid var(--mantine-color-gray-8);
 }
 
-.table th:nth-child(2),
-.table td:nth-child(2) {
-    width: 120px;
+.tableRow {
+  transition:
+    all 0.3s ease,
+    border 0s;
+  background: var(--mantine-color-dark-6);
+  border-bottom: 1px solid var(--mantine-color-dark-5);
 }
 
-.table th:nth-child(3),
-.table td:nth-child(3) {
-    width: 140px;
+.tableRow:hover {
+  background: var(--mantine-color-dark-4);
 }
 
-.table th:nth-child(4),
-.table td:nth-child(4) {
-    width: auto;
+.tableHeader:first-child,
+.tableRow > td:first-child {
+  width: 250px;
 }
 
-.table th:nth-child(5),
-.table td:nth-child(5) {
-    width: 120px;
+.tableRow:last-child {
+  border-bottom: none;
 }
 
-.table th:nth-child(6),
-.table td:nth-child(6) {
-    width: 120px;
+.tableRow > td {
+  padding: 0.675rem 1rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 13px;
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-bottom: 1px solid var(--mantine-color-dark-4);
 }
 
-.table th:nth-child(7),
-.table td:nth-child(7) {
-    width: 140px;
+.tableRow > td:nth-child(n + 4):not(:last-child) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
-.table thead th {
-    text-align: left;
-    padding: 16px 20px;
-    font-weight: 600;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: rgba(255, 255, 255, 0.9);
-    border-bottom: 1px solid var(--mantine-color-dark-7);
+.tableRow > td:last-child {
+  text-align: right;
 }
 
-.table tbody tr {
-    transition: all 0.2s ease;
-    border-bottom: 1px solid var(--mantine-color-dark-6);
+.tableRow:hover .tickerIcon,
+.tableRow:hover .tickerSymbol {
+  border-color: var(--mantine-color-blue-7);
+  color: var(--mantine-color-blue-4);
 }
 
-.table tbody tr:hover {
-    background: var(--mantine-color-dark-5);
-    transform: scale(1.005);
+.tickerIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  min-width: 40px;
+  margin-right: 8px;
+  border-radius: 8px;
+  font-weight: 700;
+  background-color: var(--mantine-color-dark-6);
+  border: 1px solid var(--mantine-color-dark-3);
+  transition:
+    border-color 0.3s ease,
+    color 0.3s ease;
 }
 
-.table tbody tr:last-child {
-    border-bottom: none;
+.tickerSymbol {
+  transition: color 0.3s ease;
 }
-
-.table tbody td {
-    padding: 16px 20px;
-    color: rgba(255, 255, 255, 0.85);
-    font-size: 13px;
-    vertical-align: middle;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.table tbody tr:nth-of-type(odd) {
-    background: var(--mantine-color-dark-7);
-
-    &:hover {
-        background: var(--mantine-color-dark-5);
-    }
-}
-

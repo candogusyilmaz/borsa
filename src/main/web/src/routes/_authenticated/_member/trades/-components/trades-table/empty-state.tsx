@@ -14,15 +14,15 @@ export function EmptyState({ recordCount }: EmptyStateProps) {
         </ThemeIcon>
         <Stack gap={0} align="center" style={{ whiteSpace: 'break-spaces' }}>
           <Text size="lg" fw={500}>
-            No positions found
+            No trades found
           </Text>
           {recordCount > 0 ? (
             <Text c="dimmed" size="sm" ta="center" maw={350}>
-              No records match your current filters. Adjust the filters to see more positions.
+              No records match your current filters. Adjust the filters to see more trades.
             </Text>
           ) : (
             <Text c="dimmed" size="sm" ta="center" maw={350}>
-              You don't have any open positions in any portfolio yet. Add a trade to get started.
+              You don't have any open trades in any portfolio yet. Add a trade to get started.
             </Text>
           )}
         </Stack>

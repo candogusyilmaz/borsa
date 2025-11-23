@@ -24,6 +24,7 @@ export type Transaction = {
   position: {
     positionId: number;
     instrumentSymbol: string;
+    instrumentName: string;
     currencyCode: string;
     portfolio: {
       id: number;

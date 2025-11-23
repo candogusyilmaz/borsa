@@ -15,6 +15,7 @@
                      javaType="dev.canverse.stocks.service.portfolio.model.TradeInfo$PositionView">
             <id column="position_id" property="positionId"/>
             <result column="instrument_symbol" property="instrumentSymbol"/>
+            <result column="instrument_name" property="instrumentName"/>
             <result column="currency_code" property="currencyCode"/>
             <association property="portfolio"
                          javaType="dev.canverse.stocks.service.portfolio.model.TradeInfo$PositionView$PortfolioView">
@@ -36,6 +37,7 @@
                t.metadata ->> 'tags'     as tags,
                t.metadata ->> 'notes'    as notes,
                ins.symbol                as instrument_symbol,
+               ins.name                  as instrument_name,
                ins.denomination_currency as currency_code,
                pf.id                     as portfolio_id,
                pf.name                   as portfolio_name

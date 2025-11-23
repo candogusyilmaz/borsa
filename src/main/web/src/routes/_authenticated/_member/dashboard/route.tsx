@@ -20,7 +20,10 @@ import { TotalBalanceCard } from './-components/total-balance-card';
 import { TransactionsChart } from './-components/transactions-chart';
 
 export const Route = createFileRoute('/_authenticated/_member/dashboard')({
-  component: RouteComponent
+  component: RouteComponent,
+  loader: async ({ context: { queryClient } }) => {
+    await queryClient.ensureQueryData(queries.dashboard.getAllDashboards());
+  }
 });
 
 function RouteComponent() {
