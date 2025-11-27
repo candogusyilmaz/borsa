@@ -73,6 +73,7 @@ function Inner({ data }: { data: PortfolioInfo }) {
     ...topStocks.map((stock, idx) => ({
       name: stock.symbol,
       value: stock.value,
+      // biome-ignore lint/suspicious/noNonNullAssertedOptionalChain: intented
       color: COLORS.find((s) => s.id === idx)?.color!
     }))
   ];

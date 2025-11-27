@@ -126,7 +126,7 @@ function BulkTransactionForm({ portfolioId, close }: { portfolioId: string | num
     quantity: 0,
     commission: 0,
     actionDate: new Date(),
-    type: 'BUY'
+    type: 'BUY' as 'BUY' | 'SELL'
   });
 
   const mutation = useMutation({
