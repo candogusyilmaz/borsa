@@ -1,8 +1,9 @@
 import { ErrorComponent } from '@tanstack/react-router';
+import { AxiosError } from 'axios';
 import styles from './styles.module.css';
 
 export function NetworkError({ error }: { error: Error }) {
-  if (error.name !== 'NetworkError') {
+  if (!(error instanceof AxiosError)) {
     return <ErrorComponent error={error} />;
   }
 

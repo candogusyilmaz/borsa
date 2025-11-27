@@ -8,8 +8,7 @@ export const Route = createRootRouteWithContext<{
   auth: AuthContext;
 }>()({
   component: RootComponent,
-  notFoundComponent: () => <NotFound />,
-  pendingComponent: () => <div>Loading...</div>
+  notFoundComponent: () => <NotFound />
 });
 
 function RootComponent() {
