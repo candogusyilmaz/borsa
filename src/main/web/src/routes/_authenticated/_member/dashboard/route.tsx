@@ -28,7 +28,7 @@ export const Route = createFileRoute('/_authenticated/_member/dashboard')({
 
 function RouteComponent() {
   const { data: dashboards } = useSuspenseQuery(queries.dashboard.getAllDashboards());
-  const [selectedDashboard, setSelectedDashboard] = useState(dashboards.find((s) => s.isDefault)?.id ?? dashboards[0].id);
+  const [selectedDashboard, setSelectedDashboard] = useState(dashboards.find((s) => s.isDefault)?.id ?? dashboards[0]!.id);
   const { data: dashboard, status } = useQuery(queries.dashboard.getDashboard(selectedDashboard));
   const { data: currencies } = useQuery(queries.currency.getAllCurrencies());
   const open = useCreateNewDashboardModalStore((s) => s.open);

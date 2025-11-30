@@ -14,17 +14,12 @@ export function DailyChangeCard({ data }: { data: DailyChange }) {
         <Text fw={500} size="md" c="gray.3">
           Daily Change
         </Text>
-      </Group>
-      <Group gap={10} align="top" mb={4} wrap="nowrap">
-        <Text fz={rem(28)} fw={700} lts={rem(1.5)} style={{}}>
-          {format.toCurrency(data.currentValue - data.previousValue, false, data.currencyCode)}
-        </Text>
-        <Text mt={12} c="dimmed" size="xs" fw={400} style={{ verticalAlign: 'middle' }}>
-          {data.currencyCode}
-        </Text>
-      </Group>
-      <Group gap={8}>
-        <Badge radius="sm" py={10} variant="light" color={determinate(data.percentageChange, { naEq: 'gray.4', gt: 'teal', lt: 'red' })}>
+        <Badge
+          ml="auto"
+          radius="sm"
+          py={10}
+          variant="light"
+          color={determinate(data.percentageChange, { naEq: 'gray.4', gt: 'teal', lt: 'red' })}>
           <Group gap={8} align="center">
             {determinateFn(data.percentageChange, {
               naEq: () => null,
@@ -40,6 +35,16 @@ export function DailyChangeCard({ data }: { data: DailyChange }) {
             </Text>
           </Group>
         </Badge>
+      </Group>
+      <Group gap={10} align="top" mb={4} wrap="nowrap">
+        <Text fz={rem(28)} fw={700} lts={rem(1.5)} style={{}}>
+          {format.toCurrency(data.currentValue - data.previousValue, false, data.currencyCode)}
+        </Text>
+        <Text mt={12} c="dimmed" size="xs" fw={400} style={{ verticalAlign: 'middle' }}>
+          {data.currencyCode}
+        </Text>
+      </Group>
+      <Group gap={8}>
         <Text span fz="0.75rem" lh={1} fw={400} c="dimmed">
           Daily Performance
         </Text>

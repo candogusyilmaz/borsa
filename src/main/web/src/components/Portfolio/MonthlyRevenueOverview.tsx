@@ -208,7 +208,7 @@ function MonthlyRevenueBarChart({ data }: ChartProps) {
     base: 'center',
     xs: 'space-between'
   });
-  const [selectedYear, setSelectedYear] = useState(data[data.length - 1].year);
+  const [selectedYear, setSelectedYear] = useState(data[data.length - 1]!.year);
 
   const yearData = data
     .filter((s) => s.year === selectedYear)

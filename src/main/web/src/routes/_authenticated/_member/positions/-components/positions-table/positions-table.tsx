@@ -1,6 +1,5 @@
 import { Badge, Group, Pagination, Stack, Table, Text } from '@mantine/core';
 import { IconChevronDown, IconChevronUp } from '@tabler/icons-react';
-import { useSuspenseQuery } from '@tanstack/react-query';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import {
   type ColumnDef,
@@ -13,11 +12,11 @@ import {
   useReactTable
 } from '@tanstack/react-table';
 import React, { Fragment, useMemo } from 'react';
-import { queries } from '~/api';
-import type { PositionInfo } from '~/api/queries/position';
+import { $api } from '~/api/openapi';
+import { TableStateHandler } from '~/components/table/table-state-handler';
 import { format } from '~/lib/format';
+import type { ElementType } from '~/lib/types';
 import { TradeHistoryTable } from '../trade-history/trade-history';
-import { EmptyState } from './empty-state';
 import classes from './positions-table.module.css';
 
 export function PositionsTable() {
@@ -26,9 +25,9 @@ export function PositionsTable() {
   const { page, q } = useSearch({
     from: '/_authenticated/_member/positions'
   });
-  const { data: positions } = useSuspenseQuery(queries.position.fetchPositions());
+  const { data: positions, status } = $api.useQuery('get', '/api/positions');
 
-  const columns = useMemo<ColumnDef<PositionInfo>[]>(
+  const columns = useMemo<ColumnDef<ElementType<typeof positions>>[]>(
     () => [
       {
         accessorFn: (row) => row.instrument.symbol,
@@ -159,7 +158,7 @@ export function PositionsTable() {
   );
 
   const table = useReactTable({
-    data: positions,
+    data: positions ?? [],
     columns,
     getRowCanExpand: () => true,
     getCoreRowModel: getCoreRowModel(),
@@ -191,6 +190,7 @@ export function PositionsTable() {
     <React.Fragment>
       <Table.ScrollContainer
         minWidth={900}
+        className={classes.tableWrapper}
         scrollAreaProps={{
           offsetScrollbars: false
         }}>
@@ -232,13 +232,11 @@ export function PositionsTable() {
                 )}
               </Fragment>
             ))}
-            {table.getRowModel().rows.length === 0 && (
-              <Table.Tr>
-                <Table.Td colSpan={table.getVisibleFlatColumns().length}>
-                  <EmptyState recordCount={positions.length} />
-                </Table.Td>
-              </Table.Tr>
-            )}
+            <TableStateHandler
+              status={status}
+              empty={positions?.length === 0 || table.getRowCount() === 0}
+              span={table.getVisibleFlatColumns().length}
+            />
           </Table.Tbody>
         </Table>
       </Table.ScrollContainer>

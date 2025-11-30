@@ -1,18 +1,23 @@
 import { Badge, Group, Loader, Stack, Table, Text } from '@mantine/core';
 import { IconClock } from '@tabler/icons-react';
-import { useQuery } from '@tanstack/react-query';
 import { type ColumnDef, flexRender, getCoreRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
 import { useMemo } from 'react';
-import { queries } from '~/api';
-import type { Transaction } from '~/api/queries/trades';
+import { $api } from '~/api/openapi';
 import { format } from '~/lib/format';
+import type { ElementType } from '~/lib/types';
 import classes from './trade-history.module.css';
 
 export function TradeHistoryTable({ positionId, avgCost }: { positionId: string; avgCost: number }) {
   'use no memo';
-  const { data: trades, status } = useQuery(queries.position.fetchActiveTrades(Number(positionId)));
+  const { data: trades, status } = $api.useQuery('get', '/api/positions/{positionId}/active-trades', {
+    params: {
+      path: {
+        positionId: Number(positionId)
+      }
+    }
+  });
 
-  const columns = useMemo<ColumnDef<Transaction>[]>(
+  const columns = useMemo<ColumnDef<ElementType<typeof trades>>[]>(
     () => [
       {
         accessorKey: 'actionDate',
@@ -136,7 +141,7 @@ export function TradeHistoryTable({ positionId, avgCost }: { positionId: string;
               Break Even
             </Text>
             <Text fz={12} fw={600}>
-              {format.currency(avgCost, { currency: trades[0].position.currencyCode })}
+              {format.currency(avgCost, { currency: trades[0]?.position.currencyCode })}
             </Text>
           </Stack>
         </Group>

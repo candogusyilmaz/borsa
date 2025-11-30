@@ -23,10 +23,10 @@ function mapData(data: StockEntry[]) {
   const groupedByDay: { [date: string]: StockEntry[] } = data.reduce(
     (acc, entry) => {
       const dateKey = entry.date.split('T')[0]; // Extract the date part (YYYY-MM-DD)
-      if (!acc[dateKey]) {
-        acc[dateKey] = [];
+      if (!acc[dateKey!]) {
+        acc[dateKey!] = [];
       }
-      acc[dateKey].push(entry);
+      acc[dateKey!]!.push(entry);
       return acc;
     },
     {} as { [date: string]: StockEntry[] }
@@ -40,12 +40,12 @@ function mapData(data: StockEntry[]) {
     const currentDate = new Date(date);
 
     // Filter all entries on or before the current date
-    const entriesUpToDate = data.filter((entry) => new Date(entry.date.split('T')[0]) <= currentDate);
+    const entriesUpToDate = data.filter((entry) => new Date(entry.date.split('T')[0]!) <= currentDate);
 
     // Find the latest entry for each stock up to the current date
     const latestEntries: LatestBalances = entriesUpToDate.reduce((acc, entry) => {
-      const entryDate = new Date(entry.date.split('T')[0]);
-      if (!acc[entry.stock] || entryDate > new Date(acc[entry.stock].date.split('T')[0])) {
+      const entryDate = new Date(entry.date.split('T')[0]!);
+      if (!acc[entry.stock] || entryDate > new Date(acc[entry.stock]!.date.split('T')[0]!)) {
         acc[entry.stock] = entry;
       }
       return acc;

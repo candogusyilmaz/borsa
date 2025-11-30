@@ -1,5 +1,4 @@
 import { Badge, Group, Pagination, Stack, Table, Text } from '@mantine/core';
-import { useSuspenseQuery } from '@tanstack/react-query';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import {
   type ColumnDef,
@@ -11,21 +10,21 @@ import {
   getSortedRowModel,
   useReactTable
 } from '@tanstack/react-table';
-import { Fragment, useMemo } from 'react';
-import { queries } from '~/api';
-import type { Transaction } from '~/api/queries/trades';
+import { useMemo } from 'react';
+import { $api } from '~/api/openapi';
+import { TableStateHandler } from '~/components/table/table-state-handler';
 import { format } from '~/lib/format';
-import { EmptyState } from './empty-state';
+import type { ElementType } from '~/lib/types';
 import { TradeHistoryFilter } from './trade-history-filter';
 import classes from './trades-table.module.css';
 
 export function TradesTable() {
   'use no memo';
-  const { data: transactions } = useSuspenseQuery(queries.trades.fetchAllTransactions());
+  const { data: transactions, status } = $api.useQuery('get', '/api/transactions');
   const { page, q } = useSearch({ from: '/_authenticated/_member/trades' });
   const navigate = useNavigate();
 
-  const columns = useMemo<ColumnDef<Transaction>[]>(
+  const columns = useMemo<ColumnDef<ElementType<typeof transactions>>[]>(
     () => [
       {
         accessorFn: (row) => row.position.instrumentSymbol,
@@ -148,7 +147,7 @@ export function TradesTable() {
   );
 
   const table = useReactTable({
-    data: transactions,
+    data: transactions ?? [],
     columns,
     getRowCanExpand: () => true,
     getCoreRowModel: getCoreRowModel(),
@@ -177,40 +176,33 @@ export function TradesTable() {
     <>
       <TradeHistoryFilter />
       <Table.ScrollContainer
+        className={classes.tableWrapper}
         minWidth={900}
         scrollAreaProps={{
           offsetScrollbars: false
         }}>
         <Table unstyled className={classes.table}>
-          <Table.Thead>
+          <thead>
             {table.getHeaderGroups().map((headerGroup) => (
-              <Table.Tr key={headerGroup.id}>
+              <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <Table.Th className={classes.tableHeader} key={header.id} colSpan={header.colSpan}>
+                  <th className={classes.tableHeader} key={header.id} colSpan={header.colSpan}>
                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                  </Table.Th>
+                  </th>
                 ))}
-              </Table.Tr>
+              </tr>
             ))}
-          </Table.Thead>
-          <Table.Tbody>
+          </thead>
+          <tbody>
             {table.getRowModel().rows.map((row) => (
-              <Fragment key={row.id}>
-                <Table.Tr className={classes.tableRow}>
-                  {row.getVisibleCells().map((cell) => (
-                    <Table.Td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</Table.Td>
-                  ))}
-                </Table.Tr>
-              </Fragment>
+              <tr key={row.id} className={classes.tableRow}>
+                {row.getVisibleCells().map((cell) => (
+                  <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                ))}
+              </tr>
             ))}
-            {table.getRowModel().rows.length === 0 && (
-              <Table.Tr>
-                <Table.Td colSpan={table.getVisibleFlatColumns().length}>
-                  <EmptyState recordCount={transactions.length} />
-                </Table.Td>
-              </Table.Tr>
-            )}
-          </Table.Tbody>
+            <TableStateHandler status={status} empty={transactions?.length === 0} span={table.getVisibleFlatColumns().length} />
+          </tbody>
         </Table>
       </Table.ScrollContainer>
       <Group justify="flex-end">

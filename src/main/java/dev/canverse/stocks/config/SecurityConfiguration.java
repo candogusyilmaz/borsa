@@ -48,6 +48,8 @@ public class SecurityConfiguration {
                 .requestMatchers("/api/auth/register").permitAll()
                 .requestMatchers("/api/auth/google").permitAll()
                 .requestMatchers("/api/auth/refresh-token").permitAll()
+                .requestMatchers("/v3/api-docs").permitAll()
+                .requestMatchers("/swagger-ui/**").permitAll()
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().permitAll());
 

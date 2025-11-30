@@ -4,8 +4,8 @@ import { useForm } from '@mantine/form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams } from '@tanstack/react-router';
 import { mutations, queries } from '~/api';
-import { queryKeys } from '~/api/queries/config';
 import { alerts } from '~/lib/alert';
+
 import { getCurrencySymbol } from '~/lib/currency';
 import { format } from '~/lib/format';
 
@@ -45,9 +45,7 @@ export function BuyTransactionForm({ stockId, close }: BuyTransactionFormProps) 
     onSuccess: (_, variables) => {
       close?.();
       alerts.success(`Bought ${variables.quantity} share(s) of ${selectedStock?.symbol} @ ${variables.price}.`);
-      client.invalidateQueries({
-        predicate: (q) => q.queryKey.includes(queryKeys.portfolio)
-      });
+      client.invalidateQueries();
     },
     onError: (res) => {
       console.log(res);

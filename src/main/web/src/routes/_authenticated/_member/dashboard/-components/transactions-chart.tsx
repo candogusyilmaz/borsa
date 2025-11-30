@@ -54,7 +54,7 @@ export function TransactionsChart({ currencyCode, dashboardId }: { currencyCode:
             </Text>
           </Group>
           <Text fw={500} c="dimmed" fz="xs">
-            This chart shows your realized profit over time, based on SELL transactions.
+            This chart shows your realized profit over time.
           </Text>
         </Stack>
       </Group>
@@ -76,7 +76,7 @@ export function TransactionsChart({ currencyCode, dashboardId }: { currencyCode:
             </Stack>
             <Stack gap={8}>
               <Group gap={8} align="center">
-                <ColorSwatch color="lightblue" size={14} radius="xs" />
+                <ColorSwatch color="#FFD700" size={14} radius="xs" />
                 <Text size="sm" fw={600} lh={1}>
                   {format.toCurrency(
                     chartData.reduce((a, b) => a + b.sell, 0),

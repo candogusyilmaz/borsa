@@ -13,6 +13,14 @@ app:
     api-key: ${FOREX_RATE_API_KEY:your_api_key_here}
   gemini-api-key: ${GEMINI_API_KEY:AIzaSyAMVz1xBwP_ZhnjwcKjNqM4RDvcFd87SBU}
 
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+
 spring:
   application:
     name: Finance

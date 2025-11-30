@@ -23,7 +23,8 @@ import { NetworkError } from './components/network-error/network-error';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 0
+      retry: 0,
+      staleTime: 30000
     }
   }
 });
