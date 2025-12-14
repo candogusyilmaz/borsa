@@ -3,9 +3,11 @@ package dev.canverse.stocks.rest.portfolio;
 import dev.canverse.stocks.security.AuthenticationProvider;
 import dev.canverse.stocks.service.portfolio.PositionService;
 import dev.canverse.stocks.service.portfolio.TradeService;
+import dev.canverse.stocks.service.portfolio.model.FetchPositionsQuery;
 import dev.canverse.stocks.service.portfolio.model.PositionInfo;
 import dev.canverse.stocks.service.portfolio.model.TradeInfo;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,8 +23,8 @@ public class PositionController {
     private final TradeService tradeService;
 
     @GetMapping
-    public List<PositionInfo> fetchPositions() {
-        return positionService.fetchPositions(AuthenticationProvider.getUser().getId());
+    public List<PositionInfo> fetchPositions(@ParameterObject FetchPositionsQuery query) {
+        return positionService.fetchPositions(AuthenticationProvider.getUser().getId(), query);
     }
 
     @GetMapping("/{positionId}/active-trades")

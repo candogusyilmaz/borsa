@@ -1,24 +1,18 @@
-import { Button, Container, Flex, Group, Menu, Space, Stack, Title } from '@mantine/core';
+import { Button, Container, Flex, Group, Menu, Stack, Title } from '@mantine/core';
 import { IconArchive, IconPencilCode, IconSettings, IconWorld } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
-import { createFileRoute, redirect } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import { queries } from '~/api';
 import { useArchivePortfolioModalStore } from '~/components/Portfolio/ArchivePortfolioModal';
 import { BalanceCard } from '~/components/Portfolio/BalanceCard';
 import { HoldingsCard } from '~/components/Portfolio/HoldingsCard';
-import { HoldingsTable } from '~/components/Portfolio/HoldingsTable';
 import { MonthlyRevenueOverview } from '~/components/Portfolio/MonthlyRevenueOverview';
 import { TransactionHistory } from '~/components/Portfolio/TransactionHistory';
+import { PositionsTable } from './-components/positions-table/positions-table';
 
 export const Route = createFileRoute('/_authenticated/_member/portfolios/$portfolioId')({
   component: RouteComponent,
-  beforeLoad: async ({ context: { queryClient }, params }) => {
-    try {
-      await queryClient.fetchQuery(queries.portfolio.fetchPortfolio({ portfolioId: Number(params.portfolioId) }));
-    } catch (_error) {
-      throw redirect({ to: '/dashboard' });
-    }
-  }
+  validateSearch: () => ({}) as { page?: number; q?: string }
 });
 
 function RouteComponent() {
@@ -31,7 +25,7 @@ function RouteComponent() {
       strategy="grid"
       size="lg"
       style={{ margin: 'var(--mantine-spacing-lg) var(--mantine-spacing-xl) var(--mantine-spacing-lg) var(--mantine-spacing-lg)' }}>
-      <Stack>
+      <Stack gap="xl">
         <Group justify="space-between" align="center">
           <Title>Portfolio</Title>
 
@@ -87,11 +81,8 @@ function RouteComponent() {
           <BalanceCard />
           <HoldingsCard />
         </Flex>
-        <Space />
-        <HoldingsTable />
-        <Space />
+        <PositionsTable key={portfolioId} />
         <MonthlyRevenueOverview />
-        <Space />
         <TransactionHistory />
       </Stack>
     </Container>

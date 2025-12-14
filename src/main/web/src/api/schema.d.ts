@@ -506,8 +506,8 @@ export interface components {
       name: string;
       symbol: string;
       currency: string;
-      last: number;
-      dailyChange: number;
+      last?: number;
+      dailyChange?: number;
     };
     PositionInfo: {
       id: string;
@@ -1018,7 +1018,9 @@ export interface operations {
   };
   fetchPositions: {
     parameters: {
-      query?: never;
+      query?: {
+        portfolioId?: number;
+      };
       header?: never;
       path?: never;
       cookie?: never;

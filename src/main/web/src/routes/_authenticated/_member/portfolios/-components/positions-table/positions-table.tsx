@@ -1,18 +1,11 @@
-import { Badge, Group, Pagination, Stack, Table, Text } from '@mantine/core';
+import { Button, Group, Stack, Table, Text } from '@mantine/core';
 import { IconChevronDown, IconChevronUp } from '@tabler/icons-react';
-import { useNavigate, useSearch } from '@tanstack/react-router';
-import {
-  type ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  getExpandedRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable
-} from '@tanstack/react-table';
-import React, { Fragment, useMemo } from 'react';
+import { useParams } from '@tanstack/react-router';
+import { type ColumnDef, flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from '@tanstack/react-table';
+import { Fragment, useMemo } from 'react';
 import { $api } from '~/api/openapi';
+import { useBulkTransactionModalStore } from '~/components/Transaction/BulkTransactionModal';
+import { useTransactionModalStore } from '~/components/Transaction/TransactionModal';
 import { TableStateHandler } from '~/components/table/table-state-handler';
 import { format } from '~/lib/format';
 import type { ElementType } from '~/lib/types';
@@ -20,12 +13,12 @@ import { TradeHistoryTable } from '../trade-history/trade-history';
 import classes from './positions-table.module.css';
 
 export function PositionsTable() {
-  'use no memo';
-  const navigate = useNavigate();
-  const { page, q } = useSearch({
-    from: '/_authenticated/_member/positions'
+  const { portfolioId } = useParams({
+    from: '/_authenticated/_member/portfolios/$portfolioId'
   });
-  const { data: positions, status } = $api.useQuery('get', '/api/positions');
+  const { data: positions, status } = $api.useQuery('get', '/api/positions', { params: { query: { portfolioId: Number(portfolioId) } } });
+  const openModal = useTransactionModalStore((state) => state.open);
+  const openBulkTransactionModal = useBulkTransactionModalStore((s) => s.open);
 
   const columns = useMemo<ColumnDef<ElementType<typeof positions>>[]>(
     () => [
@@ -60,18 +53,7 @@ export function PositionsTable() {
         id: 'portfolioId',
         enableHiding: true
       },
-      {
-        accessorFn: (row) => row.portfolio.name,
-        id: 'portfolioName',
-        header: 'Portfolio',
-        cell: (info) => (
-          <Badge tt="revert" fw={500} py="xs" px="sm" variant="default" radius="sm" bg="rgba(37, 41, 53, 0.3)" bd="1px solid #3c3c3dff">
-            <Text inherit c="gray.4">
-              {info.getValue<string>()}
-            </Text>
-          </Badge>
-        )
-      },
+
       {
         accessorKey: 'quantity',
         header: () => (
@@ -117,6 +99,39 @@ export function PositionsTable() {
         }
       },
       {
+        id: 'dailyProfitLoss',
+        header: () => (
+          <Text inherit ta="right">
+            Daily P/L
+          </Text>
+        ),
+        cell: (info) => {
+          const quantity = info.row.original.quantity;
+          const dailyChange = info.row.original.instrument.dailyChange;
+
+          if (!dailyChange || !info.row.original.instrument.last)
+            return (
+              <Text inherit ta="right" fw="600" c="dimmed">
+                N/A
+              </Text>
+            );
+
+          const dailyReturnValue = quantity * dailyChange;
+          const dailyReturnPercentage = dailyChange / (info.row.original.instrument.last - dailyChange);
+
+          return (
+            <Stack gap={0}>
+              <Text inherit ta="right" fw="600" c={dailyReturnValue > 0 ? 'teal' : 'red'}>
+                {format.currency(dailyReturnValue, { currency: info.row.original.instrument.currency })}
+              </Text>
+              <Text inherit ta="right" fz="11" c={dailyReturnPercentage > 0 ? 'teal' : 'red'}>
+                {format.toLocalePercentage(dailyReturnPercentage * 100)}
+              </Text>
+            </Stack>
+          );
+        }
+      },
+      {
         id: 'profitLoss',
         header: () => (
           <Text inherit ta="right">
@@ -152,6 +167,7 @@ export function PositionsTable() {
       {
         id: 'expander',
         header: '',
+        enableSorting: false,
         cell: (info) => {
           const expanded = info.row.getIsExpanded();
           return (
@@ -170,9 +186,6 @@ export function PositionsTable() {
     columns,
     getRowCanExpand: () => true,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getExpandedRowModel: getExpandedRowModel(),
     initialState: {
       sorting: [
@@ -183,22 +196,60 @@ export function PositionsTable() {
       ]
     },
     state: {
-      pagination: {
-        pageIndex: page ? Number(page) - 1 : 0,
-        pageSize: 10
-      },
       columnVisibility: {
         portfolioId: false
-      },
-      globalFilter: q
+      }
     }
   });
 
   return (
-    <React.Fragment>
+    <div className={classes.tableWrapper}>
+      <Group p="md" justify="space-between">
+        <Text fw="bold" size="sm">
+          Active Positions
+        </Text>
+        <Button.Group>
+          <Button
+            styles={{
+              root: {
+                borderColor: 'var(--mantine-color-gray-8)'
+              }
+            }}
+            size="xs"
+            variant="default"
+            onClick={() => openBulkTransactionModal(portfolioId!)}>
+            Bulk
+          </Button>
+          <Button
+            styles={{
+              root: {
+                borderColor: 'var(--mantine-color-gray-8)',
+                borderLeftWidth: 0,
+                borderRightWidth: 0
+              }
+            }}
+            size="xs"
+            variant="default"
+            onClick={() => openModal('Buy')}
+            c="teal">
+            Buy
+          </Button>
+          <Button
+            styles={{
+              root: {
+                borderColor: 'var(--mantine-color-gray-8)'
+              }
+            }}
+            size="xs"
+            variant="default"
+            onClick={() => openModal('Sell')}
+            c="red">
+            Sell
+          </Button>
+        </Button.Group>
+      </Group>
       <Table.ScrollContainer
         minWidth={900}
-        className={classes.tableWrapper}
         scrollAreaProps={{
           offsetScrollbars: false
         }}>
@@ -248,13 +299,6 @@ export function PositionsTable() {
           </Table.Tbody>
         </Table>
       </Table.ScrollContainer>
-      <Group justify="flex-end">
-        <Pagination
-          value={page ? Number(page) : 1}
-          onChange={(v) => navigate({ to: '.', search: (old) => ({ ...old, page: v }) })}
-          total={table.getPageCount()}
-        />
-      </Group>
-    </React.Fragment>
+    </div>
   );
 }

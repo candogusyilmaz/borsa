@@ -41,7 +41,7 @@ export function BalanceCard() {
 
 function BalanceContainer({ children, ...props }: CardProps) {
   return (
-    <Card shadow="sm" padding="lg" radius="md" withBorder {...props}>
+    <Card shadow="sm" p="lg" radius="md" withBorder {...props}>
       {children}
     </Card>
   );
@@ -50,7 +50,7 @@ function BalanceContainer({ children, ...props }: CardProps) {
 function Inner({ data }: { data: PortfolioInfo }) {
   const chartSize = useMatches({
     base: 200,
-    sm: 250
+    sm: 230
   });
   const [activeSegment, setActiveSegment] = useState<{
     name: string;
@@ -100,10 +100,10 @@ function Inner({ data }: { data: PortfolioInfo }) {
           <DonutChart
             data={pieData}
             size={chartSize}
-            thickness={15}
+            thickness={18}
             paddingAngle={3}
             pieProps={{
-              cornerRadius: 10,
+              cornerRadius: 5,
               onMouseEnter: (segment) => handleMouseEnter(segment),
               onMouseLeave: handleMouseLeave,
               minAngle: 10

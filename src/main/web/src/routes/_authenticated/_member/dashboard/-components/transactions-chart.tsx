@@ -114,7 +114,7 @@ export function TransactionsChart({ currencyCode, dashboardId }: { currencyCode:
             data={chartData}
             dataKey="date"
             withDots={false}
-            connectNulls
+            connectNulls={true}
             valueFormatter={(v) => format.toCurrency(v, true, currencyCode)}
             maxBarWidth={15}
             series={[

@@ -33,9 +33,7 @@ public class PositionInfo {
         private String symbol;
         @NotNull
         private String currency;
-        @NotNull
         private BigDecimal last;
-        @NotNull
         private BigDecimal dailyChange;
     }
 

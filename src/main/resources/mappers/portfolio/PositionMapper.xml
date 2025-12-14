@@ -6,6 +6,7 @@
         <result column="quantity" property="quantity"/>
         <result column="total" property="total"/>
         <result column="avg_cost" property="avgCost"/>
+        <result column="daily_change" property="dailyChange"/>
         <association property="portfolio" columnPrefix="portfolio_"
                      javaType="dev.canverse.stocks.service.portfolio.model.PositionInfo$PortfolioView">
             <id column="id" property="id"/>
@@ -21,24 +22,30 @@
             <result column="daily_change" property="dailyChange"/>
         </association>
     </resultMap>
-    <select id="fetchPositions" resultMap="PositionInfo" parameterType="long">
+    <select id="fetchPositions" resultMap="PositionInfo">
         select pos.id,
-               pos.quantity,
-               pos.total,
-               pos.total / pos.quantity  as avg_cost,
-               pf.id                     as portfolio_id,
-               pf.name                   as portfolio_name,
-               ins.id                    as instrument_id,
-               ins.name                  as instrument_name,
-               ins.symbol                as instrument_symbol,
-               ins.denomination_currency as instrument_currency,
-               iss.daily_change          as instrument_daily_change,
-               iss.last                  as instrument_last
+        pos.quantity,
+        pos.total,
+        pos.total / pos.quantity as avg_cost,
+        pf.id as portfolio_id,
+        pf.name as portfolio_name,
+        ins.id as instrument_id,
+        ins.name as instrument_name,
+        ins.symbol as instrument_symbol,
+        ins.denomination_currency as instrument_currency,
+        iss.daily_change as instrument_daily_change,
+        iss.last as instrument_last
         from portfolio.positions pos
-                 join instrument.instruments ins on pos.instrument_id = ins.id
-                 left join instrument.instrument_snapshots iss on iss.instrument_id = ins.id
-                 join portfolio.portfolios pf on pf.id = pos.portfolio_id and pf.archived = false
-        where pf.user_id = #{userId}
-          and pos.quantity > 0
+        join instrument.instruments ins on pos.instrument_id = ins.id
+        left join instrument.instrument_snapshots iss on iss.instrument_id = ins.id
+        join portfolio.portfolios pf on pf.id = pos.portfolio_id and pf.archived = false
+        <where>
+            pf.user_id = #{userId} and pos.quantity > 0
+            <if test="query != null">
+                <if test="query.portfolioId != null">
+                    and pf.id = #{query.portfolioId}
+                </if>
+            </if>
+        </where>
     </select>
 </mapper>

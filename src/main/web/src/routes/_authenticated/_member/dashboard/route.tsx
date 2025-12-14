@@ -134,8 +134,6 @@ function RouteComponent() {
             <RealizedGainsCard rgd={dashboard.realizedGains} />
           </SimpleGrid>
         )}
-        {status === 'pending' && <Skeleton height="80vh" />}
-
         <SimpleGrid cols={{ base: 1 }} mt="md">
           {status === 'success' && <TransactionsChart currencyCode={dashboard.realizedGains.currencyCode} dashboardId={dashboard.id} />}
           {status === 'pending' && <Skeleton height="80vh" />}

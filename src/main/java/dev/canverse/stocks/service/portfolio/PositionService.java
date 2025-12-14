@@ -3,6 +3,7 @@ package dev.canverse.stocks.service.portfolio;
 import dev.canverse.stocks.repository.PositionMapper;
 import dev.canverse.stocks.repository.PositionRepository;
 import dev.canverse.stocks.security.AuthenticationProvider;
+import dev.canverse.stocks.service.portfolio.model.FetchPositionsQuery;
 import dev.canverse.stocks.service.portfolio.model.PositionInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +24,7 @@ public class PositionService {
         positionRepository.deleteAllByUserId(AuthenticationProvider.getUser().getId());
     }
 
-    public List<PositionInfo> fetchPositions(Long userId) {
-        return positionMapper.fetchPositions(userId);
+    public List<PositionInfo> fetchPositions(Long userId, FetchPositionsQuery query) {
+        return positionMapper.fetchPositions(userId, query);
     }
 }
