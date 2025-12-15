@@ -12,6 +12,7 @@
   border: 1px solid var(--mantine-color-gray-8);
   border-radius: var(--mantine-radius-sm);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
 .tableHeader {
@@ -36,6 +37,10 @@
   border-bottom: 1px solid var(--mantine-color-dark-5);
 }
 
+.tableRow[data-expanded="false"]:last-child td {
+  border-bottom: none;
+}
+
 .tableRow[data-expanded="true"] {
   background: var(--mantine-color-dark-5);
   border-bottom: none;
@@ -43,10 +48,6 @@
 
 .tableRow:hover {
   background: var(--mantine-color-dark-4);
-}
-
-.tableRow:last-child {
-  border-bottom: none;
 }
 
 .tableRow > td {
