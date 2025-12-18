@@ -20,6 +20,7 @@
             <result column="currency" property="currency"/>
             <result column="last" property="last"/>
             <result column="daily_change" property="dailyChange"/>
+            <result column="updated_at" property="updatedAt"/>
         </association>
     </resultMap>
     <select id="fetchPositions" resultMap="PositionInfo">
@@ -34,7 +35,8 @@
         ins.symbol as instrument_symbol,
         ins.denomination_currency as instrument_currency,
         iss.daily_change as instrument_daily_change,
-        iss.last as instrument_last
+        iss.last as instrument_last,
+        iss.updated_at as instrument_updated_at
         from portfolio.positions pos
         join instrument.instruments ins on pos.instrument_id = ins.id
         left join instrument.instrument_snapshots iss on iss.instrument_id = ins.id

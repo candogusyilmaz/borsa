@@ -13,6 +13,7 @@ import {
 import { useMemo } from 'react';
 import { $api } from '~/api/openapi';
 import { TableStateHandler } from '~/components/table/table-state-handler';
+import { getColorByReturnPercentage } from '~/lib/common';
 import { format } from '~/lib/format';
 import type { ElementType } from '~/lib/types';
 import { TradeHistoryFilter } from './trade-history-filter';
@@ -123,7 +124,7 @@ export function TradesTable() {
                 {format.currency(quantity * price, { currency: info.row.original.position.currencyCode })}
               </Text>
               {returnValue && (
-                <Text inherit ta="right" fz="11" c={returnValue > 0 ? 'teal' : 'red'}>
+                <Text inherit ta="right" fz="11" c={getColorByReturnPercentage(returnValue)}>
                   {format.currency(returnValue, { currency: info.row.original.position.currencyCode })}
                 </Text>
               )}

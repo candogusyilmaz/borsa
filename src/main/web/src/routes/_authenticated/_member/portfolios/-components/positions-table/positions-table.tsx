@@ -7,6 +7,7 @@ import { $api } from '~/api/openapi';
 import { useBulkTransactionModalStore } from '~/components/Transaction/BulkTransactionModal';
 import { useTransactionModalStore } from '~/components/Transaction/TransactionModal';
 import { TableStateHandler } from '~/components/table/table-state-handler';
+import { getColorByReturnPercentage, isDataStale } from '~/lib/common';
 import { format } from '~/lib/format';
 import type { ElementType } from '~/lib/types';
 import { TradeHistoryTable } from '../trade-history/trade-history';
@@ -108,8 +109,9 @@ export function PositionsTable() {
         cell: (info) => {
           const quantity = info.row.original.quantity;
           const dailyChange = info.row.original.instrument.dailyChange;
+          const lastUpdatedTimestamp = info.row.original.instrument.updatedAt;
 
-          if (!dailyChange || !info.row.original.instrument.last)
+          if (dailyChange === undefined || !info.row.original.instrument.last || isDataStale(lastUpdatedTimestamp))
             return (
               <Text inherit ta="right" fw="600" c="dimmed">
                 N/A
@@ -117,15 +119,16 @@ export function PositionsTable() {
             );
 
           const dailyReturnValue = quantity * dailyChange;
-          const dailyReturnPercentage = dailyChange / (info.row.original.instrument.last - dailyChange);
+          const dailyReturnPercentage = (dailyChange * 100) / (info.row.original.instrument.last - dailyChange);
+          const color = getColorByReturnPercentage(dailyReturnPercentage);
 
           return (
             <Stack gap={0}>
-              <Text inherit ta="right" fw="600" c={dailyReturnValue > 0 ? 'teal' : 'red'}>
+              <Text inherit ta="right" fw="600" c={color}>
                 {format.currency(dailyReturnValue, { currency: info.row.original.instrument.currency })}
               </Text>
-              <Text inherit ta="right" fz="11" c={dailyReturnPercentage > 0 ? 'teal' : 'red'}>
-                {format.toLocalePercentage(dailyReturnPercentage * 100)}
+              <Text inherit ta="right" fz="11" c={color}>
+                {format.toLocalePercentage(dailyReturnPercentage)}
               </Text>
             </Stack>
           );
@@ -142,7 +145,7 @@ export function PositionsTable() {
           const quantity = info.row.original.quantity;
           const price = info.row.original.instrument.last;
 
-          if (!price)
+          if (price === undefined)
             return (
               <Text inherit ta="right" fw="600" c="dimmed">
                 N/A
@@ -150,15 +153,18 @@ export function PositionsTable() {
             );
 
           const returnValue = quantity * (price - info.row.original.avgCost);
-          const returnPercentage = (price - info.row.original.avgCost) / info.row.original.avgCost;
+          const returnPercentage = ((price - info.row.original.avgCost) * 100) / info.row.original.avgCost;
+          const color = getColorByReturnPercentage(returnPercentage, {
+            lastUpdatedTimestamp: info.row.original.instrument.updatedAt
+          });
 
           return (
             <Stack gap={0}>
-              <Text inherit ta="right" fw="600" c={returnValue > 0 ? 'teal' : 'red'}>
+              <Text inherit ta="right" fw="600" c={color}>
                 {format.currency(returnValue, { currency: info.row.original.instrument.currency })}
               </Text>
-              <Text inherit ta="right" fz="11" c={returnPercentage > 0 ? 'teal' : 'red'}>
-                {format.toLocalePercentage(returnPercentage * 100)}
+              <Text inherit ta="right" fz="11" c={color}>
+                {format.toLocalePercentage(returnPercentage)}
               </Text>
             </Stack>
           );

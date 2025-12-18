@@ -42,3 +42,35 @@ export function determinateFn(value: any, returns: { naEq?: (value) => any; gt?:
 
   if (value < 0) return returns.lt?.(value);
 }
+
+interface GetColorByReturnPercentageOptionsType {
+  lastUpdatedTimestamp?: Date | string | undefined;
+}
+export function getColorByReturnPercentage(value: number, options: GetColorByReturnPercentageOptionsType = {}) {
+  const { lastUpdatedTimestamp } = options;
+
+  if (lastUpdatedTimestamp && isDataStale(lastUpdatedTimestamp)) {
+    return '#899499';
+  }
+
+  return selectBySign<string>(value, {
+    zero: '#7F8C8D',
+    positive: 'teal',
+    negative: 'red.6'
+  });
+}
+
+const DEFAULT_MAX_DATA_AGE_SECONDS = 15 * 60 * 60;
+export function isDataStale(lastUpdatedTimestamp: Date | string | undefined) {
+  const now = Date.now();
+
+  if (lastUpdatedTimestamp && new Date(lastUpdatedTimestamp).getTime() <= now) {
+    const dataAgeMs = now - new Date(lastUpdatedTimestamp).getTime();
+    const dataAgeSeconds = dataAgeMs / 1000;
+
+    if (dataAgeSeconds > DEFAULT_MAX_DATA_AGE_SECONDS) {
+      return true;
+    }
+  }
+  return false;
+}
