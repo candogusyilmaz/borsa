@@ -1,9 +1,464 @@
-:root[data-mantine-color-scheme="dark"] {
-  --mantine-color-text: #fefefe;
-  --mantine-color-dark-4: #303135ff;
-  --mantine-color-default-border: #2c2e33;
+html {
 }
 
-html {
-  scrollbar-gutter: stable;
+/* 1. ROOT VARIABLES - Listening to Mantine's attribute on HTML tag */
+:root[data-mantine-color-scheme="light"] {
+  --bg-gradient: radial-gradient(
+    ellipse at top left,
+    #eff6ff,
+    #f8fafc,
+    #f1f5f9
+  );
+  --sidebar-bg: rgba(255, 255, 255, 0.6);
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --card-bg: rgba(255, 255, 255, 0.7);
+  --border-color: #e2e8f0;
+  --card-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --table-row-hover: #f1f5f9;
+  --mantine-color-dimmed: var(--text-muted);
+}
+
+:root[data-mantine-color-scheme="dark"] {
+  --bg-gradient: radial-gradient(
+    ellipse at top left,
+    #0f172a,
+    #020617,
+    #000000
+  );
+  --sidebar-bg: rgba(0, 0, 0, 0.4);
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --card-bg: rgba(255, 255, 255, 0.05);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --card-shadow: none;
+  --table-row-hover: #1e293b;
+  --mantine-color-dimmed: var(--text-muted);
+}
+
+:root {
+  --accent-color: #6366f1;
+  --btn-primary: #4f46e5;
+  --btn-hover: #6366f1;
+  --btn-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+}
+
+/* 2. LAYOUT - Fixed Flex Direction */
+.layout-wrapper {
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg-gradient);
+  color: var(--text-main);
+  overflow: hidden;
+  height: 100vh;
+  height: 100dvh;
+  width: 100%;
+}
+
+/* 3. RESPONSIVE SIDEBAR */
+.sidebar {
+  /* Hide by default (Mobile) */
+  display: none;
+
+  flex-direction: column;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--border-color);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: width 0.3s ease;
+  white-space: nowrap;
+  z-index: 10;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+}
+.sidebar::-webkit-scrollbar {
+  display: none;
+}
+/* Show sidebar only on Large Screens (lg: 1024px) */
+@media (min-width: 1024px) {
+  .sidebar {
+    display: flex;
+    width: 18rem; /* Desktop width */
+  }
+}
+
+/* 4. MAIN CONTENT */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  width: 100%; /* Take full width when sidebar is hidden */
+}
+
+/* 5. COMPONENTS */
+.card {
+  background: var(--card-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--card-shadow);
+  transition: all 0.5s ease;
+}
+
+.button-primary {
+  background-color: var(--btn-primary);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  box-shadow: var(--btn-shadow);
+  transition: background-color 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.button-primary:hover {
+  background-color: var(--btn-hover);
+}
+
+/* 6. CUSTOM SCROLLBAR */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
+}
+
+/* Logo Container */
+.logo-container {
+  padding: 2rem; /* p-8 */
+  margin-bottom: 0.75rem; /* mb-4 */
+}
+
+.logo-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem; /* gap-3 */
+  cursor: pointer;
+  text-decoration: none; /* In case it's a link */
+}
+
+/* The Icon Box */
+.logo-icon-box {
+  width: 2.5rem; /* w-10 */
+  height: 2.5rem; /* h-10 */
+  background: linear-gradient(
+    to top right,
+    #4f46e5,
+    #a855f7
+  ); /* indigo-600 to purple-500 */
+  border-radius: 1rem; /* rounded-2xl */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  shadow-box: 0 10px 15px -3px rgba(0, 0, 0, 0.1); /* shadow-lg */
+  transition: transform 0.2s ease; /* transition-transform */
+}
+
+/* group-hover:scale-110 */
+.logo-group:hover .logo-icon-box {
+  transform: scale(1.1);
+}
+
+.logo-icon {
+  color: white;
+  width: 1.5rem; /* w-6 */
+  height: 1.5rem; /* h-6 */
+}
+
+/* The Text "VESTO" */
+.logo-text {
+  font-weight: 900; /* font-black */
+  font-size: 1.5rem; /* text-2xl */
+  letter-spacing: -0.05em; /* tracking-tighter */
+  display: block;
+}
+
+/* 1. NAVIGATION AREA */
+.sidebar-nav-container {
+  flex: 1;
+  padding-left: 1rem; /* px-4 */
+  padding-right: 1rem;
+  overflow-y: auto;
+}
+
+.nav-label {
+  padding: 0 1rem; /* px-4 */
+  margin-bottom: 0.5rem; /* mb-4 */
+  font-size: 10px;
+  font-weight: 900; /* font-black */
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  opacity: 0.3;
+  display: block; /* lg:block */
+}
+
+.nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem; /* space-y-1 */
+}
+
+/* 2. BOTTOM PRO CARD */
+.sidebar-footer {
+  padding: 1rem; /* p-4 */
+  margin-top: auto; /* mt-auto */
+}
+
+.pro-card {
+  background: var(--card-bg);
+  padding: 1.25rem; /* p-5 */
+  border-radius: 1.5rem; /* rounded-3xl */
+  border: 1px solid var(--border-color);
+  margin-bottom: 1.5rem; /* mb-6 */
+  position: relative;
+  overflow: hidden;
+  display: none; /* hidden on mobile */
+}
+
+@media (min-width: 1024px) {
+  .pro-card {
+    display: block; /* lg:block */
+  }
+}
+
+/* The Animated Background Circle */
+.pro-card-circle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 6rem; /* w-24 */
+  height: 6rem; /* h-24 */
+  background: rgba(99, 102, 241, 0.1); /* indigo-500/10 */
+  border-radius: 50%;
+  margin-right: -2rem; /* -mr-8 */
+  margin-top: -2rem; /* -mt-8 */
+  transition: transform 0.7s ease; /* transition-transform duration-700 */
+}
+
+.pro-card:hover .pro-card-circle {
+  transform: scale(1.5);
+}
+
+.pro-tag {
+  font-size: 12px; /* text-xs */
+  font-weight: 700; /* font-bold */
+  color: #818cf8; /* text-indigo-400 */
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pro-desc {
+  font-size: 11px;
+  margin-bottom: 1rem;
+  opacity: 0.6;
+  line-height: 1.625; /* leading-relaxed */
+  font-weight: 500;
+}
+
+/* The Upgrade Button */
+.btn-upgrade {
+  width: 100%;
+  padding: 0.625rem 0; /* py-2.5 */
+  font-size: 11px;
+  font-weight: 900;
+  background-color: #4f46e5;
+  color: white;
+  border-radius: 0.75rem; /* rounded-xl */
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.2);
+  transition: all 0.2s ease;
+}
+
+.btn-upgrade:hover {
+  background-color: #6366f1;
+}
+
+.btn-upgrade:active {
+  transform: scale(0.95);
+}
+
+.sidebar-link {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1rem; /* gap-4 */
+  padding: 0.875rem 1rem; /* py-3.5 px-4 */
+  border-radius: 1rem; /* rounded-2xl */
+  transition: all 0.3s ease;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  outline: none;
+  opacity: 0.5; /* default non-active state */
+}
+
+/* Hover State (Non-Active) */
+.sidebar-link:not(.is-active):hover {
+  background-color: rgba(255, 255, 255, 0.05); /* hover:bg-white/5 */
+  opacity: 1;
+}
+
+/* ACTIVE STATE */
+.sidebar-link.is-active {
+  opacity: 1;
+  background: linear-gradient(to right, rgba(79, 70, 229, 0.2), transparent);
+  color: #818cf8; /* text-indigo-400 */
+}
+
+/* Active Indicator Bar (The vertical line) */
+.active-indicator {
+  position: absolute;
+  left: 0;
+  width: 4px; /* w-1 */
+  height: 1.5rem; /* h-6 */
+  background-color: #6366f1; /* bg-indigo-500 */
+  border-radius: 9999px;
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+}
+
+/* THE ICON BOX */
+.link-icon-box {
+  padding: 0.375rem; /* p-1.5 */
+  border-radius: 0.75rem; /* rounded-xl */
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.05); /* bg-white/5 */
+}
+
+.sidebar-link.is-active .link-icon-box {
+  background-color: #4f46e5; /* bg-indigo-600 */
+  color: white;
+  box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3); /* shadow-indigo-600/30 */
+}
+
+.sidebar-link:hover:not(.is-active) .link-icon-box {
+  transform: scale(1.1);
+}
+
+/* THE LABEL */
+.link-label {
+  font-weight: 700;
+  font-size: 0.875rem; /* text-sm */
+  letter-spacing: 0.025em; /* tracking-wide */
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.sidebar-link.is-active .link-label {
+  transform: translateX(4px); /* translate-x-1 */
+}
+
+.sidebar-link:hover:not(.is-active) .link-label {
+  transform: translateX(2px); /* group-hover:translate-x-0.5 */
+}
+
+/* CHEVRON */
+.link-chevron {
+  margin-left: auto;
+  opacity: 0.4;
+  display: block;
+}
+
+.sidebar-link-wrapper {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  width: 100%;
+}
+
+/* Ensure our existing .sidebar-link button styles 
+   work as a div inside the Link anchor */
+.sidebar-link {
+  /* ... same styles as before ... */
+  border: none;
+  text-align: left;
+  background: transparent;
+}
+
+/* Generic Action Button (Base for Toggle & Logout) */
+.sidebar-action-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1rem; /* gap-4 */
+  padding: 0.875rem 1rem; /* py-3.5 px-4 */
+  border-radius: 1rem; /* rounded-2xl */
+  transition: all 0.3s ease;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+}
+
+.sidebar-action-btn:hover {
+  background-color: rgba(255, 255, 255, 0.05); /* hover:bg-white/5 */
+}
+
+.action-icon-box {
+  padding: 0.375rem; /* p-1.5 */
+  border-radius: 0.5rem; /* rounded-lg */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: colors 0.3s ease;
+}
+
+/* THEME TOGGLE SPECIFICS */
+/* Light Mode Colors for Toggle Icon */
+:root[data-mantine-color-scheme="light"] .theme-icon-box {
+  background-color: #e2e8f0; /* bg-slate-200 */
+  color: #475569; /* text-slate-600 */
+}
+
+/* Dark Mode Colors for Toggle Icon */
+:root[data-mantine-color-scheme="dark"] .theme-icon-box {
+  background-color: rgba(250, 204, 21, 0.1); /* bg-yellow-400/10 */
+  color: #facc15; /* text-yellow-400 */
+}
+
+/* LOGOUT BUTTON SPECIFICS */
+.logout-btn {
+  color: rgba(244, 63, 94, 0.7); /* text-rose-500/70 */
+}
+
+.logout-btn:hover {
+  background-color: rgba(244, 63, 94, 0.1); /* hover:bg-rose-500/10 */
+  color: #f43f5e; /* text-rose-500 */
+}
+
+/* Responsive Labels */
+.action-label {
+  font-weight: 700;
+  font-size: 0.875rem; /* text-sm */
+  display: block; /* lg:block */
+}
+
+.card {
+  background: var(--card-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--card-shadow);
+  border-radius: var(--mantine-radius-lg);
 }

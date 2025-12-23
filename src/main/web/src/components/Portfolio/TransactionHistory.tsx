@@ -48,7 +48,7 @@ export function TransactionHistory() {
     return (
       <Stack>
         <Text fw={700} size={rem(22)}>
-          Transaction History
+          Trade History
         </Text>
         <Card shadow="sm" radius="md" p="lg" withBorder>
           <LoadingView />
@@ -61,7 +61,7 @@ export function TransactionHistory() {
     return (
       <Stack>
         <Text fw={700} size={rem(22)}>
-          Transaction History
+          Trade History
         </Text>
         <Card shadow="sm" radius="md" p="lg" withBorder style={{ borderColor: 'var(--mantine-color-red-5)' }}>
           <ErrorView />
@@ -74,11 +74,11 @@ export function TransactionHistory() {
     return (
       <Stack>
         <Text fw={700} size={rem(22)}>
-          Transaction History
+          Trade History
         </Text>
         <Card shadow="sm" radius="md" withBorder>
           <Text c="dimmed" size="xs" fw={600} ta="center">
-            There are no transactions to list
+            There are no trades to list
           </Text>
         </Card>
       </Stack>
@@ -138,7 +138,7 @@ function Inner({ data }: { data: TradeHistory }) {
       <Group justify="space-between" align="center">
         <Group>
           <Text fw={700} size={rem(22)}>
-            Transaction History
+            Trade History
           </Text>
           {filteredTrades.length > 0 && (
             <Badge variant="light" color="blue.2" style={{ flex: 1, minWidth: 60 }}>

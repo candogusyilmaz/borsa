@@ -59,7 +59,7 @@ function ArchivePortfolioForm() {
   const isConfirmed = confirmText.trim().toUpperCase() === confirmationRequired;
 
   return (
-    <Stack>
+    <Stack p="xs">
       <Group>
         <ThemeIcon color="red">
           <IconArchive style={{ width: '70%', height: '70%' }} />

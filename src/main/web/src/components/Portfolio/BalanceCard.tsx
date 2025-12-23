@@ -41,7 +41,7 @@ export function BalanceCard() {
 
 function BalanceContainer({ children, ...props }: CardProps) {
   return (
-    <Card shadow="sm" p="lg" radius="md" withBorder {...props}>
+    <Card withBorder {...props}>
       {children}
     </Card>
   );
@@ -118,12 +118,9 @@ function Inner({ data }: { data: PortfolioInfo }) {
               transform: 'translate(-50%, -50%)',
               textAlign: 'center'
             }}
-            gap={8}>
+            gap={4}>
             {!activeSegment ? (
               <>
-                <Text c="gray.3" fz={rem(18)} fw={700}>
-                  Balance
-                </Text>
                 <Currency fz={rem(22)} fw={500}>
                   {data.totalValue}
                 </Currency>
@@ -169,7 +166,7 @@ function Inner({ data }: { data: PortfolioInfo }) {
                   </Group>
                 </Group>
               </Box>
-              {idx !== topStocks.length - 1 && <Divider color="gray" />}
+              {idx !== topStocks.length - 1 && <Divider />}
             </Stack>
           ))}
         </Stack>

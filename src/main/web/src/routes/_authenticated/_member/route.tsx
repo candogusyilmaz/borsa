@@ -1,23 +1,22 @@
-import { ActionIcon, AppShell, Button, Divider, Flex, Group, ScrollArea, Stack, Text, UnstyledButton } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
+import { ActionIcon, useMantineColorScheme } from '@mantine/core';
 import {
   IconArrowsLeftRight,
-  IconBriefcase,
-  IconCirclePlusFilled,
-  IconCircleXFilled,
+  IconChevronRight,
+  IconFolderOpen,
   IconHome,
-  IconLayoutSidebarLeftCollapse,
-  IconLayoutSidebarLeftExpand,
-  IconListDetails
+  IconListDetails,
+  IconLogout,
+  IconMoon,
+  IconPlus,
+  IconSun,
+  IconTrendingUp,
+  IconZoomPan
 } from '@tabler/icons-react';
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { createFileRoute, Link, linkOptions, Outlet, useParams } from '@tanstack/react-router';
+import { createFileRoute, Link, linkOptions, Outlet, useNavigate } from '@tanstack/react-router';
 import { queries } from '~/api';
 import type { BasicPortfolioView } from '~/api/queries/types';
-import { CreatePortfolioButton } from '~/components/Portfolio/CreatePortfolio';
-import { useTransactionModalStore } from '~/components/Transaction/TransactionModal';
-import { UserNavbar } from '~/components/UserAvatarMenu';
-import common from '~/styles/common.module.css';
+import { useAuthentication } from '~/lib/AuthenticationContext';
 
 export const Route = createFileRoute('/_authenticated/_member')({
   component: RouteComponent
@@ -50,7 +49,7 @@ const NAV_LINKS = [
 function createPortfolioLink(portfolio: BasicPortfolioView) {
   return {
     label: portfolio.name,
-    icon: <IconBriefcase size={20} />,
+    icon: <IconFolderOpen size={20} />,
     options: linkOptions({
       to: '/portfolios/$portfolioId',
       params: { portfolioId: portfolio.id }
@@ -59,166 +58,140 @@ function createPortfolioLink(portfolio: BasicPortfolioView) {
 }
 
 function RouteComponent() {
-  const { portfolioId } = useParams({ strict: false });
-
-  const [opened, { toggle }] = useDisclosure();
-  const [mobileCollapsed, { toggle: toggleMobile }] = useDisclosure(true);
-  const { open } = useTransactionModalStore();
+  const { colorScheme, setColorScheme } = useMantineColorScheme();
+  const navigate = useNavigate();
+  const { logout } = useAuthentication();
 
   const { data: portfolioLinks } = useSuspenseQuery({
     ...queries.portfolio.fetchPortfolios(),
     select: (data) => data.map((portfolio) => createPortfolioLink(portfolio))
   });
 
-  function closeSidebarOnMobileLinkClick() {
-    if (!mobileCollapsed) {
-      toggleMobile();
+  const toggleTheme = () => {
+    // Check if browser supports View Transitions
+    if (!document.startViewTransition) {
+      setColorScheme(colorScheme === 'dark' ? 'light' : 'dark');
+      return;
     }
-  }
 
+    // Animates the entire DOM change
+    document.startViewTransition(() => {
+      setColorScheme(colorScheme === 'dark' ? 'light' : 'dark');
+    });
+  };
   return (
-    <AppShell
-      header={{ height: 50 }}
-      navbar={{
-        width: 280,
-        breakpoint: 'sm',
-        collapsed: { mobile: mobileCollapsed, desktop: opened }
-      }}
-      layout="alt">
-      <AppShell.Header>
-        <Flex align="center" h="100%" justify="space-between" px="md">
-          <Group>
-            <ActionIcon
-              variant="subtle"
-              color="gray.6"
-              onClick={toggle}
-              visibleFrom="sm"
-              style={{
-                height: '26px',
-                width: '26px'
-              }}>
-              {opened ? (
-                <IconLayoutSidebarLeftExpand style={{ width: '80%' }} />
-              ) : (
-                <IconLayoutSidebarLeftCollapse style={{ width: '80%' }} />
-              )}
-            </ActionIcon>
-            <ActionIcon
-              style={{
-                height: '26px',
-                width: '26px'
-              }}
-              variant="transparent"
-              color="gray.6"
-              onClick={toggleMobile}
-              hiddenFrom="sm">
-              <IconLayoutSidebarLeftExpand style={{ width: '80%' }} />
-            </ActionIcon>
-          </Group>
-        </Flex>
-      </AppShell.Header>
-      <AppShell.Navbar bg="dark.8">
-        <AppShell.Section>
-          <Group h={60} align="center" mx="md" pt="sm" pb={3}>
-            <UnstyledButton h="95%">
-              <Group h="100%">
-                <img
-                  src="/assets/logo.png"
-                  alt="Canverse"
-                  style={{
-                    maxWidth: '100%',
-                    maxHeight: '100%',
-                    objectFit: 'contain'
-                  }}
-                />
-                <Text size="xl" fw={500} lts={1.7}>
-                  CANVERSE
-                </Text>
-              </Group>
-            </UnstyledButton>
-            <ActionIcon
-              hiddenFrom="sm"
-              style={{
-                height: '26px',
-                width: '26px'
-              }}
-              variant="transparent"
-              color="gray.6"
-              onClick={toggleMobile}
-              ml="auto"
-              pb={3}>
-              <IconLayoutSidebarLeftCollapse style={{ width: '80%' }} />
-            </ActionIcon>
-          </Group>
-        </AppShell.Section>
-
-        <AppShell.Section grow component={ScrollArea}>
-          <Stack gap={8} p={0} mx="sm" mt="lg">
-            <Text c="dimmed" fw={600} fz={12}>
-              Quick Actions
-            </Text>
-            <Button
-              justify={'left'}
-              leftSection={<IconCirclePlusFilled size={18} color="var(--mantine-color-teal-5)" />}
-              onClick={() => open('Buy')}
-              className={common.quickActionLink}
-              disabled={!portfolioId}>
-              Buy Stock
-            </Button>
-            <Button
-              justify={'left'}
-              className={common.quickActionLink}
-              leftSection={<IconCircleXFilled size={18} color="var(--mantine-color-red-5)" />}
-              onClick={() => open('Sell')}
-              disabled={!portfolioId}>
-              Sell Stock
-            </Button>
-          </Stack>
-          <Stack gap={4} p={0} mx="sm" mt="lg">
-            <Text c="dimmed" fw={600} fz={12}>
+    <div className="layout-wrapper">
+      <aside className="sidebar">
+        <div className="logo-container">
+          <div className="logo-group">
+            <div className="logo-icon-box">
+              <IconTrendingUp className="logo-icon" />
+            </div>
+            <span className="logo-text">CANVERSE</span>
+          </div>
+        </div>
+        <div className="sidebar-nav-container custom-scrollbar no-scrollbar">
+          <div className="nav-section">
+            <p className="nav-label" style={{ marginTop: 0 }}>
               Menu
-            </Text>
-            {NAV_LINKS.map((s) => {
-              return (
-                <Link key={s.options.to} {...s.options} className={common.navLink} onClick={closeSidebarOnMobileLinkClick}>
-                  <Group gap="xs" align="center">
-                    {s.icon}
-                    {s.label}
-                  </Group>
-                </Link>
-              );
-            })}
-          </Stack>
-          <Divider my="sm" mx="xs" />
-          <Stack gap={4} p={0} mx="sm" mt="lg">
-            <Text c="dimmed" fw={600} fz={12}>
-              Portfolios
-            </Text>
-            <CreatePortfolioButton />
-            {portfolioLinks.map((s) => {
-              return (
-                <Link
-                  key={s.options.to + s.options.params.portfolioId}
-                  {...s.options}
-                  className={common.navLinkPortfolio}
-                  onClick={closeSidebarOnMobileLinkClick}>
-                  <Group gap="xs" align="center">
-                    {s.icon}
-                    {s.label}
-                  </Group>
-                </Link>
-              );
-            })}
-          </Stack>
-        </AppShell.Section>
+            </p>
+            <nav className="nav-list">
+              {NAV_LINKS.map((link) => (
+                <SidebarLink key={link.options.to} label={link.label} icon={link.icon} options={link.options} onClick={() => {}} />
+              ))}
+            </nav>
+          </div>
+          <div className="nav-section" style={{ marginTop: '0.5rem' }}>
+            <div
+              style={{
+                padding: '0 1rem',
+                marginBottom: '0.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}>
+              <p className="nav-label" style={{ padding: 0, margin: 0 }}>
+                Portfolios
+              </p>
+              <ActionIcon variant="subtle" size="xs" color="var(--text-muted)" style={{ borderRadius: '6px' }}>
+                <IconPlus />
+              </ActionIcon>
+            </div>
+            <nav className="nav-list">
+              {portfolioLinks.map((link) => (
+                <SidebarLink key={link.options.to} label={link.label} icon={link.icon} options={link.options} onClick={() => {}} />
+              ))}
+            </nav>
+          </div>
+        </div>
+        <div className="sidebar-footer">
+          <div className="pro-card">
+            <div className="pro-card-circle" />
+            <p className="pro-tag">
+              <IconZoomPan size={14} fill="currentColor" /> AI VERSION
+            </p>
+            <p className="pro-desc">Get real-time AI insights.</p>
+            <button type="button" className="btn-upgrade">
+              UPGRADE
+            </button>
+          </div>
+          <button type="button" onClick={toggleTheme} className="sidebar-action-btn">
+            <div className="action-icon-box theme-icon-box">{colorScheme === 'light' ? <IconSun size={18} /> : <IconMoon size={18} />}</div>
+            <span className="action-label">{colorScheme === 'light' ? 'Dark UI' : 'Light UI'}</span>
+          </button>
 
-        <AppShell.Section px="xs" py="sm">
-          <UserNavbar />
-        </AppShell.Section>
-      </AppShell.Navbar>
-      <AppShell.Main>
+          {/* Sign Out */}
+          <button
+            type="button"
+            className="sidebar-action-btn logout-btn"
+            onClick={() => {
+              logout();
+              navigate({ to: '/login' });
+            }}>
+            <div className="action-icon-box">
+              <IconLogout size={18} />
+            </div>
+            <span className="action-label">Sign Out</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Container */}
+      <main className="main-content custom-scrollbar">
         <Outlet />
-      </AppShell.Main>
-    </AppShell>
+      </main>
+
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(100, 100, 100, 0.2); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(100, 100, 100, 0.4); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
+    </div>
   );
 }
+
+const SidebarLink = ({ icon, label, options, onClick }) => {
+  return (
+    <Link
+      {...options}
+      onClick={onClick}
+      // This is the TanStack way to apply classes based on active state
+      className="sidebar-link-wrapper">
+      {({ isActive }) => (
+        <div className={`sidebar-link ${isActive ? 'is-active' : ''}`}>
+          {/* Active indicator bar */}
+          {isActive && <div className="active-indicator" />}
+
+          <div className="link-icon-box">{icon}</div>
+
+          <span className="link-label">{label}</span>
+
+          {isActive && <IconChevronRight size={14} className="link-chevron" />}
+        </div>
+      )}
+    </Link>
+  );
+};

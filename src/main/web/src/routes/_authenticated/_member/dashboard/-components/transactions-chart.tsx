@@ -50,7 +50,7 @@ export function TransactionsChart({ currencyCode, dashboardId }: { currencyCode:
           <Group gap={6} align="center">
             <IconChartBarPopular />
             <Text fw={600} fz={24} c="gray.3">
-              Transactions
+              Trades
             </Text>
           </Group>
           <Text fw={500} c="dimmed" fz="xs">
@@ -67,7 +67,7 @@ export function TransactionsChart({ currencyCode, dashboardId }: { currencyCode:
               <Group gap={8} align="center">
                 <ColorSwatch color="#6c7a88" size={14} radius="xs" />
                 <Text size="sm" fw={600} lh={1}>
-                  {chartData.length}
+                  {transactions?.filter((t) => t.type === 'SELL').length ?? 0}
                 </Text>
               </Group>
               <Text size="xs" c={'dimmed'} lh={1}>
@@ -113,13 +113,14 @@ export function TransactionsChart({ currencyCode, dashboardId }: { currencyCode:
             h={350}
             data={chartData}
             dataKey="date"
+            withYAxis={false}
             withDots={false}
             connectNulls={true}
             valueFormatter={(v) => format.toCurrency(v, true, currencyCode)}
             maxBarWidth={15}
             series={[
               { name: 'sell', color: 'rgba(0, 123, 255, 0.6)', label: 'Profit', type: 'bar' },
-              { name: 'cumulative', color: '#FFD700', label: 'Cumulative', type: 'line' }
+              { name: 'cumulative', color: '#6366f1', label: 'Cumulative', type: 'area' }
             ]}
             tooltipAnimationDuration={200}
             yAxisProps={{ tickFormatter: (v: number) => format.toCurrency(v, true, currencyCode, currencyCode, 0, 0) }}
@@ -127,6 +128,7 @@ export function TransactionsChart({ currencyCode, dashboardId }: { currencyCode:
               tickFormatter: (d) => dayjs(d).format('MMM D'),
               minTickGap: 100
             }}
+            strokeWidth={3}
           />
         </>
       )}
@@ -143,15 +145,15 @@ function EmptyState() {
         </ThemeIcon>
 
         <Text fw={700} fz="lg" mt="md">
-          No SELL transactions yet
+          No SELL trades yet
         </Text>
         <Text c="dimmed" size="sm" ta="center" maw={420}>
-          Once you record or import SELL transactions, this chart will visualize your realized profit over time.
+          Once you record or import SELL trades, this chart will visualize your realized profit over time.
         </Text>
 
         <Group gap="sm" mt="md">
           <Button leftSection={<IconPencilCode size={16} />} onClick={() => {}}>
-            Record transaction
+            Record trade
           </Button>
           <Button leftSection={<IconWorld size={16} />} variant="subtle" onClick={() => {}}>
             Import CSV
