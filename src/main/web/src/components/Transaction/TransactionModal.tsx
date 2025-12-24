@@ -30,11 +30,7 @@ export const useTransactionModalStore = create<TransactionModalState>((set) => (
 }));
 
 export function TransactionModal() {
-  const { opened, type, stockId, close, update } = useTransactionModalStore();
-
-  const _handleTypeChange = (value: string) => {
-    update({ type: value as TransactionType, stockId: undefined });
-  };
+  const { opened, type, stockId, close } = useTransactionModalStore();
 
   return (
     <Modal
