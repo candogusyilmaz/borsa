@@ -112,9 +112,9 @@ export function SellTransactionForm({ stockId, close }: SellTransactionFormProps
     <form onSubmit={handleFormSubmit}>
       <Stack>
         <Select
-          label="Stock"
+          label="ASSET NAME"
           checkIconPosition="right"
-          placeholder="Select a stock"
+          placeholder="Select an asset"
           searchable
           clearable
           limit={5}
