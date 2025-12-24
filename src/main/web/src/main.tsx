@@ -72,6 +72,11 @@ createRoot(document.getElementById('root')!).render(
                 dark: ['#c1cbd5', '#96a3af', '#6c7a88', '#49525b', '#262a2e', '#262a2e', '#202325', '#1a1b1d', '#131415', '#0d0d0d']
               },
               components: {
+                Input: {
+                  classNames: {
+                    input: 'input-base'
+                  }
+                },
                 Card: {
                   classNames: { root: 'card' }
                 },

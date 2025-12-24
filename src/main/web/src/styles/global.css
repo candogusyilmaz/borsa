@@ -463,3 +463,27 @@ html {
   box-shadow: var(--card-shadow);
   border-radius: var(--mantine-radius-lg);
 }
+
+.input-base {
+  transition: all 0.2s ease;
+  font-weight: 500;
+  border-radius: 0.75rem;
+}
+
+:root[data-mantine-color-scheme="light"] .input-base {
+  background-color: #ffffff;
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+}
+
+:root[data-mantine-color-scheme="dark"] .input-base {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+}
+
+.input-base:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+}
