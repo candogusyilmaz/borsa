@@ -464,6 +464,17 @@ html {
   border-radius: var(--mantine-radius-lg);
 }
 
+.modal-content {
+  background: var(--card-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-color);
+}
+
+:root[data-mantine-color-scheme="light"] .modal-content {
+  background-color: var(--mantine-color-gray-0);
+}
+
 .input-base {
   transition: all 0.2s ease;
   font-weight: 500;

@@ -1,4 +1,4 @@
-import { Button, type ButtonProps, NumberInput, Select, SimpleGrid, Stack, TagsInput, Text, Textarea } from '@mantine/core';
+import { Button, type ButtonProps, Group, NumberInput, Select, SimpleGrid, Stack, Text } from '@mantine/core';
 import { DateTimePicker } from '@mantine/dates';
 import { useForm } from '@mantine/form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -112,8 +112,8 @@ export function BuyTransactionForm({ stockId, close }: BuyTransactionFormProps) 
     <form onSubmit={handleFormSubmit}>
       <Stack>
         <Select
-          label="Stock"
-          placeholder="Select a stock"
+          label="ASSET NAME"
+          placeholder="Select an asset"
           checkIconPosition="right"
           searchable
           clearable
@@ -121,24 +121,52 @@ export function BuyTransactionForm({ stockId, close }: BuyTransactionFormProps) 
           data={selectOptions}
           {...form.getInputProps('stockId')}
           onChange={onStockChange}
+          styles={{
+            label: {
+              fontSize: 12,
+              fontWeight: 600,
+              color: 'var(--text-muted)',
+              marginBottom: 4,
+              marginLeft: 2
+            },
+            input: {
+              height: 50,
+              fontSize: 16,
+              fontWeight: 300
+            }
+          }}
         />
         <SimpleGrid cols={{ xs: 1, sm: 2 }}>
           <NumberInput
             disabled={!form.values.stockId}
             inputWrapperOrder={['label', 'error', 'input', 'description']}
-            label="Quantity"
             min={1}
+            label="QUANTITY"
             hideControls
             allowDecimal={false}
             rightSectionWidth="auto"
             rightSectionProps={{ style: { paddingRight: 10 } }}
             rightSection={quantityRightSection}
+            styles={{
+              label: {
+                fontSize: 12,
+                fontWeight: 600,
+                color: 'var(--text-muted)',
+                marginBottom: 4,
+                marginLeft: 2
+              },
+              input: {
+                height: 50,
+                fontSize: 16,
+                fontWeight: 300
+              }
+            }}
             {...form.getInputProps('quantity')}
           />
           <NumberInput
+            label="PRICE"
             disabled={!form.values.stockId}
             prefix={getCurrencySymbol('TRY')}
-            label="Price"
             hideControls
             thousandSeparator="."
             fixedDecimalScale
@@ -148,16 +176,58 @@ export function BuyTransactionForm({ stockId, close }: BuyTransactionFormProps) 
             rightSectionWidth="auto"
             rightSectionProps={{ style: { paddingRight: 10 } }}
             rightSection={priceRightSection}
+            styles={{
+              label: {
+                fontSize: 12,
+                fontWeight: 600,
+                color: 'var(--text-muted)',
+                marginBottom: 4,
+                marginLeft: 2
+              },
+              input: {
+                height: 50,
+                fontSize: 16,
+                fontWeight: 300
+              }
+            }}
             {...form.getInputProps('price')}
           />
         </SimpleGrid>
-        <DateTimePicker label="Date" {...form.getInputProps('actionDate')} />
+        <DateTimePicker
+          label="DATE"
+          styles={{
+            label: {
+              fontSize: 12,
+              fontWeight: 600,
+              color: 'var(--text-muted)',
+              marginBottom: 4,
+              marginLeft: 2
+            },
+            input: {
+              height: 50,
+              fontSize: 16,
+              fontWeight: 300
+            }
+          }}
+          {...form.getInputProps('actionDate')}
+        />
+        {/* 
         <Textarea label="Notes" placeholder="Add any notes here..." minRows={2} maxRows={3} autosize {...form.getInputProps('notes')} />
-        <TagsInput label="Tags" placeholder="Add tags here..." {...form.getInputProps('tags')} />
-        <Button type="submit" color="blue" loading={mutation.isPending} disabled={!form.isValid() || mutation.isSuccess}>
-          Buy
-          {form.values.quantity && form.values.stockId && ` ${form.values.quantity} share(s) of ${selectedStock?.symbol}`}
-        </Button>
+        <TagsInput label="Tags" placeholder="Add tags here..." {...form.getInputProps('tags')} /> 
+        */}
+        <Group grow mt="lg">
+          <Button h={50} variant="default" onClick={close}>
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            loading={mutation.isPending}
+            disabled={!form.isValid() || mutation.isSuccess}
+            h={50}
+            color="var(--accent-color)">
+            BUY {selectedStock?.symbol}
+          </Button>
+        </Group>
       </Stack>
     </form>
   );

@@ -1,4 +1,5 @@
-import { Modal, ScrollArea, SegmentedControl } from '@mantine/core';
+import { ActionIcon, Group, Modal, Stack, Text, ThemeIcon, Title } from '@mantine/core';
+import { IconPlus, IconRowRemove, IconX } from '@tabler/icons-react';
 import { create } from 'zustand';
 import { BuyTransactionForm } from './BuyTransactionForm';
 import { SellTransactionForm } from './SellTransactionForm';
@@ -31,7 +32,7 @@ export const useTransactionModalStore = create<TransactionModalState>((set) => (
 export function TransactionModal() {
   const { opened, type, stockId, close, update } = useTransactionModalStore();
 
-  const handleTypeChange = (value: string) => {
+  const _handleTypeChange = (value: string) => {
     update({ type: value as TransactionType, stockId: undefined });
   };
 
@@ -40,18 +41,33 @@ export function TransactionModal() {
       centered
       opened={opened}
       onClose={close}
-      title="New Trade"
+      withCloseButton={false}
       transitionProps={{ transition: 'fade' }}
-      scrollAreaComponent={ScrollArea.Autosize}>
-      <SegmentedControl
-        value={type}
-        onChange={handleTypeChange}
-        color={type === 'Buy' ? 'teal' : 'red'}
-        fullWidth
-        size="sm"
-        data={['Buy', 'Sell']}
-        mb="md"
-      />
+      size="500"
+      classNames={{
+        content: 'no-scrollbar'
+      }}
+      styles={{
+        content: {
+          padding: '1.5rem'
+        }
+      }}>
+      <Group mb="xl">
+        <ThemeIcon radius="lg" variant="light" size="xl" color="var(--accent-color)">
+          {type === 'Buy' ? <IconPlus /> : <IconRowRemove />}
+        </ThemeIcon>
+        <Stack gap={0}>
+          <Title order={3} size="md" c="var(--text-main)">
+            {type.toUpperCase()} ASSET
+          </Title>
+          <Text size="sm" c="dimmed">
+            Enter details to {type.toLowerCase()} an asset
+          </Text>
+        </Stack>
+        <ActionIcon onClick={close} variant="subtle" ml="auto" color="gray">
+          <IconX size={18} />
+        </ActionIcon>
+      </Group>
       {type === 'Buy' && <BuyTransactionForm stockId={stockId} close={close} />}
       {type === 'Sell' && <SellTransactionForm stockId={stockId} close={close} />}
     </Modal>

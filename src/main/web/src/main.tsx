@@ -86,15 +86,17 @@ createRoot(document.getElementById('root')!).render(
                   }
                 },
                 Modal: {
-                  styles: (theme) => ({
+                  defaultProps: {
+                    radius: 'xl'
+                  },
+                  classNames: {
+                    content: 'modal-content'
+                  },
+                  styles: {
                     header: {
-                      borderBottom: `1px solid ${theme.colors.dark[5]}`
-                    },
-                    body: {
-                      paddingTop: theme.spacing.md,
-                      paddingBottom: theme.spacing.md
+                      background: 'transparent'
                     }
-                  })
+                  }
                 }
               }
             }}>
