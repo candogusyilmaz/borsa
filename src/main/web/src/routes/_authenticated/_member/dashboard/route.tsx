@@ -40,7 +40,7 @@ function RouteComponent() {
           <Menu width={250} position="bottom-start" shadow="xl">
             <Menu.Target>
               <Button size="compact-xl" variant="subtle" px={5} ml={-5} color="gray" rightSection={<IconChevronDown size={20} />}>
-                <Title component="span" c="white">
+                <Title component="span" c={'var(--text-main)'}>
                   {dashboards.find((d) => d.id === selectedDashboard)?.name}
                 </Title>
               </Button>

@@ -156,8 +156,7 @@ function MonthlyRevenueHeatmap({ data }: ChartProps) {
                   justifyContent: 'center',
                   height: 35,
                   padding: '4px',
-                  backgroundColor:
-                    m.profit === 0 ? 'var(--card-bg)' : m.profit > 0 ? 'teal' : 'red',
+                  backgroundColor: m.profit === 0 ? 'var(--card-bg)' : m.profit > 0 ? 'teal' : 'red',
                   borderRadius: 'var(--mantine-radius-sm)',
                   cursor: 'pointer',
                   minWidth: 50,

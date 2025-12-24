@@ -11,7 +11,7 @@ export function DailyChangeCard({ data }: { data: DailyChange }) {
         <ThemeIcon variant="transparent" c={determinate(data.percentageChange, { naEq: 'dimmed', gt: 'teal', lt: 'red' })}>
           {determinate(data.percentageChange, { naEq: <IconTrendingUp />, gt: <IconTrendingUp />, lt: <IconTrendingDown /> })}
         </ThemeIcon>
-        <Text fw={500} size="md" c="gray.3">
+        <Text fw={500} size="md">
           Daily Change
         </Text>
         <Badge

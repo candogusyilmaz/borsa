@@ -66,10 +66,8 @@ export function PositionsTable() {
         id: 'portfolioName',
         header: 'Portfolio',
         cell: (info) => (
-          <Badge tt="revert" fw={500} py="xs" px="sm" variant="default" radius="sm" bg="rgba(37, 41, 53, 0.3)" bd="1px solid #3c3c3dff">
-            <Text inherit c="gray.4">
-              {info.getValue<string>()}
-            </Text>
+          <Badge tt="revert" fw={500} py="xs" px="sm" variant="outline" radius="sm" color="violet">
+            <Text inherit>{info.getValue<string>()}</Text>
           </Badge>
         )
       },

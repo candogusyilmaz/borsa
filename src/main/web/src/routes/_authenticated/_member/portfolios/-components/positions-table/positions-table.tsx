@@ -58,7 +58,7 @@ export function PositionsTable() {
       {
         accessorKey: 'quantity',
         header: () => (
-          <Text inherit ta="right">
+          <Text inherit ta="right" c="dimmed">
             Quantity
           </Text>
         )
@@ -66,7 +66,7 @@ export function PositionsTable() {
       {
         accessorKey: 'avgCost',
         header: () => (
-          <Text inherit ta="right">
+          <Text inherit ta="right" c="dimmed">
             Avg Cost
           </Text>
         ),
@@ -76,7 +76,7 @@ export function PositionsTable() {
         id: 'currentPrice',
         accessorFn: (row) => row.instrument.last,
         header: () => (
-          <Text inherit ta="right">
+          <Text inherit ta="right" c="dimmed">
             Price
           </Text>
         ),
@@ -85,7 +85,7 @@ export function PositionsTable() {
       {
         id: 'totalValue',
         header: () => (
-          <Text inherit ta="right">
+          <Text inherit ta="right" c="dimmed">
             Total Value
           </Text>
         ),
@@ -102,7 +102,7 @@ export function PositionsTable() {
       {
         id: 'dailyProfitLoss',
         header: () => (
-          <Text inherit ta="right">
+          <Text inherit ta="right" c="dimmed">
             Daily P/L
           </Text>
         ),
@@ -137,7 +137,7 @@ export function PositionsTable() {
       {
         id: 'profitLoss',
         header: () => (
-          <Text inherit ta="right">
+          <Text inherit ta="right" c="dimmed">
             P/L
           </Text>
         ),

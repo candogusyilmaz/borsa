@@ -8,10 +8,13 @@
 }
 
 .tableWrapper {
-  background: var(--mantine-color-dark-6);
-  border: 1px solid var(--mantine-color-gray-8);
-  border-radius: var(--mantine-radius-sm);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  background: var(--card-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--card-shadow);
+  border-radius: var(--mantine-radius-lg);
 }
 
 .tableHeader {
@@ -21,21 +24,20 @@
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: rgba(255, 255, 255, 0.9);
-  background: var(--mantine-color-dark-7);
-  border-bottom: 1px solid var(--mantine-color-gray-8);
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-color);
+  border-top: 1px solid var(--border-color);
 }
 
 .tableRow {
   transition:
     all 0.3s ease,
     border 0s;
-  background: var(--mantine-color-dark-6);
-  border-bottom: 1px solid var(--mantine-color-dark-5);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .tableRow:hover {
-  background: var(--mantine-color-dark-4);
+  background: var(--table-row-hover);
 }
 
 .tableHeader:first-child,
@@ -49,12 +51,12 @@
 
 .tableRow > td {
   padding: 0.675rem 1rem;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--text-muted);
   font-size: 13px;
   vertical-align: middle;
   overflow: hidden;
   text-overflow: ellipsis;
-  border-bottom: 1px solid var(--mantine-color-dark-4);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .tableRow > td:nth-child(n + 4):not(:last-child) {
@@ -68,8 +70,8 @@
 
 .tableRow:hover .tickerIcon,
 .tableRow:hover .tickerSymbol {
-  border-color: var(--mantine-color-blue-7);
-  color: var(--mantine-color-blue-4);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
 }
 
 .tickerIcon {
@@ -81,8 +83,10 @@
   margin-right: 8px;
   border-radius: 8px;
   font-weight: 700;
-  background-color: var(--mantine-color-dark-6);
-  border: 1px solid var(--mantine-color-dark-3);
+  color: var(--text-main);
+  background-color: var(--bg-gradient);
+  border: 1px solid
+    light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-6));
   transition:
     border-color 0.3s ease,
     color 0.3s ease;

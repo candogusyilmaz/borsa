@@ -12,11 +12,16 @@ html {
   --sidebar-bg: rgba(255, 255, 255, 0.6);
   --text-main: #0f172a;
   --text-muted: #64748b;
-  --card-bg: rgba(255, 255, 255, 0.7);
+  --card-bg: rgba(255, 255, 255, 0.4);
   --border-color: #e2e8f0;
   --card-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --table-row-hover: #f1f5f9;
   --mantine-color-dimmed: var(--text-muted);
+  --text-color: var(--text-main);
+
+  --modal-border: rgba(255, 255, 255, 0.7);
+  --modal-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
 }
 
 :root[data-mantine-color-scheme="dark"] {
@@ -32,8 +37,12 @@ html {
   --card-bg: rgba(255, 255, 255, 0.05);
   --border-color: rgba(255, 255, 255, 0.1);
   --card-shadow: none;
-  --table-row-hover: #1e293b;
+  --table-row-hover: rgba(255, 255, 255, 0.02);
   --mantine-color-dimmed: var(--text-muted);
+  --text-color: var(--text-main);
+
+  --modal-border: rgba(255, 255, 255, 0.1);
+  --modal-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
 :root {
@@ -59,9 +68,8 @@ html {
 
 /* 3. RESPONSIVE SIDEBAR */
 .sidebar {
-  /* Hide by default (Mobile) */
-  display: none;
-
+  display: flex;
+  width: 18rem; /* Desktop width */
   flex-direction: column;
   background: var(--sidebar-bg);
   border-right: 1px solid var(--border-color);
@@ -77,13 +85,6 @@ html {
 }
 .sidebar::-webkit-scrollbar {
   display: none;
-}
-/* Show sidebar only on Large Screens (lg: 1024px) */
-@media (min-width: 1024px) {
-  .sidebar {
-    display: flex;
-    width: 18rem; /* Desktop width */
-  }
 }
 
 /* 4. MAIN CONTENT */

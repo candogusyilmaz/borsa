@@ -49,7 +49,7 @@ export function TransactionsChart({ currencyCode, dashboardId }: { currencyCode:
         <Stack gap={4}>
           <Group gap={6} align="center">
             <IconChartBarPopular />
-            <Text fw={600} fz={24} c="gray.3">
+            <Text fw={600} fz={24}>
               Trades
             </Text>
           </Group>

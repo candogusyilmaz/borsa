@@ -42,7 +42,7 @@
 }
 
 .tableRow[data-expanded="true"] {
-  background: var(--mantine-color-dark-5);
+  background: var(--table-row-hover);
   border-bottom: none;
 }
 
@@ -81,11 +81,8 @@
 
 .tableRow:hover .tickerIcon,
 .tableRow:hover .tickerSymbol {
-  border-color: light-dark(
-    var(--mantine-color-blue-4),
-    var(--mantine-color-blue-7)
-  );
-  color: var(--mantine-color-blue-4);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
 }
 
 .expander {
@@ -106,10 +103,8 @@
   margin-right: 8px;
   border-radius: 8px;
   font-weight: 700;
-  background-color: light-dark(
-    var(--mantine-color-gray-1),
-    var(--mantine-color-dark-5)
-  );
+  color: var(--text-main);
+  background-color: var(--bg-gradient);
   border: 1px solid
     light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-6));
   transition:

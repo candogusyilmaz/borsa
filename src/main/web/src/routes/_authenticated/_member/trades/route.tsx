@@ -11,7 +11,7 @@ function RouteComponent() {
   return (
     <Container strategy="grid" size="lg" p="lg">
       <Stack>
-        <Title c="white">Trades</Title>
+        <Title>Trades</Title>
         <TradesTable />
       </Stack>
     </Container>

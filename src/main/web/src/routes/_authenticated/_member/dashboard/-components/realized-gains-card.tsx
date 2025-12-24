@@ -11,7 +11,7 @@ export function RealizedGainsCard({ rgd }: { rgd: RealizedGains }) {
         <ThemeIcon variant="transparent" c={determinate(rgd.currentPeriod, { naEq: 'dimmed', gt: 'teal', lt: 'red' })}>
           <IconCashBanknote />
         </ThemeIcon>
-        <Text fw={500} size="md" c="gray.3">
+        <Text fw={500} size="md">
           Realized P&L
         </Text>
         <Badge

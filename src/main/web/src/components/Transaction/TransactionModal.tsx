@@ -40,7 +40,7 @@ export function TransactionModal() {
       centered
       opened={opened}
       onClose={close}
-      title="New Transaction"
+      title="New Trade"
       transitionProps={{ transition: 'fade' }}
       scrollAreaComponent={ScrollArea.Autosize}>
       <SegmentedControl

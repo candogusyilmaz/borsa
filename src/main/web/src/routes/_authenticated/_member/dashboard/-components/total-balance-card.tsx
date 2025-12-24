@@ -11,7 +11,7 @@ export function TotalBalanceCard({ data }: { data: TotalBalance }) {
         <ThemeIcon variant="transparent" c={determinate(data.percentageChange, { naEq: 'dimmed', gt: 'teal', lt: 'red' })}>
           <IconChartLine />
         </ThemeIcon>
-        <Text fw={500} size="md" c="gray.3">
+        <Text fw={500} size="md">
           Total Balance
         </Text>
         <Badge
