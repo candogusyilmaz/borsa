@@ -49,7 +49,7 @@ export function TransactionModal() {
         }
       }}>
       <Group mb="xl">
-        <ThemeIcon radius="lg" variant="light" size="xl" color="var(--accent-color)">
+        <ThemeIcon radius="lg" variant="light" size="xl" color={type === 'Buy' ? 'teal' : 'red'}>
           {type === 'Buy' ? <IconPlus /> : <IconRowRemove />}
         </ThemeIcon>
         <Stack gap={0}>

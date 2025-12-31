@@ -1,13 +1,12 @@
-import { Button, type ButtonProps, Group, NumberInput, Select, SimpleGrid, Stack, Text } from '@mantine/core';
+import { Button, type ButtonProps, Group, NativeSelect, NumberInput, Select, SimpleGrid, Stack } from '@mantine/core';
 import { DateTimePicker } from '@mantine/dates';
 import { useForm } from '@mantine/form';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useParams } from '@tanstack/react-router';
-import { mutations, queries } from '~/api';
+import { $api } from '~/api/openapi';
 import { alerts } from '~/lib/alert';
 
 import { getCurrencySymbol } from '~/lib/currency';
-import { format } from '~/lib/format';
 
 type BuyTransactionFormProps = {
   stockId?: string;
@@ -19,12 +18,13 @@ export function BuyTransactionForm({ stockId, close }: BuyTransactionFormProps) 
   const { portfolioId } = useParams({ strict: false });
 
   const client = useQueryClient();
-  const { data } = useQuery(queries.stocks.fetchAll('BIST'));
-  const { data: balance } = useQuery(queries.portfolio.fetchPortfolio({ portfolioId: Number(portfolioId) }));
+  const { data } = $api.useQuery('get', '/api/instruments');
+
   const form = useForm({
     mode: 'controlled',
     initialValues: {
       stockId,
+      currencyCode: null,
       price: 0,
       quantity: 1,
       commission: 0,
@@ -33,6 +33,7 @@ export function BuyTransactionForm({ stockId, close }: BuyTransactionFormProps) 
       tags: [] as string[]
     },
     validate: {
+      currencyCode: (c) => (selectedStock && selectedStock.supportedCurrencies.length > 1 ? (c ? null : true) : null),
       stockId: (s) => (s ? null : true),
       price: (p) => (p ? null : true),
       quantity: (q) => (q ? null : true),
@@ -40,11 +41,10 @@ export function BuyTransactionForm({ stockId, close }: BuyTransactionFormProps) 
     }
   });
 
-  const mutation = useMutation({
-    ...mutations.trades.buy,
-    onSuccess: (_, variables) => {
+  const mutation = $api.useMutation('post', '/api/portfolios/{portfolioId}/trades/buy', {
+    onSuccess: () => {
       close?.();
-      alerts.success(`Bought ${variables.quantity} share(s) of ${selectedStock?.symbol} @ ${variables.price}.`);
+      alerts.success(`Bought ${form.values.quantity} share(s) of ${selectedStock?.symbol} @ ${form.values.price}.`);
       client.invalidateQueries();
     },
     onError: (res) => {
@@ -52,8 +52,7 @@ export function BuyTransactionForm({ stockId, close }: BuyTransactionFormProps) 
     }
   });
 
-  const stockInHolding = balance?.stocks.find((s) => s.id === form.values.stockId);
-  const selectedStock = data?.symbols.find((s) => s.id === form.values.stockId);
+  const selectedStock = data?.find((s) => s.id === form.values.stockId);
 
   const handleFormSubmit = form.onSubmit((values) => {
     if (!portfolioId) {
@@ -62,36 +61,46 @@ export function BuyTransactionForm({ stockId, close }: BuyTransactionFormProps) 
     }
 
     mutation.mutate({
-      portfolioId: Number(portfolioId),
-      stockId: Number(values.stockId),
-      price: values.price,
-      quantity: values.quantity,
-      commission: 0,
-      actionDate: new Date(values.actionDate).toJSON(),
-      notes: values.notes,
-      tags: values.tags
+      params: {
+        path: {
+          portfolioId: Number(portfolioId!)
+        }
+      },
+      body: {
+        stockId: Number(values.stockId),
+        currencyCode: selectedStock?.supportedCurrencies?.length > 1 ? values.currencyCode : selectedStock?.supportedCurrencies[0],
+        price: values.price,
+        quantity: values.quantity,
+        commission: 0,
+        actionDate: new Date(values.actionDate).toJSON(),
+        notes: values.notes,
+        tags: values.tags
+      }
     });
   });
 
-  const quantityRightSection = stockInHolding && (
-    <Text c="dimmed" size="xs" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
-      {stockInHolding.quantity}
-    </Text>
-  );
-
-  const priceRightSection = selectedStock && (
-    <Text c="dimmed" size="xs" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
-      {format.toCurrency(selectedStock.last, false)}
-    </Text>
-  );
-
-  const selectOptions = data?.symbols.map((s) => ({
+  const selectOptions = data?.map((s) => ({
     value: s.id,
     label: `${s.name} (${s.symbol})`
   }));
 
+  const currencySelect = selectedStock?.supportedCurrencies.length > 1 && (
+    <NativeSelect
+      data={selectedStock.supportedCurrencies}
+      rightSectionWidth={24}
+      mr={4}
+      styles={{
+        input: {
+          fontWeight: 500,
+          border: 'none'
+        }
+      }}
+      {...form.getInputProps('currencyCode')}
+    />
+  );
+
   const onStockChange = (s) => {
-    const stock = data?.symbols.find((a) => a.id === s);
+    const stock = data?.find((a) => a.id === s);
 
     if (stock?.id === form.values.stockId) {
       return;
@@ -99,10 +108,13 @@ export function BuyTransactionForm({ stockId, close }: BuyTransactionFormProps) 
 
     if (stock && stock.id !== form.values.stockId) {
       form.setFieldValue('quantity', 1);
-      form.setFieldValue('price', stock.last);
     } else {
       form.setFieldValue('price', 0);
       form.setFieldValue('quantity', 1);
+    }
+
+    if (stock) {
+      form.setFieldValue('currencyCode', stock.supportedCurrencies[0]);
     }
 
     form.getInputProps('stockId').onChange(s);
@@ -139,14 +151,10 @@ export function BuyTransactionForm({ stockId, close }: BuyTransactionFormProps) 
         <SimpleGrid cols={{ xs: 1, sm: 2 }}>
           <NumberInput
             disabled={!form.values.stockId}
-            inputWrapperOrder={['label', 'error', 'input', 'description']}
             min={1}
             label="QUANTITY"
             hideControls
             allowDecimal={false}
-            rightSectionWidth="auto"
-            rightSectionProps={{ style: { paddingRight: 10 } }}
-            rightSection={quantityRightSection}
             styles={{
               label: {
                 fontSize: 12,
@@ -166,16 +174,15 @@ export function BuyTransactionForm({ stockId, close }: BuyTransactionFormProps) 
           <NumberInput
             label="PRICE"
             disabled={!form.values.stockId}
-            prefix={getCurrencySymbol('TRY')}
+            prefix={selectedStock ? getCurrencySymbol(form.values.currencyCode) : undefined}
             hideControls
             thousandSeparator="."
             fixedDecimalScale
             decimalScale={2}
             decimalSeparator=","
             min={0}
-            rightSectionWidth="auto"
-            rightSectionProps={{ style: { paddingRight: 10 } }}
-            rightSection={priceRightSection}
+            rightSection={currencySelect}
+            rightSectionWidth={'72px'}
             styles={{
               label: {
                 fontSize: 12,

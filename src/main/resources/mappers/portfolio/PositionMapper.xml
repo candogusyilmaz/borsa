@@ -6,7 +6,7 @@
         <result column="quantity" property="quantity"/>
         <result column="total" property="total"/>
         <result column="avg_cost" property="avgCost"/>
-        <result column="daily_change" property="dailyChange"/>
+        <result column="currency_code" property="currencyCode"/>
         <association property="portfolio" columnPrefix="portfolio_"
                      javaType="dev.canverse.stocks.service.portfolio.model.PositionInfo$PortfolioView">
             <id column="id" property="id"/>
@@ -17,7 +17,6 @@
             <id column="id" property="id"/>
             <result column="name" property="name"/>
             <result column="symbol" property="symbol"/>
-            <result column="currency" property="currency"/>
             <result column="last" property="last"/>
             <result column="daily_change" property="dailyChange"/>
             <result column="updated_at" property="updatedAt"/>
@@ -25,6 +24,7 @@
     </resultMap>
     <select id="fetchPositions" resultMap="PositionInfo">
         select pos.id,
+        pos.currency_code,
         pos.quantity,
         pos.total,
         pos.total / pos.quantity as avg_cost,
@@ -33,13 +33,13 @@
         ins.id as instrument_id,
         ins.name as instrument_name,
         ins.symbol as instrument_symbol,
-        ins.denomination_currency as instrument_currency,
         iss.daily_change as instrument_daily_change,
         iss.last as instrument_last,
         iss.updated_at as instrument_updated_at
         from portfolio.positions pos
         join instrument.instruments ins on pos.instrument_id = ins.id
-        left join instrument.instrument_snapshots iss on iss.instrument_id = ins.id
+        left join instrument.instrument_snapshots iss on
+        iss.instrument_id = ins.id and iss.currency_code = pos.currency_code
         join portfolio.portfolios pf on pf.id = pos.portfolio_id and pf.archived = false
         <where>
             pf.user_id = #{userId} and pos.quantity > 0

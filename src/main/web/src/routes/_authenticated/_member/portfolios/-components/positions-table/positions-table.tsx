@@ -70,7 +70,7 @@ export function PositionsTable() {
             Avg Cost
           </Text>
         ),
-        cell: (info) => format.currency(info.getValue<number>(), { currency: info.row.original.instrument.currency })
+        cell: (info) => format.currency(info.getValue<number>(), { currency: info.row.original.currencyCode })
       },
       {
         id: 'currentPrice',
@@ -80,7 +80,7 @@ export function PositionsTable() {
             Price
           </Text>
         ),
-        cell: (info) => format.currency(info.getValue<number>(), { currency: info.row.original.instrument.currency })
+        cell: (info) => format.currency(info.getValue<number>(), { currency: info.row.original.currencyCode })
       },
       {
         id: 'totalValue',
@@ -125,7 +125,7 @@ export function PositionsTable() {
           return (
             <Stack gap={0}>
               <Text inherit ta="right" fw="600" c={color}>
-                {format.currency(dailyReturnValue, { currency: info.row.original.instrument.currency })}
+                {format.currency(dailyReturnValue, { currency: info.row.original.currencyCode })}
               </Text>
               <Text inherit ta="right" fz="11" c={color}>
                 {format.toLocalePercentage(dailyReturnPercentage)}
@@ -161,7 +161,7 @@ export function PositionsTable() {
           return (
             <Stack gap={0}>
               <Text inherit ta="right" fw="600" c={color}>
-                {format.currency(returnValue, { currency: info.row.original.instrument.currency })}
+                {format.currency(returnValue, { currency: info.row.original.currencyCode })}
               </Text>
               <Text inherit ta="right" fz="11" c={color}>
                 {format.toLocalePercentage(returnPercentage)}

@@ -3,6 +3,7 @@ import { useForm } from '@mantine/form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { create } from 'zustand';
 import { mutations, queries } from '~/api';
+import { $api } from '~/api/openapi';
 import { alerts } from '~/lib/alert';
 
 interface CreateNewDashboardModalState {
@@ -40,7 +41,7 @@ export function CreateNewDashboardModal() {
 
 function CreateNewDashboardForm() {
   const { close } = useCreateNewDashboardModalStore();
-  const { data: currencies } = useQuery(queries.currency.getAllCurrencies());
+  const { data: currencies } = $api.useQuery('get', '/api/currencies');
   const { data: portfolios } = useQuery({
     ...queries.portfolio.fetchPortfolios(),
     select: (data) => data.map((p) => ({ label: p.name, value: p.id.toString() }))

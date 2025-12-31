@@ -3,7 +3,6 @@ package dev.canverse.stocks.rest.portfolio;
 import dev.canverse.stocks.service.portfolio.PortfolioService;
 import dev.canverse.stocks.service.portfolio.model.BasicPortfolioView;
 import dev.canverse.stocks.service.portfolio.model.CreatePortfolioRequest;
-import dev.canverse.stocks.service.portfolio.model.PortfolioInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -19,11 +18,6 @@ public class PortfolioController {
     @GetMapping
     public List<BasicPortfolioView> fetchPortfolio() {
         return portfolioService.fetchBasicPortfolioViews();
-    }
-
-    @GetMapping("/{portfolioId}")
-    public PortfolioInfo fetchPortfolio(@PathVariable long portfolioId) {
-        return portfolioService.fetchPortfolio(portfolioId);
     }
 
     @PostMapping

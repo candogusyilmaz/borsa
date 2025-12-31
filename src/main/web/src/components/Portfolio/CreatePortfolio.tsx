@@ -55,7 +55,17 @@ function CreatePortfolioModal({ opened, close }: CreatePortfolioModalProps) {
   };
 
   return (
-    <Modal centered opened={opened} onClose={close} title="Create Portfolio" transitionProps={{ transition: 'fade' }}>
+    <Modal
+      styles={{
+        content: {
+          padding: '1.5rem'
+        }
+      }}
+      centered
+      opened={opened}
+      onClose={close}
+      withCloseButton={false}
+      transitionProps={{ transition: 'fade' }}>
       <form onSubmit={handleMutate}>
         <Stack>
           <TextInput name="name" label="Portfolio Name" placeholder="Enter portfolio name" readOnly={mutation.isPending} />

@@ -1,10 +1,9 @@
 import { DonutChart } from '@mantine/charts';
 import { Box, Card, type CardProps, Divider, Group, rem, Stack, Text, useMatches } from '@mantine/core';
-import { useQuery } from '@tanstack/react-query';
 import { useParams } from '@tanstack/react-router';
-import { useState } from 'react';
-import { queries } from '~/api';
-import type { PortfolioInfo } from '~/api/queries/types';
+import { useMemo, useState } from 'react';
+import { $api } from '~/api/openapi';
+import type { paths } from '~/api/schema';
 import Currency from '~/components/Currency';
 import { ErrorView } from '~/components/ErrorView';
 import { LoadingView } from '~/components/LoadingView';
@@ -16,9 +15,17 @@ const COLORS = [
   { id: 2, color: '#ffb800' }
 ];
 
+type Positions = paths['/api/positions']['get']['responses'][200]['content']['*/*'];
+
 export function BalanceCard() {
   const { portfolioId } = useParams({ strict: false });
-  const { data, status } = useQuery(queries.portfolio.fetchPortfolio({ portfolioId: Number(portfolioId) }));
+  const { data, status } = $api.useQuery('get', '/api/positions', {
+    params: {
+      query: {
+        portfolioId: Number(portfolioId!)
+      }
+    }
+  });
 
   if (status === 'pending') {
     return (
@@ -36,7 +43,7 @@ export function BalanceCard() {
     );
   }
 
-  return <Inner data={data} />;
+  return <Inner positions={data} />;
 }
 
 function BalanceContainer({ children, ...props }: CardProps) {
@@ -47,54 +54,45 @@ function BalanceContainer({ children, ...props }: CardProps) {
   );
 }
 
-function Inner({ data }: { data: PortfolioInfo }) {
-  const chartSize = useMatches({
-    base: 200,
-    sm: 230
-  });
-  const [activeSegment, setActiveSegment] = useState<{
-    name: string;
-    value: number;
-    percent: number;
-  } | null>(null);
+function Inner({ positions }: { positions: Positions }) {
+  const chartSize = useMatches({ base: 200, sm: 230 });
+  const [activeSegment, setActiveSegment] = useState<{ name: string; value: number; percent: number } | null>(null);
 
-  const sortedStocks = [...data.stocks].sort((a, b) => b.value - a.value);
+  // --- Derived State (Calculations) ---
+  const stats = useMemo(() => {
+    const totalValue = positions.reduce((acc, p) => acc + p.total, 0);
+    const totalCost = positions.reduce((acc, p) => acc + p.avgCost * p.quantity, 0);
+    const totalProfit = totalValue - totalCost;
+    const totalProfitPercentage = totalCost > 0 ? (totalProfit / totalCost) * 100 : 0;
 
-  const filteredStocks = sortedStocks.filter((stock) => stock.value / data.totalValue >= 0.01);
+    const sorted = [...positions]
+      .map((p) => ({
+        symbol: p.instrument.symbol,
+        value: p.total,
+        quantity: p.quantity,
+        averagePrice: p.avgCost,
+        profit: p.total - p.avgCost * p.quantity,
+        profitPercentage: (p.total / (p.avgCost * p.quantity) - 1) * 100
+      }))
+      .sort((a, b) => b.value - a.value);
 
-  // Select up to the top 3 stocks
-  const topStocks = filteredStocks.slice(0, 3);
+    const top3 = sorted.slice(0, 3);
+    const otherValue = sorted.slice(3).reduce((acc, p) => acc + p.value, 0);
 
-  // Calculate "Other" category
-  const otherStocks = sortedStocks.slice(topStocks.length); // Remaining stocks after top 3
-  const otherValue = otherStocks.reduce((sum, stock) => sum + stock.value, 0);
+    return { totalValue, totalProfit, totalProfitPercentage, top3, otherValue };
+  }, [positions]);
 
   const pieData = [
-    ...topStocks.map((stock, idx) => ({
+    ...stats.top3.map((stock, idx) => ({
       name: stock.symbol,
       value: stock.value,
-      // biome-ignore lint/suspicious/noNonNullAssertedOptionalChain: intented
-      color: COLORS.find((s) => s.id === idx)?.color!
-    }))
+      color: COLORS[idx]?.color ?? 'gray'
+    })),
+    ...(stats.otherValue > 0 ? [{ name: 'Other', value: stats.otherValue, color: 'lightgray' }] : [])
   ];
 
-  if (otherValue > 0) {
-    pieData.push({
-      name: 'Other',
-      value: otherValue,
-      color: 'lightgray'
-    });
-  }
-
-  const handleMouseEnter = (segment: { name: string; value: number; percent: number }) => {
-    setActiveSegment(segment);
-  };
-
-  const handleMouseLeave = () => {
-    setActiveSegment(null);
-  };
   return (
-    <BalanceContainer miw={275}>
+    <BalanceContainer miw={275} p={'lg'}>
       <Group justify="center">
         <Box pos="relative">
           <DonutChart
@@ -104,29 +102,21 @@ function Inner({ data }: { data: PortfolioInfo }) {
             paddingAngle={3}
             pieProps={{
               cornerRadius: 5,
-              onMouseEnter: (segment) => handleMouseEnter(segment),
-              onMouseLeave: handleMouseLeave,
+              onMouseEnter: (s) => setActiveSegment(s),
+              onMouseLeave: () => setActiveSegment(null),
               minAngle: 10
             }}
             withTooltip={false}
           />
-          <Stack
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              textAlign: 'center'
-            }}
-            gap={4}>
+          <Stack style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }} gap={4}>
             {!activeSegment ? (
               <>
                 <Currency fz={rem(22)} fw={500}>
-                  {data.totalValue}
+                  {stats.totalValue}
                 </Currency>
-                {data.stocks.length !== 0 && (
-                  <Text fz="sm" fw={700} c={data.totalProfitPercentage >= 0 ? 'teal' : 'red'}>
-                    {`${data.totalProfit > 0 ? '+' : ''}${format.toCurrency(data.totalProfit)}`}
+                {positions.length !== 0 && (
+                  <Text fz="sm" fw={700} c={stats.totalProfit >= 0 ? 'teal' : 'red'}>
+                    {`${stats.totalProfit > 0 ? '+' : ''}${format.toCurrency(stats.totalProfit)}`}
                   </Text>
                 )}
               </>
@@ -143,12 +133,13 @@ function Inner({ data }: { data: PortfolioInfo }) {
           </Stack>
         </Box>
       </Group>
-      {topStocks.length > 0 && (
+
+      {stats.top3.length > 0 && (
         <Stack justify="center" gap="sm" mt="xl">
           <Text c="dimmed" ta="center" size="sm" fw={700}>
             Top Holdings
           </Text>
-          {topStocks.map((stock, idx) => (
+          {stats.top3.map((stock, idx) => (
             <Stack key={stock.symbol} gap="sm" justify="center">
               <Box>
                 <Group justify="space-between">
@@ -159,14 +150,12 @@ function Inner({ data }: { data: PortfolioInfo }) {
                   <Text size="xs" c="dimmed">
                     {format.toHumanizedNumber(stock.quantity)} shares @ <Currency span>{stock.averagePrice}</Currency>
                   </Text>
-                  <Group>
-                    <Text span size="xs" c={stock.profit === 0 ? 'dimmed' : stock.profit >= 0 ? 'teal' : 'red'}>
-                      {format.toLocalePercentage(stock.profitPercentage)}
-                    </Text>
-                  </Group>
+                  <Text span size="xs" c={stock.profit >= 0 ? 'teal' : 'red'}>
+                    {format.toLocalePercentage(stock.profitPercentage)}
+                  </Text>
                 </Group>
               </Box>
-              {idx !== topStocks.length - 1 && <Divider />}
+              {idx !== stats.top3.length - 1 && <Divider />}
             </Stack>
           ))}
         </Stack>

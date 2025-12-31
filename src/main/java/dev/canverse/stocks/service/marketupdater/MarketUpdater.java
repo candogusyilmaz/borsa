@@ -48,7 +48,7 @@ public abstract class MarketUpdater {
 
     private Map<String, Long> fetchInstruments(String marketCode) {
         return jdbcTemplate.query("""
-                            SELECT i.symbol, i.id 
+                            SELECT i.symbol, i.id
                             FROM instrument.instruments i
                             JOIN instrument.markets m ON i.market_id = m.id
                             WHERE m.code = ?
@@ -68,23 +68,42 @@ public abstract class MarketUpdater {
 
     private void batchUpdateSnapshots(List<Snapshot> snapshots) {
         var args = snapshots.stream()
-                .map(s -> new Object[]{
-                        s.last(),
-                        s.previousClose(),
-                        s.last().subtract(s.previousClose()),
-                        Calculator.divide(s.last().subtract(s.previousClose()).multiply(BigDecimal.valueOf(100)), s.previousClose()),
-                        s.updatedAt(),
-                        s.instrumentId()
+                .map(s -> {
+                    var change = s.last().subtract(s.previousClose());
+                    var percent = Calculator.divide(
+                            change.multiply(BigDecimal.valueOf(100)),
+                            s.previousClose()
+                    );
+
+                    return new Object[]{
+                            s.instrumentId(),
+                            s.currencyCode(),
+                            s.last(),
+                            s.previousClose(),
+                            change,
+                            percent,
+                            s.updatedAt()
+                    };
                 })
                 .toList();
 
         jdbcTemplate.batchUpdate("""
-                    UPDATE instrument.instrument_snapshots
-                    SET last = ?, previous_close = ?,
-                        daily_change = ?,
-                        daily_change_percent = ?,
-                        updated_at = ?
-                    WHERE instrument_id = ?
+                    INSERT INTO instrument.instrument_snapshots (
+                        instrument_id,
+                        currency_code,
+                        last,
+                        previous_close,
+                        daily_change,
+                        daily_change_percent,
+                        updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT (instrument_id, currency_code)
+                    DO UPDATE SET
+                        last = EXCLUDED.last,
+                        previous_close = EXCLUDED.previous_close,
+                        daily_change = EXCLUDED.daily_change,
+                        daily_change_percent = EXCLUDED.daily_change_percent,
+                        updated_at = EXCLUDED.updated_at
                 """, args);
     }
 }

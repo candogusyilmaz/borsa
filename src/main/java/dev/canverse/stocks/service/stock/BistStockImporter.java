@@ -199,29 +199,14 @@ public class BistStockImporter {
             return false; // Only process if Equity OR ETF
         }
 
-        var stock = stockInstrumentRepository.findBySymbol(record.getIslemKodu(), BIST.getId());
+        var stock = stockInstrumentRepository.findBySymbol(record.getIslemKodu(), BIST.getId())
+                .orElse(new StockInstrument(
+                        record.bultenAdi(),
+                        record.getIslemKodu(),
+                        BIST
+                ));
 
-        if (stock.isPresent()) {
-            stock.get().updateSnapshot(
-                    record.kapanisFiyati(),
-                    record.oncekiKapanisFiyati()
-            );
-            stockInstrumentRepository.save(stock.get());
-        } else {
-            var newStock = new StockInstrument(
-                    record.bultenAdi(),
-                    record.getIslemKodu(),
-                    BIST,
-                    "TRY"
-            );
-
-            newStock.updateSnapshot(
-                    record.kapanisFiyati(),
-                    record.oncekiKapanisFiyati()
-            );
-
-            stockInstrumentRepository.save(newStock);
-        }
+        stockInstrumentRepository.save(stock);
 
         return true;
     }

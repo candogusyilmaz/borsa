@@ -12,6 +12,8 @@ public record TradeRequest(
         @NotNull
         Long stockId,
         @NotNull
+        String currencyCode,
+        @NotNull
         @Positive
         BigDecimal quantity,
         @NotNull

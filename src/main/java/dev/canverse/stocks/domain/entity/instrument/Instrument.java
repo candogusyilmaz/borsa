@@ -1,6 +1,5 @@
 package dev.canverse.stocks.domain.entity.instrument;
 
-import dev.canverse.stocks.domain.Calculator;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,8 +8,9 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
-import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Entity
@@ -35,9 +35,6 @@ public abstract class Instrument {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private InstrumentType type;
 
-    @Column(nullable = false, length = 3)
-    private String denominationCurrency;
-
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Market market;
 
@@ -54,8 +51,8 @@ public abstract class Instrument {
     private Instant updatedAt;
 
     @Setter
-    @OneToOne(mappedBy = "instrument", cascade = CascadeType.ALL)
-    private InstrumentSnapshot snapshot;
+    @OneToMany(mappedBy = "instrument", cascade = CascadeType.ALL)
+    private Set<InstrumentSnapshot> snapshots = new HashSet<>();
 
     protected Instrument() {
     }
@@ -64,34 +61,11 @@ public abstract class Instrument {
         STOCK, CRYPTOCURRENCY, CURRENCY_PAIR, COMMODITY, INDEX
     }
 
-    public Instrument(String name, String symbol, InstrumentType type, Market market, String denominationCurrency) {
+    public Instrument(String name, String symbol, InstrumentType type, Market market) {
         this.name = name;
         this.symbol = symbol;
         this.type = type;
         this.market = market;
-        this.denominationCurrency = denominationCurrency;
         this.isActive = true;
-        this.snapshot = new InstrumentSnapshot(this);
-    }
-
-    public void updateSnapshot(BigDecimal last, BigDecimal previousClose) {
-        var dailyChange = last.subtract(previousClose);
-        var dailyChangePercent = Calculator.divide(last.subtract(previousClose).multiply(BigDecimal.valueOf(100)), previousClose);
-
-        this.updateSnapshot(last, previousClose, dailyChange, dailyChangePercent);
-    }
-
-    public void updateSnapshot(BigDecimal last, BigDecimal previousClose, BigDecimal dailyChange, BigDecimal dailyChangePercent) {
-        var snapshot = this.getSnapshot();
-
-        if (snapshot == null) {
-            snapshot = new InstrumentSnapshot(this);
-        }
-
-        snapshot.setLast(last);
-        snapshot.setDailyChange(dailyChange);
-        snapshot.setDailyChangePercent(dailyChangePercent);
-        snapshot.setPreviousClose(previousClose);
-        snapshot.setUpdatedAt(Instant.now());
     }
 }

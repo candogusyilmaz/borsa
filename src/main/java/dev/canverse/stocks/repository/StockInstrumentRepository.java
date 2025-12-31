@@ -10,6 +10,6 @@ import java.util.Optional;
 @Repository
 public interface StockInstrumentRepository extends BaseJpaRepository<StockInstrument, Long> {
     @Query("SELECT s FROM StockInstrument s WHERE s.symbol = :symbol AND s.market.id = :marketId")
-    @EntityGraph(attributePaths = {"snapshot"})
+    @EntityGraph(attributePaths = {"snapshots"})
     Optional<StockInstrument> findBySymbol(String symbol, Long marketId);
 }

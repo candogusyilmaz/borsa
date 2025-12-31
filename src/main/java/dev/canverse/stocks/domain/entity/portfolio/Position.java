@@ -17,9 +17,7 @@ import java.util.List;
 
 @Getter
 @Entity
-@Table(schema = "portfolio", name = "positions", indexes = {
-        @Index(name = "idx_holdings_portfolio_id", columnList = "portfolio_id")
-})
+@Table(schema = "portfolio", name = "positions")
 public class Position implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,6 +30,10 @@ public class Position implements Serializable {
     @NotNull
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Instrument instrument;
+
+    @NotNull
+    @Column(nullable = false, length = 3)
+    private String currencyCode;
 
     @PositiveOrZero
     @Column(nullable = false, precision = 38, scale = 18)
@@ -64,9 +66,10 @@ public class Position implements Serializable {
     protected Position() {
     }
 
-    public Position(Portfolio portfolio, Instrument instrument) {
+    public Position(Portfolio portfolio, Instrument instrument, String currencyCode) {
         this.portfolio = portfolio;
         this.instrument = instrument;
+        this.currencyCode = currencyCode;
         this.quantity = BigDecimal.ZERO;
         this.total = BigDecimal.ZERO;
     }

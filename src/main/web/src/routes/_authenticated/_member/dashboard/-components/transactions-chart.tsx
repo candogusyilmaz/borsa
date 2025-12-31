@@ -76,7 +76,7 @@ export function TransactionsChart({ currencyCode, dashboardId }: { currencyCode:
             </Stack>
             <Stack gap={8}>
               <Group gap={8} align="center">
-                <ColorSwatch color="#FFD700" size={14} radius="xs" />
+                <ColorSwatch color="#6366f1" size={14} radius="xs" />
                 <Text size="sm" fw={600} lh={1}>
                   {format.toCurrency(
                     chartData.reduce((a, b) => a + b.sell, 0),

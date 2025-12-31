@@ -36,6 +36,7 @@ html {
   --text-muted: #94a3b8;
   --card-bg: rgba(255, 255, 255, 0.05);
   --border-color: rgba(255, 255, 255, 0.1);
+  --lighter-border-color: rgba(255, 255, 255, 0.05);
   --card-shadow: none;
   --table-row-hover: rgba(255, 255, 255, 0.02);
   --mantine-color-dimmed: var(--text-muted);

@@ -3,9 +3,10 @@ import { DateTimePicker } from '@mantine/dates';
 import { Dropzone } from '@mantine/dropzone';
 import { useForm } from '@mantine/form';
 import { IconCirclePlus, IconFile, IconTrash, IconUpload, IconX } from '@tabler/icons-react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { create } from 'zustand';
-import { mutations, queries } from '~/api';
+import { mutations } from '~/api';
+import { $api } from '~/api/openapi';
 import { alerts } from '~/lib/alert';
 import { getCurrencySymbol } from '~/lib/currency';
 
@@ -47,9 +48,8 @@ export function BulkTransactionModal() {
 
 function BulkTransactionForm({ portfolioId, close }: { portfolioId: string | number; close: () => void }) {
   const queryClient = useQueryClient();
-  const { data: instruments } = useQuery({
-    ...queries.stocks.fetchAll('BIST'),
-    select: (data) => data.symbols.map((s) => ({ value: s.id.toString(), label: s.symbol }))
+  const { data: instruments } = $api.useQuery('get', '/api/instruments', undefined, {
+    select: (data) => data.map((s) => ({ value: s.id.toString(), label: s.symbol }))
   });
 
   const form = useForm<{

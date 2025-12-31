@@ -139,7 +139,7 @@ public class DashboardService {
 
         var currencyConvertedProfit = Expressions.stringTemplate("public.convert_currency({0}, {1}, {2})",
                 t.performance.profit,
-                t.position.instrument.denominationCurrency,
+                t.position.currencyCode,
                 dashboard.getCurrency().getCode()).castToNum(BigDecimal.class);
 
         return qf.select(Projections.constructor(TransactionInfo.class,

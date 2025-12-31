@@ -22,6 +22,8 @@ public class PositionInfo {
     private BigDecimal total;
     @NotNull
     private BigDecimal avgCost;
+    @NotNull
+    private String currencyCode;
 
     @Getter
     @Setter
@@ -32,8 +34,6 @@ public class PositionInfo {
         private String name;
         @NotNull
         private String symbol;
-        @NotNull
-        private String currency;
         private BigDecimal last;
         private BigDecimal dailyChange;
         private Instant updatedAt;

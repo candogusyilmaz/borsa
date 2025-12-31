@@ -16,13 +16,15 @@ import java.time.Instant;
 @Table(schema = "instrument", name = "instrument_snapshots")
 public class InstrumentSnapshot implements Serializable {
     @Id
-    @Column(name = "instrument_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @MapsId
     @Setter(AccessLevel.NONE)
-    @OneToOne(optional = false, fetch = FetchType.LAZY)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Instrument instrument;
+
+    @Column(nullable = false, length = 3)
+    private String currencyCode;
 
     @Column(nullable = false, precision = 38, scale = 18)
     private BigDecimal last;

@@ -34,13 +34,13 @@
                t.new_quantity,
                tp.profit,
                t.action_date,
-               t.metadata ->> 'tags'     as tags,
-               t.metadata ->> 'notes'    as notes,
-               ins.symbol                as instrument_symbol,
-               ins.name                  as instrument_name,
-               ins.denomination_currency as currency_code,
-               pf.id                     as portfolio_id,
-               pf.name                   as portfolio_name
+               t.metadata ->> 'tags'  as tags,
+               t.metadata ->> 'notes' as notes,
+               ins.symbol             as instrument_symbol,
+               ins.name               as instrument_name,
+               pos.currency_code      as currency_code,
+               pf.id                  as portfolio_id,
+               pf.name                as portfolio_name
         from portfolio.transactions t
                  join portfolio.positions pos on t.position_id = pos.id
                  join instrument.instruments ins on pos.instrument_id = ins.id
@@ -62,12 +62,12 @@
                t.new_quantity,
                tp.profit,
                t.action_date,
-               t.metadata ->> 'tags'     as tags,
-               t.metadata ->> 'notes'    as notes,
-               ins.symbol                as instrument_symbol,
-               ins.denomination_currency as currency_code,
-               pf.id                     as portfolio_id,
-               pf.name                   as portfolio_name
+               t.metadata ->> 'tags'  as tags,
+               t.metadata ->> 'notes' as notes,
+               ins.symbol             as instrument_symbol,
+               pos.currency_code      as currency_code,
+               pf.id                  as portfolio_id,
+               pf.name                as portfolio_name
         from portfolio.transactions t
                  join portfolio.positions pos on t.position_id = pos.id
                  join portfolio.portfolios pf on pf.id = pos.portfolio_id and pf.archived = false

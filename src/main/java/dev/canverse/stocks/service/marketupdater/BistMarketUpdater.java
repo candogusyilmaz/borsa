@@ -33,6 +33,7 @@ public class BistMarketUpdater extends MarketUpdater {
                     if (id == null) return null;
 
                     return new Snapshot(
+                            "TRY",
                             item.price(),
                             item.price().subtract(item.change()),
                             Timestamp.from(item.time()),

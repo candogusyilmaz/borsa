@@ -17,12 +17,7 @@ public class StockInstrument extends Instrument {
     protected StockInstrument() {
     }
 
-    public StockInstrument(String name, String symbol, Market market, String denominationCurrency) {
-        super(name, symbol, InstrumentType.STOCK, market, denominationCurrency);
-    }
-
-    public StockInstrument(String name, String symbol, Market market, String denominationCurrency, String isin) {
-        super(name, symbol, InstrumentType.STOCK, market, denominationCurrency);
-        this.isin = isin;
+    public StockInstrument(String name, String symbol, Market market) {
+        super(name, symbol, InstrumentType.STOCK, market);
     }
 }

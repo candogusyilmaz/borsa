@@ -14,9 +14,18 @@ public interface PositionRepository extends BaseJpaRepository<Position, Long> {
                 select h from Position h
                 where h.portfolio.id = :portfolioId and h.instrument.id = :instrumentId
                 and h.portfolio.user.id = :#{principal.id}
+                and h.currencyCode = :currencyCode
             """)
-    Optional<Position> findByPortfolioAndInstrumentForPrincipal(Long portfolioId, Long instrumentId);
+    Optional<Position> findByPortfolioAndInstrumentForPrincipal(Long portfolioId, Long instrumentId, String currencyCode);
 
+    @Query("""
+                select h from Position h
+                where h.portfolio.id = :portfolioId
+                and h.instrument.id = :instrumentId
+                and h.portfolio.user.id = :userId
+                and h.currencyCode = :currencyCode
+            """)
+    Optional<Position> findBy(Long userId, Long portfolioId, Long instrumentId, String currencyCode);
 
     @Modifying
     @Transactional

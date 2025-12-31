@@ -26,6 +26,7 @@ public record BulkTransactionRequest(
     public TradeRequest toTransactionRequest() {
         return new TradeRequest(
                 stockId,
+                "TRY",
                 quantity,
                 price,
                 commission,

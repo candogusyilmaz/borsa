@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="dev.canverse.stocks.repository.InstrumentMapper">
+    <resultMap id="InstrumentInfo" type="dev.canverse.stocks.service.instrument.model.InstrumentInfo">
+        <id column="id" property="id"/>
+        <result column="symbol" property="symbol"/>
+        <result column="name" property="name"/>
+        <result column="supported_currencies" property="supportedCurrencies"
+                typeHandler="dev.canverse.stocks.repository.mybatis.JsonbTypeHandler"/>
+    </resultMap>
+    <select id="fetchInstruments" resultMap="InstrumentInfo">
+        select ins.id,
+               ins.symbol,
+               ins.name,
+               jsonb_agg(mc.currency_code) AS supported_currencies
+        from instrument.instruments ins
+                 join instrument.market_currencies mc on mc.market_id = ins.market_id
+        where ins.is_active = true
+        group by ins.id, ins.symbol, ins.name
+        order by ins.symbol
+    </select>
+</mapper>

@@ -28,13 +28,13 @@ public class StatisticsRepository {
                     SELECT
                         SUM(CASE
                             WHEN %s THEN
-                                convert_currency(tp.profit, i.denomination_currency, :targetCurrency)
+                                convert_currency(tp.profit, pos.currency_code, :targetCurrency)
                             ELSE 0
                         END) AS current_period_gain,
                 
                         SUM(CASE
                             WHEN %s THEN
-                                convert_currency(tp.profit, i.denomination_currency, :targetCurrency)
+                                convert_currency(tp.profit, pos.currency_code, :targetCurrency)
                             ELSE 0
                         END) AS previous_period_gain
                     FROM
@@ -87,10 +87,10 @@ public class StatisticsRepository {
         var sql = """
                 SELECT
                     -- Today's total value (current market prices * current quantities)
-                    SUM(convert_currency(snp.last, i.denomination_currency, :targetCurrency) * pos.quantity) AS current_value,
+                    SUM(convert_currency(snp.last, pos.currency_code, :targetCurrency) * pos.quantity) AS current_value,
                 
                     -- Yesterday's total value (previous close prices * yesterday's quantities)
-                    SUM(convert_currency(snp.previous_close, i.denomination_currency, :targetCurrency) *
+                    SUM(convert_currency(snp.previous_close, pos.currency_code, :targetCurrency) *
                         COALESCE((SELECT ph.quantity
                                     FROM portfolio.position_history ph
                                     WHERE ph.position_id = pos.id AND DATE(ph.created_at) < CURRENT_DATE
@@ -102,7 +102,7 @@ public class StatisticsRepository {
                     portfolio.portfolios p
                         JOIN portfolio.positions pos ON p.id = pos.portfolio_id
                         JOIN instrument.instruments i ON i.id = pos.instrument_id
-                        JOIN instrument.instrument_snapshots snp ON i.id = snp.instrument_id
+                        JOIN instrument.instrument_snapshots snp ON i.id = snp.instrument_id and snp.currency_code = pos.currency_code
                 WHERE p.user_id = :userId AND pos.quantity > 0 AND p.id IN (:portfolioIds)
                 """;
 
@@ -136,12 +136,12 @@ public class StatisticsRepository {
 
         var sql = """
                 SELECT
-                    SUM(convert_currency(pos.total, i.denomination_currency, :targetCurrency)) AS cost,
-                    SUM(convert_currency(snp.last, i.denomination_currency, :targetCurrency) * pos.quantity) AS value
+                    SUM(convert_currency(pos.total, pos.currency_code, :targetCurrency)) AS cost,
+                    SUM(convert_currency(snp.last, pos.currency_code, :targetCurrency) * pos.quantity) AS value
                 FROM portfolio.portfolios p
                          JOIN portfolio.positions pos ON p.id = pos.portfolio_id
                          JOIN instrument.instruments i ON i.id = pos.instrument_id
-                         JOIN instrument.instrument_snapshots snp ON i.id = snp.instrument_id
+                         JOIN instrument.instrument_snapshots snp ON i.id = snp.instrument_id and snp.currency_code = pos.currency_code
                 WHERE p.user_id = :userId AND p.id IN (:portfolioIds)
                 """;
 

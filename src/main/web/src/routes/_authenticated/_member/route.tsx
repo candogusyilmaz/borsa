@@ -1,4 +1,4 @@
-import { ActionIcon, Drawer, useMantineColorScheme } from '@mantine/core';
+import { Drawer, useMantineColorScheme } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import {
   IconArrowsLeftRight,
@@ -8,7 +8,6 @@ import {
   IconListDetails,
   IconLogout,
   IconMoon,
-  IconPlus,
   IconSun,
   IconTrendingUp,
   IconZoomPan
@@ -20,6 +19,7 @@ import { create } from 'zustand';
 import { queries } from '~/api';
 import type { BasicPortfolioView } from '~/api/queries/types';
 import { useAuthentication } from '~/lib/AuthenticationContext';
+import { CreatePortfolioButton } from './-components/create-portfolio-button';
 
 export const Route = createFileRoute('/_authenticated/_member')({
   component: RouteComponent
@@ -170,9 +170,7 @@ const Sidebar = () => {
             <p className="nav-label" style={{ padding: 0, margin: 0 }}>
               Portfolios
             </p>
-            <ActionIcon variant="subtle" size="xs" color="var(--text-muted)" style={{ borderRadius: '6px' }}>
-              <IconPlus />
-            </ActionIcon>
+            <CreatePortfolioButton />
           </div>
           <nav className="nav-list">
             {portfolioLinks.map((link) => (

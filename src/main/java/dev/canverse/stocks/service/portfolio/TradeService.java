@@ -1,11 +1,9 @@
 package dev.canverse.stocks.service.portfolio;
 
+import dev.canverse.stocks.domain.entity.instrument.MarketCurrencyId;
 import dev.canverse.stocks.domain.entity.portfolio.Position;
 import dev.canverse.stocks.domain.exception.NotFoundException;
-import dev.canverse.stocks.repository.InstrumentRepository;
-import dev.canverse.stocks.repository.PositionRepository;
-import dev.canverse.stocks.repository.TradeMapper;
-import dev.canverse.stocks.repository.TradeRepository;
+import dev.canverse.stocks.repository.*;
 import dev.canverse.stocks.security.AuthenticationProvider;
 import dev.canverse.stocks.service.portfolio.model.TradeHistory;
 import dev.canverse.stocks.service.portfolio.model.TradeInfo;
@@ -24,19 +22,35 @@ public class TradeService {
     private final PositionRepository positionRepository;
     private final TradeRepository tradeRepository;
     private final PortfolioAccessValidator portfolioAccessValidator;
+    private final MarketCurrencyRepository marketCurrencyRepository;
 
     private final TradeMapper tradeMapper;
 
     @Transactional
     public void buy(long portfolioId, TradeRequest req) {
         var portfolio = portfolioAccessValidator.validateAccess(portfolioId);
+        
+        var instrument = instrumentRepository.findById(req.stockId())
+                .orElseThrow(() -> new NotFoundException(
+                        String.format("No instrument found for stock id %s", req.stockId())
+                ));
 
-        var position = positionRepository.findByPortfolioAndInstrumentForPrincipal(
+        marketCurrencyRepository.findById(new MarketCurrencyId(instrument.getMarket().getId(), req.currencyCode()))
+                .orElseThrow(() -> new NotFoundException(
+                        String.format("No market currency found for stock id %s and currency %s",
+                                req.stockId(),
+                                req.currencyCode())
+                ));
+
+        var position = positionRepository.findBy(
+                AuthenticationProvider.getUser().getId(),
                 portfolio.getId(),
-                req.stockId()
+                req.stockId(),
+                req.currencyCode()
         ).orElseGet(() -> positionRepository.save(new Position(
                 portfolio,
-                instrumentRepository.getReference(req.stockId())
+                instrumentRepository.getReference(req.stockId()),
+                req.currencyCode()
         )));
 
         var buy = position.buy(req.quantity(), req.price(), req.commission(), req.actionDate());
@@ -48,11 +62,11 @@ public class TradeService {
 
     @Transactional
     public void sell(long portfolioId, TradeRequest req) {
-        portfolioAccessValidator.validateAccess(portfolioId);
-
-        var position = positionRepository.findByPortfolioAndInstrumentForPrincipal(
+        var position = positionRepository.findBy(
+                AuthenticationProvider.getUser().getId(),
                 portfolioId,
-                req.stockId()
+                req.stockId(),
+                req.currencyCode()
         ).orElseThrow(() -> new NotFoundException(
                 String.format("No holding found for stock id %s", req.stockId())
         ));

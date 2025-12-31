@@ -16,18 +16,26 @@ import {
   useMatches
 } from '@mantine/core';
 import { IconCircle } from '@tabler/icons-react';
-import { useQuery } from '@tanstack/react-query';
 import { useParams } from '@tanstack/react-router';
 import React, { useState } from 'react';
-import { queries } from '~/api';
-import type { MonthlyRevenueOverview as MonthlyRevenueOverviewType } from '~/api/queries/types';
+import { $api } from '~/api/openapi';
+import type { paths } from '~/api/schema';
 import { ErrorView } from '~/components/ErrorView';
 import { constants } from '~/lib/constants';
 import { format } from '~/lib/format';
 
+type MonthlyRevenueOverviewType =
+  paths['/api/portfolios/{portfolioId}/analytics/monthly-revenue-overview']['get']['responses']['200']['content']['*/*'];
+
 export function MonthlyRevenueOverview() {
   const { portfolioId } = useParams({ strict: false });
-  const { data, status } = useQuery(queries.analytics.monthlyRevenueOverview({ portfolioId: Number(portfolioId) }));
+  const { data, status } = $api.useQuery('get', '/api/portfolios/{portfolioId}/analytics/monthly-revenue-overview', {
+    params: {
+      path: {
+        portfolioId: Number(portfolioId)
+      }
+    }
+  });
 
   if (status === 'pending') {
     return (

@@ -1,0 +1,14 @@
+.colorButton[data-active="true"] {
+  transform: scale(1.05);
+}
+
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

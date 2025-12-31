@@ -69,8 +69,11 @@ createRoot(document.getElementById('root')!).render(
               fontFamily:
                 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji',
               colors: {
-                dark: ['#c1cbd5', '#96a3af', '#6c7a88', '#49525b', '#262a2e', '#262a2e', '#202325', '#1a1b1d', '#131415', '#0d0d0d']
+                dark: ['#c1cbd5', '#96a3af', '#6c7a88', '#49525b', '#262a2e', '#262a2e', '#202325', '#1a1b1d', '#131415', '#0d0d0d'],
+                accent: ['#ebecff', '#d3d4ff', '#a3a5f8', '#6366f1', '#474aed', '#2d2feb', '#1d22eb', '#1016d1', '#0713bc', '#000ea6']
               },
+              primaryColor: 'accent',
+              primaryShade: 4,
               components: {
                 Input: {
                   classNames: {

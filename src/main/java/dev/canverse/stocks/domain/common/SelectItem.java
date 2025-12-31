@@ -1,4 +1,6 @@
 package dev.canverse.stocks.domain.common;
 
-public record SelectItem(String value, String label) {
+import jakarta.validation.constraints.NotNull;
+
+public record SelectItem(@NotNull String value, @NotNull String label) {
 }

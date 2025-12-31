@@ -1,8 +1,7 @@
 import { Button, Container, Flex, Group, Menu, Stack, Title } from '@mantine/core';
 import { IconArchive, IconPencilCode, IconSettings, IconWorld } from '@tabler/icons-react';
-import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { queries } from '~/api';
+import { $api } from '~/api/openapi';
 import { useArchivePortfolioModalStore } from '~/components/Portfolio/ArchivePortfolioModal';
 import { BalanceCard } from '~/components/Portfolio/BalanceCard';
 import { HoldingsCard } from '~/components/Portfolio/HoldingsCard';
@@ -16,7 +15,7 @@ export const Route = createFileRoute('/_authenticated/_member/portfolios/$portfo
 });
 
 function RouteComponent() {
-  const { data: currencies } = useQuery(queries.currency.getAllCurrencies());
+  const { data: currencies } = $api.useQuery('get', '/api/currencies');
   const { open: openArchiveModal } = useArchivePortfolioModalStore();
   const { portfolioId } = Route.useParams();
 
