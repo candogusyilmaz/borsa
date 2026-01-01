@@ -212,7 +212,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/transactions": {
+    "/api/trades": {
         parameters: {
             query?: never;
             header?: never;
@@ -894,7 +894,9 @@ export interface operations {
     };
     fetchTrades: {
         parameters: {
-            query?: never;
+            query?: {
+                portfolioId?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;

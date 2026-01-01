@@ -32,11 +32,3 @@ export type Transaction = {
     };
   };
 };
-
-export const fetchAllTransactions = () =>
-  queryOptions({
-    queryKey: ['/transactions'],
-    queryFn: async ({ signal }) => (await http.get<Transaction[]>(`/transactions`, { signal })).data,
-    staleTime: staleTimes.FIVE_MINUTES,
-    refetchInterval: staleTimes.FIVE_MINUTES
-  });

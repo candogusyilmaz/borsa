@@ -5,6 +5,7 @@ import dev.canverse.stocks.domain.entity.portfolio.Position;
 import dev.canverse.stocks.domain.exception.NotFoundException;
 import dev.canverse.stocks.repository.*;
 import dev.canverse.stocks.security.AuthenticationProvider;
+import dev.canverse.stocks.service.portfolio.model.FetchTradesQuery;
 import dev.canverse.stocks.service.portfolio.model.TradeHistory;
 import dev.canverse.stocks.service.portfolio.model.TradeInfo;
 import dev.canverse.stocks.service.portfolio.model.TradeRequest;
@@ -29,7 +30,7 @@ public class TradeService {
     @Transactional
     public void buy(long portfolioId, TradeRequest req) {
         var portfolio = portfolioAccessValidator.validateAccess(portfolioId);
-        
+
         var instrument = instrumentRepository.findById(req.stockId())
                 .orElseThrow(() -> new NotFoundException(
                         String.format("No instrument found for stock id %s", req.stockId())
@@ -96,8 +97,8 @@ public class TradeService {
         return tradeRepository.fetchTradeHistory(portfolioId);
     }
 
-    public List<TradeInfo> fetchTrades(Long userId) {
-        return tradeMapper.fetchTrades(userId);
+    public List<TradeInfo> fetchTrades(Long userId, FetchTradesQuery query) {
+        return tradeMapper.fetchTrades(userId, query);
     }
 
     public List<TradeInfo> fetchActiveTrades(Long userId, Long positionId) {

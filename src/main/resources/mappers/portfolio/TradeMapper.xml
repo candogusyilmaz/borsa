@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="dev.canverse.stocks.repository.TradeMapper">
-    <resultMap id="TransactionInfo" type="dev.canverse.stocks.service.portfolio.model.TradeInfo">
+    <resultMap id="TradeInfo" type="dev.canverse.stocks.service.portfolio.model.TradeInfo">
         <id column="id" property="id"/>
         <result column="type" property="type"/>
         <result column="quantity" property="quantity"/>
@@ -24,31 +24,38 @@
             </association>
         </association>
     </resultMap>
-    <select id="fetchTrades" resultMap="TransactionInfo" parameterType="long">
+    <select id="fetchTrades" resultMap="TradeInfo" parameterType="long">
         select t.id,
-               t.position_id,
-               t.type,
-               t.quantity,
-               t.price,
-               t.new_total,
-               t.new_quantity,
-               tp.profit,
-               t.action_date,
-               t.metadata ->> 'tags'  as tags,
-               t.metadata ->> 'notes' as notes,
-               ins.symbol             as instrument_symbol,
-               ins.name               as instrument_name,
-               pos.currency_code      as currency_code,
-               pf.id                  as portfolio_id,
-               pf.name                as portfolio_name
+        t.position_id,
+        t.type,
+        t.quantity,
+        t.price,
+        t.new_total,
+        t.new_quantity,
+        tp.profit,
+        t.action_date,
+        t.metadata ->> 'tags' as tags,
+        t.metadata ->> 'notes' as notes,
+        ins.symbol as instrument_symbol,
+        ins.name as instrument_name,
+        pos.currency_code as currency_code,
+        pf.id as portfolio_id,
+        pf.name as portfolio_name
         from portfolio.transactions t
-                 join portfolio.positions pos on t.position_id = pos.id
-                 join instrument.instruments ins on pos.instrument_id = ins.id
-                 join portfolio.portfolios pf on pf.id = pos.portfolio_id and pf.archived = false
-                 left join portfolio.transaction_performance tp on tp.transaction_id = t.id
-        where pf.user_id = #{userId}
+        join portfolio.positions pos on t.position_id = pos.id
+        join instrument.instruments ins on pos.instrument_id = ins.id
+        join portfolio.portfolios pf on pf.id = pos.portfolio_id and pf.archived = false
+        left join portfolio.transaction_performance tp on tp.transaction_id = t.id
+        <where>
+            pf.user_id = #{userId} and pos.quantity > 0
+            <if test="query != null">
+                <if test="query.portfolioId != null">
+                    and pf.id = #{query.portfolioId}
+                </if>
+            </if>
+        </where>
     </select>
-    <select id="fetchActiveTrades" resultMap="TransactionInfo">
+    <select id="fetchActiveTrades" resultMap="TradeInfo">
         with last_closed as (select coalesce(max(id), 0) as id
                              from portfolio.transactions
                              where position_id = #{positionId}

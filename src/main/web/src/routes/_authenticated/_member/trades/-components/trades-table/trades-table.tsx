@@ -21,11 +21,11 @@ import classes from './trades-table.module.css';
 
 export function TradesTable() {
   'use no memo';
-  const { data: transactions, status } = $api.useQuery('get', '/api/transactions');
+  const { data: trades, status } = $api.useQuery('get', '/api/trades');
   const { page, q } = useSearch({ from: '/_authenticated/_member/trades' });
   const navigate = useNavigate();
 
-  const columns = useMemo<ColumnDef<ElementType<typeof transactions>>[]>(
+  const columns = useMemo<ColumnDef<ElementType<typeof trades>>[]>(
     () => [
       {
         accessorFn: (row) => row.position.instrumentSymbol,
@@ -146,7 +146,7 @@ export function TradesTable() {
   );
 
   const table = useReactTable({
-    data: transactions ?? [],
+    data: trades ?? [],
     columns,
     getRowCanExpand: () => true,
     getCoreRowModel: getCoreRowModel(),
@@ -200,7 +200,7 @@ export function TradesTable() {
                 ))}
               </tr>
             ))}
-            <TableStateHandler status={status} empty={transactions?.length === 0} span={table.getVisibleFlatColumns().length} />
+            <TableStateHandler status={status} empty={trades?.length === 0} span={table.getVisibleFlatColumns().length} />
           </tbody>
         </Table>
       </Table.ScrollContainer>
