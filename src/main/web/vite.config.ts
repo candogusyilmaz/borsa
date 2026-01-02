@@ -7,6 +7,7 @@ const ReactCompilerConfig = {
 };
 
 export default defineConfig({
+  base: '/',
   plugins: [
     tanstackRouter({ target: 'react', autoCodeSplitting: true }),
     react({

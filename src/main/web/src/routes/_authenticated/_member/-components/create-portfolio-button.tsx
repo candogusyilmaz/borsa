@@ -1,9 +1,10 @@
 import { ActionIcon, Button, Group, Modal, Stack, Text, TextInput, ThemeIcon, Title } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconCheck, IconFolder, IconFolderPlus, IconPlus, IconSparkles, IconX } from '@tabler/icons-react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { mutations, queries } from '~/api';
+import { queries } from '~/api';
+import { $api } from '~/api/openapi';
 import { alerts } from '~/lib/alert';
 import classes from './create-portfolio-button.module.css';
 
@@ -36,8 +37,7 @@ type CreatePortfolioModalProps = {
 
 function CreatePortfolioModal({ opened, close }: CreatePortfolioModalProps) {
   const client = useQueryClient();
-  const mutation = useMutation({
-    ...mutations.portfolio.createPortfolio,
+  const mutation = $api.useMutation('post', '/api/portfolios', {
     onSuccess: () => {
       close();
       alerts.success('Portfolio created successfully');
@@ -57,7 +57,7 @@ function CreatePortfolioModal({ opened, close }: CreatePortfolioModalProps) {
       return;
     }
 
-    mutation.mutate({ name });
+    mutation.mutate({ body: { name } });
   };
 
   return (

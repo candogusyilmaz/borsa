@@ -4,1126 +4,1126 @@
  */
 
 export interface paths {
-    "/api/portfolios": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["fetchPortfolio"];
-        put?: never;
-        post: operations["createPortfolio"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+  '/api/portfolios': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/portfolios/{portfolioId}/trades/undo/{holdingId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["undo"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['fetchPortfolio'];
+    put?: never;
+    post: operations['createPortfolio'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portfolios/{portfolioId}/trades/undo/{holdingId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/portfolios/{portfolioId}/trades/sell": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["sell"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['undo'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portfolios/{portfolioId}/trades/sell': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/portfolios/{portfolioId}/trades/import": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["importTransactions"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['sell'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portfolios/{portfolioId}/trades/import': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/portfolios/{portfolioId}/trades/buy": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["buy"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['importTransactions'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portfolios/{portfolioId}/trades/buy': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/portfolios/{portfolioId}/trades/bulk": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["bulk"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['buy'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portfolios/{portfolioId}/trades/bulk': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/portfolios/{portfolioId}/archive": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["archivePortfolio"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['bulk'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portfolios/{portfolioId}/archive': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/dashboards": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getAllDashboards"];
-        put?: never;
-        post: operations["createDashboard"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['archivePortfolio'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/dashboards': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/auth/token": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["createAccessToken"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['getAllDashboards'];
+    put?: never;
+    post: operations['createDashboard'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/auth/token': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/auth/register": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["register"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['createAccessToken'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/auth/register': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/auth/refresh-token": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["refreshAccessToken"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['register'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/auth/refresh-token': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/auth/google": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["googleLogin"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['refreshAccessToken'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/auth/google': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/account/clear-my-data": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["clearMyData"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['googleLogin'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/account/clear-my-data': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/trades": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["fetchTrades"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['clearMyData'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/trades': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/positions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["fetchPositions"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['fetchTrades'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/positions': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/positions/{positionId}/active-trades": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["fetchActiveTrades"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['fetchPositions'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/positions/{positionId}/active-trades': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/portfolios/{portfolioId}/trades": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["fetchTrades_1"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['fetchActiveTrades'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portfolios/{portfolioId}/trades': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/portfolios/{portfolioId}/analytics/monthly-revenue-overview": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getMonthlyRevenueOverview"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['fetchTrades_1'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/portfolios/{portfolioId}/analytics/monthly-revenue-overview': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/instruments": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["fetchInstruments"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['getMonthlyRevenueOverview'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/instruments': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/dashboards/{dashboardId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getDashboard"];
-        put?: never;
-        post?: never;
-        delete: operations["deleteDashboard"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['fetchInstruments'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/dashboards/{dashboardId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/dashboards/{dashboardId}/transactions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getDashboardTransactions"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['getDashboard'];
+    put?: never;
+    post?: never;
+    delete: operations['deleteDashboard'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/dashboards/{dashboardId}/transactions': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/dashboards/default": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getDefaultDashboard"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['getDashboardTransactions'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/dashboards/default': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/currencies": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getAllCurrencies"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['getDefaultDashboard'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/currencies': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
+    get: operations['getAllCurrencies'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: {
-        CreatePortfolioRequest: {
-            name?: string;
-        };
-        TradeRequest: {
-            /** Format: int64 */
-            stockId: number;
-            currencyCode: string;
-            quantity: number;
-            price: number;
-            commission?: number;
-            /** Format: date-time */
-            actionDate: string;
-            notes?: string;
-            tags?: string[];
-        };
-        BulkTransactionRequest: {
-            /** @enum {string} */
-            type?: "BUY" | "SELL";
-            /** Format: int64 */
-            stockId: number;
-            quantity: number;
-            price: number;
-            commission?: number;
-            /** Format: date-time */
-            actionDate: string;
-        };
-        CreateDashboardRequest: {
-            name?: string;
-            currencyId?: string;
-            portfolioIds?: string[];
-        };
-        TokenCreateRequest: {
-            username?: string;
-            password?: string;
-        };
-        TokenCreateResponse: {
-            name?: string;
-            email?: string;
-            token?: string;
-            permissions?: string[];
-        };
-        UserRegistrationRequest: {
-            name: string;
-            /** Format: email */
-            email: string;
-            password: string;
-        };
-        GoogleTokenRequest: {
-            token?: string;
-        };
-        PortfolioView: {
-            id: string;
-            name: string;
-        };
-        PositionView: {
-            positionId: string;
-            instrumentSymbol: string;
-            instrumentName: string;
-            currencyCode: string;
-            portfolio: components["schemas"]["PortfolioView"];
-        };
-        TradeInfo: {
-            id: string;
-            position: components["schemas"]["PositionView"];
-            /** @enum {string} */
-            type: "BUY" | "SELL";
-            quantity: number;
-            price: number;
-            newQuantity: number;
-            newTotal: number;
-            profit?: number;
-            /** Format: date-time */
-            actionDate: string;
-            tags?: string[];
-            notes?: string;
-        };
-        InstrumentView: {
-            id: string;
-            name: string;
-            symbol: string;
-            last?: number;
-            dailyChange?: number;
-            /** Format: date-time */
-            updatedAt?: string;
-        };
-        PositionInfo: {
-            id: string;
-            instrument: components["schemas"]["InstrumentView"];
-            portfolio: components["schemas"]["PortfolioView"];
-            quantity: number;
-            total: number;
-            avgCost: number;
-            currencyCode: string;
-        };
-        BasicPortfolioView: {
-            id?: string;
-            name?: string;
-        };
-        Item: {
-            /** Format: date-time */
-            date?: string;
-            /** Format: date-time */
-            createdAt?: string;
-            /** @enum {string} */
-            type?: "BUY" | "SELL";
-            holdingId?: string;
-            symbol?: string;
-            price?: number;
-            quantity?: number;
-            profit?: number;
-            returnPercentage?: number;
-            /** @enum {string} */
-            performanceCategory?: "EXCELLENT" | "GOOD" | "MODERATE" | "POOR";
-            latest?: boolean;
-            total?: number;
-        };
-        TradeHistory: {
-            trades?: components["schemas"]["Item"][];
-        };
-        Month: {
-            /** Format: int32 */
-            month: number;
-            profit: number;
-        };
-        MonthlyRevenueOverview: {
-            /** Format: int32 */
-            year: number;
-            data: components["schemas"]["Month"][];
-        };
-        InstrumentInfo: {
-            id: string;
-            symbol: string;
-            name: string;
-            supportedCurrencies: string[];
-        };
-        BasicDashboardView: {
-            id?: string;
-            name?: string;
-            isDefault?: boolean;
-        };
-        DailyChange: {
-            currentValue?: number;
-            previousValue?: number;
-            percentageChange?: number;
-            currencyCode?: string;
-        };
-        DashboardView: {
-            id?: string;
-            name?: string;
-            currencyCode?: string;
-            isDefault?: boolean;
-            dailyChange?: components["schemas"]["DailyChange"];
-            realizedGains?: components["schemas"]["RealizedGains"];
-            totalBalance?: components["schemas"]["TotalBalance"];
-        };
-        RealizedGains: {
-            currentPeriod?: number;
-            previousPeriod?: number;
-            percentageChange?: number;
-            currencyCode?: string;
-        };
-        TotalBalance: {
-            value?: number;
-            cost?: number;
-            percentageChange?: number;
-            currencyCode?: string;
-        };
-        SelectItem: {
-            value: string;
-            label: string;
-        };
+  schemas: {
+    CreatePortfolioRequest: {
+      name?: string;
     };
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+    TradeRequest: {
+      /** Format: int64 */
+      stockId: number;
+      currencyCode: string;
+      quantity: number;
+      price: number;
+      commission?: number;
+      /** Format: date-time */
+      actionDate: string;
+      notes?: string;
+      tags?: string[];
+    };
+    BulkTransactionRequest: {
+      /** @enum {string} */
+      type?: 'BUY' | 'SELL';
+      /** Format: int64 */
+      stockId: number;
+      quantity: number;
+      price: number;
+      commission?: number;
+      /** Format: date-time */
+      actionDate: string;
+    };
+    CreateDashboardRequest: {
+      name?: string;
+      currencyId?: string;
+      portfolioIds?: string[];
+    };
+    TokenCreateRequest: {
+      username?: string;
+      password?: string;
+    };
+    TokenCreateResponse: {
+      name?: string;
+      email?: string;
+      token?: string;
+      permissions?: string[];
+    };
+    UserRegistrationRequest: {
+      name: string;
+      /** Format: email */
+      email: string;
+      password: string;
+    };
+    GoogleTokenRequest: {
+      token?: string;
+    };
+    PortfolioView: {
+      id: string;
+      name: string;
+    };
+    PositionView: {
+      positionId: string;
+      instrumentSymbol: string;
+      instrumentName: string;
+      currencyCode: string;
+      portfolio: components['schemas']['PortfolioView'];
+    };
+    TradeInfo: {
+      id: string;
+      position: components['schemas']['PositionView'];
+      /** @enum {string} */
+      type: 'BUY' | 'SELL';
+      quantity: number;
+      price: number;
+      newQuantity: number;
+      newTotal: number;
+      profit?: number;
+      /** Format: date-time */
+      actionDate: string;
+      tags?: string[];
+      notes?: string;
+    };
+    InstrumentView: {
+      id: string;
+      name: string;
+      symbol: string;
+      last?: number;
+      dailyChange?: number;
+      /** Format: date-time */
+      updatedAt?: string;
+    };
+    PositionInfo: {
+      id: string;
+      instrument: components['schemas']['InstrumentView'];
+      portfolio: components['schemas']['PortfolioView'];
+      quantity: number;
+      total: number;
+      avgCost: number;
+      currencyCode: string;
+    };
+    BasicPortfolioView: {
+      id?: string;
+      name?: string;
+    };
+    Item: {
+      /** Format: date-time */
+      date?: string;
+      /** Format: date-time */
+      createdAt?: string;
+      /** @enum {string} */
+      type?: 'BUY' | 'SELL';
+      holdingId?: string;
+      symbol?: string;
+      price?: number;
+      quantity?: number;
+      profit?: number;
+      returnPercentage?: number;
+      /** @enum {string} */
+      performanceCategory?: 'EXCELLENT' | 'GOOD' | 'MODERATE' | 'POOR';
+      latest?: boolean;
+      total?: number;
+    };
+    TradeHistory: {
+      trades?: components['schemas']['Item'][];
+    };
+    Month: {
+      /** Format: int32 */
+      month: number;
+      profit: number;
+    };
+    MonthlyRevenueOverview: {
+      /** Format: int32 */
+      year: number;
+      data: components['schemas']['Month'][];
+    };
+    InstrumentInfo: {
+      id: string;
+      symbol: string;
+      name: string;
+      supportedCurrencies: string[];
+    };
+    BasicDashboardView: {
+      id?: string;
+      name?: string;
+      isDefault?: boolean;
+    };
+    DailyChange: {
+      currentValue?: number;
+      previousValue?: number;
+      percentageChange?: number;
+      currencyCode?: string;
+    };
+    DashboardView: {
+      id?: string;
+      name?: string;
+      currencyCode?: string;
+      isDefault?: boolean;
+      dailyChange?: components['schemas']['DailyChange'];
+      realizedGains?: components['schemas']['RealizedGains'];
+      totalBalance?: components['schemas']['TotalBalance'];
+    };
+    RealizedGains: {
+      currentPeriod?: number;
+      previousPeriod?: number;
+      percentageChange?: number;
+      currencyCode?: string;
+    };
+    TotalBalance: {
+      value?: number;
+      cost?: number;
+      percentageChange?: number;
+      currencyCode?: string;
+    };
+    SelectItem: {
+      value: string;
+      label: string;
+    };
+  };
+  responses: never;
+  parameters: never;
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    fetchPortfolio: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["BasicPortfolioView"][];
-                };
-            };
-        };
+  fetchPortfolio: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    createPortfolio: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreatePortfolioRequest"];
-            };
+        content: {
+          '*/*': components['schemas']['BasicPortfolioView'][];
         };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+      };
     };
-    undo: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                holdingId: number;
-                portfolioId: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No Content */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  };
+  createPortfolio: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    sell: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                portfolioId: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TradeRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreatePortfolioRequest'];
+      };
     };
-    importTransactions: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: {
-            content: {
-                "application/json": {
-                    /** Format: binary */
-                    file: string;
-                };
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["BulkTransactionRequest"][];
-                };
-            };
-        };
+        content?: never;
+      };
     };
-    buy: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                portfolioId: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TradeRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  };
+  undo: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        holdingId: number;
+        portfolioId: number;
+      };
+      cookie?: never;
     };
-    bulk: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                portfolioId: number;
-            };
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description No Content */
+      204: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["BulkTransactionRequest"][];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+        content?: never;
+      };
     };
-    archivePortfolio: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                portfolioId: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description No Content */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+  };
+  sell: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        portfolioId: number;
+      };
+      cookie?: never;
     };
-    getAllDashboards: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["BasicDashboardView"][];
-                };
-            };
-        };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['TradeRequest'];
+      };
     };
-    createDashboard: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateDashboardRequest"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+        content?: never;
+      };
     };
-    createAccessToken: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TokenCreateRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["TokenCreateResponse"];
-                };
-            };
-        };
+  };
+  importTransactions: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    register: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: {
+      content: {
+        'application/json': {
+          /** Format: binary */
+          file: string;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UserRegistrationRequest"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["TokenCreateResponse"];
-                };
-            };
-        };
+      };
     };
-    refreshAccessToken: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: {
-                "refresh-token"?: string;
-            };
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["TokenCreateResponse"];
-                };
-            };
+        content: {
+          '*/*': components['schemas']['BulkTransactionRequest'][];
         };
+      };
     };
-    googleLogin: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["GoogleTokenRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["TokenCreateResponse"];
-                };
-            };
-        };
+  };
+  buy: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        portfolioId: number;
+      };
+      cookie?: never;
     };
-    clearMyData: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['TradeRequest'];
+      };
     };
-    fetchTrades: {
-        parameters: {
-            query?: {
-                portfolioId?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["TradeInfo"][];
-                };
-            };
-        };
+        content?: never;
+      };
     };
-    fetchPositions: {
-        parameters: {
-            query?: {
-                portfolioId?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PositionInfo"][];
-                };
-            };
-        };
+  };
+  bulk: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        portfolioId: number;
+      };
+      cookie?: never;
     };
-    fetchActiveTrades: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                positionId: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["TradeInfo"][];
-                };
-            };
-        };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['BulkTransactionRequest'][];
+      };
     };
-    fetchTrades_1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                portfolioId: number;
-            };
-            cookie?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["TradeHistory"];
-                };
-            };
-        };
+        content?: never;
+      };
     };
-    getMonthlyRevenueOverview: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                portfolioId: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["MonthlyRevenueOverview"][];
-                };
-            };
-        };
+  };
+  archivePortfolio: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        portfolioId: number;
+      };
+      cookie?: never;
     };
-    fetchInstruments: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description No Content */
+      204: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["InstrumentInfo"][];
-                };
-            };
-        };
+        content?: never;
+      };
     };
-    getDashboard: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                dashboardId: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["DashboardView"];
-                };
-            };
-        };
+  };
+  getAllDashboards: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    deleteDashboard: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                dashboardId: number;
-            };
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description No Content */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
+        content: {
+          '*/*': components['schemas']['BasicDashboardView'][];
         };
+      };
     };
-    getDashboardTransactions: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                dashboardId: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": Record<string, never>;
-                };
-            };
-        };
+  };
+  createDashboard: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    getDefaultDashboard: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["DashboardView"];
-                };
-            };
-        };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateDashboardRequest'];
+      };
     };
-    getAllCurrencies: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    responses: {
+      /** @description Created */
+      201: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["SelectItem"][];
-                };
-            };
-        };
+        content?: never;
+      };
     };
+  };
+  createAccessToken: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['TokenCreateRequest'];
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          '*/*': components['schemas']['TokenCreateResponse'];
+        };
+      };
+    };
+  };
+  register: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UserRegistrationRequest'];
+      };
+    };
+    responses: {
+      /** @description Created */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          '*/*': components['schemas']['TokenCreateResponse'];
+        };
+      };
+    };
+  };
+  refreshAccessToken: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: {
+        'refresh-token'?: string;
+      };
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          '*/*': components['schemas']['TokenCreateResponse'];
+        };
+      };
+    };
+  };
+  googleLogin: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['GoogleTokenRequest'];
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          '*/*': components['schemas']['TokenCreateResponse'];
+        };
+      };
+    };
+  };
+  clearMyData: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  fetchTrades: {
+    parameters: {
+      query?: {
+        portfolioId?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          '*/*': components['schemas']['TradeInfo'][];
+        };
+      };
+    };
+  };
+  fetchPositions: {
+    parameters: {
+      query?: {
+        portfolioId?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          '*/*': components['schemas']['PositionInfo'][];
+        };
+      };
+    };
+  };
+  fetchActiveTrades: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        positionId: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          '*/*': components['schemas']['TradeInfo'][];
+        };
+      };
+    };
+  };
+  fetchTrades_1: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        portfolioId: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          '*/*': components['schemas']['TradeHistory'];
+        };
+      };
+    };
+  };
+  getMonthlyRevenueOverview: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        portfolioId: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          '*/*': components['schemas']['MonthlyRevenueOverview'][];
+        };
+      };
+    };
+  };
+  fetchInstruments: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          '*/*': components['schemas']['InstrumentInfo'][];
+        };
+      };
+    };
+  };
+  getDashboard: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        dashboardId: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          '*/*': components['schemas']['DashboardView'];
+        };
+      };
+    };
+  };
+  deleteDashboard: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        dashboardId: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No Content */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+    };
+  };
+  getDashboardTransactions: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        dashboardId: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          '*/*': Record<string, never>;
+        };
+      };
+    };
+  };
+  getDefaultDashboard: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          '*/*': components['schemas']['DashboardView'];
+        };
+      };
+    };
+  };
+  getAllCurrencies: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          '*/*': components['schemas']['SelectItem'][];
+        };
+      };
+    };
+  };
 }

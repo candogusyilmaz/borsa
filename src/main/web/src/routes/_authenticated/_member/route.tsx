@@ -51,6 +51,7 @@ const NAV_LINKS = [
 
 function createPortfolioLink(portfolio: BasicPortfolioView) {
   return {
+    key: `portfolio-sidebar-link-${portfolio.id}`,
     label: portfolio.name,
     icon: <IconFolderOpen size={20} />,
     options: linkOptions({
@@ -174,7 +175,7 @@ const Sidebar = () => {
           </div>
           <nav className="nav-list">
             {portfolioLinks.map((link) => (
-              <SidebarLink key={link.options.to} label={link.label} icon={link.icon} options={link.options} onClick={() => {}} />
+              <SidebarLink key={link.key} label={link.label} icon={link.icon} options={link.options} onClick={() => {}} />
             ))}
           </nav>
         </div>
