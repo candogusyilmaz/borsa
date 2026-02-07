@@ -40,6 +40,13 @@ maintainability, and user experience.
     - Environment-based configuration
     - Secure secrets management
 
+- Market Data Integration
+    - Automated data ingestion from multiple providers (Forex, BIST, upcoming crypto APIs...)
+    - Dynamic adapter system for new instruments
+    - Scheduled price updates
+    - Generic DTO-based integration layer
+    - AI-assisted data enrichment (Gemini API)
+
 ---
 
 ## 🛠️ Tech Stack
@@ -52,6 +59,21 @@ maintainability, and user experience.
 - JPA / Hibernate
 - MyBatis (native queries)
 - Flyway (database migrations)
+- QueryDSL (selectively used, gradually refactored where native queries provide better performance and clarity)
+- Domain-Driven Design (aggregate roots, rich domain models, encapsulated business logic
+
+### Data Processing Architecture
+
+The system includes a modular market data ingestion layer.
+
+New data sources can be integrated by defining:
+
+- Source URL
+- DTO mapping
+- Update strategy
+- Schedule via market-updaters in application.yml
+
+This allows new instruments to be added without modifying core business logic.
 
 ### Frontend (under active modernization)
 
