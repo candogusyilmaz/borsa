@@ -47,7 +47,7 @@
         join portfolio.portfolios pf on pf.id = pos.portfolio_id and pf.archived = false
         left join portfolio.transaction_performance tp on tp.transaction_id = t.id
         <where>
-            pf.user_id = #{userId} and pos.quantity > 0
+            pf.user_id = #{userId}
             <if test="query != null">
                 <if test="query.portfolioId != null">
                     and pf.id = #{query.portfolioId}
