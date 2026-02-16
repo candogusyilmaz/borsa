@@ -4,6 +4,7 @@ import dev.canverse.stocks.domain.entity.portfolio.Dashboard;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
@@ -51,6 +52,10 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private Instant updatedAt;
 
+    @Column(nullable = false)
+    @Setter(AccessLevel.NONE)
+    private Boolean onboardingCompleted;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserRole> userRoles = new HashSet<>();
 
@@ -65,6 +70,7 @@ public class User implements UserDetails {
         this.password = password;
         this.isEnabled = true;
         this.lastLoginAt = Instant.now();
+        this.onboardingCompleted = false;
     }
 
     @Override
@@ -102,5 +108,9 @@ public class User implements UserDetails {
         }
 
         this.dashboards.add(dashboard);
+    }
+
+    public void completeOnboarding() {
+        this.onboardingCompleted = true;
     }
 }

@@ -5,6 +5,7 @@ import { useAutoRefreshToken } from '~/hooks/use-auto-refresh-token';
 
 export const Route = createFileRoute('/_authenticated')({
   component: RouteComponent,
+
   beforeLoad: async (p) => {
     if (!p.context.auth.isAuthenticated) throw redirect({ to: '/login' });
   },

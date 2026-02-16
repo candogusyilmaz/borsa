@@ -25,6 +25,10 @@ public class Portfolio implements Serializable {
     @Column(nullable = false)
     private String name;
 
+    @NotEmpty
+    @Column(nullable = false)
+    private String color;
+
     @NotNull
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private User user;
@@ -45,12 +49,31 @@ public class Portfolio implements Serializable {
     protected Portfolio() {
     }
 
-    public Portfolio(User user, String name) {
+    public Portfolio(User user, String name, String color) {
         this.user = user;
         this.name = name;
+        setColor(color);
     }
 
     public void archive() {
         this.archived = true;
+    }
+
+    public void setColor(String color) {
+        var validColors = List.of(
+                "#ef4444", // Red
+                "#3b82f6", // Blue
+                "#a855f7", // Purple
+                "#10b981", // Emerald
+                "#f59e0b", // Amber
+                "#f43f5e", // Rose
+                "#475569"  // Slate
+        );
+
+        if (!validColors.contains(color.toLowerCase())) {
+            throw new IllegalArgumentException("Invalid color code.");
+        }
+
+        this.color = color;
     }
 }

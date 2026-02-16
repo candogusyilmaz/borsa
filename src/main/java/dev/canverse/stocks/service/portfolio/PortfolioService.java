@@ -24,7 +24,7 @@ public class PortfolioService {
 
     @Transactional
     public void createPortfolio(String name) {
-        var portfolio = new Portfolio(AuthenticationProvider.getUser(), name);
+        var portfolio = new Portfolio(AuthenticationProvider.getUser(), name, "#3b82f6");
         portfolioRepository.save(portfolio);
 
         var defaultDashboard = dashboardRepository.findDefaultByUserId(AuthenticationProvider.getUser().getId());

@@ -1,4 +1,4 @@
-import { MantineProvider } from '@mantine/core';
+import { type DefaultMantineColor, type MantineColorsTuple, MantineProvider } from '@mantine/core';
 import { DatesProvider } from '@mantine/dates';
 import { Notifications } from '@mantine/notifications';
 import { GoogleOAuthProvider } from '@react-oauth/google';
@@ -39,6 +39,14 @@ const router = createRouter({
   defaultPreload: 'intent'
 });
 
+type ExtendedCustomColors = 'slate' | 'accent' | DefaultMantineColor;
+
+declare module '@mantine/core' {
+  export interface MantineThemeColorsOverride {
+    colors: Record<ExtendedCustomColors, MantineColorsTuple>;
+  }
+}
+
 declare module '@tanstack/react-router' {
   interface Register {
     router: typeof router;
@@ -70,7 +78,20 @@ createRoot(document.getElementById('root')!).render(
                 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji',
               colors: {
                 dark: ['#c1cbd5', '#96a3af', '#6c7a88', '#49525b', '#262a2e', '#262a2e', '#202325', '#1a1b1d', '#131415', '#0d0d0d'],
-                accent: ['#ebecff', '#d3d4ff', '#a3a5f8', '#6366f1', '#474aed', '#2d2feb', '#1d22eb', '#1016d1', '#0713bc', '#000ea6']
+                accent: ['#ebecff', '#d3d4ff', '#a3a5f8', '#6366f1', '#474aed', '#2d2feb', '#1d22eb', '#1016d1', '#0713bc', '#000ea6'],
+                slate: [
+                  'oklch(98.4% 0.003 247.858)',
+                  'oklch(96.8% 0.007 247.896)',
+                  'oklch(92.9% 0.013 255.508)',
+                  'oklch(86.9% 0.022 252.894)',
+                  'oklch(70.4% 0.04 256.788)',
+                  'oklch(55.4% 0.046 257.417)',
+                  'oklch(44.6% 0.043 257.281)',
+                  'oklch(37.2% 0.044 257.287)',
+                  'oklch(27.9% 0.041 260.031)',
+                  'oklch(20.8% 0.042 265.755)',
+                  'oklch(12.9% 0.042 264.695)'
+                ]
               },
               primaryColor: 'accent',
               primaryShade: 4,

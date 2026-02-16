@@ -7,6 +7,8 @@ import dev.canverse.stocks.repository.CurrencyRepository;
 import dev.canverse.stocks.repository.DashboardRepository;
 import dev.canverse.stocks.repository.PortfolioRepository;
 import dev.canverse.stocks.repository.UserRepository;
+import dev.canverse.stocks.security.AuthenticationProvider;
+import dev.canverse.stocks.service.account.model.OnboardingRequest;
 import dev.canverse.stocks.service.account.model.UserRegistrationRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -45,6 +47,12 @@ public class UserService implements UserDetailsService {
         return userRepository.findByEmailIncludePermissions(email);
     }
 
+    public boolean getOnboardingStatus() {
+        return userRepository.findById(AuthenticationProvider.getUser().getId())
+                .map(User::getOnboardingCompleted)
+                .orElseThrow(() -> new IllegalArgumentException("User not found."));
+    }
+
     @Transactional
     public User register(UserRegistrationRequest request) {
         verifyEmailDomain(request.email());
@@ -54,17 +62,10 @@ public class UserService implements UserDetailsService {
             throw new IllegalArgumentException("A user with this email already exists.");
         }
 
+
         var user = new User(normalizedEmail, passwordEncoder.encode(request.password()));
         user.setName(request.name());
         userRepository.save(user);
-
-        var portfolio = portfolioRepository.save(new Portfolio(user, "Portfolio"));
-
-        var dashboard = new Dashboard(user, "Dashboard", currencyRepository.findByCode("TRY"));
-        dashboard.setDefault(true);
-        dashboard.addPortfolio(portfolio);
-
-        dashboardRepository.save(dashboard);
 
         return user;
     }
@@ -83,5 +84,22 @@ public class UserService implements UserDetailsService {
 
     public void updateLastLogin(Long userId) {
         userRepository.updateLastLoginAtById(userId);
+    }
+
+    @Transactional
+    public void completeOnboarding(OnboardingRequest request) {
+        var user = userRepository.findById(AuthenticationProvider.getUser().getId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found."));
+
+        var portfolio = new Portfolio(user, request.portfolio().portfolioName(), request.portfolio().color());
+        portfolioRepository.save(portfolio);
+
+        var dashboard = new Dashboard(user, request.dashboardName(), currencyRepository.findByCode(request.currencyCode()));
+        dashboard.setDefault(true);
+        dashboard.addPortfolio(portfolio);
+        dashboardRepository.save(dashboard);
+
+        user.completeOnboarding();
+        userRepository.save(user);
     }
 }

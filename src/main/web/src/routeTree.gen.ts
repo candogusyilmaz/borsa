@@ -13,6 +13,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RegisterIndexRouteImport } from './routes/register/index'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
+import { Route as AuthenticatedOnboardingRouteRouteImport } from './routes/_authenticated/onboarding/route'
 import { Route as AuthenticatedMemberRouteRouteImport } from './routes/_authenticated/_member/route'
 import { Route as AuthenticatedMemberTradesRouteRouteImport } from './routes/_authenticated/_member/trades/route'
 import { Route as AuthenticatedMemberPositionsRouteRouteImport } from './routes/_authenticated/_member/positions/route'
@@ -38,6 +39,12 @@ const LoginIndexRoute = LoginIndexRouteImport.update({
   path: '/login/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedOnboardingRouteRoute =
+  AuthenticatedOnboardingRouteRouteImport.update({
+    id: '/onboarding',
+    path: '/onboarding',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedMemberRouteRoute =
   AuthenticatedMemberRouteRouteImport.update({
     id: '/_member',
@@ -70,6 +77,7 @@ const AuthenticatedMemberPortfoliosPortfolioIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/onboarding': typeof AuthenticatedOnboardingRouteRoute
   '/login': typeof LoginIndexRoute
   '/register': typeof RegisterIndexRoute
   '/dashboard': typeof AuthenticatedMemberDashboardRouteRoute
@@ -79,6 +87,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/onboarding': typeof AuthenticatedOnboardingRouteRoute
   '/login': typeof LoginIndexRoute
   '/register': typeof RegisterIndexRoute
   '/dashboard': typeof AuthenticatedMemberDashboardRouteRoute
@@ -91,6 +100,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/_authenticated/_member': typeof AuthenticatedMemberRouteRouteWithChildren
+  '/_authenticated/onboarding': typeof AuthenticatedOnboardingRouteRoute
   '/login/': typeof LoginIndexRoute
   '/register/': typeof RegisterIndexRoute
   '/_authenticated/_member/dashboard': typeof AuthenticatedMemberDashboardRouteRoute
@@ -102,6 +112,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/onboarding'
     | '/login'
     | '/register'
     | '/dashboard'
@@ -111,6 +122,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/onboarding'
     | '/login'
     | '/register'
     | '/dashboard'
@@ -122,6 +134,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/_authenticated/_member'
+    | '/_authenticated/onboarding'
     | '/login/'
     | '/register/'
     | '/_authenticated/_member/dashboard'
@@ -166,6 +179,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/login'
       preLoaderRoute: typeof LoginIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/onboarding': {
+      id: '/_authenticated/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof AuthenticatedOnboardingRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/_member': {
       id: '/_authenticated/_member'
@@ -230,10 +250,12 @@ const AuthenticatedMemberRouteRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedMemberRouteRoute: typeof AuthenticatedMemberRouteRouteWithChildren
+  AuthenticatedOnboardingRouteRoute: typeof AuthenticatedOnboardingRouteRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMemberRouteRoute: AuthenticatedMemberRouteRouteWithChildren,
+  AuthenticatedOnboardingRouteRoute: AuthenticatedOnboardingRouteRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
