@@ -32,7 +32,7 @@ This document outlines recent upgrades and improvements to the Borsa application
 
 **Action Required**:
 - Review and set `ALLOWED_CORS_ORIGINS` to match your deployment domains
-- Default includes `http://localhost:5173/` and `https://borsa.canverse.dev`
+- Default includes `http://localhost:5173` and `https://borsa.canverse.dev`
 
 **Backward Compatibility**:
 - Defaults match previous hardcoded values

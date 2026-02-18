@@ -72,7 +72,7 @@ export FLYWAY_ENABLED=false
 |----------|-------------|---------|
 | `RSA_PRIVATE_KEY` | RSA private key for JWT signing | `classpath:certs/private.pem` |
 | `RSA_PUBLIC_KEY` | RSA public key for JWT verification | `classpath:certs/public.pem` |
-| `ALLOWED_CORS_ORIGINS` | Comma-separated list of allowed CORS origins | `http://localhost:5173/,https://borsa.canverse.dev` |
+| `ALLOWED_CORS_ORIGINS` | Comma-separated list of allowed CORS origins | `http://localhost:5173,https://borsa.canverse.dev` |
 | `ALLOWED_EMAIL_DOMAINS` | Comma-separated list of allowed email domains | `gmail.com,yahoo.com,hotmail.com,outlook.com,icloud.com` |
 | `FLYWAY_ENABLED` | Enable/disable Flyway migrations | `true` |
 
