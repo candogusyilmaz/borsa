@@ -121,3 +121,48 @@ A live demo of the platform is available at: [https://borsa.canverse.dev](https:
 ![positions.png](docs/screenshots/positions.png)
 ![trades.png](docs/screenshots/trades.png)
 ![portfolio-1.png](docs/screenshots/portfolio-1.png)
+
+---
+
+## 📚 Documentation
+
+### Configuration & Deployment
+- [Security Configuration Guide](docs/SECURITY_CONFIGURATION.md) - Environment variables, RSA keys, CORS, and security best practices
+- [Upgrade Guide](docs/UPGRADE_GUIDE.md) - Recent changes, migration checklist, and testing procedures
+
+### Architecture & Development
+- [Codebase Analysis Summary](docs/CODEBASE_ANALYSIS_SUMMARY.md) - Comprehensive analysis of improvements and architecture
+- [API Version Clarification](docs/API_VERSION_CLARIFICATION.md) - API endpoint documentation and versioning strategy
+
+---
+
+## 🔧 Configuration
+
+### Required Environment Variables
+
+For production deployment, configure the following environment variables:
+
+```bash
+# Database
+export DB_URL="jdbc:postgresql://localhost:5432/stocks"
+export DB_USERNAME="postgres"
+export DB_PASSWORD="your_password"
+
+# Security - RSA Keys for JWT
+export RSA_PRIVATE_KEY="your-rsa-private-key"
+export RSA_PUBLIC_KEY="your-rsa-public-key"
+
+# CORS Configuration
+export ALLOWED_CORS_ORIGINS="https://your-domain.com"
+
+# Email Domain Restrictions
+export ALLOWED_EMAIL_DOMAINS="gmail.com,yahoo.com,custom-domain.com"
+
+# External APIs
+export FOREX_RATE_API_KEY="your_forex_api_key"
+export GEMINI_API_KEY="your_gemini_api_key"
+export GOOGLE_CLIENT_ID="your_google_client_id"
+export GOOGLE_CLIENT_SECRET="your_google_client_secret"
+```
+
+See [Security Configuration Guide](docs/SECURITY_CONFIGURATION.md) for detailed configuration instructions.
