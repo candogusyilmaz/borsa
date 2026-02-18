@@ -147,7 +147,7 @@ rsa:
 # Security Configuration (new)
 app:
   security:
-    allowed-origins: ${ALLOWED_CORS_ORIGINS:http://localhost:5173/,https://borsa.canverse.dev}
+    allowed-origins: ${ALLOWED_CORS_ORIGINS:http://localhost:5173,https://borsa.canverse.dev}
     allowed-email-domains: ${ALLOWED_EMAIL_DOMAINS:gmail.com,yahoo.com,hotmail.com,outlook.com,icloud.com}
 
 # Flyway (now enabled by default)

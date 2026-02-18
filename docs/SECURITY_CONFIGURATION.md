@@ -39,10 +39,10 @@ openssl rsa -in private.pem -pubout -out public.pem
 Configure allowed CORS origins using the `ALLOWED_CORS_ORIGINS` environment variable:
 
 ```bash
-export ALLOWED_CORS_ORIGINS="http://localhost:5173/,https://borsa.canverse.dev,https://your-custom-domain.com"
+export ALLOWED_CORS_ORIGINS="http://localhost:5173,https://borsa.canverse.dev,https://your-custom-domain.com"
 ```
 
-**Default**: `http://localhost:5173/,https://borsa.canverse.dev`
+**Default**: `http://localhost:5173,https://borsa.canverse.dev`
 
 ## Email Domain Restrictions
 
