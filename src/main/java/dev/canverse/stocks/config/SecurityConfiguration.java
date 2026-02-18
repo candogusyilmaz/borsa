@@ -29,7 +29,6 @@ import java.util.Arrays;
 @EnableMethodSecurity(jsr250Enabled = true)
 @RequiredArgsConstructor
 public class SecurityConfiguration {
-
     private final AppSecurityProperties appSecurityProperties;
 
     @Bean
