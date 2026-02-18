@@ -1,4 +1,4 @@
-import { Button, Center, Divider, Group, Paper, PasswordInput, Stack, Text, TextInput, useMatches } from '@mantine/core';
+import { Button, Divider, Group, PasswordInput, Stack, TextInput } from '@mantine/core';
 import { hasLength, isEmail, useForm } from '@mantine/form';
 import { type CredentialResponse, GoogleLogin } from '@react-oauth/google';
 import { createFileRoute, Link } from '@tanstack/react-router';
@@ -6,6 +6,7 @@ import type { AxiosError } from 'axios';
 import { CanverseText } from '~/components/CanverseText';
 import { useAuthentication } from '~/lib/AuthenticationContext';
 import { alerts } from '~/lib/alert';
+import styles from '../login/auth.module.css';
 
 export const Route = createFileRoute('/register/')({
   head: () => ({
@@ -53,10 +54,6 @@ export const Route = createFileRoute('/register/')({
 function RouteComponent() {
   const navigate = Route.useNavigate();
   const { login, register } = useAuthentication();
-  const paperPadding = useMatches({
-    base: 'md',
-    sm: 0
-  });
 
   const form = useForm({
     initialValues: {
@@ -130,74 +127,57 @@ function RouteComponent() {
   }
 
   return (
-    <Center h="100dvh" px={paperPadding} w={'100%'}>
-      <Paper maw={375} radius="md">
-        <Stack gap="lg">
-          <Stack gap={0}>
-            <Text fz={26} fw={600}>
-              Create your account
-            </Text>
-            <Text c="gray.5" fz={16} fw={400}>
-              Connect to <CanverseText span /> with:
-            </Text>
-          </Stack>
-          <div style={{ colorScheme: 'light', marginBottom: '6px', width: '100%' }}>
-            <GoogleLogin
-              theme="filled_black"
-              width={'375px'}
-              size="medium"
-              onSuccess={handleSuccess}
-              context="signup"
-              text="signup_with"
-              ux_mode="popup"
-              itp_support={true}
-              logo_alignment="left"
-              useOneTap
-            />
-          </div>
+    <div className={styles.authContainer}>
+      <div className={styles.authCard}>
+        <div className={styles.authHeader}>
+          <h1 className={styles.authTitle}>Create your account</h1>
+          <p className={styles.authSubtitle}>
+            Connect to <CanverseText span /> with:
+          </p>
+        </div>
+        <div className={styles.googleButtonWrapper}>
+          <GoogleLogin
+            theme="filled_black"
+            width={'409px'}
+            size="medium"
+            onSuccess={handleSuccess}
+            context="signup"
+            text="signup_with"
+            ux_mode="popup"
+            itp_support={true}
+            logo_alignment="left"
+            useOneTap
+          />
+        </div>
+        <div className={styles.dividerWrapper}>
           <Divider label="OR SIGN UP WITH YOUR EMAIL" />
-          <form onSubmit={form.onSubmit(handleSubmit)}>
-            <Stack gap="md">
-              <Group grow align="flex-start">
-                <TextInput label="First name" placeholder="John" radius="md" withAsterisk {...form.getInputProps('firstName')} />
-                <TextInput label="Last name" placeholder="Doe" radius="md" withAsterisk {...form.getInputProps('lastName')} />
-              </Group>
-              <TextInput label="Email" placeholder="me@canverse.com" radius="md" withAsterisk {...form.getInputProps('email')} />
-              <PasswordInput label="Password" placeholder="********" radius="md" withAsterisk {...form.getInputProps('password')} />
-              <PasswordInput
-                label="Confirm password"
-                placeholder="********"
-                radius="md"
-                withAsterisk
-                {...form.getInputProps('confirmPassword')}
-              />
-              <Button
-                loading={login.isPending || register.isPending}
-                type="submit"
-                variant="filled"
-                color="teal"
-                disabled={login.isPending}>
-                Sign up
-              </Button>
-            </Stack>
-          </form>
-          <Text c="gray" size="sm">
-            Already have an acount?{' '}
-            <Text span fw={600} c="blue">
-              <Link
-                to="/login"
-                style={{
-                  color: 'inherit',
-                  textDecoration: 'none',
-                  cursor: 'pointer'
-                }}
-                disabled={login.isPending || register.isPending}>
-                Login
-              </Link>
-            </Text>
-          </Text>
-        </Stack>
-      </Paper>
-    </Center>
+        </div>
+        <form className={styles.formStack} onSubmit={form.onSubmit(handleSubmit)}>
+          <Stack gap="md">
+            <Group grow align="flex-start">
+              <TextInput label="First name" placeholder="John" withAsterisk {...form.getInputProps('firstName')} />
+              <TextInput label="Last name" placeholder="Doe" withAsterisk {...form.getInputProps('lastName')} />
+            </Group>
+            <TextInput label="Email" placeholder="me@canverse.com" withAsterisk {...form.getInputProps('email')} />
+            <PasswordInput label="Password" placeholder="********" withAsterisk {...form.getInputProps('password')} />
+            <PasswordInput label="Confirm password" placeholder="********" withAsterisk {...form.getInputProps('confirmPassword')} />
+            <Button
+              className={styles.submitButton}
+              loading={login.isPending || register.isPending}
+              type="submit"
+              fullWidth
+              disabled={login.isPending}>
+              Sign up
+            </Button>
+          </Stack>
+        </form>
+        <div className={styles.authFooter}>
+          Already have an account?{' '}
+          <Link to="/login" className={styles.authLink}>
+            Login
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }
