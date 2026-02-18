@@ -73,7 +73,7 @@ public class UserService implements UserDetailsService {
     private void verifyEmailDomain(String email) {
         var domain = email.substring(email.indexOf('@') + 1);
 
-        for (String allowedDomain : ALLOWED_DOMAINS) {
+        for (String allowedDomain : appSecurityProperties.getAllowedEmailDomains()) {
             if (domain.equalsIgnoreCase(allowedDomain)) {
                 return;
             }

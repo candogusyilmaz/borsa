@@ -23,13 +23,14 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(jsr250Enabled = true)
 @RequiredArgsConstructor
 public class SecurityConfiguration {
+
+    private final AppSecurityProperties appSecurityProperties;
 
     @Bean
     public AuthenticationManager authenticationManager(UserDetailsService userService, PasswordEncoder passwordEncoder) {
@@ -73,11 +74,11 @@ public class SecurityConfiguration {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         var configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173/", "https://borsa.canverse.dev"));
-        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowedOrigins(appSecurityProperties.getAllowedOrigins());
+        configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowCredentials(true);
-        configuration.setExposedHeaders(List.of("WWW-Authenticate"));
+        configuration.setExposedHeaders(Arrays.asList("WWW-Authenticate"));
 
         var source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

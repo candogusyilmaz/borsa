@@ -1,5 +1,6 @@
 package dev.canverse.stocks;
 
+import dev.canverse.stocks.config.AppSecurityProperties;
 import dev.canverse.stocks.config.MarketUpdaterProperties;
 import dev.canverse.stocks.security.RsaKeyProperties;
 import org.springframework.boot.SpringApplication;
@@ -10,7 +11,7 @@ import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import static org.springframework.data.web.config.EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO;
 
 @SpringBootApplication
-@EnableConfigurationProperties({RsaKeyProperties.class, MarketUpdaterProperties.class})
+@EnableConfigurationProperties({RsaKeyProperties.class, MarketUpdaterProperties.class, AppSecurityProperties.class})
 @EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO)
 public class Server {
     public static void main(String[] args) {
