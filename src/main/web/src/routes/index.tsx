@@ -2,7 +2,6 @@ import {
   IconArrowRight,
   IconBrandLinkedin,
   IconBrandTwitter,
-  IconChartBar,
   IconChartLine,
   IconCheck,
   IconCoins,
@@ -412,22 +411,12 @@ function PortfolioAnalyticsLanding() {
         <motion.nav className={styles.nav} initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           <div className={styles['nav-content']}>
             <motion.div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }} whileHover={{ scale: 1.02 }}>
-              <div
-                style={{
-                  width: '2.5rem',
-                  height: '2.5rem',
-                  borderRadius: '0.75rem',
-                  background: 'linear-gradient(to bottom right, #4f46e5, #7c3aed)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                <IconChartBar size={20} color="white" />
+              <div className="logo-group">
+                <div className="logo-icon-box">
+                  <IconTrendingUp className="logo-icon" />
+                </div>
+                <span className="logo-text">CANVERSE</span>
               </div>
-              <span style={{ fontSize: '1.25rem', fontWeight: 700 }}>
-                <span style={{ color: 'white' }}>Portfolio</span>
-                <span style={{ color: '#818cf8' }}>Analytics</span>
-              </span>
             </motion.div>
 
             <motion.button
@@ -631,20 +620,11 @@ function PortfolioAnalyticsLanding() {
               style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
               {/* Brand */}
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-                  <div
-                    style={{
-                      width: '2rem',
-                      height: '2rem',
-                      borderRadius: '0.5rem',
-                      background: 'linear-gradient(to bottom right, #4f46e5, #7c3aed)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                    <IconChartBar size={16} color="white" />
+                <div className="logo-group">
+                  <div className="logo-icon-box">
+                    <IconTrendingUp className="logo-icon" />
                   </div>
-                  <span style={{ fontWeight: 700 }}>PortfolioAnalytics</span>
+                  <span className="logo-text">CANVERSE</span>
                 </div>
                 <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.875rem' }}>
                   A personal portfolio and analytics platform for traders and investors.
