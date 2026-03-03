@@ -33,7 +33,7 @@ export function BuyTransactionForm({ stockId, close }: BuyTransactionFormProps) 
       tags: [] as string[]
     },
     validate: {
-      currencyCode: (c) => (selectedStock && selectedStock.supportedCurrencies.length > 1 ? (c ? null : true) : null),
+      currencyCode: (c) => (selectedStock && (selectedStock.supportedCurrencies?.length ?? 0) > 1 ? (c ? null : true) : null),
       stockId: (s) => (s ? null : true),
       price: (p) => (p ? null : true),
       quantity: (q) => (q ? null : true),
@@ -68,7 +68,7 @@ export function BuyTransactionForm({ stockId, close }: BuyTransactionFormProps) 
       },
       body: {
         stockId: Number(values.stockId),
-        currencyCode: selectedStock?.supportedCurrencies?.length > 1 ? values.currencyCode : selectedStock?.supportedCurrencies[0],
+        currencyCode: (selectedStock?.supportedCurrencies?.length ?? 0) > 1 ? values.currencyCode : selectedStock?.supportedCurrencies?.[0],
         price: values.price,
         quantity: values.quantity,
         commission: 0,
@@ -84,9 +84,9 @@ export function BuyTransactionForm({ stockId, close }: BuyTransactionFormProps) 
     label: `${s.name} (${s.symbol})`
   }));
 
-  const currencySelect = selectedStock?.supportedCurrencies.length > 1 && (
+  const currencySelect = (selectedStock?.supportedCurrencies?.length ?? 0) > 1 && (
     <NativeSelect
-      data={selectedStock.supportedCurrencies}
+      data={selectedStock?.supportedCurrencies ?? []}
       rightSectionWidth={24}
       mr={4}
       styles={{
