@@ -431,8 +431,8 @@ export function ColorSwatch({ color, size = 12, radius = '999px' }: { color: str
   return <span style={{ display: 'inline-block', width: size, height: size, borderRadius: toCssSize(radius), background: color }} />;
 }
 
-export function Avatar({ src, size = 32, radius = '999px' }: { src?: string; size?: number; radius?: string | number }) {
-  return <img src={src} alt="avatar" style={{ width: size, height: size, borderRadius: toCssSize(radius), objectFit: 'cover' }} />;
+export function Avatar({ src, size = 32, radius = '999px', alt = 'User avatar' }: { src?: string; size?: number; radius?: string | number; alt?: string }) {
+  return <img src={src} alt={alt} style={{ width: size, height: size, borderRadius: toCssSize(radius), objectFit: 'cover' }} />;
 }
 
 export function UnstyledButton({ children, style, ...props }: ButtonProps) {
@@ -546,11 +546,15 @@ export const Modal: any = ({ opened, onClose, title, children, size, centered = 
       type="button"
       style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: centered ? 'center' : 'flex-start', justifyContent: 'center', padding: '2rem' }}
       onClick={onClose}
+      aria-label="Close modal"
       >
       <div
         className="modal-content"
         style={{ width: toCssSize(size) ?? 'min(700px, 100%)', borderRadius: '1rem', padding: '1rem' }}
-        role="presentation">
+        onClick={(event) => event.stopPropagation()}
+        onKeyDown={(event) => event.stopPropagation()}
+        role="dialog"
+        aria-modal="true">
         {title && <Title order={4} mb="md">{title}</Title>}
         {children}
       </div>
@@ -572,6 +576,7 @@ const DrawerOverlay = () => {
       type="button"
       style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 998, border: 0, padding: 0 }}
       onClick={onClose}
+      aria-label="Close drawer"
     />
   );
 };
@@ -849,14 +854,6 @@ export function useMatches<T>(values: Record<string, T>) {
     return resolved as T;
   }, [values, width]);
 }
-
-export function DrawerPlaceholder() {
-  return null;
-}
-
-Object.assign(globalThis, {
-  __mantineReplacementsLoaded: true
-});
 
 if (typeof document !== 'undefined' && !document.getElementById('mantine-replacement-style')) {
   const style = document.createElement('style');

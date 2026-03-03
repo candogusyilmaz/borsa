@@ -43,6 +43,7 @@ function DropzoneRoot({ children, onDrop, maxFiles = Number.POSITIVE_INFINITY, m
           padding: 16,
           opacity: loading ? 0.6 : 1
         }}
+        aria-label="Drop files here or click to select"
         >
         {children}
       </button>
@@ -52,7 +53,7 @@ function DropzoneRoot({ children, onDrop, maxFiles = Number.POSITIVE_INFINITY, m
 
 function Conditional({ when, children }: { when: DropzoneState; children: ReactNode }) {
   const state = useContext(DropzoneContext);
-  if (state !== when && !(when === 'idle' && state === 'idle')) return null;
+  if (state !== when) return null;
   return <>{children}</>;
 }
 
