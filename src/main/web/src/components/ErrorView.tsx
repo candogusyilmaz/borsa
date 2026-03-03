@@ -1,4 +1,4 @@
-import { Stack, Text, ThemeIcon } from '@mantine/core';
+import { Stack, Text, ThemeIcon } from '~/lib/shadcn/core';
 import { IconAlertTriangle } from '@tabler/icons-react';
 
 export function ErrorView() {

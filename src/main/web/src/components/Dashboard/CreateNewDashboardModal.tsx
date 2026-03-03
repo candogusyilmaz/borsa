@@ -1,5 +1,5 @@
-import { Button, Checkbox, Group, Modal, ScrollArea, Select, SimpleGrid, Stack, TextInput } from '@mantine/core';
-import { useForm } from '@mantine/form';
+import { Button, Checkbox, Group, Modal, ScrollArea, Select, SimpleGrid, Stack, TextInput } from '~/lib/shadcn/core';
+import { useForm } from '~/lib/shadcn/form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { create } from 'zustand';
 import { mutations, queries } from '~/api';

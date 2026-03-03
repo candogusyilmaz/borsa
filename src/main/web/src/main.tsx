@@ -1,6 +1,6 @@
-import { MantineProvider } from '@mantine/core';
-import { DatesProvider } from '@mantine/dates';
-import { Notifications } from '@mantine/notifications';
+import { ThemeProvider } from '~/lib/shadcn/core';
+import { DatesProvider } from '~/lib/shadcn/dates';
+import { Notifications } from '~/lib/shadcn/notifications';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createRouter, RouterProvider } from '@tanstack/react-router';
@@ -55,14 +55,14 @@ createRoot(document.getElementById('root')!).render(
     <GoogleOAuthProvider clientId="11207596743-8ql23qmgre6sssabg68hvsrcioucd686.apps.googleusercontent.com">
       <QueryClientProvider client={queryClient}>
         <AuthenticationProvider>
-          <MantineProvider
+          <ThemeProvider
             defaultColorScheme="dark"
             >
             <Notifications />
             <DatesProvider settings={{}}>
               <Main />
             </DatesProvider>
-          </MantineProvider>
+          </ThemeProvider>
         </AuthenticationProvider>
       </QueryClientProvider>
     </GoogleOAuthProvider>

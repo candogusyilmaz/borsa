@@ -1,4 +1,4 @@
-import { Group, TextInput } from '@mantine/core';
+import { Group, TextInput } from '~/lib/shadcn/core';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 
 export function TradeHistoryFilter() {

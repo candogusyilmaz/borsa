@@ -1,4 +1,4 @@
-import { Button, type ButtonProps } from '@mantine/core';
+import { Button, type ButtonProps } from '~/lib/shadcn/core';
 import { useTransactionModalStore } from '~/components/Transaction/TransactionModal';
 
 type SellStockModalProps = {

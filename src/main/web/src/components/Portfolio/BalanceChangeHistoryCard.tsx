@@ -1,5 +1,5 @@
-import { AreaChart } from '@mantine/charts';
-import { Card, Center, rem, Stack, Text } from '@mantine/core';
+import { AreaChart } from '~/lib/shadcn/charts';
+import { Card, Center, rem, Stack, Text } from '~/lib/shadcn/core';
 import type { BalanceHistory } from '~/api/queries/types';
 import { format } from '~/lib/format';
 

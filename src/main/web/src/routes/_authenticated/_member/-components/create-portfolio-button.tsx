@@ -1,5 +1,5 @@
-import { ActionIcon, Button, Group, Modal, Stack, Text, TextInput, ThemeIcon, Title } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
+import { ActionIcon, Button, Group, Modal, Stack, Text, TextInput, ThemeIcon, Title } from '~/lib/shadcn/core';
+import { useDisclosure } from '~/lib/shadcn/hooks';
 import { IconCheck, IconFolder, IconFolderPlus, IconPlus, IconSparkles, IconX } from '@tabler/icons-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';

@@ -1,4 +1,4 @@
-import { Card, type CardProps, Center, Text, Title } from '@mantine/core';
+import { Card, type CardProps, Center, Text, Title } from '~/lib/shadcn/core';
 import { ErrorView } from '~/components/ErrorView';
 import { LoadingView } from '~/components/LoadingView';
 

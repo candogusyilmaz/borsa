@@ -1,4 +1,4 @@
-import { Center, rem, Stack, Text, ThemeIcon } from '@mantine/core';
+import { Center, rem, Stack, Text, ThemeIcon } from '~/lib/shadcn/core';
 import { IconDatabaseX } from '@tabler/icons-react';
 
 interface ErrorStateProps {

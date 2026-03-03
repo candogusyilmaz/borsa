@@ -1,4 +1,4 @@
-import { Container, Stack, Title } from '@mantine/core';
+import { Container, Stack, Title } from '~/lib/shadcn/core';
 import { createFileRoute } from '@tanstack/react-router';
 import { TradesTable } from './-components/trades-table/trades-table';
 

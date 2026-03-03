@@ -1,4 +1,4 @@
-import { Badge, Card, Group, rem, Text, ThemeIcon } from '@mantine/core';
+import { Badge, Card, Group, rem, Text, ThemeIcon } from '~/lib/shadcn/core';
 import { IconArrowDown, IconArrowUp } from '@tabler/icons-react';
 import type { ReactNode } from 'react';
 import { format } from '~/lib/format';

@@ -1,4 +1,4 @@
-import { Button, type ButtonProps } from '@mantine/core';
+import { Button, type ButtonProps } from '~/lib/shadcn/core';
 
 function GoogleIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (

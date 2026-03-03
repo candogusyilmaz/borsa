@@ -1,5 +1,5 @@
-import { Button, Divider, Group, PasswordInput, Stack, TextInput } from '@mantine/core';
-import { hasLength, isEmail, useForm } from '@mantine/form';
+import { Button, Divider, Group, PasswordInput, Stack, TextInput } from '~/lib/shadcn/core';
+import { hasLength, isEmail, useForm } from '~/lib/shadcn/form';
 import { type CredentialResponse, GoogleLogin } from '@react-oauth/google';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import type { AxiosError } from 'axios';

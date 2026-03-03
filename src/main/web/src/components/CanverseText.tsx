@@ -1,4 +1,4 @@
-import { Text, type TextProps } from '@mantine/core';
+import { Text, type TextProps } from '~/lib/shadcn/core';
 
 export function CanverseText(props: TextProps) {
   return (

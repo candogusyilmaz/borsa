@@ -1,4 +1,4 @@
-import { Button, Modal, Stack, Text, TextInput } from '@mantine/core';
+import { Button, Modal, Stack, Text, TextInput } from '~/lib/shadcn/core';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { create } from 'zustand';

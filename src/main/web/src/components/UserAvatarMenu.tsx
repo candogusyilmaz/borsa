@@ -1,4 +1,4 @@
-import { Avatar, Group, Menu, Text, UnstyledButton } from '@mantine/core';
+import { Avatar, Group, Menu, Text, UnstyledButton } from '~/lib/shadcn/core';
 import { IconDotsVertical, IconLogout, IconSettings, IconTrash } from '@tabler/icons-react';
 import { useNavigate } from '@tanstack/react-router';
 import { useAuthentication } from '~/lib/AuthenticationContext';

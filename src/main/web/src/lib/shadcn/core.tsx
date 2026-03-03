@@ -12,10 +12,7 @@ import {
   useState
 } from 'react';
 
-export type DefaultMantineColor = string;
-export type MantineColorsTuple = string[];
-
-type MantineProviderProps = {
+type ThemeProviderProps = {
   children: ReactNode;
   defaultColorScheme?: 'light' | 'dark';
 };
@@ -33,11 +30,10 @@ const ColorSchemeContext = createContext<{
 function applyTheme(colorScheme: ColorScheme) {
   const html = document.documentElement;
   html.dataset.theme = colorScheme;
-  html.dataset.mantineColorScheme = colorScheme;
   html.classList.toggle('dark', colorScheme === 'dark');
 }
 
-export function MantineProvider({ children, defaultColorScheme = 'dark' }: MantineProviderProps) {
+export function ThemeProvider({ children, defaultColorScheme = 'dark' }: ThemeProviderProps) {
   const [colorScheme, setColorSchemeState] = useState<ColorScheme>(() => {
     if (typeof window === 'undefined') return defaultColorScheme;
     const stored = window.localStorage.getItem('theme-scheme');
@@ -55,7 +51,7 @@ export function MantineProvider({ children, defaultColorScheme = 'dark' }: Manti
   );
 }
 
-export function useMantineColorScheme() {
+export function useThemeMode() {
   return useContext(ColorSchemeContext);
 }
 
@@ -310,6 +306,7 @@ export const Button: any = ({ leftSection, rightSection, children, variant, load
     <button
       {...(rest as React.ButtonHTMLAttributes<HTMLButtonElement>)}
       disabled={disabled || loading}
+      className={`rounded-xl backdrop-blur-lg transition-all duration-200 ${rest.className ?? ''}`}
       style={{ ...baseButtonStyle, ...buttonVariant(variant), opacity: disabled || loading ? 0.6 : 1, ...mergedStyle, ...style }}>
       {leftSection}
       {loading ? 'Loading...' : children}
@@ -342,6 +339,7 @@ export function Card({ withBorder, padding, children, style, ...props }: CardPro
   return (
     <div
       {...rest}
+      className={`rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl dark:bg-white/5 ${rest.className ?? ''}`}
       style={{
         background: 'var(--card-bg)',
         border: withBorder ? '1px solid var(--border-color)' : undefined,
@@ -582,7 +580,7 @@ const DrawerOverlay = () => {
 };
 
 const DrawerContent = ({ children }: { children: ReactNode }) => (
-  <div style={{ position: 'fixed', left: 0, top: 0, bottom: 0, width: '18rem', zIndex: 999, background: 'var(--card-bg)' }}>{children}</div>
+  <div className="border-r border-white/20 bg-white/10 backdrop-blur-2xl dark:bg-white/5" style={{ position: 'fixed', left: 0, top: 0, bottom: 0, width: '18rem', zIndex: 999, background: 'var(--card-bg)' }}>{children}</div>
 );
 
 export const Drawer: any = {
@@ -855,9 +853,9 @@ export function useMatches<T>(values: Record<string, T>) {
   }, [values, width]);
 }
 
-if (typeof document !== 'undefined' && !document.getElementById('mantine-replacement-style')) {
+if (typeof document !== 'undefined' && !document.getElementById('shadcn-replacement-style')) {
   const style = document.createElement('style');
-  style.id = 'mantine-replacement-style';
+  style.id = 'shadcn-replacement-style';
   style.innerHTML = '@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }';
   document.head.appendChild(style);
 }

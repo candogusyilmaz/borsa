@@ -1,7 +1,7 @@
-import { ActionIcon, Button, Card, Divider, Flex, Group, Modal, NumberInput, ScrollArea, Select, Stack, Text } from '@mantine/core';
-import { DateTimePicker } from '@mantine/dates';
-import { Dropzone } from '@mantine/dropzone';
-import { useForm } from '@mantine/form';
+import { ActionIcon, Button, Card, Divider, Flex, Group, Modal, NumberInput, ScrollArea, Select, Stack, Text } from '~/lib/shadcn/core';
+import { DateTimePicker } from '~/lib/shadcn/dates';
+import { Dropzone } from '~/lib/shadcn/dropzone';
+import { useForm } from '~/lib/shadcn/form';
 import { IconCirclePlus, IconFile, IconTrash, IconUpload, IconX } from '@tabler/icons-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { create } from 'zustand';

@@ -1,4 +1,4 @@
-import { Button, Group, Stack, Text, TextInput, Title } from '@mantine/core';
+import { Button, Group, Stack, Text, TextInput, Title } from '~/lib/shadcn/core';
 import { IconCheck, IconFolder } from '@tabler/icons-react';
 import type React from 'react';
 import { useState } from 'react';

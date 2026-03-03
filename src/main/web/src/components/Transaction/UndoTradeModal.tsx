@@ -1,4 +1,4 @@
-import { Modal, ScrollArea } from '@mantine/core';
+import { Modal, ScrollArea } from '~/lib/shadcn/core';
 import { create } from 'zustand';
 import type { TradeHistoryTrade } from '~/api/queries/types';
 import { UndoTradeForm } from './UndoTradeForm';

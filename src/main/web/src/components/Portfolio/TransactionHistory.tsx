@@ -11,7 +11,7 @@ import {
   ThemeIcon,
   Tooltip,
   useMatches
-} from '@mantine/core';
+} from '~/lib/shadcn/core';
 import {
   IconArrowBack,
   IconCalendar,

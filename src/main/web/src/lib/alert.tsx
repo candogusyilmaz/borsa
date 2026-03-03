@@ -1,4 +1,4 @@
-import { notifications } from '@mantine/notifications';
+import { notifications } from '~/lib/shadcn/notifications';
 import { IconCheck, IconExclamationMark } from '@tabler/icons-react';
 
 export const alerts = {

@@ -1,4 +1,4 @@
-import { Button, Group, Stack, Table, Text } from '@mantine/core';
+import { Button, Group, Stack, Table, Text } from '~/lib/shadcn/core';
 import { IconChevronDown, IconChevronUp } from '@tabler/icons-react';
 import { useParams } from '@tanstack/react-router';
 import { type ColumnDef, flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from '@tanstack/react-table';

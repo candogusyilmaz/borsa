@@ -1,4 +1,4 @@
-import { BarChart } from '@mantine/charts';
+import { BarChart } from '~/lib/shadcn/charts';
 import {
   Box,
   Button,
@@ -14,7 +14,7 @@ import {
   Text,
   Tooltip,
   useMatches
-} from '@mantine/core';
+} from '~/lib/shadcn/core';
 import { IconCircle } from '@tabler/icons-react';
 import { useParams } from '@tanstack/react-router';
 import React, { useState } from 'react';

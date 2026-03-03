@@ -1,4 +1,4 @@
-import { Center, Loader } from '@mantine/core';
+import { Center, Loader } from '~/lib/shadcn/core';
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
 import { GlobalModals } from '~/components/GlobalModals';
 import { useAutoRefreshToken } from '~/hooks/use-auto-refresh-token';

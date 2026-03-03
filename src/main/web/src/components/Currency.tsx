@@ -1,4 +1,4 @@
-import { Text, type TextProps } from '@mantine/core';
+import { Text, type TextProps } from '~/lib/shadcn/core';
 import type React from 'react';
 import type { ReactNode } from 'react';
 import { format } from '~/lib/format';

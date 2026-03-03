@@ -1,4 +1,4 @@
-import { Table } from '@mantine/core';
+import { Table } from '~/lib/shadcn/core';
 import { EmptyState } from './empty-state';
 import { ErrorState } from './error-state';
 import { LoadingState } from './loading-state';

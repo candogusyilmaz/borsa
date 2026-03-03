@@ -1,4 +1,4 @@
-import { ActionIcon, Group, Modal, Stack, Text, ThemeIcon, Title } from '@mantine/core';
+import { ActionIcon, Group, Modal, Stack, Text, ThemeIcon, Title } from '~/lib/shadcn/core';
 import { IconPlus, IconRowRemove, IconX } from '@tabler/icons-react';
 import { create } from 'zustand';
 import { BuyTransactionForm } from './BuyTransactionForm';

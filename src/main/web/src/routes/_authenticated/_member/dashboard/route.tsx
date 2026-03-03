@@ -1,4 +1,4 @@
-import { Button, Container, Divider, Menu, SimpleGrid, Skeleton, Stack, Title } from '@mantine/core';
+import { Button, Container, Divider, Menu, SimpleGrid, Skeleton, Stack, Title } from '~/lib/shadcn/core';
 import {
   IconCashBanknote,
   IconChartLine,

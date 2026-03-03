@@ -1,4 +1,4 @@
-import { Badge, Group, Loader, Stack, Table, Text } from '@mantine/core';
+import { Badge, Group, Loader, Stack, Table, Text } from '~/lib/shadcn/core';
 import { IconClock } from '@tabler/icons-react';
 import { type ColumnDef, flexRender, getCoreRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
 import { useMemo } from 'react';

@@ -1,4 +1,4 @@
-import { Badge, Group, Pagination, Stack, Table, Text } from '@mantine/core';
+import { Badge, Group, Pagination, Stack, Table, Text } from '~/lib/shadcn/core';
 import { IconChevronDown, IconChevronUp } from '@tabler/icons-react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import {

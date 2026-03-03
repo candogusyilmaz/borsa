@@ -1,5 +1,5 @@
-import { ActionIcon, Alert, Button, Group, Modal, Stack, Text, TextInput, ThemeIcon, Title } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
+import { ActionIcon, Alert, Button, Group, Modal, Stack, Text, TextInput, ThemeIcon, Title } from '~/lib/shadcn/core';
+import { useDisclosure } from '~/lib/shadcn/hooks';
 import { IconAlertTriangle, IconArchive, IconChevronRight, IconX } from '@tabler/icons-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';

@@ -1,5 +1,5 @@
-import { Badge, Button, Flex, Group, Radio, SimpleGrid, Stack, Text, TextInput, ThemeIcon, Title } from '@mantine/core';
-import { useMediaQuery } from '@mantine/hooks';
+import { Badge, Button, Flex, Group, Radio, SimpleGrid, Stack, Text, TextInput, ThemeIcon, Title } from '~/lib/shadcn/core';
+import { useMediaQuery } from '~/lib/shadcn/hooks';
 import { IconCheck, IconLayoutDashboard } from '@tabler/icons-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';

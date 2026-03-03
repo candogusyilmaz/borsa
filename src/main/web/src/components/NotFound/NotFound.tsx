@@ -1,4 +1,4 @@
-import { Container, Text } from '@mantine/core';
+import { Container, Text } from '~/lib/shadcn/core';
 import { Link } from '@tanstack/react-router';
 import { Illustration } from './Illustration';
 import classes from './NotFound.module.css';

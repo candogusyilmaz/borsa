@@ -1,5 +1,5 @@
-import { DonutChart } from '@mantine/charts';
-import { Box, Card, type CardProps, Divider, Group, rem, Stack, Text, useMatches } from '@mantine/core';
+import { DonutChart } from '~/lib/shadcn/charts';
+import { Box, Card, type CardProps, Divider, Group, rem, Stack, Text, useMatches } from '~/lib/shadcn/core';
 import { useParams } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
 import { $api } from '~/api/openapi';

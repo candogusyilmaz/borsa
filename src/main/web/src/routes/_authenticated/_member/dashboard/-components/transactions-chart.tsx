@@ -1,5 +1,5 @@
-import { CompositeChart } from '@mantine/charts';
-import { Button, Card, ColorSwatch, Divider, Group, Stack, Text, ThemeIcon } from '@mantine/core';
+import { CompositeChart } from '~/lib/shadcn/charts';
+import { Button, Card, ColorSwatch, Divider, Group, Stack, Text, ThemeIcon } from '~/lib/shadcn/core';
 import {
   IconChartBarPopular,
   IconChartLine,

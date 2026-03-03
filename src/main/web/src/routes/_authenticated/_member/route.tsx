@@ -1,5 +1,5 @@
-import { Drawer, useMantineColorScheme } from '@mantine/core';
-import { useMediaQuery } from '@mantine/hooks';
+import { Drawer, useThemeMode } from '~/lib/shadcn/core';
+import { useMediaQuery } from '~/lib/shadcn/hooks';
 import {
   IconArrowsLeftRight,
   IconChevronRight,
@@ -124,7 +124,7 @@ function RouteComponent() {
 }
 
 const Sidebar = () => {
-  const { colorScheme, setColorScheme } = useMantineColorScheme();
+  const { colorScheme, setColorScheme } = useThemeMode();
   const navigate = useNavigate();
   const { logout } = useAuthentication();
 

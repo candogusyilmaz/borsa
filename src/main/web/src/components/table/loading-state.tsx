@@ -1,4 +1,4 @@
-import { Center, Loader, Stack, Text } from '@mantine/core';
+import { Center, Loader, Stack, Text } from '~/lib/shadcn/core';
 
 interface LoadingStateProps {
   height?: number;

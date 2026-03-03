@@ -1,4 +1,4 @@
-import { ActionIcon, Container, Flex, Group, Stack, Text, Title } from '@mantine/core';
+import { ActionIcon, Container, Flex, Group, Stack, Text, Title } from '~/lib/shadcn/core';
 import { IconPencilCog, IconPointFilled } from '@tabler/icons-react';
 import { createFileRoute } from '@tanstack/react-router';
 import { BalanceCard } from '~/components/Portfolio/BalanceCard';

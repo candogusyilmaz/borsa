@@ -1,6 +1,6 @@
-import { Button, type ButtonProps, Group, NativeSelect, NumberInput, Select, SimpleGrid, Stack } from '@mantine/core';
-import { DateTimePicker } from '@mantine/dates';
-import { useForm } from '@mantine/form';
+import { Button, type ButtonProps, Group, NativeSelect, NumberInput, Select, SimpleGrid, Stack } from '~/lib/shadcn/core';
+import { DateTimePicker } from '~/lib/shadcn/dates';
+import { useForm } from '~/lib/shadcn/form';
 import { useQueryClient } from '@tanstack/react-query';
 import { useParams } from '@tanstack/react-router';
 import { $api } from '~/api/openapi';

@@ -1,4 +1,4 @@
-import { Alert, Button, Card, Checkbox, Group, Stack, Text } from '@mantine/core';
+import { Alert, Button, Card, Checkbox, Group, Stack, Text } from '~/lib/shadcn/core';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams } from '@tanstack/react-router';
 import { useState } from 'react';
