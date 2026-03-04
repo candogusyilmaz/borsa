@@ -17,15 +17,15 @@ import { createFileRoute, Link, linkOptions, Outlet, redirect, useNavigate } fro
 import { useEffect } from 'react';
 import { create } from 'zustand';
 import { queries } from '~/api';
-import { $api } from '~/api/openapi';
+import { client } from '~/api/openapi';
 import type { BasicPortfolioView } from '~/api/queries/types';
 import { useAuthentication } from '~/lib/AuthenticationContext';
 import { CreatePortfolioButton } from './-components/create-portfolio-button';
 
 export const Route = createFileRoute('/_authenticated/_member')({
   component: RouteComponent,
-  beforeLoad: async ({ context: { queryClient } }) => {
-    const onboardingCompleted = await queryClient.fetchQuery($api.queryOptions('get', '/api/onboarding/status'));
+  beforeLoad: async () => {
+    const onboardingCompleted = (await client.GET('/api/onboarding/status')).data;
 
     if (!onboardingCompleted) {
       throw redirect({ to: '/onboarding' });
