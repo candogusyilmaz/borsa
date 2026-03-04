@@ -340,6 +340,38 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/instruments/custom': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post: operations['createCustomInstrument'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/instruments/custom/{instrumentId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put: operations['updateCustomInstrument'];
+    post?: never;
+    delete: operations['deleteCustomInstrument'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/dashboards/{dashboardId}': {
     parameters: {
       query?: never;
@@ -560,6 +592,17 @@ export interface components {
       symbol: string;
       name: string;
       supportedCurrencies: string[];
+    };
+    CreateCustomInstrumentRequest: {
+      name: string;
+      symbol: string;
+      type: 'STOCK' | 'CRYPTOCURRENCY' | 'CURRENCY_PAIR' | 'COMMODITY' | 'INDEX';
+      currencyCode: string;
+    };
+    UpdateCustomInstrumentRequest: {
+      name: string;
+      symbol: string;
+      currencyCode: string;
     };
     BasicDashboardView: {
       id?: string;
@@ -1215,6 +1258,76 @@ export interface operations {
         content: {
           '*/*': components['schemas']['SelectItem'][];
         };
+      };
+    };
+  };
+  createCustomInstrument: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['CreateCustomInstrumentRequest'];
+      };
+    };
+    responses: {
+      /** @description Created */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          '*/*': components['schemas']['InstrumentInfo'];
+        };
+      };
+    };
+  };
+  updateCustomInstrument: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        instrumentId: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateCustomInstrumentRequest'];
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          '*/*': components['schemas']['InstrumentInfo'];
+        };
+      };
+    };
+  };
+  deleteCustomInstrument: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        instrumentId: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description No Content */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
     };
   };

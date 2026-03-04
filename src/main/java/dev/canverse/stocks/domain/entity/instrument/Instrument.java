@@ -1,5 +1,6 @@
 package dev.canverse.stocks.domain.entity.instrument;
 
+import dev.canverse.stocks.domain.entity.account.User;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,19 +16,21 @@ import java.util.Set;
 @Getter
 @Entity
 @Table(schema = "instrument", name = "instruments",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"symbol", "market_id"}),
         indexes = {@Index(name = "idx_instruments_symbol", columnList = "symbol"),
                 @Index(name = "idx_instruments_type", columnList = "type"),
-                @Index(name = "idx_instruments_market", columnList = "market_id")})
+                @Index(name = "idx_instruments_market", columnList = "market_id"),
+                @Index(name = "idx_instruments_user", columnList = "user_id")})
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class Instrument {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Setter
     @Column(nullable = false)
     private String name;
 
+    @Setter
     @Column(nullable = false)
     private String symbol;
 
@@ -35,8 +38,12 @@ public abstract class Instrument {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private InstrumentType type;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Market market;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @Setter
     @Column(nullable = false)
@@ -66,6 +73,14 @@ public abstract class Instrument {
         this.symbol = symbol;
         this.type = type;
         this.market = market;
+        this.isActive = true;
+    }
+
+    protected Instrument(String name, String symbol, InstrumentType type, User user) {
+        this.name = name;
+        this.symbol = symbol;
+        this.type = type;
+        this.user = user;
         this.isActive = true;
     }
 }

@@ -16,7 +16,17 @@
         from instrument.instruments ins
                  join instrument.market_currencies mc on mc.market_id = ins.market_id
         where ins.is_active = true
+          and ins.user_id is null
         group by ins.id, ins.symbol, ins.name
-        order by ins.symbol
+        union all
+        select ins.id,
+               ins.symbol,
+               ins.name,
+               jsonb_build_array(ci.currency_code) AS supported_currencies
+        from instrument.instruments ins
+                 join instrument.custom_instruments ci on ci.instrument_id = ins.id
+        where ins.is_active = true
+          and ins.user_id = #{userId}
+        order by symbol
     </select>
 </mapper>
