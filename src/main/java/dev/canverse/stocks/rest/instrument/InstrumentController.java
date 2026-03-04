@@ -1,5 +1,6 @@
 package dev.canverse.stocks.rest.instrument;
 
+import dev.canverse.stocks.domain.entity.instrument.CustomInstrument;
 import dev.canverse.stocks.service.instrument.InstrumentService;
 import dev.canverse.stocks.service.instrument.model.CreateCustomInstrumentRequest;
 import dev.canverse.stocks.service.instrument.model.InstrumentInfo;
@@ -26,29 +27,28 @@ public class InstrumentController {
     @ResponseStatus(HttpStatus.CREATED)
     public InstrumentInfo createCustomInstrument(@Valid @RequestBody CreateCustomInstrumentRequest req) {
         var instrument = instrumentService.createCustomInstrument(req);
-        var info = new InstrumentInfo();
-        info.setId(String.valueOf(instrument.getId()));
-        info.setSymbol(instrument.getSymbol());
-        info.setName(instrument.getName());
-        info.setSupportedCurrencies(new String[]{instrument.getCurrencyCode()});
-        return info;
+        return toInstrumentInfo(instrument);
     }
 
     @PutMapping("/custom/{instrumentId}")
     public InstrumentInfo updateCustomInstrument(@PathVariable long instrumentId,
                                                  @Valid @RequestBody UpdateCustomInstrumentRequest req) {
         var instrument = instrumentService.updateCustomInstrument(instrumentId, req);
-        var info = new InstrumentInfo();
-        info.setId(String.valueOf(instrument.getId()));
-        info.setSymbol(instrument.getSymbol());
-        info.setName(instrument.getName());
-        info.setSupportedCurrencies(new String[]{instrument.getCurrencyCode()});
-        return info;
+        return toInstrumentInfo(instrument);
     }
 
     @DeleteMapping("/custom/{instrumentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCustomInstrument(@PathVariable long instrumentId) {
         instrumentService.deleteCustomInstrument(instrumentId);
+    }
+
+    private static InstrumentInfo toInstrumentInfo(CustomInstrument instrument) {
+        var info = new InstrumentInfo();
+        info.setId(String.valueOf(instrument.getId()));
+        info.setSymbol(instrument.getSymbol());
+        info.setName(instrument.getName());
+        info.setSupportedCurrencies(new String[]{instrument.getCurrencyCode()});
+        return info;
     }
 }

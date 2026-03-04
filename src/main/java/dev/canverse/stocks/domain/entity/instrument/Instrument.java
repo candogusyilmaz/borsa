@@ -38,6 +38,7 @@ public abstract class Instrument {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private InstrumentType type;
 
+    // Nullable: system instruments have a market; user-created instruments may not.
     @ManyToOne(fetch = FetchType.LAZY)
     private Market market;
 
