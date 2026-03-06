@@ -21,7 +21,6 @@ import React, { useState } from 'react';
 import { $api } from '~/api/openapi';
 import type { paths } from '~/api/schema';
 import { ErrorView } from '~/components/ErrorView';
-import { constants } from '~/lib/constants';
 import { format } from '~/lib/format';
 
 type MonthlyRevenueOverviewType =
@@ -123,7 +122,7 @@ function Inner({ data }: { data: MonthlyRevenueOverviewType }) {
 }
 
 const monthShortNames = Array.from({ length: 12 }, (_, index) =>
-  new Intl.DateTimeFormat(constants.locale(), { month: 'short' }).format(new Date(2000, index, 1))
+  new Intl.DateTimeFormat(navigator.language, { month: 'short' }).format(new Date(2000, index, 1))
 );
 
 type ChartProps = {
