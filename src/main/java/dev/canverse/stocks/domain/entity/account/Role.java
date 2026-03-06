@@ -3,6 +3,7 @@ package dev.canverse.stocks.domain.entity.account;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,8 +31,7 @@ public class Role implements Serializable {
     @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<RolePermission> rolePermissions = new HashSet<>();
 
-    protected Role() {
-    }
+    protected Role() {}
 
     public Role(String name, int level) {
         this.name = name;

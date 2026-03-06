@@ -2,6 +2,7 @@ package dev.canverse.stocks.repository.mybatis;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 
@@ -21,12 +22,12 @@ public class JsonbTypeHandler<T> extends BaseTypeHandler<T> {
 
     // For collections like List<String>, List<CustomObject>
     public JsonbTypeHandler(Class<?> collectionType, Class<?> elementType) {
-        this.javaType = mapper.getTypeFactory()
-                .constructCollectionType(List.class, elementType);
+        this.javaType = mapper.getTypeFactory().constructCollectionType(List.class, elementType);
     }
 
     @Override
-    public void setNonNullParameter(PreparedStatement ps, int i, T parameter, JdbcType jdbcType) throws SQLException {
+    public void setNonNullParameter(PreparedStatement ps, int i, T parameter, JdbcType jdbcType)
+            throws SQLException {
         try {
             ps.setString(i, mapper.writeValueAsString(parameter));
         } catch (Exception e) {

@@ -2,6 +2,7 @@ package dev.canverse.stocks.domain.common;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
+
 import org.apache.commons.lang3.StringUtils;
 
 @Converter

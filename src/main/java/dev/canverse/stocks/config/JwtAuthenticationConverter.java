@@ -1,7 +1,9 @@
 package dev.canverse.stocks.config;
 
 import dev.canverse.stocks.repository.UserRepository;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,8 +18,10 @@ public class JwtAuthenticationConverter implements Converter<Jwt, AbstractAuthen
     @Override
     @SuppressWarnings("NullableProblems")
     public AbstractAuthenticationToken convert(Jwt source) {
-        var user = userRepository.findByEmailIncludePermissions(source.getSubject())
-                .orElseThrow(() -> new IllegalArgumentException("User not found."));
+        var user =
+                userRepository
+                        .findByEmailIncludePermissions(source.getSubject())
+                        .orElseThrow(() -> new IllegalArgumentException("User not found."));
 
         return UsernamePasswordAuthenticationToken.authenticated(user, null, user.getAuthorities());
     }

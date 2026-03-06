@@ -1,6 +1,7 @@
 package dev.canverse.stocks.config;
 
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,34 +33,48 @@ import java.util.List;
 public class SecurityConfiguration {
 
     @Bean
-    public AuthenticationManager authenticationManager(UserDetailsService userService, PasswordEncoder passwordEncoder) {
+    public AuthenticationManager authenticationManager(
+            UserDetailsService userService, PasswordEncoder passwordEncoder) {
         var authProvider = new DaoAuthenticationProvider(userService);
         authProvider.setPasswordEncoder(passwordEncoder);
         return new ProviderManager(authProvider);
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationConverter jwtConverter) throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http, JwtAuthenticationConverter jwtConverter) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable);
         http.cors(Customizer.withDefaults());
 
-        http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/token").permitAll()
-                .requestMatchers("/api/auth/register").permitAll()
-                .requestMatchers("/api/auth/google").permitAll()
-                .requestMatchers("/api/auth/refresh-token").permitAll()
-                .requestMatchers("/v3/api-docs").permitAll()
-                .requestMatchers("/swagger-ui/**").permitAll()
-                .requestMatchers("/api/**").authenticated()
-                .anyRequest().permitAll());
+        http.authorizeHttpRequests(
+                auth ->
+                        auth.requestMatchers("/api/auth/token")
+                                .permitAll()
+                                .requestMatchers("/api/auth/register")
+                                .permitAll()
+                                .requestMatchers("/api/auth/google")
+                                .permitAll()
+                                .requestMatchers("/api/auth/refresh-token")
+                                .permitAll()
+                                .requestMatchers("/v3/api-docs")
+                                .permitAll()
+                                .requestMatchers("/swagger-ui/**")
+                                .permitAll()
+                                .requestMatchers("/api/**")
+                                .authenticated()
+                                .anyRequest()
+                                .permitAll());
 
-        http.oauth2ResourceServer(config -> config.jwt(s -> s.jwtAuthenticationConverter(jwtConverter)));
+        http.oauth2ResourceServer(
+                config -> config.jwt(s -> s.jwtAuthenticationConverter(jwtConverter)));
 
-        http.exceptionHandling(handler -> handler
-                .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
-                .accessDeniedHandler(new BearerTokenAccessDeniedHandler()));
+        http.exceptionHandling(
+                handler ->
+                        handler.authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
+                                .accessDeniedHandler(new BearerTokenAccessDeniedHandler()));
 
-        http.sessionManagement(config -> config.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        http.sessionManagement(
+                config -> config.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http.httpBasic(Customizer.withDefaults());
         return http.build();
@@ -73,7 +88,8 @@ public class SecurityConfiguration {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         var configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173/", "https://borsa.canverse.dev"));
+        configuration.setAllowedOrigins(
+                List.of("http://localhost:5173/", "https://borsa.canverse.dev"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowCredentials(true);

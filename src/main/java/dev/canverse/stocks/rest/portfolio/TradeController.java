@@ -6,8 +6,11 @@ import dev.canverse.stocks.service.portfolio.TradeService;
 import dev.canverse.stocks.service.portfolio.model.BulkTransactionRequest;
 import dev.canverse.stocks.service.portfolio.model.TradeHistory;
 import dev.canverse.stocks.service.portfolio.model.TradeRequest;
+
 import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -40,7 +43,8 @@ public class TradeController {
 
     @PostMapping("/bulk")
     @Transactional
-    public void bulk(@Valid @RequestBody List<BulkTransactionRequest> reqs, @PathVariable long portfolioId) {
+    public void bulk(
+            @Valid @RequestBody List<BulkTransactionRequest> reqs, @PathVariable long portfolioId) {
         reqs.sort(Comparator.comparing(BulkTransactionRequest::actionDate));
 
         for (var req : reqs) {
@@ -59,7 +63,8 @@ public class TradeController {
     }
 
     @PostMapping("/import")
-    public List<BulkTransactionRequest> importTransactions(@RequestParam("file") MultipartFile file) {
+    public List<BulkTransactionRequest> importTransactions(
+            @RequestParam("file") MultipartFile file) {
         var transactionImportPreviews = tradeImportService.importTransactions(file);
         return tradeImportService.parseImportedTransactions(transactionImportPreviews);
     }

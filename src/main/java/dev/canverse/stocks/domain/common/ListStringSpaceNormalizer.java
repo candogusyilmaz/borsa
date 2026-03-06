@@ -2,6 +2,7 @@ package dev.canverse.stocks.domain.common;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -14,9 +15,7 @@ public class ListStringSpaceNormalizer implements AttributeConverter<List<String
             return null;
         }
 
-        return attribute.stream()
-                .map(StringUtils::normalizeSpace)
-                .toList();
+        return attribute.stream().map(StringUtils::normalizeSpace).toList();
     }
 
     @Override

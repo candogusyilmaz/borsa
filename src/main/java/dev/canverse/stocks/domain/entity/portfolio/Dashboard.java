@@ -2,11 +2,14 @@ package dev.canverse.stocks.domain.entity.portfolio;
 
 import dev.canverse.stocks.domain.entity.Currency;
 import dev.canverse.stocks.domain.entity.account.User;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+
 import lombok.Getter;
 import lombok.Setter;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -53,8 +56,7 @@ public class Dashboard implements Serializable {
     @OneToMany(mappedBy = "dashboard", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DashboardPortfolio> dashboardPortfolios = new ArrayList<>();
 
-    protected Dashboard() {
-    }
+    protected Dashboard() {}
 
     public Dashboard(User user, String name, Currency currency) {
         this.user = user;
@@ -63,9 +65,7 @@ public class Dashboard implements Serializable {
     }
 
     public List<Portfolio> getPortfolios() {
-        return dashboardPortfolios.stream()
-                .map(DashboardPortfolio::getPortfolio)
-                .toList();
+        return dashboardPortfolios.stream().map(DashboardPortfolio::getPortfolio).toList();
     }
 
     public void addPortfolio(Portfolio portfolio) {

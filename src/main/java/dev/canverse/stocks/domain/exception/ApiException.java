@@ -1,6 +1,7 @@
 package dev.canverse.stocks.domain.exception;
 
 import lombok.Getter;
+
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 

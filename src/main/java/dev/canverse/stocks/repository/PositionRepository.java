@@ -1,7 +1,9 @@
 package dev.canverse.stocks.repository;
 
 import dev.canverse.stocks.domain.entity.portfolio.Position;
+
 import jakarta.transaction.Transactional;
+
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -10,22 +12,26 @@ import java.util.Optional;
 
 @Repository
 public interface PositionRepository extends BaseJpaRepository<Position, Long> {
-    @Query("""
+    @Query(
+            """
                 select h from Position h
                 where h.portfolio.id = :portfolioId and h.instrument.id = :instrumentId
                 and h.portfolio.user.id = :#{principal.id}
                 and h.currencyCode = :currencyCode
             """)
-    Optional<Position> findByPortfolioAndInstrumentForPrincipal(Long portfolioId, Long instrumentId, String currencyCode);
+    Optional<Position> findByPortfolioAndInstrumentForPrincipal(
+            Long portfolioId, Long instrumentId, String currencyCode);
 
-    @Query("""
+    @Query(
+            """
                 select h from Position h
                 where h.portfolio.id = :portfolioId
                 and h.instrument.id = :instrumentId
                 and h.portfolio.user.id = :userId
                 and h.currencyCode = :currencyCode
             """)
-    Optional<Position> findBy(Long userId, Long portfolioId, Long instrumentId, String currencyCode);
+    Optional<Position> findBy(
+            Long userId, Long portfolioId, Long instrumentId, String currencyCode);
 
     @Modifying
     @Transactional

@@ -7,9 +7,12 @@ import dev.canverse.stocks.service.account.model.GoogleTokenRequest;
 import dev.canverse.stocks.service.account.model.TokenCreateRequest;
 import dev.canverse.stocks.service.account.model.TokenCreateResponse;
 import dev.canverse.stocks.service.account.model.UserRegistrationRequest;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,18 +32,21 @@ public class TokenController {
     private final TokenService tokenService;
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
-    private final JwtDecoder jwtDecoder = NimbusJwtDecoder.withJwkSetUri("https://www.googleapis.com/oauth2/v3/certs").build();
+    private final JwtDecoder jwtDecoder =
+            NimbusJwtDecoder.withJwkSetUri("https://www.googleapis.com/oauth2/v3/certs").build();
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/register")
-    public ResponseEntity<@NotNull TokenCreateResponse> register(@Valid @RequestBody UserRegistrationRequest request) {
+    public ResponseEntity<@NotNull TokenCreateResponse> register(
+            @Valid @RequestBody UserRegistrationRequest request) {
         var user = userService.register(request);
 
         return tokenService.create(user);
     }
 
     @PostMapping("/token")
-    public ResponseEntity<@NotNull TokenCreateResponse> createAccessToken(@RequestBody TokenCreateRequest login) {
+    public ResponseEntity<@NotNull TokenCreateResponse> createAccessToken(
+            @RequestBody TokenCreateRequest login) {
         var token = new UsernamePasswordAuthenticationToken(login.username(), login.password());
         var auth = authenticationManager.authenticate(token);
         var user = (User) auth.getPrincipal();
@@ -51,7 +57,8 @@ public class TokenController {
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<@NotNull TokenCreateResponse> refreshAccessToken(@CookieValue(name = "refresh-token") Optional<String> refreshToken) {
+    public ResponseEntity<@NotNull TokenCreateResponse> refreshAccessToken(
+            @CookieValue(name = "refresh-token") Optional<String> refreshToken) {
         if (refreshToken.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
@@ -62,7 +69,8 @@ public class TokenController {
     }
 
     @PostMapping("/google")
-    public ResponseEntity<@NotNull TokenCreateResponse> googleLogin(@RequestBody GoogleTokenRequest request) {
+    public ResponseEntity<@NotNull TokenCreateResponse> googleLogin(
+            @RequestBody GoogleTokenRequest request) {
         var idToken = request.token();
 
         try {
@@ -70,8 +78,16 @@ public class TokenController {
             var email = decodedToken.getClaimAsString("email");
             var name = decodedToken.getClaimAsString("name");
 
-            var user = userService.loadUserByEmail(email)
-                    .orElseGet(() -> userService.register(new UserRegistrationRequest(name, email, UUID.randomUUID().toString())));
+            var user =
+                    userService
+                            .loadUserByEmail(email)
+                            .orElseGet(
+                                    () ->
+                                            userService.register(
+                                                    new UserRegistrationRequest(
+                                                            name,
+                                                            email,
+                                                            UUID.randomUUID().toString())));
 
             userService.updateLastLogin(user.getId());
 

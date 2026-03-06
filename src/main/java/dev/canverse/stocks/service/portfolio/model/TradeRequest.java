@@ -9,21 +9,11 @@ import java.time.Instant;
 import java.util.List;
 
 public record TradeRequest(
-        @NotNull
-        Long stockId,
-        @NotNull
-        String currencyCode,
-        @NotNull
-        @Positive
-        BigDecimal quantity,
-        @NotNull
-        @Positive
-        BigDecimal price,
-        @PositiveOrZero
-        BigDecimal commission,
-        @NotNull
-        Instant actionDate,
+        @NotNull Long stockId,
+        @NotNull String currencyCode,
+        @NotNull @Positive BigDecimal quantity,
+        @NotNull @Positive BigDecimal price,
+        @PositiveOrZero BigDecimal commission,
+        @NotNull Instant actionDate,
         String notes,
-        List<String> tags
-) {
-}
+        List<String> tags) {}

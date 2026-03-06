@@ -3,8 +3,10 @@ package dev.canverse.stocks.service.common;
 import dev.canverse.stocks.domain.common.SelectItem;
 import dev.canverse.stocks.integration.forex.ForexWebClient;
 import dev.canverse.stocks.repository.CurrencyRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 

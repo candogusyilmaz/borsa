@@ -1,12 +1,15 @@
 package dev.canverse.stocks.domain.entity.account;
 
 import dev.canverse.stocks.domain.entity.portfolio.Dashboard;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
@@ -62,8 +65,7 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Dashboard> dashboards = new HashSet<>();
 
-    protected User() {
-    }
+    protected User() {}
 
     public User(String email, String password) {
         this.email = email;
@@ -75,7 +77,8 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // get userRoles -> get roles -> get rolePermissions -> get permissions -> get permission names
+        // get userRoles -> get roles -> get rolePermissions -> get permissions -> get permission
+        // names
         return this.getUserRoles().stream()
                 .flatMap(ur -> ur.getRole().getRolePermissions().stream())
                 .map(RolePermission::getPermission)

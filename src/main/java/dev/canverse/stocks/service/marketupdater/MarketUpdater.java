@@ -2,8 +2,11 @@ package dev.canverse.stocks.service.marketupdater;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+
 import dev.canverse.stocks.domain.Calculator;
+
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,9 +23,7 @@ public abstract class MarketUpdater {
 
     protected MarketUpdater(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.instrumentCache = Caffeine.newBuilder()
-                .expireAfterWrite(Duration.ofHours(24))
-                .build();
+        this.instrumentCache = Caffeine.newBuilder().expireAfterWrite(Duration.ofHours(24)).build();
     }
 
     public abstract String getMarketCode();
@@ -34,7 +35,11 @@ public abstract class MarketUpdater {
         var instruments = instrumentCache.get(getMarketCode(), this::fetchInstruments);
         long startFetch = System.currentTimeMillis();
         var snapshots = fetchSnapshots(instruments);
-        log.info("[MarketUpdater] Fetched {} snapshots for {} in {} ms", snapshots.size(), getMarketCode(), System.currentTimeMillis() - startFetch);
+        log.info(
+                "[MarketUpdater] Fetched {} snapshots for {} in {} ms",
+                snapshots.size(),
+                getMarketCode(),
+                System.currentTimeMillis() - startFetch);
 
         if (snapshots.isEmpty()) {
             log.warn("No snapshots generated for {}", getMarketCode());
@@ -43,11 +48,15 @@ public abstract class MarketUpdater {
 
         long startBatch = System.currentTimeMillis();
         batchUpdateSnapshots(snapshots);
-        log.info("[MarketUpdater] {} stock snapshots updated in {} ms", getMarketCode(), System.currentTimeMillis() - startBatch);
+        log.info(
+                "[MarketUpdater] {} stock snapshots updated in {} ms",
+                getMarketCode(),
+                System.currentTimeMillis() - startBatch);
     }
 
     private Map<String, Long> fetchInstruments(String marketCode) {
-        return jdbcTemplate.query("""
+        return jdbcTemplate.query(
+                """
                             SELECT i.symbol, i.id
                             FROM instrument.instruments i
                             JOIN instrument.markets m ON i.market_id = m.id
@@ -62,32 +71,34 @@ public abstract class MarketUpdater {
                     }
 
                     return map;
-                }
-        );
+                });
     }
 
     private void batchUpdateSnapshots(List<Snapshot> snapshots) {
-        var args = snapshots.stream()
-                .map(s -> {
-                    var change = s.last().subtract(s.previousClose());
-                    var percent = Calculator.divide(
-                            change.multiply(BigDecimal.valueOf(100)),
-                            s.previousClose()
-                    );
+        var args =
+                snapshots.stream()
+                        .map(
+                                s -> {
+                                    var change = s.last().subtract(s.previousClose());
+                                    var percent =
+                                            Calculator.divide(
+                                                    change.multiply(BigDecimal.valueOf(100)),
+                                                    s.previousClose());
 
-                    return new Object[]{
-                            s.instrumentId(),
-                            s.currencyCode(),
-                            s.last(),
-                            s.previousClose(),
-                            change,
-                            percent,
-                            s.updatedAt()
-                    };
-                })
-                .toList();
+                                    return new Object[] {
+                                        s.instrumentId(),
+                                        s.currencyCode(),
+                                        s.last(),
+                                        s.previousClose(),
+                                        change,
+                                        percent,
+                                        s.updatedAt()
+                                    };
+                                })
+                        .toList();
 
-        jdbcTemplate.batchUpdate("""
+        jdbcTemplate.batchUpdate(
+                """
                     INSERT INTO instrument.instrument_snapshots (
                         instrument_id,
                         currency_code,
@@ -104,6 +115,7 @@ public abstract class MarketUpdater {
                         daily_change = EXCLUDED.daily_change,
                         daily_change_percent = EXCLUDED.daily_change_percent,
                         updated_at = EXCLUDED.updated_at
-                """, args);
+                """,
+                args);
     }
 }

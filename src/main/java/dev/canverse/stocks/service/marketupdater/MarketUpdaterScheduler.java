@@ -1,9 +1,12 @@
 package dev.canverse.stocks.service.marketupdater;
 
 import dev.canverse.stocks.config.MarketUpdaterProperties;
+
 import jakarta.annotation.PostConstruct;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Component;
@@ -22,7 +25,8 @@ public class MarketUpdaterScheduler {
     @PostConstruct
     public void scheduleAll() {
         for (MarketUpdater updater : updaters) {
-            var marketConfig = marketUpdaterProperties.getMarkets().get(updater.getMarketCode().toLowerCase());
+            var marketConfig =
+                    marketUpdaterProperties.getMarkets().get(updater.getMarketCode().toLowerCase());
 
             if (marketConfig == null) {
                 log.warn("No configuration found for market: {}", updater.getMarketCode());
@@ -30,13 +34,19 @@ public class MarketUpdaterScheduler {
             }
 
             if (!marketConfig.isEnabled()) {
-                log.info("Market updater for {} is disabled, skipping scheduling", updater.getMarketCode());
+                log.info(
+                        "Market updater for {} is disabled, skipping scheduling",
+                        updater.getMarketCode());
                 continue;
             }
 
-            taskScheduler.schedule(updater::update, getCron(marketConfig.getCron(), marketConfig.getTimezone()));
-            log.info("Scheduled market updater for {} with cron: {} and timezone: {}",
-                    updater.getMarketCode(), marketConfig.getCron(), marketConfig.getTimezone());
+            taskScheduler.schedule(
+                    updater::update, getCron(marketConfig.getCron(), marketConfig.getTimezone()));
+            log.info(
+                    "Scheduled market updater for {} with cron: {} and timezone: {}",
+                    updater.getMarketCode(),
+                    marketConfig.getCron(),
+                    marketConfig.getTimezone());
         }
     }
 

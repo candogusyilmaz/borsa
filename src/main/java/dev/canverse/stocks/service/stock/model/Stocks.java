@@ -12,7 +12,5 @@ public record Stocks(String exchange, List<Symbol> symbols) {
             BigDecimal last,
             BigDecimal dailyChange,
             BigDecimal dailyChangePercent,
-            Instant lastUpdated
-    ) {
-    }
+            Instant lastUpdated) {}
 }

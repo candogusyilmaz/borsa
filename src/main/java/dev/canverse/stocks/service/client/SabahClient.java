@@ -1,6 +1,7 @@
 package dev.canverse.stocks.service.client;
 
 import dev.canverse.stocks.service.client.model.CanliBorsaVerileri;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -31,13 +32,16 @@ public class SabahClient {
         String result = null;
 
         try {
-            result = client.getForObject("https://www.sabah.com.tr/json/canli-borsa-verileri", String.class);
+            result =
+                    client.getForObject(
+                            "https://www.sabah.com.tr/json/canli-borsa-verileri", String.class);
         } catch (RestClientException e) {
             log.error("Failed to fetch BIST data due to RestClientException.", e);
         }
 
         if (result == null) {
-            log.error("Error while fetching BIST data. Returned data is null. Cannot parse or save BIST data. Skipping.");
+            log.error(
+                    "Error while fetching BIST data. Returned data is null. Cannot parse or save BIST data. Skipping.");
             return new CanliBorsaVerileri(List.of());
         }
 
@@ -62,17 +66,19 @@ public class SabahClient {
                 var time = LocalTime.parse(fields[3], formatter);
 
                 // Combine it with today's date and convert to Instant
-                Instant timeInstant = time.atDate(LocalDate.now())
-                        .atZone(ZoneId.of("Europe/Istanbul"))
-                        .toInstant();
+                Instant timeInstant =
+                        time.atDate(LocalDate.now())
+                                .atZone(ZoneId.of("Europe/Istanbul"))
+                                .toInstant();
 
-                stockDataList.add(new CanliBorsaVerileri.Item(
-                        fields[0],
-                        new BigDecimal(fields[1].replace(',', '.')),
-                        new BigDecimal(fields[4].replace(',', '.')),
-                        timeInstant,
-                        new BigDecimal(fields[2].replace(',', '.')),
-                        fields[5]));
+                stockDataList.add(
+                        new CanliBorsaVerileri.Item(
+                                fields[0],
+                                new BigDecimal(fields[1].replace(',', '.')),
+                                new BigDecimal(fields[4].replace(',', '.')),
+                                timeInstant,
+                                new BigDecimal(fields[2].replace(',', '.')),
+                                fields[5]));
             }
         }
 

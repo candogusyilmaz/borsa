@@ -2,10 +2,13 @@ package dev.canverse.stocks.domain.entity.portfolio;
 
 import dev.canverse.stocks.domain.Calculator;
 import dev.canverse.stocks.domain.entity.instrument.Instrument;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
+
 import lombok.Getter;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -52,19 +55,30 @@ public class Position implements Serializable {
     private Instant updatedAt;
 
     @OrderBy("id DESC")
-    @OneToMany(mappedBy = "position", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "position",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY,
+            orphanRemoval = true)
     private List<Transaction> transactions = new ArrayList<>();
 
     @OrderBy("id DESC")
-    @OneToMany(mappedBy = "position", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "position",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY,
+            orphanRemoval = true)
     private List<PositionHistory> history = new ArrayList<>();
 
     @OrderBy("id DESC")
-    @OneToMany(mappedBy = "position", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "position",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY,
+            orphanRemoval = true)
     private List<PositionDailySnapshot> dailySnapshots = new ArrayList<>();
 
-    protected Position() {
-    }
+    protected Position() {}
 
     public Position(Portfolio portfolio, Instrument instrument, String currencyCode) {
         this.portfolio = portfolio;
@@ -80,33 +94,43 @@ public class Position implements Serializable {
         return Calculator.divide(this.total, this.quantity);
     }
 
-    public Transaction buy(BigDecimal quantity, BigDecimal price, BigDecimal commission, Instant actionDate) {
+    public Transaction buy(
+            BigDecimal quantity, BigDecimal price, BigDecimal commission, Instant actionDate) {
 
         this.quantity = this.quantity.add(quantity);
         this.total = this.total.add(price.multiply(quantity));
 
-        var transaction = Transaction.buy(this, quantity, price, this.quantity, this.total, actionDate);
+        var transaction =
+                Transaction.buy(this, quantity, price, this.quantity, this.total, actionDate);
         this.transactions.add(transaction);
         this.history.add(new PositionHistory(this, PositionHistory.ActionType.BUY));
 
         return transaction;
     }
 
-    public Transaction sell(BigDecimal quantity, BigDecimal price, BigDecimal commission, Instant actionDate) {
+    public Transaction sell(
+            BigDecimal quantity, BigDecimal price, BigDecimal commission, Instant actionDate) {
         if (quantity.compareTo(this.quantity) > 0) {
             throw new IllegalArgumentException("Not enough quantity");
         }
 
-        var transaction = Transaction.sell(this, quantity, price,
-                this.quantity.subtract(quantity),
-                this.total.subtract(Calculator.divide(this.total.multiply(quantity), this.quantity)),
-                actionDate);
+        var transaction =
+                Transaction.sell(
+                        this,
+                        quantity,
+                        price,
+                        this.quantity.subtract(quantity),
+                        this.total.subtract(
+                                Calculator.divide(this.total.multiply(quantity), this.quantity)),
+                        actionDate);
 
         if (this.quantity.equals(quantity)) {
             this.total = BigDecimal.ZERO;
             this.quantity = BigDecimal.ZERO;
         } else {
-            this.total = this.total.subtract(Calculator.divide(this.total.multiply(quantity), this.quantity));
+            this.total =
+                    this.total.subtract(
+                            Calculator.divide(this.total.multiply(quantity), this.quantity));
             this.quantity = this.quantity.subtract(quantity);
         }
 

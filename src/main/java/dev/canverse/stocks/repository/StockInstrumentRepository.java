@@ -1,6 +1,7 @@
 package dev.canverse.stocks.repository;
 
 import dev.canverse.stocks.domain.entity.instrument.StockInstrument;
+
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

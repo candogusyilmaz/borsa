@@ -2,6 +2,7 @@ package dev.canverse.stocks.domain.entity.account;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -22,8 +23,7 @@ public class RolePermission implements Serializable {
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Permission permission;
 
-    protected RolePermission() {
-    }
+    protected RolePermission() {}
 
     public RolePermission(Role role, Permission permission) {
         this.role = role;

@@ -1,9 +1,12 @@
 package dev.canverse.stocks.domain.entity.instrument;
 
 import dev.canverse.stocks.domain.entity.Country;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
+
 import lombok.Getter;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -48,15 +51,14 @@ public class Market implements Serializable {
     private Instant updatedAt;
 
     public enum MarketType {
-        STOCK_EXCHANGE,     // BIST, NYSE, NASDAQ
-        CRYPTOCURRENCY,     // Binance, Coinbase
-        FOREX,              // Forex market
-        COMMODITY,          // Gold, Silver, Oil
-        INDEX,              // S&P 500, BIST 100
+        STOCK_EXCHANGE, // BIST, NYSE, NASDAQ
+        CRYPTOCURRENCY, // Binance, Coinbase
+        FOREX, // Forex market
+        COMMODITY, // Gold, Silver, Oil
+        INDEX, // S&P 500, BIST 100
     }
 
-    protected Market() {
-    }
+    protected Market() {}
 
     public Market(String name, String code, MarketType type, String timezone) {
         this.name = name;

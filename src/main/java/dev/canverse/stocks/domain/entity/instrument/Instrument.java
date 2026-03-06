@@ -1,8 +1,10 @@
 package dev.canverse.stocks.domain.entity.instrument;
 
 import jakarta.persistence.*;
+
 import lombok.Getter;
 import lombok.Setter;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -14,11 +16,15 @@ import java.util.Set;
 
 @Getter
 @Entity
-@Table(schema = "instrument", name = "instruments",
+@Table(
+        schema = "instrument",
+        name = "instruments",
         uniqueConstraints = @UniqueConstraint(columnNames = {"symbol", "market_id"}),
-        indexes = {@Index(name = "idx_instruments_symbol", columnList = "symbol"),
-                @Index(name = "idx_instruments_type", columnList = "type"),
-                @Index(name = "idx_instruments_market", columnList = "market_id")})
+        indexes = {
+            @Index(name = "idx_instruments_symbol", columnList = "symbol"),
+            @Index(name = "idx_instruments_type", columnList = "type"),
+            @Index(name = "idx_instruments_market", columnList = "market_id")
+        })
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class Instrument {
     @Id
@@ -54,11 +60,14 @@ public abstract class Instrument {
     @OneToMany(mappedBy = "instrument", cascade = CascadeType.ALL)
     private Set<InstrumentSnapshot> snapshots = new HashSet<>();
 
-    protected Instrument() {
-    }
+    protected Instrument() {}
 
     public enum InstrumentType {
-        STOCK, CRYPTOCURRENCY, CURRENCY_PAIR, COMMODITY, INDEX
+        STOCK,
+        CRYPTOCURRENCY,
+        CURRENCY_PAIR,
+        COMMODITY,
+        INDEX
     }
 
     public Instrument(String name, String symbol, InstrumentType type, Market market) {

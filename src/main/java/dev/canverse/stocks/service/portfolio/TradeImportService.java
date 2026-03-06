@@ -8,12 +8,15 @@ import com.google.genai.types.Content;
 import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.Part;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+
 import dev.canverse.stocks.domain.entity.instrument.QInstrument;
 import dev.canverse.stocks.domain.entity.portfolio.Transaction;
 import dev.canverse.stocks.domain.exception.BadRequestException;
 import dev.canverse.stocks.service.portfolio.model.BulkTransactionRequest;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,11 +33,13 @@ public class TradeImportService {
     private final ObjectMapper mapper;
     private final JPAQueryFactory queryFactory;
 
-    private final static Part PROMP_TEMPLATE = Part.fromText("""
+    private static final Part PROMP_TEMPLATE =
+            Part.fromText(
+                    """
             You are given the text content of a PDF that may include various financial information. Your task is to extract only the valid stock trade transactions — excluding any unrelated sections or cancelled trades.
-            
+
             Return the result as a JSON array where each object has the following structure:
-            
+
             {
             "date": "YYYY-MM-DD'T'hh:mm:ss.SSSZ",
             "symbol": "string",
@@ -44,27 +49,27 @@ public class TradeImportService {
             "type": "BUY or SELL",
             "marketCode": "BIST, NYSE, NASDAQ (optional)"
             }
-            
+
             Instructions:
-            
+
             Extract only executed and non-cancelled trades. Ignore cancelled, pending, or preview transactions.
-            
+
             The type field must be either "BUY" or "SELL".
-            
+
             Only include rows or text lines that represent actual trades. Ignore headers, summaries, portfolio holdings, or other sections.
-            
+
             IMPORTANT: Dates should be normalized to YYYY-MM-DD'T'hh:mm:ss.SSSZ
-            
+
             Quantities must be positive numbers only.
-            
+
             If the currency is not explicitly stated, omit the currency field.
-            
+
             Do not include duplicate or partial data.
-            
+
             The final output must be strictly valid JSON — no extra commentary or text.
-            
+
             Example Output:
-            
+
             [
             {
             "date": "2025-10-06T19:43:21.608Z",
@@ -87,7 +92,8 @@ public class TradeImportService {
             ]
             """);
 
-    private final static String JSON_SCHEMA = """
+    private static final String JSON_SCHEMA =
+            """
             {
               "type": "array",
               "items": {
@@ -126,23 +132,27 @@ public class TradeImportService {
 
     public List<TransactionImportPreview> importTransactions(MultipartFile file) {
         try {
-            var content = Content.fromParts(
-                    PROMP_TEMPLATE,
-                    Part.fromBytes(file.getBytes(), file.getContentType())
-            );
+            var content =
+                    Content.fromParts(
+                            PROMP_TEMPLATE, Part.fromBytes(file.getBytes(), file.getContentType()));
 
-            var config = GenerateContentConfig.builder()
-                    .temperature(0.1f)
-                    .responseMimeType("application/json")
-                    .responseJsonSchema(JsonSerializable.stringToJsonNode(JSON_SCHEMA))
-                    .build();
+            var config =
+                    GenerateContentConfig.builder()
+                            .temperature(0.1f)
+                            .responseMimeType("application/json")
+                            .responseJsonSchema(JsonSerializable.stringToJsonNode(JSON_SCHEMA))
+                            .build();
 
             var response = gemini.models.generateContent("gemini-2.5-flash-lite", content, config);
 
-            return mapper.readValue(response.text(), mapper.getTypeFactory().constructCollectionType(List.class, TransactionImportPreview.class));
+            return mapper.readValue(
+                    response.text(),
+                    mapper.getTypeFactory()
+                            .constructCollectionType(List.class, TransactionImportPreview.class));
         } catch (ServerException ex) {
             log.error("AI service error: {}", ex.getMessage(), ex);
-            throw new BadRequestException("Our services are currently unavailable. Please try again later.");
+            throw new BadRequestException(
+                    "Our services are currently unavailable. Please try again later.");
         } catch (Exception ex) {
             log.error("Failed to import transactions", ex);
             throw new RuntimeException("Failed to import transactions", ex);
@@ -156,33 +166,37 @@ public class TradeImportService {
             String currency,
             BigDecimal quantity,
             BigDecimal avgPrice,
-            Transaction.Type type
-    ) {
-    }
+            Transaction.Type type) {}
 
-    public List<BulkTransactionRequest> parseImportedTransactions(List<TransactionImportPreview> imports) {
+    public List<BulkTransactionRequest> parseImportedTransactions(
+            List<TransactionImportPreview> imports) {
         var result = new ArrayList<BulkTransactionRequest>();
 
         var ins = QInstrument.instrument;
 
         for (var item : imports) {
-            var instrument = queryFactory.selectFrom(ins)
-                    .where(ins.symbol.eq(item.symbol).and(ins.market.code.eq(item.marketCode)))
-                    .fetchFirst();
+            var instrument =
+                    queryFactory
+                            .selectFrom(ins)
+                            .where(
+                                    ins.symbol
+                                            .eq(item.symbol)
+                                            .and(ins.market.code.eq(item.marketCode)))
+                            .fetchFirst();
 
             if (instrument == null) {
                 log.warn("No instrument found for symbol: {}", item.symbol);
                 continue;
             }
 
-            result.add(new BulkTransactionRequest(
-                    item.type(),
-                    instrument.getId(),
-                    item.quantity(),
-                    item.avgPrice(),
-                    BigDecimal.ZERO,
-                    item.date()
-            ));
+            result.add(
+                    new BulkTransactionRequest(
+                            item.type(),
+                            instrument.getId(),
+                            item.quantity(),
+                            item.avgPrice(),
+                            BigDecimal.ZERO,
+                            item.date()));
         }
 
         return result;

@@ -5,8 +5,10 @@ import dev.canverse.stocks.repository.PositionRepository;
 import dev.canverse.stocks.security.AuthenticationProvider;
 import dev.canverse.stocks.service.portfolio.model.FetchPositionsQuery;
 import dev.canverse.stocks.service.portfolio.model.PositionInfo;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

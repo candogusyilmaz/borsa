@@ -3,7 +3,9 @@ package dev.canverse.stocks.domain.entity.portfolio;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
+
 import lombok.Getter;
+
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
@@ -48,44 +50,73 @@ public class PositionDailySnapshot {
 
     // Market value = quantity * marketPrice
     @PositiveOrZero
-    @Column(nullable = false, precision = 15, scale = 2,
+    @Column(
+            nullable = false,
+            precision = 15,
+            scale = 2,
             columnDefinition = "DECIMAL(15,2) GENERATED ALWAYS AS (quantity * market_price) STORED")
     private BigDecimal marketValue;
 
     // Total cost = quantity * averagePrice
     @PositiveOrZero
-    @Column(nullable = false, precision = 15, scale = 2,
-            columnDefinition = "DECIMAL(15,2) GENERATED ALWAYS AS (quantity * average_price) STORED")
+    @Column(
+            nullable = false,
+            precision = 15,
+            scale = 2,
+            columnDefinition =
+                    "DECIMAL(15,2) GENERATED ALWAYS AS (quantity * average_price) STORED")
     private BigDecimal totalCost;
 
     // Total profit = marketValue - totalCost
-    @Column(nullable = false, precision = 15, scale = 2,
-            columnDefinition = "DECIMAL(15,2) GENERATED ALWAYS AS ((quantity * market_price) - (quantity * average_price)) STORED")
+    @Column(
+            nullable = false,
+            precision = 15,
+            scale = 2,
+            columnDefinition =
+                    "DECIMAL(15,2) GENERATED ALWAYS AS ((quantity * market_price) - (quantity * average_price)) STORED")
     private BigDecimal totalProfit;
 
     // Total profit percentage = (totalProfit / totalCost) * 100
-    @Column(nullable = false, precision = 5, scale = 2,
-            columnDefinition = "DECIMAL(5,2) GENERATED ALWAYS AS (CASE WHEN (quantity * average_price) > 0 THEN (((quantity * market_price) - (quantity * average_price)) / (quantity * average_price)) * 100 ELSE NULL END) STORED")
+    @Column(
+            nullable = false,
+            precision = 5,
+            scale = 2,
+            columnDefinition =
+                    "DECIMAL(5,2) GENERATED ALWAYS AS (CASE WHEN (quantity * average_price) > 0 THEN (((quantity * market_price) - (quantity * average_price)) / (quantity * average_price)) * 100 ELSE NULL END) STORED")
     private BigDecimal totalProfitPercentage;
 
     // Daily profit = marketValue - previousDay's marketValue
-    @Column(nullable = false, precision = 15, scale = 2,
-            columnDefinition = "DECIMAL(15,2) GENERATED ALWAYS AS ((quantity * market_price) - (quantity * previous_market_price)) STORED")
+    @Column(
+            nullable = false,
+            precision = 15,
+            scale = 2,
+            columnDefinition =
+                    "DECIMAL(15,2) GENERATED ALWAYS AS ((quantity * market_price) - (quantity * previous_market_price)) STORED")
     private BigDecimal dailyProfit;
 
-    // Daily profit percentage = (dailyProfit / previous day's marketValue) * 100 (computed externally)
-    @Column(nullable = false, precision = 5, scale = 2,
-            columnDefinition = "DECIMAL(5,2) GENERATED ALWAYS AS (CASE WHEN previous_market_price > 0 THEN ((quantity * market_price) - (quantity * previous_market_price)) / (quantity * previous_market_price) * 100 ELSE NULL END) STORED")
+    // Daily profit percentage = (dailyProfit / previous day's marketValue) * 100 (computed
+    // externally)
+    @Column(
+            nullable = false,
+            precision = 5,
+            scale = 2,
+            columnDefinition =
+                    "DECIMAL(5,2) GENERATED ALWAYS AS (CASE WHEN previous_market_price > 0 THEN ((quantity * market_price) - (quantity * previous_market_price)) / (quantity * previous_market_price) * 100 ELSE NULL END) STORED")
     private BigDecimal dailyProfitPercentage;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    protected PositionDailySnapshot() {
-    }
+    protected PositionDailySnapshot() {}
 
-    public PositionDailySnapshot(Position position, int quantity, BigDecimal averagePrice, BigDecimal marketPrice, BigDecimal previousMarketPrice, BigDecimal portfolioWeightPercentage) {
+    public PositionDailySnapshot(
+            Position position,
+            int quantity,
+            BigDecimal averagePrice,
+            BigDecimal marketPrice,
+            BigDecimal previousMarketPrice,
+            BigDecimal portfolioWeightPercentage) {
         this.position = position;
         this.quantity = quantity;
         this.averagePrice = averagePrice;

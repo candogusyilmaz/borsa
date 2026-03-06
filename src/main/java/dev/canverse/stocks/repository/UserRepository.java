@@ -1,6 +1,7 @@
 package dev.canverse.stocks.repository;
 
 import dev.canverse.stocks.domain.entity.account.User;
+
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Modifying;

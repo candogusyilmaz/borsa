@@ -1,7 +1,9 @@
 package dev.canverse.stocks.service.account.model;
 
 import dev.canverse.stocks.domain.entity.account.User;
+
 import jakarta.validation.constraints.NotNull;
+
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.List;
@@ -16,7 +18,6 @@ public record TokenCreateResponse(
                 user.getName(),
                 user.getEmail(),
                 token,
-                user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList()
-        );
+                user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList());
     }
 }

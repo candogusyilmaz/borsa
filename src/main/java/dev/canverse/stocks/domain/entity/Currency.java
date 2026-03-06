@@ -1,7 +1,9 @@
 package dev.canverse.stocks.domain.entity;
 
 import jakarta.persistence.*;
+
 import lombok.Getter;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -46,8 +48,7 @@ public class Currency {
     @Column(nullable = false)
     private Instant updatedAt;
 
-    protected Currency() {
-    }
+    protected Currency() {}
 
     public void updateExchangeRate(BigDecimal exchangeRate, Instant updatedAt) {
         this.exchangeRate = exchangeRate;

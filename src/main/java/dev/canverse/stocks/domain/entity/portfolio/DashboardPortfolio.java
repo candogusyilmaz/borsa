@@ -1,7 +1,9 @@
 package dev.canverse.stocks.domain.entity.portfolio;
 
 import jakarta.persistence.*;
+
 import lombok.Getter;
+
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.io.Serializable;
@@ -25,8 +27,7 @@ public class DashboardPortfolio implements Serializable {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    protected DashboardPortfolio() {
-    }
+    protected DashboardPortfolio() {}
 
     public DashboardPortfolio(Dashboard dashboard, Portfolio portfolio) {
         this.dashboard = dashboard;

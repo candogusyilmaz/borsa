@@ -27,18 +27,16 @@ public final class Calculator {
         var difference = current.subtract(previous);
 
         if (previous.compareTo(BigDecimal.ZERO) < 0 && current.compareTo(BigDecimal.ZERO) < 0) {
-            var improvementInLoss = previous.subtract(current); // How much loss was reduced/increased
-            return Calculator.divide(difference, previous.abs())
-                    .multiply(BigDecimal.valueOf(100));
+            var improvementInLoss =
+                    previous.subtract(current); // How much loss was reduced/increased
+            return Calculator.divide(difference, previous.abs()).multiply(BigDecimal.valueOf(100));
         }
 
         if (previous.compareTo(BigDecimal.ZERO) < 0 && current.compareTo(BigDecimal.ZERO) >= 0) {
-            return Calculator.divide(difference, previous.abs())
-                    .multiply(BigDecimal.valueOf(100));
+            return Calculator.divide(difference, previous.abs()).multiply(BigDecimal.valueOf(100));
         }
 
         // Standard calculation for other cases
-        return Calculator.divide(difference, previous)
-                .multiply(BigDecimal.valueOf(100));
+        return Calculator.divide(difference, previous).multiply(BigDecimal.valueOf(100));
     }
 }

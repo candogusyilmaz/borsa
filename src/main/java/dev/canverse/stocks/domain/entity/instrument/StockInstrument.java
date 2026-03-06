@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
+
 import lombok.Getter;
 
 @Getter
@@ -14,8 +15,7 @@ public class StockInstrument extends Instrument {
     @Column(length = 12)
     private String isin;
 
-    protected StockInstrument() {
-    }
+    protected StockInstrument() {}
 
     public StockInstrument(String name, String symbol, Market market) {
         super(name, symbol, InstrumentType.STOCK, market);

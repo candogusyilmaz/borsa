@@ -2,8 +2,11 @@ package dev.canverse.stocks.rest.account;
 
 import dev.canverse.stocks.service.account.UserService;
 import dev.canverse.stocks.service.account.model.OnboardingRequest;
+
 import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.web.bind.annotation.*;
 
 @RestController

@@ -2,7 +2,9 @@ package dev.canverse.stocks.service.account;
 
 import dev.canverse.stocks.domain.entity.account.User;
 import dev.canverse.stocks.service.account.model.TokenCreateResponse;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +21,8 @@ import java.time.temporal.ChronoUnit;
 @Service
 @RequiredArgsConstructor
 public class TokenService {
-    private final static long ACCESS_TOKEN_EXPIRATION_IN_SECONDS = 60 * 60 * 1;
-    private final static long REFRESH_TOKEN_EXPIRATION_IN_SECONDS = 60 * 60 * 24 * 7;
+    private static final long ACCESS_TOKEN_EXPIRATION_IN_SECONDS = 60 * 60 * 1;
+    private static final long REFRESH_TOKEN_EXPIRATION_IN_SECONDS = 60 * 60 * 24 * 7;
 
     private final UserDetailsService userService;
 
@@ -37,21 +39,20 @@ public class TokenService {
         var body = this.createAccessToken(principal);
         var cookie = this.createRefreshTokenCookie(principal);
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie)
-                .body(body);
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie).body(body);
     }
 
     public String createRefreshTokenCookie(User principal) {
         var now = Instant.now();
         var expiresAt = now.plus(REFRESH_TOKEN_EXPIRATION_IN_SECONDS, ChronoUnit.SECONDS);
 
-        var claims = JwtClaimsSet.builder()
-                .issuer("finance-api")
-                .issuedAt(now)
-                .expiresAt(expiresAt)
-                .subject(principal.getEmail())
-                .build();
+        var claims =
+                JwtClaimsSet.builder()
+                        .issuer("finance-api")
+                        .issuedAt(now)
+                        .expiresAt(expiresAt)
+                        .subject(principal.getEmail())
+                        .build();
 
         var token = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
 
@@ -69,12 +70,13 @@ public class TokenService {
         var now = Instant.now();
         var expiresAt = now.plus(ACCESS_TOKEN_EXPIRATION_IN_SECONDS, ChronoUnit.SECONDS);
 
-        var claims = JwtClaimsSet.builder()
-                .issuer("finance-api")
-                .issuedAt(now)
-                .expiresAt(expiresAt)
-                .subject(principal.getEmail())
-                .build();
+        var claims =
+                JwtClaimsSet.builder()
+                        .issuer("finance-api")
+                        .issuedAt(now)
+                        .expiresAt(expiresAt)
+                        .subject(principal.getEmail())
+                        .build();
 
         var token = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
         return TokenCreateResponse.from(principal, token);

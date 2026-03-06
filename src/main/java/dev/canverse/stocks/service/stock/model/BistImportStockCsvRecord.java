@@ -9,8 +9,7 @@ public record BistImportStockCsvRecord(
         String enstrumanTipi,
         BigDecimal kapanisFiyati,
         BigDecimal oncekiKapanisFiyati,
-        BigDecimal degisim
-) {
+        BigDecimal degisim) {
     public static final String INSTRUMENT_GROUP_EQT = "EQT";
     public static final String INSTRUMENT_GROUP_EMS = "EMS";
 

@@ -2,7 +2,9 @@ package dev.canverse.stocks.domain.entity.portfolio;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+
 import lombok.Getter;
+
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.io.Serializable;
@@ -37,8 +39,7 @@ public class PositionHistory implements Serializable {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    protected PositionHistory() {
-    }
+    protected PositionHistory() {}
 
     protected PositionHistory(Position position, ActionType actionType) {
         this.position = position;

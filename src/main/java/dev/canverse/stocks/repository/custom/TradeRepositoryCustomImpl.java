@@ -3,6 +3,7 @@ package dev.canverse.stocks.repository.custom;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+
 import dev.canverse.stocks.domain.entity.portfolio.QPortfolio;
 import dev.canverse.stocks.domain.entity.portfolio.QPosition;
 import dev.canverse.stocks.domain.entity.portfolio.QTransaction;
@@ -10,7 +11,9 @@ import dev.canverse.stocks.domain.entity.portfolio.Transaction;
 import dev.canverse.stocks.service.portfolio.PortfolioAccessValidator;
 import dev.canverse.stocks.service.portfolio.model.MonthlyRevenueOverview;
 import dev.canverse.stocks.service.portfolio.model.TradeHistory;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -34,33 +37,32 @@ public class TradeRepositoryCustomImpl implements TradeRepositoryCustom {
         var year = transaction.actionDate.year();
         var q = transaction.performance.profit.sumBigDecimal();
 
-        var groupedData = queryFactory
-                .select(
-                        month,
-                        year,
-                        q
-                )
-                .from(transaction)
-                .join(transaction.position, position)
-                .join(position.portfolio, p)
-                .where(transaction.type.eq(Transaction.Type.SELL).and(p.id.eq(portfolioId)))
-                .groupBy(year, month)
-                .fetch();
+        var groupedData =
+                queryFactory
+                        .select(month, year, q)
+                        .from(transaction)
+                        .join(transaction.position, position)
+                        .join(position.portfolio, p)
+                        .where(transaction.type.eq(Transaction.Type.SELL).and(p.id.eq(portfolioId)))
+                        .groupBy(year, month)
+                        .fetch();
 
-        var dataByYear = groupedData.stream()
-                .collect(Collectors.groupingBy(tuple -> tuple.get(year)));
+        var dataByYear =
+                groupedData.stream().collect(Collectors.groupingBy(tuple -> tuple.get(year)));
 
         return dataByYear.entrySet().stream()
-                .map(entry -> {
-                    int year2 = entry.getKey();
-                    List<MonthlyRevenueOverview.Month> months = entry.getValue().stream()
-                            .map(tuple -> new MonthlyRevenueOverview.Month(
-                                    tuple.get(month),
-                                    tuple.get(q)
-                            ))
-                            .collect(Collectors.toList());
-                    return new MonthlyRevenueOverview(year2, months);
-                })
+                .map(
+                        entry -> {
+                            int year2 = entry.getKey();
+                            List<MonthlyRevenueOverview.Month> months =
+                                    entry.getValue().stream()
+                                            .map(
+                                                    tuple ->
+                                                            new MonthlyRevenueOverview.Month(
+                                                                    tuple.get(month), tuple.get(q)))
+                                            .collect(Collectors.toList());
+                            return new MonthlyRevenueOverview(year2, months);
+                        })
                 .collect(Collectors.toList());
     }
 
@@ -69,32 +71,37 @@ public class TradeRepositoryCustomImpl implements TradeRepositoryCustom {
         var transaction = QTransaction.transaction;
         var subTransaction = new QTransaction("subTrade");
 
-        var isLatestExpr = JPAExpressions
-                .selectOne()
-                .from(subTransaction)
-                .where(subTransaction.position.eq(transaction.position).and(subTransaction.id.gt(transaction.id)))
-                .notExists();
+        var isLatestExpr =
+                JPAExpressions.selectOne()
+                        .from(subTransaction)
+                        .where(
+                                subTransaction
+                                        .position
+                                        .eq(transaction.position)
+                                        .and(subTransaction.id.gt(transaction.id)))
+                        .notExists();
 
-        var query = queryFactory.select(
-                        Projections.constructor(TradeHistory.Item.class,
-                                transaction.actionDate,
-                                transaction.createdAt,
-                                transaction.type,
-                                transaction.position.id.stringValue(),
-                                transaction.position.instrument.symbol,
-                                transaction.price,
-                                transaction.quantity,
-                                transaction.performance.profit,
-                                transaction.performance.returnPercentage,
-                                transaction.performance.performanceCategory,
-                                isLatestExpr
-                        )
-                )
-                .from(transaction)
-                .leftJoin(transaction.performance)
-                .where(transaction.position.portfolio.id.eq(portfolioId))
-                .orderBy(transaction.createdAt.desc())
-                .fetch();
+        var query =
+                queryFactory
+                        .select(
+                                Projections.constructor(
+                                        TradeHistory.Item.class,
+                                        transaction.actionDate,
+                                        transaction.createdAt,
+                                        transaction.type,
+                                        transaction.position.id.stringValue(),
+                                        transaction.position.instrument.symbol,
+                                        transaction.price,
+                                        transaction.quantity,
+                                        transaction.performance.profit,
+                                        transaction.performance.returnPercentage,
+                                        transaction.performance.performanceCategory,
+                                        isLatestExpr))
+                        .from(transaction)
+                        .leftJoin(transaction.performance)
+                        .where(transaction.position.portfolio.id.eq(portfolioId))
+                        .orderBy(transaction.createdAt.desc())
+                        .fetch();
 
         return new TradeHistory(query);
     }

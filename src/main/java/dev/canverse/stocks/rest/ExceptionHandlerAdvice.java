@@ -1,6 +1,7 @@
 package dev.canverse.stocks.rest;
 
 import dev.canverse.stocks.domain.exception.ApiException;
+
 import org.springframework.http.*;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -18,13 +19,23 @@ import java.util.List;
 @RestControllerAdvice
 public class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
     @Override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex,
+            HttpHeaders headers,
+            HttpStatusCode status,
+            WebRequest request) {
         ex.getBody().setProperty("invalid-params", getValidationErrors(ex));
         return ResponseEntity.status(status).body(ex.getBody());
     }
 
-    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class, NullPointerException.class, IndexOutOfBoundsException.class})
-    public ResponseEntity<Object> handlePreconditions(RuntimeException ex, ServletWebRequest request) {
+    @ExceptionHandler({
+        IllegalArgumentException.class,
+        IllegalStateException.class,
+        NullPointerException.class,
+        IndexOutOfBoundsException.class
+    })
+    public ResponseEntity<Object> handlePreconditions(
+            RuntimeException ex, ServletWebRequest request) {
         var detail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
         detail.setInstance(URI.create(request.getRequest().getRequestURI()));
         this.logger.error("An unexpected error occurred.", ex);
@@ -32,8 +43,10 @@ public class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Object> handleRuntimeException(RuntimeException ex, ServletWebRequest request) {
-        var detail = ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+    public ResponseEntity<Object> handleRuntimeException(
+            RuntimeException ex, ServletWebRequest request) {
+        var detail =
+                ProblemDetail.forStatusAndDetail(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
         detail.setTitle(ex.getClass().getSimpleName());
         detail.setInstance(URI.create(request.getRequest().getRequestURI()));
         this.logger.error("An unexpected error occurred.", ex);
@@ -46,8 +59,11 @@ public class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<Object> handleBadCredentialsException(BadCredentialsException ex, ServletWebRequest request) {
-        var detail = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, "Email or password is incorrect.");
+    public ResponseEntity<Object> handleBadCredentialsException(
+            BadCredentialsException ex, ServletWebRequest request) {
+        var detail =
+                ProblemDetail.forStatusAndDetail(
+                        HttpStatus.UNAUTHORIZED, "Email or password is incorrect.");
         detail.setInstance(URI.create(request.getRequest().getRequestURI()));
 
         return ResponseEntity.status(detail.getStatus()).body(detail);
@@ -62,17 +78,21 @@ public class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
     private static List<InvalidParameter> getValidationErrors(MethodArgumentNotValidException ex) {
         var result = new ArrayList<InvalidParameter>();
 
-        ex.getFieldErrors().forEach(error -> {
-            var field = error.getField();
-            var message = error.getDefaultMessage() != null ? error.getDefaultMessage() : "";
-            var code = error.getCode();
+        ex.getFieldErrors()
+                .forEach(
+                        error -> {
+                            var field = error.getField();
+                            var message =
+                                    error.getDefaultMessage() != null
+                                            ? error.getDefaultMessage()
+                                            : "";
+                            var code = error.getCode();
 
-            result.add(new InvalidParameter(field, message, code));
-        });
+                            result.add(new InvalidParameter(field, message, code));
+                        });
 
         return result;
     }
 
-    record InvalidParameter(String field, String message, String code) {
-    }
+    record InvalidParameter(String field, String message, String code) {}
 }

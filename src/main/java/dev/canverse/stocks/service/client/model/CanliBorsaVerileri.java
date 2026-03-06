@@ -11,8 +11,7 @@ public record CanliBorsaVerileri(List<Item> data) {
             BigDecimal change,
             Instant time,
             BigDecimal changePercent,
-            String volume
-    ) {
+            String volume) {
         public BigDecimal previousClose() {
             return price().subtract(change());
         }

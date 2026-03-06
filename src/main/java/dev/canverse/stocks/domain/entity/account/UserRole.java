@@ -2,6 +2,7 @@ package dev.canverse.stocks.domain.entity.account;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+
 import lombok.Getter;
 
 @Getter
@@ -20,8 +21,7 @@ public class UserRole {
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Role role;
 
-    protected UserRole() {
-    }
+    protected UserRole() {}
 
     public UserRole(User user, Role role) {
         this.user = user;

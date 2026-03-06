@@ -1,6 +1,7 @@
 package dev.canverse.stocks.repository;
 
 import dev.canverse.stocks.domain.entity.portfolio.PositionDailySnapshot;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
@@ -9,10 +10,14 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 @Repository
-public interface PositionDailySnapshotRepository extends JpaRepository<PositionDailySnapshot, Long>, JpaSpecificationExecutor<PositionDailySnapshot> {
+public interface PositionDailySnapshotRepository
+        extends JpaRepository<PositionDailySnapshot, Long>,
+                JpaSpecificationExecutor<PositionDailySnapshot> {
     @Modifying
     @Transactional(timeout = 25)
-    @Query(value = """
+    @Query(
+            value =
+                    """
             INSERT INTO holding_daily_snapshots (holding_id,
                                                    quantity,
                                                    average_price,
@@ -41,6 +46,7 @@ public interface PositionDailySnapshotRepository extends JpaRepository<PositionD
             JOIN stock_snapshots ss ON h.stock_id = ss.stock_id
             JOIN portfolio_totals pt ON h.user_id = pt.user_id
             WHERE h.quantity > 0
-            """, nativeQuery = true)
+            """,
+            nativeQuery = true)
     void generateDailyHoldingSnapshots();
 }

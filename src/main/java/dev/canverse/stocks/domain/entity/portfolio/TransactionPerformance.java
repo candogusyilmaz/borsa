@@ -1,10 +1,13 @@
 package dev.canverse.stocks.domain.entity.portfolio;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
@@ -38,10 +41,10 @@ public class TransactionPerformance {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    protected TransactionPerformance() {
-    }
+    protected TransactionPerformance() {}
 
-    protected TransactionPerformance(Transaction transaction, BigDecimal profit, BigDecimal returnPercentage) {
+    protected TransactionPerformance(
+            Transaction transaction, BigDecimal profit, BigDecimal returnPercentage) {
         this.transaction = transaction;
         this.profit = profit;
         this.returnPercentage = returnPercentage;
@@ -49,10 +52,10 @@ public class TransactionPerformance {
     }
 
     public enum PerformanceCategory {
-        EXCELLENT,  // > 20%
-        GOOD,       // 10-20%
-        MODERATE,   // 0-10%
-        POOR,       // < 0%
+        EXCELLENT, // > 20%
+        GOOD, // 10-20%
+        MODERATE, // 0-10%
+        POOR, // < 0%
     }
 
     private PerformanceCategory calculatePerformanceCategory(BigDecimal returnPercentage) {

@@ -1,6 +1,24 @@
-cd "$(git rev-parse --show-toplevel)/src/main/web" || exit 1
+REPO_ROOT=$(git rev-parse --show-toplevel)
 
+# ── Java: Google Java Formatter ──────────────────────────────────────────────
+echo 'Running Google Java Formatter (fmt:format)...'
+cd "$REPO_ROOT" || exit 1
+./mvnw fmt:format -q
+FMT_EXIT=$?
+
+if [ $FMT_EXIT -ne 0 ]; then
+  echo ''
+  echo 'FAILED: Google Java Formatter failed. Fix the errors above before committing.'
+  exit 1
+fi
+
+# Stage any Java files that were reformatted
+git diff --name-only | grep '\.java$' | xargs -r git add
+echo 'OK: Java formatting done.'
+
+# ── Frontend: TypeScript type check ──────────────────────────────────────────
 echo 'Running TypeScript type check (tsc -b)...'
+cd "$REPO_ROOT/src/main/web" || exit 1
 npx tsc -b
 TSC_EXIT=$?
 
@@ -10,13 +28,20 @@ if [ $TSC_EXIT -ne 0 ]; then
   exit 1
 fi
 
-echo 'Running Biome check (npm run check)...'
-npm run check
-CHECK_EXIT=$?
+# ── Frontend: Biome check ─────────────────────────────────────────────────────
+echo 'Running Biome check...'
 
-if [ $CHECK_EXIT -ne 0 ]; then
+# First do a dry-run to detect any unformatted/lint issues
+npx biome check ./src
+BIOME_CHECK_EXIT=$?
+
+if [ $BIOME_CHECK_EXIT -ne 0 ]; then
+  # Auto-fix what can be fixed
+  npm run check
   echo ''
-  echo 'FAILED: Biome check failed. Stage any auto-fixed files and try committing again.'
+  echo 'Biome found and fixed issues. Staging the fixed files...'
+  git diff --name-only | xargs -r git add
+  echo 'Fixed files have been staged. Please review and commit again.'
   exit 1
 fi
 

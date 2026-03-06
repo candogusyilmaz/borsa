@@ -1,9 +1,11 @@
 package dev.canverse.stocks.domain.entity.instrument;
 
 import jakarta.persistence.*;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
@@ -42,8 +44,7 @@ public class InstrumentSnapshot implements Serializable {
     @Column(nullable = false)
     private Instant updatedAt;
 
-    protected InstrumentSnapshot() {
-    }
+    protected InstrumentSnapshot() {}
 
     protected InstrumentSnapshot(Instrument instrument) {
         this.instrument = instrument;

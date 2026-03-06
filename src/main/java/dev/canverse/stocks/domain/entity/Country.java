@@ -2,7 +2,9 @@ package dev.canverse.stocks.domain.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
+
 import lombok.Getter;
+
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.io.Serializable;
@@ -28,8 +30,7 @@ public class Country implements Serializable {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    protected Country() {
-    }
+    protected Country() {}
 
     public Country(String name, String isoCode) {
         this.name = name;

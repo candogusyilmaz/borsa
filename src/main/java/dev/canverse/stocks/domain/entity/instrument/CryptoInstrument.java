@@ -3,6 +3,7 @@ package dev.canverse.stocks.domain.entity.instrument;
 import jakarta.persistence.Entity;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
+
 import lombok.Getter;
 
 @Getter
@@ -11,8 +12,7 @@ import lombok.Getter;
 @PrimaryKeyJoinColumn(name = "instrument_id")
 public class CryptoInstrument extends Instrument {
 
-    protected CryptoInstrument() {
-    }
+    protected CryptoInstrument() {}
 
     public CryptoInstrument(String name, String symbol, Market market) {
         super(name, symbol, InstrumentType.CRYPTOCURRENCY, market);

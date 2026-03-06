@@ -1,4 +1,3 @@
 package dev.canverse.stocks.service.portfolio.model;
 
-public record FetchPositionsQuery(Long portfolioId) {
-}
+public record FetchPositionsQuery(Long portfolioId) {}

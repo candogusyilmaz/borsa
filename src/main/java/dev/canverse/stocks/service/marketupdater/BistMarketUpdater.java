@@ -1,6 +1,7 @@
 package dev.canverse.stocks.service.marketupdater;
 
 import dev.canverse.stocks.service.client.SabahClient;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
@@ -28,18 +29,18 @@ public class BistMarketUpdater extends MarketUpdater {
         var resp = sabahClient.fetchBistStocks().data();
 
         return resp.stream()
-                .map(item -> {
-                    var id = instruments.get(item.symbol());
-                    if (id == null) return null;
+                .map(
+                        item -> {
+                            var id = instruments.get(item.symbol());
+                            if (id == null) return null;
 
-                    return new Snapshot(
-                            "TRY",
-                            item.price(),
-                            item.price().subtract(item.change()),
-                            Timestamp.from(item.time()),
-                            id
-                    );
-                })
+                            return new Snapshot(
+                                    "TRY",
+                                    item.price(),
+                                    item.price().subtract(item.change()),
+                                    Timestamp.from(item.time()),
+                                    id);
+                        })
                 .filter(Objects::nonNull)
                 .toList();
     }
