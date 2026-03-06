@@ -3,9 +3,9 @@ import createClient from 'openapi-react-query';
 import type { paths } from './schema';
 import { getToken } from './token';
 
-const _vite = import.meta.env.VITE_API_BASE_URL as string | undefined;
+const vite = import.meta.env.VITE_API_BASE_URL as string | undefined;
 
-const baseUrl = 'http://localhost:8080/';
+const baseUrl = vite?.substring(0, vite.length - 3) ?? 'http://localhost:8080/';
 
 const UNPROTECTED_ROUTES = ['/auth/token', '/auth/google', '/auth/refresh-token', '/auth/register'];
 
