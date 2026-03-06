@@ -7,7 +7,6 @@ import { createRouter, RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AuthenticationProvider, useAuthentication } from '~/lib/AuthenticationContext.tsx';
-import { AxiosProvider } from '~/lib/axios.ts';
 import { routeTree } from '~/routeTree.gen';
 
 import '@mantine/core/styles.css';
@@ -56,13 +55,7 @@ declare module '@tanstack/react-router' {
 function Main() {
   const auth = useAuthentication();
 
-  return (
-    <RouterProvider
-      router={router}
-      context={{ auth, queryClient }}
-      InnerWrap={({ children }) => <AxiosProvider>{children}</AxiosProvider>}
-    />
-  );
+  return <RouterProvider router={router} context={{ auth, queryClient }} />;
 }
 
 createRoot(document.getElementById('root')!).render(

@@ -462,10 +462,10 @@ export interface components {
       password?: string;
     };
     TokenCreateResponse: {
-      name?: string;
-      email?: string;
-      token?: string;
-      permissions?: string[];
+      name: string;
+      email: string;
+      token: string;
+      permissions: string[];
     };
     UserRegistrationRequest: {
       name: string;

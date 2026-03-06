@@ -2,7 +2,6 @@ import { Button, Divider, Group, PasswordInput, Stack, TextInput } from '@mantin
 import { hasLength, isEmail, useForm } from '@mantine/form';
 import { type CredentialResponse, GoogleLogin } from '@react-oauth/google';
 import { createFileRoute, Link } from '@tanstack/react-router';
-import type { AxiosError } from 'axios';
 import { CanverseText } from '~/components/CanverseText';
 import { useAuthentication } from '~/lib/AuthenticationContext';
 import { alerts } from '~/lib/alert';
@@ -102,7 +101,7 @@ function RouteComponent() {
           navigate({ to: '/dashboard' });
         },
         onError: (error) => {
-          const res = error as AxiosError;
+          const res = error as unknown as { response?: { data?: unknown } };
           const responseData = res.response?.data as {
             detail?: string;
             'invalid-params'?: { field: string; message: string }[];

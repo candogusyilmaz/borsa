@@ -1,14 +1,10 @@
 import { type UseMutationResult, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createContext, type ReactNode, useContext, useState } from 'react';
-import { http } from './axios.ts';
+import { client } from '~/api/openapi.ts';
+import type { paths } from '~/api/schema.d.ts';
 import { sleep } from './sleep.ts';
 
-export interface LoginResponse {
-  name: string;
-  email: string;
-  token: string;
-  permissions: string[];
-}
+type LoginResponse = paths['/api/auth/token']['post']['responses']['200']['content']['*/*'];
 
 export interface AuthContext {
   user: LoginResponse | null;
@@ -25,8 +21,6 @@ export interface AuthContext {
   >;
   register: UseMutationResult<LoginResponse, unknown, { name: string; email: string; password: string }, unknown>;
   logout: () => Promise<void>;
-  updateToken: (token: string) => void;
-  refreshToken: () => Promise<void>;
 }
 
 type AuthProviderProps = {
@@ -45,13 +39,13 @@ function getStoredUser(): LoginResponse | null {
 const AuthContext = createContext<AuthContext>(null!);
 
 export function AuthenticationProvider({ children }: Readonly<AuthProviderProps>) {
-  const client = useQueryClient();
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<LoginResponse | null>(getStoredUser());
 
   const login = useMutation({
     mutationFn: async (credentials: { username: string; password: string } | { token: string }) => {
-      const endpoint = 'token' in credentials ? '/auth/google' : '/auth/token';
-      return (await http.post<LoginResponse>(endpoint, credentials)).data;
+      const endpoint = 'token' in credentials ? '/api/auth/google' : '/api/auth/token';
+      return (await client.POST(endpoint, { body: credentials })).data!;
     },
     onSuccess: async (data) => {
       localStorage.setItem('user', JSON.stringify(data));
@@ -61,7 +55,7 @@ export function AuthenticationProvider({ children }: Readonly<AuthProviderProps>
 
   const register = useMutation({
     mutationFn: async (credentials: { name: string; email: string; password: string }) => {
-      return (await http.post<LoginResponse>('/auth/register', credentials)).data;
+      return (await client.POST('/api/auth/register', { body: credentials })).data!;
     },
     onSuccess: async (data) => {
       localStorage.setItem('user', JSON.stringify(data));
@@ -71,28 +65,9 @@ export function AuthenticationProvider({ children }: Readonly<AuthProviderProps>
 
   const logout = async () => {
     localStorage.removeItem('user');
-    client.removeQueries();
+    queryClient.removeQueries();
     setUser(null);
     await sleep(1);
-  };
-
-  const updateToken = (token: string) => {
-    const user = getStoredUser();
-    user!.token = token;
-    localStorage.setItem('user', JSON.stringify(user));
-    setUser(user);
-  };
-
-  const refreshToken = async () => {
-    if (!user) return;
-
-    try {
-      const response = await http.post<{ token: string }>('/auth/refresh-token', { token: user.token });
-      updateToken(response.data.token);
-    } catch (error) {
-      console.error('Failed to refresh token', error);
-      logout();
-    }
   };
 
   return (
@@ -102,9 +77,7 @@ export function AuthenticationProvider({ children }: Readonly<AuthProviderProps>
         isAuthenticated: !!user,
         login,
         register,
-        logout,
-        updateToken,
-        refreshToken
+        logout
       }}>
       {children}
     </AuthContext>

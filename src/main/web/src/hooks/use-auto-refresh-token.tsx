@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { http } from '~/lib/axios';
+import { client } from '~/api/openapi';
 
 function decodeJwt(token) {
   try {
@@ -49,12 +49,12 @@ export function useAutoRefreshToken() {
 
     async function refreshTokenFn() {
       try {
-        const res = await http.post('/auth/refresh-token');
+        const res = await client.POST('/api/auth/refresh-token');
         localStorage.setItem('user', JSON.stringify(res.data));
         console.log('Token refreshed successfully');
 
         // schedule the next refresh using the new access token
-        scheduleRefresh(res.data.token);
+        scheduleRefresh(res.data!.token!);
       } catch (err) {
         console.error('Token refresh failed', err);
       }
