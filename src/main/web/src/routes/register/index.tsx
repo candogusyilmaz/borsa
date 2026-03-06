@@ -2,7 +2,6 @@ import { Button, Divider, Group, PasswordInput, Stack, TextInput } from '@mantin
 import { hasLength, isEmail, useForm } from '@mantine/form';
 import { type CredentialResponse, GoogleLogin } from '@react-oauth/google';
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { CanverseText } from '~/components/CanverseText';
 import { useAuthentication } from '~/lib/AuthenticationContext';
 import { alerts } from '~/lib/alert';
 import styles from '../login/auth.module.css';
@@ -130,9 +129,7 @@ function RouteComponent() {
       <div className={styles.authCard}>
         <div className={styles.authHeader}>
           <h1 className={styles.authTitle}>Create your account</h1>
-          <p className={styles.authSubtitle}>
-            Connect to <CanverseText span /> with:
-          </p>
+          <p className={styles.authSubtitle}>Connect to Canverse with:</p>
         </div>
         <div className={styles.googleButtonWrapper}>
           <GoogleLogin
