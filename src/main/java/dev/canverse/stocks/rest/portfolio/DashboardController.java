@@ -4,6 +4,7 @@ import dev.canverse.stocks.service.dashboard.DashboardService;
 import dev.canverse.stocks.service.portfolio.model.dashboard.BasicDashboardView;
 import dev.canverse.stocks.service.portfolio.model.dashboard.CreateDashboardRequest;
 import dev.canverse.stocks.service.portfolio.model.dashboard.DashboardView;
+import dev.canverse.stocks.service.portfolio.model.dashboard.TransactionInfo;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -39,7 +40,7 @@ public class DashboardController {
     }
 
     @GetMapping("/{dashboardId}/transactions")
-    public Object getDashboardTransactions(@PathVariable Long dashboardId) {
+    public List<TransactionInfo> getDashboardTransactions(@PathVariable Long dashboardId) {
         return dashboardService.getDashboardTransactions(dashboardId);
     }
 
@@ -48,21 +49,4 @@ public class DashboardController {
     public void deleteDashboard(@PathVariable Long dashboardId) {
         dashboardService.delete(dashboardId);
     }
-
-/*@GetMapping
-
-    @PutMapping("/{dashboardId}")
-    public Dashboard updateDashboard(@PathVariable Long dashboardId, @Valid @RequestBody DashboardUpdateRequest request) {
-        return dashboardService.updateDashboard(dashboardId, request);
-    }
-
-    @PutMapping("/{dashboardId}/portfolios/{portfolioId}")
-    public Dashboard addPortfolioToDashboard(@PathVariable Long dashboardId, @PathVariable Long portfolioId) {
-        return dashboardService.addPortfolioToDashboard(dashboardId, portfolioId);
-    }
-
-    @DeleteMapping("/{dashboardId}/portfolios/{portfolioId}")
-    public Dashboard removePortfolioFromDashboard(@PathVariable Long dashboardId, @PathVariable Long portfolioId) {
-        return dashboardService.removePortfolioFromDashboard(dashboardId, portfolioId);
-    }*/
 }

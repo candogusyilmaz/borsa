@@ -315,7 +315,7 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get: operations['isOnboardingCompleted'];
+    get: operations['getOnboardingStatus'];
     put?: never;
     post?: never;
     delete?: never;
@@ -521,29 +521,29 @@ export interface components {
       currencyCode: string;
     };
     BasicPortfolioView: {
-      id?: string;
-      name?: string;
+      id: string;
+      name: string;
     };
     Item: {
       /** Format: date-time */
-      date?: string;
+      date: string;
       /** Format: date-time */
-      createdAt?: string;
+      createdAt: string;
       /** @enum {string} */
-      type?: 'BUY' | 'SELL';
-      holdingId?: string;
-      symbol?: string;
-      price?: number;
-      quantity?: number;
+      type: 'BUY' | 'SELL';
+      holdingId: string;
+      symbol: string;
+      price: number;
+      quantity: number;
       profit?: number;
       returnPercentage?: number;
       /** @enum {string} */
       performanceCategory?: 'EXCELLENT' | 'GOOD' | 'MODERATE' | 'POOR';
-      latest?: boolean;
-      total?: number;
+      latest: boolean;
+      total: number;
     };
     TradeHistory: {
-      trades?: components['schemas']['Item'][];
+      trades: components['schemas']['Item'][];
     };
     Month: {
       /** Format: int32 */
@@ -573,13 +573,13 @@ export interface components {
       currencyCode?: string;
     };
     DashboardView: {
-      id?: string;
-      name?: string;
-      currencyCode?: string;
-      isDefault?: boolean;
-      dailyChange?: components['schemas']['DailyChange'];
-      realizedGains?: components['schemas']['RealizedGains'];
-      totalBalance?: components['schemas']['TotalBalance'];
+      id: string;
+      name: string;
+      currencyCode: string;
+      isDefault: boolean;
+      dailyChange: components['schemas']['DailyChange'];
+      realizedGains: components['schemas']['RealizedGains'];
+      totalBalance: components['schemas']['TotalBalance'];
     };
     RealizedGains: {
       currentPeriod?: number;
@@ -592,6 +592,19 @@ export interface components {
       cost?: number;
       percentageChange?: number;
       currencyCode?: string;
+    };
+    TransactionInfo: {
+      id: string;
+      /** @enum {string} */
+      type: 'BUY' | 'SELL';
+      portfolioId: string;
+      positionId: string;
+      symbol: string;
+      price: number;
+      quantity: number;
+      profit?: number;
+      /** Format: date-time */
+      actionDate: string;
     };
     SelectItem: {
       value: string;
@@ -1074,7 +1087,7 @@ export interface operations {
       };
     };
   };
-  isOnboardingCompleted: {
+  getOnboardingStatus: {
     parameters: {
       query?: never;
       header?: never;
@@ -1173,7 +1186,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          '*/*': Record<string, never>;
+          '*/*': components['schemas']['TransactionInfo'][];
         };
       };
     };

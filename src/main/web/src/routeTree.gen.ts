@@ -78,8 +78,8 @@ const AuthenticatedMemberPortfoliosPortfolioIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/onboarding': typeof AuthenticatedOnboardingRouteRoute
-  '/login': typeof LoginIndexRoute
-  '/register': typeof RegisterIndexRoute
+  '/login/': typeof LoginIndexRoute
+  '/register/': typeof RegisterIndexRoute
   '/dashboard': typeof AuthenticatedMemberDashboardRouteRoute
   '/positions': typeof AuthenticatedMemberPositionsRouteRoute
   '/trades': typeof AuthenticatedMemberTradesRouteRoute
@@ -113,8 +113,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/onboarding'
-    | '/login'
-    | '/register'
+    | '/login/'
+    | '/register/'
     | '/dashboard'
     | '/positions'
     | '/trades'
@@ -155,7 +155,7 @@ declare module '@tanstack/react-router' {
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -169,14 +169,14 @@ declare module '@tanstack/react-router' {
     '/register/': {
       id: '/register/'
       path: '/register'
-      fullPath: '/register'
+      fullPath: '/register/'
       preLoaderRoute: typeof RegisterIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login/': {
       id: '/login/'
       path: '/login'
-      fullPath: '/login'
+      fullPath: '/login/'
       preLoaderRoute: typeof LoginIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -190,7 +190,7 @@ declare module '@tanstack/react-router' {
     '/_authenticated/_member': {
       id: '/_authenticated/_member'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof AuthenticatedMemberRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }

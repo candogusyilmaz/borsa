@@ -1,5 +1,7 @@
 package dev.canverse.stocks.service.portfolio.model;
 
-public record BasicPortfolioView(String id, String name) {
+import jakarta.validation.constraints.NotNull;
+
+public record BasicPortfolioView(@NotNull String id, @NotNull String name) {
 
 }

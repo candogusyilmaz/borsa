@@ -3,7 +3,6 @@ import { useDisclosure } from '@mantine/hooks';
 import { IconCheck, IconFolder, IconFolderPlus, IconPlus, IconSparkles, IconX } from '@tabler/icons-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { queries } from '~/api';
 import { $api } from '~/api/openapi';
 import { alerts } from '~/lib/alert';
 import classes from './create-portfolio-button.module.css';
@@ -41,7 +40,7 @@ function CreatePortfolioModal({ opened, close }: CreatePortfolioModalProps) {
     onSuccess: () => {
       close();
       alerts.success('Portfolio created successfully');
-      client.invalidateQueries({ queryKey: queries.portfolio.fetchPortfolios().queryKey });
+      client.invalidateQueries();
     }
   });
 

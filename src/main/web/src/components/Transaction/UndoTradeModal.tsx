@@ -1,14 +1,16 @@
 import { Modal, ScrollArea } from '@mantine/core';
 import { create } from 'zustand';
-import type { TradeHistoryTrade } from '~/api/queries/types';
+import type { paths } from '~/api/schema';
 import { UndoTradeForm } from './UndoTradeForm';
+
+type Trade = paths['/api/portfolios/{portfolioId}/trades']['get']['responses']['200']['content']['*/*']['trades'][number];
 
 interface UndoTradeModalState {
   opened: boolean;
-  trade: TradeHistoryTrade;
+  trade: Trade;
 
   // Actions
-  open: (trade: TradeHistoryTrade) => void;
+  open: (trade: Trade) => void;
   close: () => void;
 }
 

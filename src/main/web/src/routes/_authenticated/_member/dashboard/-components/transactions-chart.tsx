@@ -9,13 +9,18 @@ import {
   IconReportMoney,
   IconWorld
 } from '@tabler/icons-react';
-import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
-import { queries } from '~/api';
+import { $api } from '~/api/openapi';
 import { format } from '~/lib/format';
 
 export function TransactionsChart({ currencyCode, dashboardId }: { currencyCode: string; dashboardId: string }) {
-  const { data: transactions } = useQuery(queries.dashboard.getTransactions(dashboardId));
+  const { data: transactions } = $api.useQuery('get', '/api/dashboards/{dashboardId}/transactions', {
+    params: {
+      path: {
+        dashboardId: Number(dashboardId)
+      }
+    }
+  });
 
   const chartData = (() => {
     if (!transactions) return [] as Array<{ date: string; sell: number; cumulative?: number }>;
@@ -26,7 +31,7 @@ export function TransactionsChart({ currencyCode, dashboardId }: { currencyCode:
       const key = d.format('YYYY-MM-DD');
       const rec = aggregate.get(key) ?? { date: key, sell: 0 };
       const value = t.profit;
-      rec.sell += value;
+      rec.sell += value ?? 0;
       aggregate.set(key, rec);
     }
     const sorted = Array.from(aggregate.values()).sort((a, b) => (a.date < b.date ? -1 : 1));
@@ -97,7 +102,7 @@ export function TransactionsChart({ currencyCode, dashboardId }: { currencyCode:
                     format.toLocalePercentage(
                       transactions.length === 0
                         ? 0
-                        : (transactions.filter((t) => t.type === 'SELL' && t.profit > 0).length /
+                        : (transactions.filter((t) => t.type === 'SELL' && t.profit! > 0).length /
                             transactions.filter((t) => t.type === 'SELL').length) *
                             100
                     )}

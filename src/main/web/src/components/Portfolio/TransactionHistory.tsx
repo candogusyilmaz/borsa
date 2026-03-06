@@ -23,15 +23,17 @@ import {
   IconTrendingDown3,
   IconTrendingUp3
 } from '@tabler/icons-react';
-import { useQuery } from '@tanstack/react-query';
 import { useParams } from '@tanstack/react-router';
 import { useEffect, useMemo, useState } from 'react';
-import { queries } from '~/api';
-import type { TradeHistory, TradeHistoryTrade } from '~/api/queries/types';
+import { $api } from '~/api/openapi';
+import type { paths } from '~/api/schema';
 import { ErrorView } from '~/components/ErrorView';
 import { LoadingView } from '~/components/LoadingView';
 import { useUndoTradeModalStore } from '~/components/Transaction/UndoTradeModal';
 import { format } from '~/lib/format';
+
+type TradeHistory = paths['/api/portfolios/{portfolioId}/trades']['get']['responses']['200']['content']['*/*'];
+type Trade = paths['/api/portfolios/{portfolioId}/trades']['get']['responses']['200']['content']['*/*']['trades'][number];
 
 const PAGE_SIZE_OPTIONS = [
   { value: '5', label: '5' },
@@ -42,7 +44,13 @@ const PAGE_SIZE_OPTIONS = [
 
 export function TransactionHistory() {
   const { portfolioId } = useParams({ strict: false });
-  const { data, status } = useQuery(queries.trades.fetchAll({ portfolioId: Number(portfolioId) }));
+  const { data, status } = $api.useQuery('get', '/api/portfolios/{portfolioId}/trades', {
+    params: {
+      path: {
+        portfolioId: Number(portfolioId)
+      }
+    }
+  });
 
   if (status === 'pending') {
     return (
@@ -222,19 +230,19 @@ function Inner({ data }: { data: TradeHistory }) {
   );
 }
 
-function DesktopCardContent({ trade }: { trade: TradeHistoryTrade }) {
+function DesktopCardContent({ trade }: { trade: Trade }) {
   return (
     <Group justify="space-between" align="center" ta="right">
       <Group align="center">
-        <ThemeIcon variant="transparent" c={trade.type === 'BUY' ? 'blue' : trade.profit >= 0 ? 'green' : 'red'}>
-          {trade.type === 'BUY' ? <IconCirclePlus /> : trade.profit >= 0 ? <IconTrendingUp3 /> : <IconTrendingDown3 />}
+        <ThemeIcon variant="transparent" c={trade.type === 'BUY' ? 'blue' : trade.profit! >= 0 ? 'green' : 'red'}>
+          {trade.type === 'BUY' ? <IconCirclePlus /> : trade.profit! >= 0 ? <IconTrendingUp3 /> : <IconTrendingDown3 />}
         </ThemeIcon>
         <Stack gap={2}>
           <Group gap="xs" align="center" ml={3}>
             <Text size="lg" fw={600}>
               {trade.symbol}
             </Text>
-            <Badge size="xs" variant="light" color={trade.type === 'BUY' ? 'blue' : trade.profit >= 0 ? 'green' : 'red'}>
+            <Badge size="xs" variant="light" color={trade.type === 'BUY' ? 'blue' : trade.profit! >= 0 ? 'green' : 'red'}>
               {trade.type}
             </Badge>
           </Group>
@@ -263,8 +271,8 @@ function DesktopCardContent({ trade }: { trade: TradeHistoryTrade }) {
         <Stack gap={2} ml="auto">
           <Text fw={600}>{format.toCurrency(trade.total)}</Text>
           {trade.type === 'SELL' && (
-            <Text size="xs" c={trade.returnPercentage >= 0 ? 'teal' : 'red'}>
-              {`${format.toCurrency(trade.profit)} (${format.toLocalePercentage(trade.returnPercentage)})`}
+            <Text size="xs" c={trade.returnPercentage! >= 0 ? 'teal' : 'red'}>
+              {`${format.toCurrency(trade.profit!)} (${format.toLocalePercentage(trade.returnPercentage!)})`}
             </Text>
           )}
         </Stack>
@@ -273,15 +281,15 @@ function DesktopCardContent({ trade }: { trade: TradeHistoryTrade }) {
   );
 }
 
-function MobileCardContent({ trade }: { trade: TradeHistoryTrade }) {
+function MobileCardContent({ trade }: { trade: Trade }) {
   return (
     <Stack gap={4}>
       <Group gap="xs" justify="space-between" align="center">
         <Group gap={4}>
-          <ThemeIcon size="xs" variant="transparent" c={trade.type === 'BUY' ? 'blue' : trade.profit >= 0 ? 'green' : 'red'}>
+          <ThemeIcon size="xs" variant="transparent" c={trade.type === 'BUY' ? 'blue' : trade.profit! >= 0 ? 'green' : 'red'}>
             {trade.type === 'BUY' ? (
               <IconCirclePlus style={{ width: '100%' }} />
-            ) : trade.profit >= 0 ? (
+            ) : trade.profit! >= 0 ? (
               <IconTrendingUp3 />
             ) : (
               <IconTrendingDown3 />
@@ -291,7 +299,7 @@ function MobileCardContent({ trade }: { trade: TradeHistoryTrade }) {
             {trade.symbol}
           </Text>
         </Group>
-        <Badge size="xs" variant="light" color={trade.type === 'BUY' ? 'blue' : trade.profit >= 0 ? 'green' : 'red'}>
+        <Badge size="xs" variant="light" color={trade.type === 'BUY' ? 'blue' : trade.profit! >= 0 ? 'green' : 'red'}>
           {trade.type}
         </Badge>
       </Group>
@@ -313,15 +321,15 @@ function MobileCardContent({ trade }: { trade: TradeHistoryTrade }) {
         </Text>
       </Group>
       {trade.type === 'SELL' && (
-        <Text ta="right" size="xs" c={trade.returnPercentage >= 0 ? 'teal' : 'red'}>
-          {`${format.toCurrency(trade.profit)} (${format.toLocalePercentage(trade.returnPercentage)})`}
+        <Text ta="right" size="xs" c={trade.returnPercentage! >= 0 ? 'teal' : 'red'}>
+          {`${format.toCurrency(trade.profit!)} (${format.toLocalePercentage(trade.returnPercentage!)})`}
         </Text>
       )}
     </Stack>
   );
 }
 
-function UndoTradeButton({ trade }: { trade: TradeHistoryTrade }) {
+function UndoTradeButton({ trade }: { trade: Trade }) {
   const openUndoModal = useUndoTradeModalStore((s) => s.open);
 
   if (!trade.latest) return;

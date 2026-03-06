@@ -8,10 +8,9 @@ import {
   IconTrendingDown,
   IconTrendingUp
 } from '@tabler/icons-react';
-import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
-import { queries } from '~/api';
+import { $api } from '~/api/openapi';
 import { useCreateNewDashboardModalStore } from '~/components/Dashboard/CreateNewDashboardModal';
 import { StatCard } from './-components/stat-card';
 import { TransactionsChart } from './-components/transactions-chart';
@@ -19,14 +18,23 @@ import { TransactionsChart } from './-components/transactions-chart';
 export const Route = createFileRoute('/_authenticated/_member/dashboard')({
   component: RouteComponent,
   loader: async ({ context: { queryClient } }) => {
-    await queryClient.ensureQueryData(queries.dashboard.getAllDashboards());
+    await queryClient.ensureQueryData($api.queryOptions('get', '/api/dashboards'));
   }
 });
 
 function RouteComponent() {
-  const { data: dashboards } = useSuspenseQuery(queries.dashboard.getAllDashboards());
+  const { data: dashboards } = $api.useSuspenseQuery('get', '/api/dashboards');
+
   const [selectedDashboard, setSelectedDashboard] = useState(dashboards.find((s) => s.isDefault)?.id ?? dashboards[0]!.id);
-  const { data: dashboard, status } = useQuery(queries.dashboard.getDashboard(selectedDashboard));
+
+  const { data: dashboard, status } = $api.useQuery('get', '/api/dashboards/{dashboardId}', {
+    params: {
+      path: {
+        dashboardId: Number(selectedDashboard)
+      }
+    }
+  });
+
   const open = useCreateNewDashboardModalStore((s) => s.open);
 
   return (
@@ -75,32 +83,32 @@ function RouteComponent() {
             <StatCard
               title="Total Balance"
               subtitle="All-Time Growth"
-              displayValue={dashboard.totalBalance.value}
+              displayValue={dashboard.totalBalance.value!}
               percentageChange={dashboard.totalBalance.percentageChange}
-              currencyCode={dashboard.totalBalance.currencyCode}
+              currencyCode={dashboard.currencyCode}
               icon={<IconChartLine />}
             />
             <StatCard
               title="Daily Change"
               subtitle="Daily Performance"
-              displayValue={dashboard.dailyChange.currentValue - dashboard.dailyChange.previousValue}
+              displayValue={dashboard.dailyChange.currentValue! - dashboard.dailyChange.previousValue!}
               percentageChange={dashboard.dailyChange.percentageChange}
-              currencyCode={dashboard.dailyChange.currencyCode}
+              currencyCode={dashboard.currencyCode}
               icon={dashboard.dailyChange.percentageChange! >= 0 ? <IconTrendingUp /> : <IconTrendingDown />}
             />
             <StatCard
               title="Realized P&L"
               subtitle={dashboard.realizedGains.percentageChange ? 'Current Month' : undefined}
-              displayValue={dashboard.realizedGains.currentPeriod}
+              displayValue={dashboard.realizedGains.currentPeriod!}
               percentageChange={dashboard.realizedGains.percentageChange}
-              currencyCode={dashboard.realizedGains.currencyCode}
+              currencyCode={dashboard.currencyCode}
               statusValue={dashboard.realizedGains.currentPeriod} // Uses currentPeriod value for icon color
               icon={<IconCashBanknote />}
             />
           </SimpleGrid>
         )}
         <SimpleGrid cols={{ base: 1 }} mt="md">
-          {status === 'success' && <TransactionsChart currencyCode={dashboard.realizedGains.currencyCode} dashboardId={dashboard.id} />}
+          {status === 'success' && <TransactionsChart currencyCode={dashboard.currencyCode} dashboardId={dashboard.id} />}
           {status === 'pending' && <Skeleton height="80vh" />}
         </SimpleGrid>
       </Stack>

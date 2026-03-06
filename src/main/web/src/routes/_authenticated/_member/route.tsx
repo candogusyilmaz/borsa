@@ -12,12 +12,10 @@ import {
   IconTrendingUp,
   IconZoomPan
 } from '@tabler/icons-react';
-import { useSuspenseQuery } from '@tanstack/react-query';
 import { createFileRoute, Link, linkOptions, Outlet, redirect, useNavigate } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { create } from 'zustand';
-import { queries } from '~/api';
-import { client } from '~/api/openapi';
+import { $api, client } from '~/api/openapi';
 import type { BasicPortfolioView } from '~/api/queries/types';
 import { useAuthentication } from '~/lib/AuthenticationContext';
 import { CreatePortfolioButton } from './-components/create-portfolio-button';
@@ -128,10 +126,14 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const { logout } = useAuthentication();
 
-  const { data: portfolioLinks } = useSuspenseQuery({
-    ...queries.portfolio.fetchPortfolios(),
-    select: (data) => data.map((portfolio) => createPortfolioLink(portfolio))
-  });
+  const { data: portfolioLinks } = $api.useSuspenseQuery(
+    'get',
+    '/api/portfolios',
+    {},
+    {
+      select: (v) => v.map((p) => createPortfolioLink(p))
+    }
+  );
 
   const toggleTheme = () => {
     // Check if browser supports View Transitions
