@@ -1,27 +1,20 @@
-import createFetchClient from "openapi-fetch";
-import createClient from "openapi-react-query";
-import type { paths } from "./schema";
-import { getToken } from "./token";
+import createFetchClient from 'openapi-fetch';
+import createClient from 'openapi-react-query';
+import type { paths } from './schema';
+import { getToken } from './token';
 
 const api = import.meta.env.VITE_API_BASE_URL as string | undefined;
 
-const UNPROTECTED_ROUTES = [
-  "/auth/token",
-  "/auth/google",
-  "/auth/refresh-token",
-  "/auth/register",
-];
+const UNPROTECTED_ROUTES = ['/auth/token', '/auth/google', '/auth/refresh-token', '/auth/register'];
 
 const authMiddleware = {
   onRequest({ schemaPath, request }) {
-    if (
-      UNPROTECTED_ROUTES.some((pathname) => schemaPath.startsWith(pathname))
-    ) {
+    if (UNPROTECTED_ROUTES.some((pathname) => schemaPath.startsWith(pathname))) {
       return undefined;
     }
-    request.headers.set("Authorization", `Bearer ${getToken()}`);
+    request.headers.set('Authorization', `Bearer ${getToken()}`);
     return request;
-  },
+  }
 };
 
 export const client = createFetchClient<paths>({ baseUrl: api });
