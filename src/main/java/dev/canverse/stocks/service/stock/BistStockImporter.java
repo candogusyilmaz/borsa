@@ -14,9 +14,13 @@ import org.springframework.stereotype.Service;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.ConnectException;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import javax.net.ssl.SSLHandshakeException;
 
 @Slf4j
 @Service
@@ -207,26 +213,27 @@ public class BistStockImporter {
                         "Error downloading/extracting ZIP from %s (target dir: %s)",
                         urlStr, downloadDir.toAbsolutePath());
         switch (e) {
-            case java.net.UnknownHostException unknownHostException ->
+            case UnknownHostException unknownHostException ->
                     log.error(
-                            base
-                                    + " - Unknown host. Check DNS resolution and network connectivity.",
+                            "{} - Unknown host. Check DNS resolution and network connectivity.",
+                            base,
                             e);
-            case java.net.ConnectException connectException ->
+            case ConnectException connectException ->
                     log.error(
-                            base
-                                    + " - Connection refused. Remote server might be down or blocked by firewall.",
+                            "{} - Connection refused. Remote server might be down or blocked by firewall.",
+                            base,
                             e);
-            case javax.net.ssl.SSLHandshakeException sslHandshakeException ->
+            case SSLHandshakeException sslHandshakeException ->
                     log.error(
-                            base
-                                    + " - SSL Handshake failed. Possible missing CA certificates or protocol mismatch.",
+                            "{} - SSL Handshake failed. Possible missing CA certificates or protocol mismatch.",
+                            base,
                             e);
-            case java.io.FileNotFoundException fileNotFoundException ->
-                    log.error(base + " - File not found (404). URL may not yet be available.", e);
-            case java.net.MalformedURLException malformedURLException ->
-                    log.error(base + " - Malformed URL generated.", e);
+            case FileNotFoundException fileNotFoundException ->
+                    log.error("{} - File not found (404). URL may not yet be available.", base, e);
+            case MalformedURLException malformedURLException ->
+                    log.error("{} - Malformed URL generated.", base, e);
             case IOException ioException -> log.error(base + " - I/O problem occurred.", e);
+            default -> log.error("{} - Unexpected error occurred.", base, e);
         }
     }
 
