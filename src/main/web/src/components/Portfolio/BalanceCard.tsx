@@ -4,7 +4,6 @@ import { useParams } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
 import { $api } from '~/api/openapi';
 import type { paths } from '~/api/schema';
-import Currency from '~/components/Currency';
 import { ErrorView } from '~/components/ErrorView';
 import { LoadingView } from '~/components/LoadingView';
 import { format } from '~/lib/format';
@@ -111,12 +110,12 @@ function Inner({ positions }: { positions: Positions }) {
           <Stack style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }} gap={4}>
             {!activeSegment ? (
               <>
-                <Currency fz={rem(22)} fw={500}>
-                  {stats.totalValue}
-                </Currency>
+                <Text fz={rem(22)} fw={500}>
+                  {format.currency(stats.totalValue, { currency: positions[0]?.currencyCode })}
+                </Text>
                 {positions.length !== 0 && (
                   <Text fz="sm" fw={700} c={stats.totalProfit >= 0 ? 'teal' : 'red'}>
-                    {`${stats.totalProfit > 0 ? '+' : ''}${format.toCurrency(stats.totalProfit)}`}
+                    {`${stats.totalProfit > 0 ? '+' : ''}${format.currency(stats.totalProfit, { currency: positions[0]?.currencyCode })} (${format.toLocalePercentage(stats.totalProfitPercentage)})`}
                   </Text>
                 )}
               </>
@@ -144,11 +143,12 @@ function Inner({ positions }: { positions: Positions }) {
               <Box>
                 <Group justify="space-between">
                   <Text>{stock.symbol}</Text>
-                  <Currency fw={500}>{stock.value}</Currency>
+                  <Text fw={500}>{format.currency(stock.value, { currency: positions[0]?.currencyCode })}</Text>
                 </Group>
                 <Group justify="space-between">
                   <Text size="xs" c="dimmed">
-                    {format.toHumanizedNumber(stock.quantity)} shares @ <Currency span>{stock.averagePrice}</Currency>
+                    {format.toHumanizedNumber(stock.quantity)} shares @{' '}
+                    <Text span>{format.currency(stock.averagePrice, { currency: positions[0]?.currencyCode })}</Text>
                   </Text>
                   <Text span size="xs" c={stock.profit >= 0 ? 'teal' : 'red'}>
                     {format.toLocalePercentage(stock.profitPercentage)}
