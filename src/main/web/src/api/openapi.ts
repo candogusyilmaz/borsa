@@ -5,7 +5,7 @@ import { getToken } from './token';
 
 const api = import.meta.env.VITE_API_BASE_URL as string | undefined;
 
-const UNPROTECTED_ROUTES = ['/auth/token', '/auth/google', '/auth/refresh-token', '/auth/register'];
+const UNPROTECTED_ROUTES = ['/api/auth/token', '/api/auth/google', '/api/auth/refresh-token', '/api/auth/register'];
 
 const authMiddleware = {
   onRequest({ schemaPath, request }) {
