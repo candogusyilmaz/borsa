@@ -1,0 +1,23 @@
+cd "$(git rev-parse --show-toplevel)/src/main/web" || exit 1
+
+echo 'Running TypeScript type check (tsc -b)...'
+npx tsc -b
+TSC_EXIT=$?
+
+if [ $TSC_EXIT -ne 0 ]; then
+  echo ''
+  echo 'FAILED: TypeScript type check failed. Fix the errors above before committing.'
+  exit 1
+fi
+
+echo 'Running Biome check (npm run check)...'
+npm run check
+CHECK_EXIT=$?
+
+if [ $CHECK_EXIT -ne 0 ]; then
+  echo ''
+  echo 'FAILED: Biome check failed. Stage any auto-fixed files and try committing again.'
+  exit 1
+fi
+
+echo 'OK: All checks passed.'
