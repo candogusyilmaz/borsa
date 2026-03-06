@@ -16,7 +16,7 @@ import { createFileRoute, Link, linkOptions, Outlet, redirect, useNavigate } fro
 import { useEffect } from 'react';
 import { create } from 'zustand';
 import { $api, client } from '~/api/openapi';
-import type { BasicPortfolioView } from '~/api/queries/types';
+import type { paths } from '~/api/schema';
 import { useAuthentication } from '~/lib/AuthenticationContext';
 import { CreatePortfolioButton } from './-components/create-portfolio-button';
 
@@ -55,7 +55,7 @@ const NAV_LINKS = [
   }
 ];
 
-function createPortfolioLink(portfolio: BasicPortfolioView) {
+function createPortfolioLink(portfolio: paths['/api/portfolios']['get']['responses']['200']['content']['*/*'][number]) {
   return {
     key: `portfolio-sidebar-link-${portfolio.id}`,
     label: portfolio.name,

@@ -3,7 +3,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams } from '@tanstack/react-router';
 import { useState } from 'react';
 import { mutations } from '~/api';
-import { queryKeys } from '~/api/queries/config';
 import { alerts } from '~/lib/alert';
 import { format } from '~/lib/format';
 import { useUndoTradeModalStore } from './UndoTradeModal';
@@ -32,9 +31,7 @@ export function UndoTradeForm() {
     onSuccess: () => {
       close();
       alerts.success(`Trade succesfully undone for symbol ${trade.symbol}.`);
-      client.invalidateQueries({
-        predicate: (q) => q.queryKey.includes(queryKeys.portfolio)
-      });
+      client.invalidateQueries();
     },
     onError: (res) => {
       console.log(res);

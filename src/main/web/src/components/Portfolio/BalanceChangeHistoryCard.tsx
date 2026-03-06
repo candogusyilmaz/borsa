@@ -1,6 +1,5 @@
 import { AreaChart } from '@mantine/charts';
 import { Card, Center, rem, Stack, Text } from '@mantine/core';
-import type { BalanceHistory } from '~/api/queries/types';
 import { format } from '~/lib/format';
 
 interface StockEntry {
@@ -70,7 +69,7 @@ function mapData(data: StockEntry[]) {
   return dailyTotals;
 }
 
-export function BalanceChangeHistoryCard({ data }: { data: BalanceHistory }) {
+export function BalanceChangeHistoryCard({ data }: { data: { date: string; stock: string; balance: number }[] }) {
   return (
     <Card shadow="sm" padding="lg" radius="md" withBorder flex={1}>
       <Stack h="100%">
