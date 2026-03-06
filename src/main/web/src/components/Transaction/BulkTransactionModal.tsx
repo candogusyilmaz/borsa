@@ -3,9 +3,8 @@ import { DateTimePicker } from '@mantine/dates';
 import { Dropzone } from '@mantine/dropzone';
 import { useForm } from '@mantine/form';
 import { IconCirclePlus, IconFile, IconTrash, IconUpload, IconX } from '@tabler/icons-react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { create } from 'zustand';
-import { mutations } from '~/api';
 import { $api } from '~/api/openapi';
 import { alerts } from '~/lib/alert';
 import { getCurrencySymbol } from '~/lib/currency';
@@ -129,13 +128,12 @@ function BulkTransactionForm({ portfolioId, close }: { portfolioId: string | num
     type: 'BUY' as 'BUY' | 'SELL'
   });
 
-  const mutation = useMutation({
-    ...mutations.trades.importPreviews,
+  const mutation = $api.useMutation('post', '/api/portfolios/{portfolioId}/trades/import', {
     onSuccess: (res) => {
       form.setValues({
-        transactions: res.data.map((t) => ({
+        transactions: res.map((t) => ({
           id: crypto.randomUUID(),
-          type: t.type,
+          type: t.type!,
           stockId: t.stockId.toString(),
           price: t.price,
           quantity: t.quantity,
@@ -149,8 +147,7 @@ function BulkTransactionForm({ portfolioId, close }: { portfolioId: string | num
     }
   });
 
-  const saveMutation = useMutation({
-    ...mutations.trades.bulk,
+  const saveMutation = $api.useMutation('post', '/api/portfolios/{portfolioId}/trades/bulk', {
     onSuccess: () => {
       queryClient.invalidateQueries();
       form.reset();
@@ -160,8 +157,10 @@ function BulkTransactionForm({ portfolioId, close }: { portfolioId: string | num
 
   const handleFormSubmit = form.onSubmit((values) => {
     saveMutation.mutate({
-      portfolioId: Number(portfolioId),
-      transactions: values.transactions.map((t) => ({
+      params: {
+        path: { portfolioId: Number(portfolioId) }
+      },
+      body: values.transactions.map((t) => ({
         type: t.type,
         stockId: Number(t.stockId),
         price: t.price,
@@ -176,7 +175,7 @@ function BulkTransactionForm({ portfolioId, close }: { portfolioId: string | num
     <Stack>
       <Dropzone
         loading={mutation.isPending}
-        onDrop={(files) => mutation.mutate({ portfolioId, file: files[0] })}
+        onDrop={(files) => mutation.mutate({ body: { file: files[0]! as unknown as string } })}
         maxSize={5 * 1024 ** 2}
         maxFiles={1}>
         <Group justify="center" style={{ pointerEvents: 'none' }}>

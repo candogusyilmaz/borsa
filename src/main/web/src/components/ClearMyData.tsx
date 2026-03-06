@@ -1,8 +1,8 @@
 import { Button, Modal, Stack, Text, TextInput } from '@mantine/core';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { create } from 'zustand';
-import { mutations } from '~/api';
+import { $api } from '~/api/openapi';
 import { alerts } from '~/lib/alert';
 
 interface ClearMyDataModalState {
@@ -36,8 +36,7 @@ function ClearMyDataForm() {
   const { close } = useClearMyDataModal();
   const [confirmInput, setConfirmInput] = useState('');
 
-  const mutation = useMutation({
-    ...mutations.account.clearMyData,
+  const mutation = $api.useMutation('post', '/api/account/clear-my-data', {
     onSuccess: () => {
       close();
       alerts.success('Successfully cleared all of your data.');
@@ -59,7 +58,7 @@ function ClearMyDataForm() {
         color="red"
         loading={mutation.isPending || mutation.isSuccess}
         disabled={!isConfirmed}
-        onClick={() => mutation.mutate()}>
+        onClick={() => mutation.mutate({})}>
         Clear My Data
       </Button>
     </Stack>

@@ -1,8 +1,8 @@
 import { Alert, Button, Card, Checkbox, Group, Stack, Text } from '@mantine/core';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useParams } from '@tanstack/react-router';
 import { useState } from 'react';
-import { mutations } from '~/api';
+import { $api } from '~/api/openapi';
 import { alerts } from '~/lib/alert';
 import { format } from '~/lib/format';
 import { useUndoTradeModalStore } from './UndoTradeModal';
@@ -26,8 +26,7 @@ export function UndoTradeForm() {
   const { trade, close } = useUndoTradeModalStore();
   const [hasConfirmed, setHasConfirmed] = useState(false);
 
-  const mutation = useMutation({
-    ...mutations.trades.undo,
+  const mutation = $api.useMutation('post', '/api/portfolios/{portfolioId}/trades/undo/{holdingId}', {
     onSuccess: () => {
       close();
       alerts.success(`Trade succesfully undone for symbol ${trade.symbol}.`);
@@ -43,7 +42,15 @@ export function UndoTradeForm() {
       alerts.error('Portfolio ID is required to perform this action.');
       return;
     }
-    mutation.mutate({ portfolioId: Number(portfolioId), holdingId: trade.holdingId });
+
+    mutation.mutate({
+      params: {
+        path: {
+          portfolioId: Number(portfolioId),
+          holdingId: Number(trade.holdingId)
+        }
+      }
+    });
   };
 
   return (
