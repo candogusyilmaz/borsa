@@ -1,15 +1,15 @@
 import { IconTrendingUp } from '@tabler/icons-react';
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import { useState } from 'react';
-import { client } from '~/api/openapi';
+import { $api } from '~/api/openapi';
 import { DashboardStep } from './-components/dashboard-step';
 import { PortfolioStep } from './-components/portfolio-step';
 import styles from './onboarding.module.css';
 
 export const Route = createFileRoute('/_authenticated/onboarding')({
   component: RouteComponent,
-  beforeLoad: async () => {
-    const onboardingCompleted = (await client.GET('/api/onboarding/status')).data;
+  beforeLoad: async ({ context: { queryClient } }) => {
+    const onboardingCompleted = await queryClient.fetchQuery($api.queryOptions('get', '/api/onboarding/status'));
 
     if (onboardingCompleted) {
       throw redirect({ to: '/dashboard' });

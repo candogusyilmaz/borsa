@@ -15,15 +15,15 @@ import {
 import { createFileRoute, Link, linkOptions, Outlet, redirect, useNavigate } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { create } from 'zustand';
-import { $api, client } from '~/api/openapi';
+import { $api } from '~/api/openapi';
 import type { paths } from '~/api/schema';
 import { useAuthentication } from '~/lib/AuthenticationContext';
 import { CreatePortfolioButton } from './-components/create-portfolio-button';
 
 export const Route = createFileRoute('/_authenticated/_member')({
   component: RouteComponent,
-  beforeLoad: async () => {
-    const onboardingCompleted = (await client.GET('/api/onboarding/status')).data;
+  beforeLoad: async ({ context: { queryClient } }) => {
+    const onboardingCompleted = await queryClient.ensureQueryData($api.queryOptions('get', '/api/onboarding/status'));
 
     if (!onboardingCompleted) {
       throw redirect({ to: '/onboarding' });
