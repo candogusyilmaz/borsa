@@ -111,7 +111,7 @@ function Inner({ positions }: { positions: Positions }) {
             {!activeSegment ? (
               <>
                 <Text fz={rem(22)} fw={500}>
-                  {format.currency(stats.totalValue, { currency: positions[0]?.currencyCode })}
+                  {stats.totalValue && format.currency(stats.totalValue, { currency: positions[0]?.currencyCode })}
                 </Text>
                 {positions.length !== 0 && (
                   <Text fz="sm" fw={700} c={stats.totalProfit >= 0 ? 'teal' : 'red'}>
