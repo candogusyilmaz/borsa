@@ -33,9 +33,12 @@ export function useAutoRefreshToken() {
       if (!decoded?.exp) return;
 
       const expMs = decoded.exp * 1000; // convert to ms
+
       const now = Date.now();
       const refreshBefore = 60 * 1000; // refresh 1 minute before expiry
       const delay = expMs - now - refreshBefore;
+
+      console.log({ expMs, delay });
 
       if (delay <= 0) {
         refreshTokenFn(); // already expired, refresh immediately

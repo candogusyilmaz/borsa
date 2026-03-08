@@ -1,12 +1,11 @@
-import { ActionIcon, Container, Flex, Group, Stack, Text, Title } from '@mantine/core';
+import { ActionIcon, Container, Group, Stack, Text, Title } from '@mantine/core';
 import { IconPencilCog, IconPointFilled } from '@tabler/icons-react';
 import { createFileRoute } from '@tanstack/react-router';
-import { BalanceCard } from '~/components/Portfolio/BalanceCard';
-import { HoldingsCard } from '~/components/Portfolio/HoldingsCard';
 import { MonthlyRevenueOverview } from '~/components/Portfolio/MonthlyRevenueOverview';
 import { TransactionHistory } from '~/components/Portfolio/TransactionHistory';
 import { usePortfolioName } from '~/hooks/use-portfolio-name';
 import { ArchivePortfolioButton } from './-components/archive-portfolio/archive-portfolio';
+import { PortfolioOverviewCard } from './-components/portfolio-overview/portfolio-overview-card';
 import { PositionsTable } from './-components/positions-table/positions-table';
 
 export const Route = createFileRoute('/_authenticated/_member/portfolios/$portfolioId')({
@@ -42,10 +41,7 @@ function RouteComponent() {
             <ArchivePortfolioButton portfolioId={portfolioId} />
           </Group>
         </Group>
-        <Flex gap="md" direction={{ base: 'column', sm: 'row' }}>
-          <BalanceCard />
-          <HoldingsCard />
-        </Flex>
+        <PortfolioOverviewCard />
         <PositionsTable key={portfolioId} />
         <MonthlyRevenueOverview />
         <TransactionHistory />

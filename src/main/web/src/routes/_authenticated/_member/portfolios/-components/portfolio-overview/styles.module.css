@@ -1,0 +1,162 @@
+.card {
+  overflow: hidden;
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 48em) {
+  .inner {
+    flex-direction: row;
+    align-items: stretch;
+  }
+}
+
+/* ── Left panel ─────────────────────────────────────────────── */
+
+.leftPanel {
+  padding: var(--mantine-spacing-xl);
+  background: linear-gradient(
+    155deg,
+    rgba(99, 102, 241, 0.06) 0%,
+    transparent 55%
+  );
+  border-bottom: 1px solid var(--cv-border);
+}
+
+@media (min-width: 48em) {
+  .leftPanel {
+    width: 34%;
+    min-width: 210px;
+    border-bottom: none;
+    border-right: 1px solid var(--cv-border);
+  }
+}
+
+/* ── Right panel ────────────────────────────────────────────── */
+
+.rightPanel {
+  flex: 1;
+  min-width: 0;
+  padding: var(--mantine-spacing-xl);
+}
+
+/* ── Performance goal box ───────────────────────────────────── */
+
+.performanceBox {
+  padding: var(--mantine-spacing-md);
+  border-radius: var(--mantine-radius-lg);
+  background: rgba(99, 102, 241, 0.05);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+/* ── "N Assets" badge ───────────────────────────────────────── */
+
+.assetsBadge {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--cv-text-muted);
+  padding: 4px 10px;
+  background: var(--cv-icon-inactive-bg);
+  border-radius: var(--mantine-radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+/* ── Weighted allocation bar ────────────────────────────────── */
+
+.allocationBar {
+  display: flex;
+  height: 52px;
+  width: 100%;
+  gap: 5px;
+}
+
+.allocationSegment {
+  height: 100%;
+  cursor: default;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: var(--mantine-radius-md);
+}
+
+/* Dim all segments when any sibling is hovered */
+.allocationBar:has(.allocationSegment:hover) .allocationSegment:not(:hover) {
+  opacity: 0.3;
+}
+
+.allocationSegment:hover {
+  transform: scaleY(1.08);
+}
+
+/* Symbol label inside each segment */
+.segmentLabel {
+  font-size: 10px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: "JetBrains Mono", monospace;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+
+/* Wide segments (≥ 10% width) always show the label */
+.allocationSegment[data-wide="true"] .segmentLabel {
+  opacity: 1;
+}
+
+/* Any hovered segment shows its label */
+.allocationSegment:hover .segmentLabel {
+  opacity: 1;
+}
+
+.allocationSegment:first-child {
+  border-radius: var(--mantine-radius-lg) var(--mantine-radius-md)
+    var(--mantine-radius-md) var(--mantine-radius-lg);
+}
+
+.allocationSegment:last-child {
+  border-radius: var(--mantine-radius-md) var(--mantine-radius-lg)
+    var(--mantine-radius-lg) var(--mantine-radius-md);
+}
+
+/* ── Top-3 position cards ───────────────────────────────────── */
+
+.positionCard {
+  padding: var(--mantine-spacing-md);
+  border-radius: var(--mantine-radius-lg);
+  border: 1px solid var(--cv-border);
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.positionCard:hover {
+  background: rgba(99, 102, 241, 0.04);
+  border-color: rgba(99, 102, 241, 0.22);
+}
+
+/* ── Progress bar ───────────────────────────────────────────── */
+
+.progressTrack {
+  width: 100%;
+  height: 3px;
+  background: var(--cv-border);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  width: 78%;
+  background: var(--cv-brand-500);
+  border-radius: 9999px;
+}
