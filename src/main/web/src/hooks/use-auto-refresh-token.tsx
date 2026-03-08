@@ -1,11 +1,13 @@
 import { useEffect, useRef } from 'react';
 import { client } from '~/api/openapi';
 
-function decodeJwt(token) {
+function decodeJwt(token: string) {
   try {
-    const base64 = token.split('.')[1];
-    const decoded = JSON.parse(atob(base64));
-    return decoded;
+    const base64url = token.split('.')[1];
+    // JWT uses base64url: replace URL-safe chars and restore padding
+    const base64 = base64url!.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=');
+    return JSON.parse(atob(padded));
   } catch {
     return null;
   }
@@ -53,11 +55,15 @@ export function useAutoRefreshToken() {
     async function refreshTokenFn() {
       try {
         const res = await client.POST('/api/auth/refresh-token');
+        if (res.error || !res.data?.token) {
+          console.error('Token refresh failed', res.error);
+          return;
+        }
         localStorage.setItem('user', JSON.stringify(res.data));
         console.log('Token refreshed successfully');
 
         // schedule the next refresh using the new access token
-        scheduleRefresh(res.data!.token!);
+        scheduleRefresh(res.data.token);
       } catch (err) {
         console.error('Token refresh failed', err);
       }

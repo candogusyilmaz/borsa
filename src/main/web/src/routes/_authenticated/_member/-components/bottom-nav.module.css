@@ -1,0 +1,264 @@
+/* =============================================================
+   CANVERSE — Bottom Navigation Bar (mobile only)
+   Uses --cv-* and --mantine-* tokens exclusively.
+============================================================= */
+
+/* ── Bar shell ────────────────────────────────────────────── */
+.nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--cv-z-bottom-nav);
+  background: var(--cv-bottom-nav-bg);
+  backdrop-filter: var(--cv-topbar-blur);
+  -webkit-backdrop-filter: var(--cv-topbar-blur);
+  border-top: 1px solid var(--cv-border);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.inner {
+  display: flex;
+  height: 60px;
+}
+
+/* ── Shared tab shell — works for both <a> (Link) and <button> ── */
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  position: relative;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 6px 0;
+  text-decoration: none;
+  color: var(--cv-text-muted);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Active pip ───────────────────────────────────────────── */
+.pip {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 22px;
+  height: 3px;
+  border-radius: 0 0 6px 6px;
+  background: var(--cv-brand-500);
+  box-shadow: var(--cv-shadow-pip);
+  animation: pipIn 0.22s var(--cv-ease-spring) forwards;
+}
+
+@keyframes pipIn {
+  from {
+    transform: translateX(-50%) scaleX(0);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) scaleX(1);
+    opacity: 1;
+  }
+}
+
+/* ── Icon container ───────────────────────────────────────── */
+.iconBox {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cv-text-muted);
+  transition:
+    background 0.18s,
+    color 0.18s;
+}
+
+.iconBoxActive {
+  background: rgba(99, 102, 241, 0.14);
+  color: var(--cv-brand-400);
+}
+
+/* ── Label ────────────────────────────────────────────────── */
+.label {
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  color: var(--cv-text-muted);
+  transition: color 0.18s;
+}
+
+.labelActive {
+  font-weight: 800;
+  color: var(--cv-brand-400);
+}
+
+/* ── Profile avatar chip ──────────────────────────────────── */
+.avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background: var(--cv-gradient-logo);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 12px;
+  color: white;
+  flex-shrink: 0;
+  transition: outline 0.18s;
+}
+
+.avatarActive {
+  outline: 2px solid var(--cv-brand-500);
+  outline-offset: 2px;
+}
+
+/* =============================================================
+   SHEET — section label
+============================================================= */
+
+.sheetHeader {
+  padding: 0 1.5rem 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+
+.sheetSectionLabel {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  opacity: 0.35;
+  color: var(--cv-text-main);
+}
+
+.sheetBody {
+  padding: 0 0.875rem;
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+}
+
+/* =============================================================
+   PORTFOLIO SHEET
+============================================================= */
+
+.portfolioItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.875rem 1rem;
+  border-radius: 16px;
+  margin-bottom: 6px;
+  border: 1px solid transparent;
+  background: var(--cv-icon-inactive-bg);
+  cursor: pointer;
+  text-align: left;
+  color: var(--cv-text-main);
+  transition: all 0.15s;
+}
+
+.portfolioItem:hover {
+  border-color: rgba(99, 102, 241, 0.2);
+}
+
+.portfolioIconBox {
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cv-icon-inactive-bg);
+  color: var(--cv-brand-400);
+}
+
+.portfolioName {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--cv-text-main);
+}
+
+/* =============================================================
+   PROFILE SHEET
+============================================================= */
+
+.profileHero {
+  padding: 0 1.5rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  border-bottom: 1px solid var(--cv-border);
+  margin-bottom: 0.625rem;
+  margin-top: 16px;
+}
+
+.profileAvatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 15px;
+  background: var(--cv-gradient-logo);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);
+}
+
+.profileRow {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.75rem 0.875rem;
+  border-radius: 14px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  margin-bottom: 3px;
+  color: var(--cv-text-main);
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.profileRow:hover {
+  background: var(--cv-row-hover);
+}
+
+.profileRowIconBox {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profileRowLabel {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.profileRowSub {
+  margin: 1px 0 0;
+  font-size: 11px;
+  color: var(--cv-text-muted);
+}
+
+.profileRowDangerLabel {
+  color: var(--cv-loss);
+}

@@ -18,6 +18,7 @@ import { create } from 'zustand';
 import { $api } from '~/api/openapi';
 import type { paths } from '~/api/schema';
 import { useAuthentication } from '~/lib/AuthenticationContext';
+import { BottomNav } from './-components/bottom-nav';
 import { CreatePortfolioButton } from './-components/create-portfolio-button';
 
 export const Route = createFileRoute('/_authenticated/_member')({
@@ -105,9 +106,13 @@ function RouteComponent() {
         <Sidebar />
       )}
       {/* Main Container */}
-      <main className="main-content custom-scrollbar">
+      <main
+        className="main-content custom-scrollbar"
+        style={isMobile ? { paddingBottom: 'calc(60px + env(safe-area-inset-bottom, 0px))' } : undefined}>
         <Outlet />
       </main>
+
+      {isMobile && <BottomNav />}
 
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
