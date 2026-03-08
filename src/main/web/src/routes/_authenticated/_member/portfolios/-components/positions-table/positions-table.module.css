@@ -9,31 +9,29 @@
 
 .tableWrapper {
   overflow: hidden;
-  background: var(--card-bg);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--card-shadow);
+  background: var(--cv-card-bg);
+  backdrop-filter: var(--cv-card-blur);
+  -webkit-backdrop-filter: var(--cv-card-blur);
+  border: 1px solid var(--cv-border);
+  box-shadow: var(--cv-card-shadow);
   border-radius: var(--mantine-radius-lg);
 }
 
 .tableHeader {
   text-align: left;
   padding: 1rem 1rem;
-  font-weight: 600;
-  font-size: 12px;
+  font-weight: 800;
+  font-size: 10px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text-muted);
-  border-bottom: 1px solid var(--border-color);
-  border-top: 1px solid var(--border-color);
+  letter-spacing: 0.15em;
+  color: var(--cv-text-muted);
+  border-bottom: 1px solid var(--cv-border);
+  background: var(--cv-row-hover);
 }
 
 .tableRow {
   cursor: pointer;
-  transition:
-    all 0.3s ease,
-    border 0s;
+  transition: background 0.2s ease;
 }
 
 .tableRow[data-expanded="false"]:last-child td {
@@ -41,34 +39,31 @@
 }
 
 .tableRow[data-expanded="true"] {
-  background: var(--table-row-hover);
-  border-bottom: none;
+  background: var(--cv-row-hover);
 }
 
 .tableRow:hover {
-  background: var(--table-row-hover);
+  background: var(--cv-row-hover);
 }
 
 .tableRow > td {
-  padding: 0.675rem 1rem;
-  color: var(--text-main);
+  padding: 0.875rem 1rem;
+  color: var(--cv-text-main);
   font-size: 13px;
   vertical-align: middle;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  border-bottom: 1px solid
-    light-dark(var(--border-color), darken(var(--border-color), 0.25));
+  border-bottom: 1px solid var(--cv-border);
 }
 
 .tableRow > td:nth-child(n + 2) {
   text-align: right;
+  font-family: var(--mantine-font-family-monospace);
   font-variant-numeric: tabular-nums;
 }
 
-/* First header 200px */
+/* First header 220px */
 .tableHeader:first-child,
 .tableRow > td:first-child {
-  width: 200px;
+  width: 220px;
 }
 
 /* Last header 50px*/
@@ -79,49 +74,50 @@
   text-align: center;
 }
 
-.tableRow:hover .tickerIcon,
+.tableRow:hover .tickerIcon {
+  border-color: var(--cv-brand-400);
+  background: var(--cv-brand-500);
+  color: white;
+}
+
 .tableRow:hover .tickerSymbol {
-  border-color: var(--accent-color);
-  color: var(--accent-color);
+  color: var(--cv-brand-400);
 }
 
 .expander {
-  transition: color 0.3s ease;
-  color: var(--mantine-color-gray-4);
+  transition: all 0.2s ease;
+  color: var(--cv-text-xmuted);
 }
 
 .tableRow:hover .expander {
-  color: var(--mantine-color-blue-4);
+  color: var(--cv-brand-500);
 }
 
 .tickerIcon {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 40px;
-  min-width: 40px;
-  margin-right: 8px;
-  border-radius: 8px;
-  font-weight: 700;
-  color: var(--text-main);
-  background-color: var(--bg-gradient);
-  border: 1px solid
-    light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-6));
-  transition:
-    border-color 0.3s ease,
-    color 0.3s ease;
+  height: 36px;
+  width: 36px;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 11px;
+  color: var(--cv-text-main);
+  background: var(--cv-input-bg);
+  border: 1px solid var(--cv-border);
+  transition: all 0.2s ease;
 }
 
 .tickerSymbol {
-  transition: color 0.3s ease;
+  transition: color 0.2s ease;
 }
 
 .expandedRowContainer {
   padding: 0;
-  background-color: red;
-  border-bottom: 1px solid var(--mantine-color-dark-2);
+  background: transparent;
 }
 
 .expandedRowContainer > td {
   padding: 0;
+  border-bottom: 1px solid var(--cv-border);
 }

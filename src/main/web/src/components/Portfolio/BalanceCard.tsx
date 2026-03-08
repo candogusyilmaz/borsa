@@ -9,9 +9,9 @@ import { LoadingView } from '~/components/LoadingView';
 import { format } from '~/lib/format';
 
 const COLORS = [
-  { id: 0, color: '#0066ff' },
-  { id: 1, color: '#e85dff' },
-  { id: 2, color: '#ffb800' }
+  { id: 0, color: 'var(--mantine-color-brand-5)' },
+  { id: 1, color: 'var(--mantine-color-violet-5)' },
+  { id: 2, color: 'var(--mantine-color-brand-3)' }
 ];
 
 type Positions = paths['/api/positions']['get']['responses'][200]['content']['*/*'];
@@ -36,7 +36,7 @@ export function BalanceCard() {
 
   if (status === 'error') {
     return (
-      <BalanceContainer miw={275} mih={325} style={{ borderColor: 'var(--mantine-color-red-5)' }}>
+      <BalanceContainer miw={275} mih={325} style={{ borderColor: 'var(--mantine-color-loss-5)' }}>
         <ErrorView />
       </BalanceContainer>
     );
@@ -110,21 +110,21 @@ function Inner({ positions }: { positions: Positions }) {
           <Stack style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }} gap={4}>
             {!activeSegment ? (
               <>
-                <Text fz={rem(22)} fw={500}>
+                <Text fz={rem(22)} fw={900} className="cv-mono">
                   {stats.totalValue && format.currency(stats.totalValue, { currency: positions[0]?.currencyCode })}
                 </Text>
                 {positions.length !== 0 && (
-                  <Text fz="sm" fw={700} c={stats.totalProfit >= 0 ? 'teal' : 'red'}>
+                  <Text fz="xs" fw={800} c={stats.totalProfit >= 0 ? 'profit.5' : 'loss.5'} className="cv-mono">
                     {`${stats.totalProfit > 0 ? '+' : ''}${format.currency(stats.totalProfit, { currency: positions[0]?.currencyCode })} (${format.toLocalePercentage(stats.totalProfitPercentage)})`}
                   </Text>
                 )}
               </>
             ) : (
               <>
-                <Text size={rem(22)} fw={700}>
+                <Text size={rem(22)} fw={900} style={{ textTransform: 'uppercase' }}>
                   {activeSegment.name}
                 </Text>
-                <Text size={rem(18)} fw={500} c="teal">
+                <Text size={rem(18)} fw={800} c="profit.5" className="cv-mono">
                   {format.toLocalePercentage(activeSegment.percent * 100)}
                 </Text>
               </>
@@ -135,27 +135,31 @@ function Inner({ positions }: { positions: Positions }) {
 
       {stats.top3.length > 0 && (
         <Stack justify="center" gap="sm" mt="xl">
-          <Text c="dimmed" ta="center" size="sm" fw={700}>
+          <Text c="dimmed" ta="center" size="xs" fw={900} style={{ textTransform: 'uppercase', letterSpacing: rem(1) }}>
             Top Holdings
           </Text>
           {stats.top3.map((stock, idx) => (
             <Stack key={stock.symbol} gap="sm" justify="center">
               <Box>
                 <Group justify="space-between">
-                  <Text>{stock.symbol}</Text>
-                  <Text fw={500}>{format.currency(stock.value, { currency: positions[0]?.currencyCode })}</Text>
+                  <Text fw={700}>{stock.symbol}</Text>
+                  <Text fw={700} className="cv-mono">
+                    {format.currency(stock.value, { currency: positions[0]?.currencyCode })}
+                  </Text>
                 </Group>
                 <Group justify="space-between">
-                  <Text size="xs" c="dimmed">
+                  <Text size="xs" c="dimmed" fw={600}>
                     {format.toHumanizedNumber(stock.quantity)} shares @{' '}
-                    <Text span>{format.currency(stock.averagePrice, { currency: positions[0]?.currencyCode })}</Text>
+                    <Text span className="cv-mono">
+                      {format.currency(stock.averagePrice, { currency: positions[0]?.currencyCode })}
+                    </Text>
                   </Text>
-                  <Text span size="xs" c={stock.profit >= 0 ? 'teal' : 'red'}>
+                  <Text span size="xs" fw={800} className="cv-mono" c={stock.profit >= 0 ? 'profit.5' : 'loss.5'}>
                     {format.toLocalePercentage(stock.profitPercentage)}
                   </Text>
                 </Group>
               </Box>
-              {idx !== stats.top3.length - 1 && <Divider />}
+              {idx !== stats.top3.length - 1 && <Divider opacity={0.5} />}
             </Stack>
           ))}
         </Stack>

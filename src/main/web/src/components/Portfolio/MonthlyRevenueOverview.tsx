@@ -48,7 +48,7 @@ export function MonthlyRevenueOverview() {
 
   if (status === 'error') {
     return (
-      <MonthlyRevenueOverviewCard style={{ borderColor: 'var(--mantine-color-red-5)' }}>
+      <MonthlyRevenueOverviewCard style={{ borderColor: 'var(--mantine-color-loss-5)' }}>
         <ErrorView />
       </MonthlyRevenueOverviewCard>
     );
@@ -57,9 +57,9 @@ export function MonthlyRevenueOverview() {
   if (data.length === 0) {
     return (
       <MonthlyRevenueOverviewCard>
-        <Text c="dimmed" size="xs" fw={600} ta="center">
+        <Text c="dimmed" size="xs" fw={600} ta="center" py="xl">
           You haven't{' '}
-          <Text span inherit c="red">
+          <Text span inherit c="loss.5" fw={700}>
             sold
           </Text>{' '}
           any shares.
@@ -73,14 +73,14 @@ export function MonthlyRevenueOverview() {
 
 function MonthlyRevenueOverviewCard({ children, ...props }: CardProps) {
   return (
-    <>
+    <Stack>
       <Text fw={700} size={rem(22)}>
         Monthly Revenue Overview
       </Text>
       <Card shadow="sm" radius="md" p="lg" withBorder {...props}>
         {children}
       </Card>
-    </>
+    </Stack>
   );
 }
 
@@ -104,6 +104,9 @@ function Inner({ data }: { data: MonthlyRevenueOverviewType }) {
         mx="auto"
         mb="sm"
         size="xs"
+        color="brand"
+        radius="sm"
+        bg="transparent"
         data={[
           {
             label: 'Grid View',
@@ -156,7 +159,10 @@ function MonthlyRevenueHeatmap({ data }: ChartProps) {
             {s.year}
           </Text>
           {s.data.map((m) => (
-            <Tooltip key={`${m.month}-${s.year}`} label={m.profit === 0 ? 'No data found' : format.toCurrency(m.profit, false)}>
+            <Tooltip
+              ff={m.profit === 0 ? undefined : 'monospace'}
+              key={`${m.month}-${s.year}`}
+              label={m.profit === 0 ? 'No data found' : format.toCurrency(m.profit, false)}>
               <Box
                 style={{
                   display: 'flex',
@@ -164,17 +170,21 @@ function MonthlyRevenueHeatmap({ data }: ChartProps) {
                   justifyContent: 'center',
                   height: 35,
                   padding: '4px',
-                  backgroundColor: m.profit === 0 ? 'var(--card-bg)' : m.profit > 0 ? 'teal' : 'red',
+                  backgroundColor:
+                    m.profit === 0 ? 'var(--cv-card-bg)' : m.profit > 0 ? 'var(--mantine-color-profit-5)' : 'var(--mantine-color-loss-5)',
                   borderRadius: 'var(--mantine-radius-sm)',
                   cursor: 'pointer',
                   minWidth: 50,
-                  flexShrink: 0
+                  flexShrink: 0,
+                  border: m.profit === 0 ? '1px solid var(--cv-border)' : 'none'
                 }}>
                 {m.profit === 0 ? (
-                  <IconCircle size="14px" />
+                  <IconCircle size="14px" opacity={0.3} />
                 ) : (
                   <Text
                     size="xs"
+                    fw={700}
+                    className="cv-mono"
                     style={{
                       color: 'white',
                       overflow: 'hidden',
@@ -225,11 +235,11 @@ function MonthlyRevenueBarChart({ data }: ChartProps) {
     <Stack>
       <Group px="sm" justify={justify}>
         <Text size="md">
-          <Text fw={600} span>
+          <Text fw={700} span>
             {selectedYear}
           </Text>{' '}
           Total Profit{' '}
-          <Text span c={totalProfit > 0 ? 'teal' : 'red'} fw={600}>
+          <Text span c={totalProfit > 0 ? 'profit.5' : 'loss.5'} fw={800} className="cv-mono">
             {format.toCurrency(totalProfit, false)}
           </Text>
         </Text>
@@ -238,9 +248,10 @@ function MonthlyRevenueBarChart({ data }: ChartProps) {
             data.map((s) => (
               <Button
                 key={s.year}
+                radius="sm"
                 onClick={() => setSelectedYear(s.year)}
-                variant="light"
-                color={s.year === selectedYear ? 'gray' : 'dark'}
+                variant={s.year === selectedYear ? 'filled' : 'light'}
+                color={s.year === selectedYear ? 'brand' : 'gray'}
                 size="compact-xs">
                 {s.year}
               </Button>
@@ -256,7 +267,11 @@ function MonthlyRevenueBarChart({ data }: ChartProps) {
         dataKey="month"
         series={[{ name: 'profit', label: 'Profit' }]}
         valueFormatter={(value) => format.toCurrency(value, false)}
-        getBarColor={(value) => (value > 0 ? 'teal' : value === 0 ? 'dimmed' : 'red')}
+        getBarColor={(value) =>
+          value > 0 ? 'var(--mantine-color-profit-5)' : value === 0 ? 'var(--mantine-color-gray-5)' : 'var(--mantine-color-loss-5)'
+        }
+        gridAxis="none"
+        withYAxis={false}
       />
     </Stack>
   );

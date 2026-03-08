@@ -1,26 +1,42 @@
 .table {
-  border-spacing: 0;
-  border-radius: var(--mantine-radius-sm);
-  overflow: hidden;
+  width: 100%;
+  border-collapse: collapse;
 }
 
 .tableHeader {
-  background-color: var(--mantine-color-dark-7);
-  color: rgba(255, 255, 255, 0.65);
-  font-size: 12px;
-  font-weight: 600;
+  background-color: var(--cv-row-hover);
+  color: var(--cv-text-muted);
+  font-size: 10px;
+  font-weight: 700;
   text-align: left;
   text-transform: uppercase;
-  border-bottom: 1px solid var(--mantine-color-gray-8);
+  letter-spacing: 0.12em;
+  border-bottom: 1px solid var(--cv-border);
 }
 
 .tableRow > td {
   font-size: 12px;
+  color: var(--cv-text-main);
+  border-bottom: 1px solid var(--cv-border);
+}
+
+.tableRow:last-child > td {
+  border-bottom: none;
 }
 
 .tableHeader,
 .tableRow > td {
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1rem;
+}
+
+.tableHeader:first-child,
+.tableRow > td:first-child {
+  padding-left: 1.25rem;
+}
+
+.tableHeader:last-child,
+.tableRow > td:last-child {
+  padding-right: 1.25rem;
 }
 
 .tableHeader:nth-child(n + 3),
@@ -29,18 +45,18 @@
 }
 
 .tableRow > td:nth-child(n + 3) {
+  font-family: var(--mantine-font-family-monospace);
   font-variant-numeric: tabular-nums;
-  color: var(--mantine-color-gray-4);
 }
 
 .tableRow:hover {
-  background-color: var(--mantine-color-dark-6);
+  background-color: var(--cv-row-hover);
 }
 
 .expandedContent {
-  border-left: 4px solid var(--mantine-color-blue-8);
-  padding: 1rem;
-  background-color: var(--mantine-color-dark-7);
+  border-left: 3px solid var(--cv-brand-500);
+  padding: 1.5rem;
+  background: var(--cv-page-gradient);
 }
 
 @keyframes fadeInDown {

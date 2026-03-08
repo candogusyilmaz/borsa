@@ -1,4 +1,4 @@
-import { type DefaultMantineColor, type MantineColorsTuple, MantineProvider } from '@mantine/core';
+import { MantineProvider } from '@mantine/core';
 import { DatesProvider } from '@mantine/dates';
 import { Notifications } from '@mantine/notifications';
 import { GoogleOAuthProvider } from '@react-oauth/google';
@@ -17,7 +17,10 @@ import '@mantine/notifications/styles.css';
 import '@mantine/dropzone/styles.css';
 
 import '~/styles/global.css';
+import '~/styles/canverse-mantine-vars.css';
+
 import { NetworkError } from './components/network-error/network-error';
+import { cssVariablesResolver, theme } from './styles/theme';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -38,14 +41,6 @@ const router = createRouter({
   defaultPreload: 'intent'
 });
 
-type ExtendedCustomColors = 'slate' | 'accent' | DefaultMantineColor;
-
-declare module '@mantine/core' {
-  export interface MantineThemeColorsOverride {
-    colors: Record<ExtendedCustomColors, MantineColorsTuple>;
-  }
-}
-
 declare module '@tanstack/react-router' {
   interface Register {
     router: typeof router;
@@ -63,60 +58,7 @@ createRoot(document.getElementById('root')!).render(
     <GoogleOAuthProvider clientId="11207596743-8ql23qmgre6sssabg68hvsrcioucd686.apps.googleusercontent.com">
       <QueryClientProvider client={queryClient}>
         <AuthenticationProvider>
-          <MantineProvider
-            defaultColorScheme="dark"
-            theme={{
-              defaultRadius: 'md',
-              fontFamily:
-                'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji',
-              colors: {
-                dark: ['#c1cbd5', '#96a3af', '#6c7a88', '#49525b', '#262a2e', '#262a2e', '#202325', '#1a1b1d', '#131415', '#0d0d0d'],
-                accent: ['#ebecff', '#d3d4ff', '#a3a5f8', '#6366f1', '#474aed', '#2d2feb', '#1d22eb', '#1016d1', '#0713bc', '#000ea6'],
-                slate: [
-                  'oklch(98.4% 0.003 247.858)',
-                  'oklch(96.8% 0.007 247.896)',
-                  'oklch(92.9% 0.013 255.508)',
-                  'oklch(86.9% 0.022 252.894)',
-                  'oklch(70.4% 0.04 256.788)',
-                  'oklch(55.4% 0.046 257.417)',
-                  'oklch(44.6% 0.043 257.281)',
-                  'oklch(37.2% 0.044 257.287)',
-                  'oklch(27.9% 0.041 260.031)',
-                  'oklch(20.8% 0.042 265.755)',
-                  'oklch(12.9% 0.042 264.695)'
-                ]
-              },
-              primaryColor: 'accent',
-              primaryShade: 4,
-              components: {
-                Input: {
-                  classNames: {
-                    input: 'input-base'
-                  }
-                },
-                Card: {
-                  classNames: { root: 'card' }
-                },
-                Divider: {
-                  defaultProps: {
-                    color: 'var(--border-color)'
-                  }
-                },
-                Modal: {
-                  defaultProps: {
-                    radius: 'xl'
-                  },
-                  classNames: {
-                    content: 'modal-content'
-                  },
-                  styles: {
-                    header: {
-                      background: 'transparent'
-                    }
-                  }
-                }
-              }
-            }}>
+          <MantineProvider cssVariablesResolver={cssVariablesResolver} defaultColorScheme="dark" theme={theme}>
             <Notifications />
             <DatesProvider settings={{}}>
               <Main />

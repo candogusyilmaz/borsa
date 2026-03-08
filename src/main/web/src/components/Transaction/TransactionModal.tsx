@@ -49,11 +49,11 @@ export function TransactionModal() {
         }
       }}>
       <Group mb="xl">
-        <ThemeIcon radius="lg" variant="light" size="xl" color={type === 'Buy' ? 'teal' : 'red'}>
+        <ThemeIcon radius="lg" variant="light" size="xl" color="brand">
           {type === 'Buy' ? <IconPlus /> : <IconRowRemove />}
         </ThemeIcon>
         <Stack gap={0}>
-          <Title order={3} size="md" c="var(--text-main)">
+          <Title order={3} size="md">
             {type.toUpperCase()} ASSET
           </Title>
           <Text size="sm" c="dimmed">

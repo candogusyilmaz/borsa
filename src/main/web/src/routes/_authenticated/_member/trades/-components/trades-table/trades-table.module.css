@@ -9,35 +9,34 @@
 
 .tableWrapper {
   overflow: hidden;
-  background: var(--card-bg);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--card-shadow);
-  border-radius: var(--mantine-radius-lg);
+  background: var(--cv-card-bg);
+  backdrop-filter: var(--cv-card-blur);
+  -webkit-backdrop-filter: var(--cv-card-blur);
+  border: 1px solid var(--cv-border);
+  box-shadow: var(--cv-card-shadow);
+  border-radius: var(--mantine-radius-md);
 }
 
 .tableHeader {
   text-align: left;
   padding: 1rem 1rem;
-  font-weight: 600;
-  font-size: 12px;
+  font-weight: 900;
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text-muted);
-  border-bottom: 1px solid var(--border-color);
-  border-top: 1px solid var(--border-color);
+  letter-spacing: 0.1em;
+  color: var(--cv-text-main);
+  opacity: 0.5;
+  border-bottom: 1px solid var(--cv-border);
+  border-top: 1px solid var(--cv-border);
 }
 
 .tableRow {
-  transition:
-    all 0.3s ease,
-    border 0s;
-  border-bottom: 1px solid var(--border-color);
+  transition: background 0.2s ease;
+  border-bottom: 1px solid var(--cv-border);
 }
 
 .tableRow:hover {
-  background: var(--table-row-hover);
+  background: var(--cv-row-hover);
 }
 
 .tableHeader:first-child,
@@ -50,46 +49,45 @@
 }
 
 .tableRow > td {
-  padding: 0.675rem 1rem;
-  color: var(--text-muted);
+  padding: 0.75rem 1rem;
+  color: var(--cv-text-main);
   font-size: 13px;
   vertical-align: middle;
   overflow: hidden;
   text-overflow: ellipsis;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--cv-border);
 }
 
 .tableRow > td:nth-child(n + 4):not(:last-child) {
   text-align: right;
+  font-family: "JetBrains Mono", monospace;
   font-variant-numeric: tabular-nums;
 }
 
 .tableRow > td:last-child {
   text-align: right;
+  font-family: "JetBrains Mono", monospace;
 }
 
 .tableRow:hover .tickerIcon,
 .tableRow:hover .tickerSymbol {
-  border-color: var(--accent-color);
-  color: var(--accent-color);
+  border-color: var(--cv-brand-400);
+  color: var(--cv-brand-400);
 }
 
 .tickerIcon {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 40px;
-  min-width: 40px;
+  min-height: 38px;
+  min-width: 38px;
   margin-right: 8px;
   border-radius: 8px;
-  font-weight: 700;
-  color: var(--text-main);
-  background-color: var(--bg-gradient);
-  border: 1px solid
-    light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-6));
-  transition:
-    border-color 0.3s ease,
-    color 0.3s ease;
+  font-weight: 800;
+  color: var(--cv-text-main);
+  background: var(--cv-input-bg);
+  border: 1px solid var(--cv-border);
+  transition: all 0.2s ease;
 }
 
 .tickerSymbol {

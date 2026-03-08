@@ -7,7 +7,7 @@ import { $api } from '~/api/openapi';
 import { useBulkTransactionModalStore } from '~/components/Transaction/BulkTransactionModal';
 import { useTransactionModalStore } from '~/components/Transaction/TransactionModal';
 import { TableStateHandler } from '~/components/table/table-state-handler';
-import { getColorByReturnPercentage, isDataStale } from '~/lib/common';
+import { isDataStale } from '~/lib/common';
 import { format } from '~/lib/format';
 import type { ElementType } from '~/lib/types';
 import { TradeHistoryTable } from '../trade-history/trade-history';
@@ -120,14 +120,15 @@ export function PositionsTable() {
 
           const dailyReturnValue = quantity * dailyChange;
           const dailyReturnPercentage = (dailyChange * 100) / (info.row.original.instrument.last - dailyChange);
-          const color = getColorByReturnPercentage(dailyReturnPercentage);
+          const isProfit = dailyReturnPercentage >= 0;
+          const color = isProfit ? 'var(--cv-profit)' : 'var(--cv-loss)';
 
           return (
             <Stack gap={0}>
-              <Text inherit ta="right" fw="600" c={color}>
+              <Text inherit ta="right" fw={800} style={{ color }}>
                 {format.currency(dailyReturnValue, { currency: info.row.original.currencyCode })}
               </Text>
-              <Text inherit ta="right" fz="11" c={color}>
+              <Text inherit ta="right" fz="11" fw={700} style={{ color }}>
                 {format.toLocalePercentage(dailyReturnPercentage)}
               </Text>
             </Stack>
@@ -154,16 +155,15 @@ export function PositionsTable() {
 
           const returnValue = quantity * (price - info.row.original.avgCost);
           const returnPercentage = ((price - info.row.original.avgCost) * 100) / info.row.original.avgCost;
-          const color = getColorByReturnPercentage(returnPercentage, {
-            lastUpdatedTimestamp: info.row.original.instrument.updatedAt
-          });
+          const isProfit = returnPercentage >= 0;
+          const color = isProfit ? 'var(--cv-profit)' : 'var(--cv-loss)';
 
           return (
             <Stack gap={0}>
-              <Text inherit ta="right" fw="600" c={color}>
+              <Text inherit ta="right" fw={800} style={{ color }}>
                 {format.currency(returnValue, { currency: info.row.original.currencyCode })}
               </Text>
-              <Text inherit ta="right" fz="11" c={color}>
+              <Text inherit ta="right" fz="11" fw={700} style={{ color }}>
                 {format.toLocalePercentage(returnPercentage)}
               </Text>
             </Stack>
@@ -177,7 +177,14 @@ export function PositionsTable() {
         cell: (info) => {
           const expanded = info.row.getIsExpanded();
           return (
-            <div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'gray' }}>
+            <div
+              style={{
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                color: 'gray'
+              }}>
               {expanded ? <IconChevronUp className={classes.expander} /> : <IconChevronDown className={classes.expander} />}
             </div>
           );
@@ -211,45 +218,62 @@ export function PositionsTable() {
   return (
     <div className={classes.tableWrapper}>
       <Group p="md" justify="space-between">
-        <Text fw="bold" size="sm">
+        <Text fw={800} fz="12" tt="uppercase" lts="0.1em" c="dimmed">
           Active Positions
         </Text>
         <Button.Group>
           <Button
             styles={{
               root: {
-                borderColor: 'var(--mantine-color-gray-8)'
+                borderColor: 'var(--cv-border)',
+                backgroundColor: 'var(--cv-input-bg)'
               }
             }}
             size="xs"
             variant="default"
-            onClick={() => openBulkTransactionModal(portfolioId!)}>
+            // These header buttons are rendered inside a clickable/expandable table row.
+            // stopPropagation() prevents the row's onClick handler (which toggles expansion)
+            // from firing when these buttons are clicked.
+            onClick={(e) => {
+              e.stopPropagation();
+              openBulkTransactionModal(portfolioId!);
+            }}>
             Bulk
           </Button>
           <Button
             styles={{
               root: {
-                borderColor: 'var(--mantine-color-gray-8)',
+                borderColor: 'var(--cv-border)',
                 borderLeftWidth: 0,
-                borderRightWidth: 0
+                borderRightWidth: 0,
+                backgroundColor: 'var(--cv-input-bg)'
               }
             }}
             size="xs"
             variant="default"
-            onClick={() => openModal('Buy')}
-            c="teal">
+            onClick={(e) => {
+              e.stopPropagation();
+              openModal('Buy');
+            }}
+            color="profit"
+            fw={700}>
             Buy
           </Button>
           <Button
             styles={{
               root: {
-                borderColor: 'var(--mantine-color-gray-8)'
+                borderColor: 'var(--cv-border)',
+                backgroundColor: 'var(--cv-input-bg)'
               }
             }}
             size="xs"
             variant="default"
-            onClick={() => openModal('Sell')}
-            c="red">
+            onClick={(e) => {
+              e.stopPropagation();
+              openModal('Sell');
+            }}
+            color="loss"
+            fw={700}>
             Sell
           </Button>
         </Button.Group>

@@ -84,7 +84,7 @@ export function TransactionHistory() {
         <Text fw={700} size={rem(22)}>
           Trade History
         </Text>
-        <Card shadow="sm" radius="md" withBorder>
+        <Card shadow="sm" radius="md" withBorder style={{ background: 'var(--cv-card-bg)', backdropFilter: 'var(--cv-card-blur)' }}>
           <Text c="dimmed" size="xs" fw={600} ta="center">
             There are no trades to list
           </Text>
@@ -145,34 +145,31 @@ function Inner({ data }: { data: TradeHistory }) {
     <Stack>
       <Group justify="space-between" align="center">
         <Group>
-          <Text fw={700} size={rem(22)}>
-            Trade History
+          <Text fw={900} size={rem(22)} lts="0.05em">
+            Trades
           </Text>
-          {filteredTrades.length > 0 && (
-            <Badge variant="light" color="blue.2" style={{ flex: 1, minWidth: 60 }}>
-              {filteredTrades.length} trade{filteredTrades.length === 1 ? '' : 's'}
-              {filteredTrades.length !== data.trades.length && ` of ${data.trades.length}`}
-            </Badge>
-          )}
         </Group>
-        {totalPages > 1 && (
-          <Group justify="space-between">
-            <ActionIcon variant="transparent" c={currentPage === 1 ? 'dimmed' : 'white'} onClick={handlePrevPage}>
-              <IconChevronLeft />
-            </ActionIcon>
-            <Text size="sm" fw={500}>
-              {`${currentPage}/${totalPages}`}
-            </Text>
-            <ActionIcon variant="transparent" c={currentPage === totalPages ? 'dimmed' : 'white'} onClick={handleNextPage}>
-              <IconChevronRight />
-            </ActionIcon>
-          </Group>
-        )}
       </Group>
 
       <Group gap="xs">
+        <TextInput
+          placeholder="Filter by symbol..."
+          value={symbolFilter}
+          onChange={(event) => setSymbolFilter(event.currentTarget.value)}
+          leftSection={<IconSearch size={16} color="var(--cv-brand-500)" />}
+          flex={1}
+          miw={100}
+          styles={{
+            input: {
+              backgroundColor: 'var(--cv-card-bg)',
+              border: '1px solid var(--cv-border)',
+              fontWeight: 600
+            }
+          }}
+        />
         <SegmentedControl
-          bd="1px solid var(--mantine-color-dark-4)"
+          bd="1px solid var(--cv-border)"
+          bg="var(--cv-card-bg)"
           value={typeFilter}
           onChange={(value) => setTypeFilter(value || '')}
           data={[
@@ -180,20 +177,15 @@ function Inner({ data }: { data: TradeHistory }) {
             { value: 'BUY', label: 'Buy' },
             { value: 'SELL', label: 'Sell' }
           ]}
-        />
-        <TextInput
-          placeholder="Filter by symbol..."
-          value={symbolFilter}
-          onChange={(event) => setSymbolFilter(event.currentTarget.value)}
-          leftSection={<IconSearch size={16} />}
-          flex={1}
-          miw={100}
+          styles={{
+            indicator: { backgroundImage: 'var(--cv-gradient-brand)' },
+            label: { fontWeight: 700, fontSize: rem(11) }
+          }}
         />
         <SegmentedControl
           styles={{
-            root: {
-              background: 'transparent'
-            }
+            root: { background: 'transparent' },
+            label: { fontWeight: 700, fontSize: rem(10), fontFamily: 'var(--mantine-font-family-monospace)' }
           }}
           value={pageSize.toString()}
           onChange={(value) => setPageSize(Number(value))}
@@ -201,56 +193,85 @@ function Inner({ data }: { data: TradeHistory }) {
         />
       </Group>
 
-      <Stack gap="sm">
+      <Stack gap="xs">
         {currentTrades.map((trade) => (
           <Card
             key={trade.createdAt}
-            shadow="sm"
+            shadow="var(--cv-card-shadow)"
             radius="md"
-            p="xs"
+            p="sm"
             px="lg"
             withBorder
             pos="relative"
             style={{
-              overflow: 'visible'
+              overflow: 'visible',
+              background: 'var(--cv-card-bg)',
+              backdropFilter: 'var(--cv-card-blur)',
+              borderColor: 'var(--cv-border)',
+              transition: 'border-color 0.2s ease'
             }}>
             <TradeCard trade={trade} />
             <UndoTradeButton trade={trade} />
           </Card>
         ))}
         {currentTrades.length === 0 && (
-          <Card shadow="sm" radius="md" withBorder>
-            <Text c="dimmed" size="xs" fw={600} ta="center">
+          <Card shadow="sm" radius="md" withBorder style={{ background: 'var(--cv-card-bg)', borderColor: 'var(--cv-border)' }}>
+            <Text c="dimmed" size="xs" fw={500} ta="center">
               No trades match the current filters
             </Text>
           </Card>
         )}
       </Stack>
+      {totalPages > 1 && (
+        <Group justify="right" gap="xs">
+          <ActionIcon variant="subtle" color="gray" disabled={currentPage === 1} onClick={handlePrevPage}>
+            <IconChevronLeft size={18} />
+          </ActionIcon>
+          <Text size="xs" fw={800} ff="var(--mantine-font-family-monospace)" c="dimmed">
+            {currentPage} <span style={{ opacity: 0.4 }}>/</span> {totalPages}
+          </Text>
+          <ActionIcon variant="subtle" color="gray" disabled={currentPage === totalPages} onClick={handleNextPage}>
+            <IconChevronRight size={18} />
+          </ActionIcon>
+        </Group>
+      )}
     </Stack>
   );
 }
 
 function DesktopCardContent({ trade }: { trade: Trade }) {
+  const isBuy = trade.type === 'BUY';
+  const isProfit = (trade.profit ?? 0) >= 0;
+  const color = isBuy ? 'var(--cv-brand-500)' : isProfit ? 'var(--cv-profit)' : 'var(--cv-loss)';
+
   return (
     <Group justify="space-between" align="center" ta="right">
-      <Group align="center">
-        <ThemeIcon variant="transparent" c={trade.type === 'BUY' ? 'blue' : trade.profit! >= 0 ? 'green' : 'red'}>
-          {trade.type === 'BUY' ? <IconCirclePlus /> : trade.profit! >= 0 ? <IconTrendingUp3 /> : <IconTrendingDown3 />}
+      <Group gap={4} align="center">
+        <ThemeIcon ml={-6} variant="transparent" size="xl" radius="md" c={color}>
+          {isBuy ? (
+            <IconCirclePlus size={22} stroke={2.5} />
+          ) : isProfit ? (
+            <IconTrendingUp3 size={22} stroke={2.5} />
+          ) : (
+            <IconTrendingDown3 size={22} stroke={2.5} />
+          )}
         </ThemeIcon>
         <Stack gap={2}>
           <Group gap="xs" align="center" ml={3}>
-            <Text size="lg" fw={600}>
+            <Text size="lg" fw={800}>
               {trade.symbol}
             </Text>
-            <Badge size="xs" variant="light" color={trade.type === 'BUY' ? 'blue' : trade.profit! >= 0 ? 'green' : 'red'}>
+            <Badge
+              size="xs"
+              variant="filled"
+              color={isBuy ? 'brand' : isProfit ? 'profit' : 'loss'}
+              styles={{ root: { height: 16, padding: '0 6px' }, label: { fontSize: 9, fontWeight: 900 } }}>
               {trade.type}
             </Badge>
           </Group>
-          <Group gap={4} align="center">
-            <ThemeIcon size="xs" variant="transparent" c="dimmed">
-              <IconCalendar style={{ width: '100%', height: '100%' }} />
-            </ThemeIcon>
-            <Text size="xs" c="dimmed">
+          <Group gap={4} align="center" ml={4}>
+            <IconCalendar size={12} color="var(--cv-text-xmuted)" />
+            <Text size="xs" c="dimmed" fw={500}>
               {format.toFullDateTime(new Date(trade.date))}
             </Text>
           </Group>
@@ -259,19 +280,22 @@ function DesktopCardContent({ trade }: { trade: Trade }) {
       <Group align="center" miw={rem(300)}>
         <Stack gap={2} miw={rem(150)}>
           <Group gap={4} align="center" justify="flex-end">
-            <ThemeIcon size="xs" variant="transparent" c="dimmed">
-              <IconChartBar />
-            </ThemeIcon>
-            <Text fw={500}>{`${format.toHumanizedNumber(trade.quantity)} share${trade.quantity === 1 ? '' : 's'}`}</Text>
+            <IconChartBar size={14} color="var(--cv-text-xmuted)" />
+            <Text fw={700} fz="sm" ff="var(--mantine-font-family-monospace)">{`${format.toHumanizedNumber(trade.quantity)}`}</Text>
+            <Text size="xs" c="dimmed" fw={500}>
+              shares
+            </Text>
           </Group>
-          <Text size="xs" c="dimmed">
+          <Text size="xs" c="dimmed" fw={500} ff="var(--mantine-font-family-monospace)">
             @ {format.toCurrency(trade.price)}
           </Text>
         </Stack>
         <Stack gap={2} ml="auto">
-          <Text fw={600}>{format.toCurrency(trade.total)}</Text>
-          {trade.type === 'SELL' && (
-            <Text size="xs" c={trade.returnPercentage! >= 0 ? 'teal' : 'red'}>
+          <Text fw={800} fz="md" ff="var(--mantine-font-family-monospace)">
+            {format.toCurrency(trade.total)}
+          </Text>
+          {!isBuy && (
+            <Text size="xs" fw={700} ff="var(--mantine-font-family-monospace)" style={{ color }}>
               {`${format.toCurrency(trade.profit!)} (${format.toLocalePercentage(trade.returnPercentage!)})`}
             </Text>
           )}
@@ -282,46 +306,51 @@ function DesktopCardContent({ trade }: { trade: Trade }) {
 }
 
 function MobileCardContent({ trade }: { trade: Trade }) {
+  const isBuy = trade.type === 'BUY';
+  const isProfit = (trade.profit ?? 0) >= 0;
+  const color = isBuy ? 'var(--cv-brand-500)' : isProfit ? 'var(--cv-profit)' : 'var(--cv-loss)';
+
   return (
     <Stack gap={4}>
       <Group gap="xs" justify="space-between" align="center">
-        <Group gap={4}>
-          <ThemeIcon size="xs" variant="transparent" c={trade.type === 'BUY' ? 'blue' : trade.profit! >= 0 ? 'green' : 'red'}>
-            {trade.type === 'BUY' ? (
-              <IconCirclePlus style={{ width: '100%' }} />
-            ) : trade.profit! >= 0 ? (
-              <IconTrendingUp3 />
+        <Group gap={6}>
+          <ThemeIcon size="sm" variant="transparent" c={color}>
+            {isBuy ? (
+              <IconCirclePlus size={18} stroke={2.5} />
+            ) : isProfit ? (
+              <IconTrendingUp3 size={18} stroke={2.5} />
             ) : (
-              <IconTrendingDown3 />
+              <IconTrendingDown3 size={18} stroke={2.5} />
             )}
           </ThemeIcon>
-          <Text size="lg" fw={600}>
+          <Text size="md" fw={800} ff="var(--mantine-font-family-monospace)">
             {trade.symbol}
           </Text>
         </Group>
-        <Badge size="xs" variant="light" color={trade.type === 'BUY' ? 'blue' : trade.profit! >= 0 ? 'green' : 'red'}>
+        <Badge size="xs" variant="light" color={isBuy ? 'brand' : isProfit ? 'profit' : 'loss'}>
           {trade.type}
         </Badge>
       </Group>
 
       <Group gap={4} align="center" justify="space-between">
         <Group gap={3} align="center">
-          <ThemeIcon size="xs" variant="transparent" c="dimmed">
-            <IconChartBar />
-          </ThemeIcon>
-          <Text size="xs" c="dimmed">
-            {`${format.toHumanizedNumber(trade.quantity)} share`}
+          <Text size="xs" c="dimmed" fw={600} ff="var(--mantine-font-family-monospace)">
+            {`${format.toHumanizedNumber(trade.quantity)}`}
+            <span style={{ fontWeight: 400, marginLeft: 2 }}>sh</span>
           </Text>
-          <Text size="xs" c="dimmed">
-            @ {format.toCurrency(trade.price)}
+          <Text size="xs" c="dimmed" fw={400}>
+            @
+          </Text>
+          <Text size="xs" c="dimmed" fw={600} ff="var(--mantine-font-family-monospace)">
+            {format.toCurrency(trade.price)}
           </Text>
         </Group>
-        <Text size="xs" fw={600}>
+        <Text size="sm" fw={800} ff="var(--mantine-font-family-monospace)">
           {format.toCurrency(trade.total)}
         </Text>
       </Group>
-      {trade.type === 'SELL' && (
-        <Text ta="right" size="xs" c={trade.returnPercentage! >= 0 ? 'teal' : 'red'}>
+      {!isBuy && (
+        <Text ta="right" size="xs" fw={700} ff="var(--mantine-font-family-monospace)" style={{ color }}>
           {`${format.toCurrency(trade.profit!)} (${format.toLocalePercentage(trade.returnPercentage!)})`}
         </Text>
       )}

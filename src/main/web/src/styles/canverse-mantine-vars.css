@@ -1,0 +1,564 @@
+/* =============================================================
+   CANVERSE — canverse-mantine-vars.css
+   Mantine v9 alpha (9.0.0-alpha.4+)
+
+   Load order:
+     1. @mantine/core/styles.css
+     2. THIS FILE  ← overrides everything
+
+============================================================= */
+
+/* ─────────────────────────────────────────────────────────────
+   GOOGLE FONTS
+───────────────────────────────────────────────────────────── */
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;0,9..40,900;1,9..40,400&family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+/* =============================================================
+   BLOCK 1 — :root / :host
+   Overrides Mantine's default CSS variable values.
+============================================================= */
+:root,
+:host {
+  --mantine-heading-font-weight: 900;
+  --mantine-line-height: 1.5;
+}
+
+/* =============================================================
+   BLOCK 4 — BASE OVERRIDES
+============================================================= */
+body,
+:host {
+  font-family: var(--mantine-font-family);
+  background-color: var(--mantine-color-body);
+  overscroll-behavior: none;
+}
+
+body {
+  background: var(--cv-page-gradient);
+  min-height: 100dvh;
+}
+
+@media screen and (max-device-width: 31.25em) {
+  body,
+  :host {
+    -webkit-text-size-adjust: 100%;
+  }
+}
+
+/* Drag elements */
+[data-draggable],
+[data-drag-handle] {
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+/* All financial data elements — mandatory tabular figures */
+[data-numeric],
+[data-price],
+[data-pnl],
+[data-qty],
+[data-percentage],
+.cv-mono {
+  font-family: "JetBrains Mono", monospace;
+  font-feature-settings:
+    "tnum" 1,
+    "ss01" 1;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-respect-reduced-motion] [data-reduce-motion] {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* =============================================================
+   BLOCK 5 — FOCUS RING
+   Replace Mantine's default blue with brand indigo.
+============================================================= */
+.mantine-focus-auto:focus-visible,
+.mantine-focus-always:focus {
+  outline: 2px solid var(--cv-brand-500);
+  outline-offset: 2px;
+}
+.mantine-focus-never:focus {
+  outline: none;
+}
+
+/* v9 active press behaviour (unchanged) */
+.mantine-active:active {
+  transform: translateY(calc(0.0625rem * var(--mantine-scale)));
+}
+fieldset:disabled .mantine-active:active {
+  transform: none;
+}
+
+/* =============================================================
+   BLOCK 6 — COMPONENT SURFACE OVERRIDES
+============================================================= */
+
+/* ── AppShell ─────────────────────────────────────────────── */
+.mantine-AppShell-root {
+  background: var(--cv-page-gradient);
+}
+.mantine-AppShell-navbar {
+  background: var(--cv-sidebar-bg);
+  backdrop-filter: var(--cv-sidebar-blur);
+  -webkit-backdrop-filter: var(--cv-sidebar-blur);
+  border-right-color: var(--cv-border);
+}
+.mantine-AppShell-header {
+  background: var(--cv-topbar-bg);
+  backdrop-filter: var(--cv-topbar-blur);
+  -webkit-backdrop-filter: var(--cv-topbar-blur);
+  border-bottom-color: var(--cv-border);
+}
+
+/* ── Card / Paper — glassmorphism ─────────────────────────── */
+.mantine-Card-root,
+.mantine-Paper-root {
+  background: var(--cv-card-bg);
+  backdrop-filter: var(--cv-card-blur);
+  -webkit-backdrop-filter: var(--cv-card-blur);
+  border-color: var(--cv-border);
+  box-shadow: var(--cv-card-shadow);
+  transition: border-color 0.3s ease;
+}
+.mantine-Card-root:hover,
+.mantine-Paper-root:hover {
+  border-color: rgba(99, 102, 241, 0.22);
+}
+
+/* ── Button — filled gradient ─────────────────────────────── */
+.mantine-Button-root[data-variant="filled"] {
+  background: var(--cv-gradient-brand);
+  box-shadow: var(--cv-shadow-brand);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.mantine-Button-root[data-variant="filled"]:hover {
+  background: var(--cv-gradient-brand);
+  transform: translateY(-1px);
+  box-shadow: var(--cv-shadow-brand-md);
+}
+.mantine-Button-root[data-variant="filled"]:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* ── Inputs ───────────────────────────────────────────────── */
+.mantine-Input-input {
+  background: var(--cv-input-bg);
+  border-color: var(--cv-border);
+  color: var(--cv-text-main);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.mantine-Input-input:focus,
+.mantine-Input-input[data-focused] {
+  border-color: var(--cv-brand-500);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
+}
+/* Number inputs use JetBrains Mono */
+.mantine-NumberInput-input {
+  font-family: "JetBrains Mono", monospace;
+  font-feature-settings: "tnum" 1;
+  letter-spacing: 0.03em;
+}
+
+/* ── Modal ────────────────────────────────────────────────── */
+.mantine-Modal-content {
+  background: var(--cv-modal-bg);
+  backdrop-filter: var(--cv-modal-blur);
+  -webkit-backdrop-filter: var(--cv-modal-blur);
+  border: 1px solid var(--cv-border);
+  box-shadow: var(--cv-modal-shadow);
+}
+.mantine-Modal-header {
+  background: transparent;
+  border-bottom: 1px solid var(--cv-border);
+}
+.mantine-Modal-overlay {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* ── Drawer ───────────────────────────────────────────────── */
+.mantine-Drawer-content {
+  background: var(--cv-sheet-bg);
+  backdrop-filter: var(--cv-sheet-blur);
+  -webkit-backdrop-filter: var(--cv-sheet-blur);
+  border-top: 1px solid var(--cv-border);
+  box-shadow: var(--cv-sheet-shadow);
+}
+.mantine-Drawer-content[data-position="bottom"] {
+  border-radius: 22px 22px 0 0;
+}
+.mantine-Drawer-overlay {
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+/* ── Menu / Popover ───────────────────────────────────────── */
+.mantine-Menu-dropdown,
+.mantine-Popover-dropdown {
+  background: var(--cv-sheet-bg);
+  backdrop-filter: var(--cv-sheet-blur);
+  -webkit-backdrop-filter: var(--cv-sheet-blur);
+  border-color: var(--cv-border);
+  box-shadow: var(--cv-modal-shadow);
+}
+.mantine-Menu-item:hover {
+  background: var(--cv-row-hover);
+}
+.mantine-Menu-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  opacity: 0.35;
+}
+.mantine-Menu-divider {
+  border-color: var(--cv-border);
+}
+
+/* ── Select ───────────────────────────────────────────────── */
+.mantine-Select-dropdown {
+  background: var(--cv-sheet-bg);
+  backdrop-filter: var(--cv-sheet-blur);
+  -webkit-backdrop-filter: var(--cv-sheet-blur);
+  border-color: var(--cv-border);
+}
+.mantine-Select-option[data-checked],
+.mantine-Select-option[data-selected] {
+  background: var(--mantine-color-brand-light);
+  color: var(--cv-brand-400);
+}
+.mantine-Select-option:hover:not([data-selected]) {
+  background: var(--cv-row-hover);
+}
+
+/* ── Table ────────────────────────────────────────────────── */
+.mantine-Table-tr:hover {
+  background: var(--cv-row-hover);
+}
+.mantine-Table-td,
+.mantine-Table-th {
+  border-color: var(--cv-border);
+}
+
+/* ── Tooltip ──────────────────────────────────────────────── */
+.mantine-Tooltip-tooltip {
+  background: var(--cv-modal-bg);
+  border: 1px solid var(--cv-border);
+  backdrop-filter: var(--cv-card-blur);
+  -webkit-backdrop-filter: var(--cv-card-blur);
+  color: var(--cv-text-main);
+}
+.mantine-Tooltip-arrow {
+  background: var(--cv-modal-bg);
+  border-color: var(--cv-border);
+}
+
+/* ── Notification ─────────────────────────────────────────── */
+.mantine-Notification-root {
+  background: var(--cv-modal-bg);
+  backdrop-filter: var(--cv-card-blur);
+  -webkit-backdrop-filter: var(--cv-card-blur);
+  border-color: var(--cv-border);
+}
+
+/* ── NavLink ──────────────────────────────────────────────── */
+.mantine-NavLink-root[data-active] {
+  background: linear-gradient(to right, rgba(79, 70, 229, 0.18), transparent);
+  color: #818cf8;
+}
+.mantine-NavLink-root:hover:not([data-active]) {
+  background: var(--cv-icon-inactive-bg);
+}
+
+/* ── Tabs ─────────────────────────────────────────────────── */
+.mantine-Tabs-tab[data-active] {
+  color: var(--cv-brand-400);
+}
+.mantine-Tabs-indicator {
+  background: var(--cv-brand-500);
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.55);
+}
+.mantine-Tabs-list {
+  border-bottom-color: var(--cv-border);
+}
+
+/* ── Divider ──────────────────────────────────────────────── */
+.mantine-Divider-root {
+  border-color: var(--cv-border);
+}
+
+/* ── v9: Typography (renamed from TypographyStylesProvider) ── */
+.mantine-Typography-root a {
+  color: var(--cv-brand-400);
+}
+.mantine-Typography-root code,
+.mantine-Typography-root pre {
+  font-family: "JetBrains Mono", monospace;
+}
+
+/* ── Scrollbars ───────────────────────────────────────────── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(99, 102, 241, 0.2) transparent;
+}
+*::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.2);
+  border-radius: 10px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.4);
+}
+
+/* =============================================================
+   BLOCK 7 — CANVERSE UTILITY CLASSES
+============================================================= */
+
+/* ── Glass card ───────────────────────────────────────────── */
+.cv-glass-card {
+  background: var(--cv-card-bg);
+  backdrop-filter: var(--cv-card-blur);
+  -webkit-backdrop-filter: var(--cv-card-blur);
+  border: 1px solid var(--cv-border);
+  box-shadow: var(--cv-card-shadow);
+  border-radius: 16px;
+  transition: border-color 0.3s ease;
+}
+.cv-glass-card:hover {
+  border-color: rgba(99, 102, 241, 0.22);
+}
+
+/* ── Section label caps ───────────────────────────────────── */
+.cv-label-caps {
+  font-size: 10px;
+  font-weight: var(--mantine-font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  opacity: 0.35;
+  color: var(--cv-text-main);
+}
+
+/* ── Price display (always JetBrains Mono) ────────────────── */
+.cv-price {
+  font-family: "JetBrains Mono", monospace;
+  font-feature-settings: "tnum" 1;
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--mantine-font-weight-bold);
+  letter-spacing: -0.02em;
+}
+.cv-price-lg {
+  font-family: "JetBrains Mono", monospace;
+  font-feature-settings: "tnum" 1;
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--mantine-font-weight-bold);
+  font-size: 1.75rem;
+  letter-spacing: -0.03em;
+}
+
+/* ── Trading badges ───────────────────────────────────────── */
+.cv-badge-profit {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  font-weight: var(--mantine-font-weight-bold);
+  padding: 3px 8px;
+  border-radius: 9999px;
+  background: var(--cv-profit-muted);
+  color: var(--cv-profit);
+}
+.cv-badge-loss {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  font-weight: var(--mantine-font-weight-bold);
+  padding: 3px 8px;
+  border-radius: 9999px;
+  background: var(--cv-loss-muted);
+  color: var(--cv-loss);
+}
+.cv-badge-neutral {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  font-weight: var(--mantine-font-weight-bold);
+  padding: 3px 8px;
+  border-radius: 9999px;
+  background: var(--cv-icon-inactive-bg);
+  color: var(--cv-text-muted);
+}
+
+/* ── Asset avatars ────────────────────────────────────────── */
+.cv-asset-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: var(--mantine-font-weight-bold);
+  flex-shrink: 0;
+}
+
+/* ── Active nav pip ───────────────────────────────────────── */
+.cv-nav-pip {
+  position: absolute;
+  left: 0;
+  width: 4px;
+  height: 22px;
+  border-radius: 9999px;
+  background: var(--cv-brand-500);
+  box-shadow: var(--cv-shadow-pip);
+}
+
+/* ── Bottom tab active pip ────────────────────────────────── */
+.cv-bottom-pip {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 22px;
+  height: 3px;
+  border-radius: 0 0 6px 6px;
+  background: var(--cv-brand-500);
+  box-shadow: var(--cv-shadow-pip);
+}
+
+/* ── Skeleton shimmer ─────────────────────────────────────── */
+@keyframes cv-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+.cv-skeleton {
+  border-radius: 8px;
+  background: linear-gradient(
+    90deg,
+    var(--cv-border) 25%,
+    var(--cv-border-light) 50%,
+    var(--cv-border) 75%
+  );
+  background-size: 200% 100%;
+  animation: cv-shimmer 2s linear infinite;
+}
+
+/* ── Animations ───────────────────────────────────────────── */
+@keyframes cv-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes cv-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+@keyframes cv-sheet-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0.7;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes cv-fab-ring {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0;
+    transform: scale(1.28);
+  }
+}
+@keyframes cv-pip-in {
+  from {
+    transform: translateX(-50%) scaleX(0);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) scaleX(1);
+    opacity: 1;
+  }
+}
+
+.cv-fade-up {
+  animation: cv-fade-up 0.3s ease forwards;
+}
+.cv-scale-in {
+  animation: cv-scale-in 0.22s var(--cv-ease-spring) forwards;
+}
+.cv-sheet-up {
+  animation: cv-sheet-up 0.28s var(--cv-ease-smooth) forwards;
+}
+.cv-fab-ring {
+  animation: cv-fab-ring 2.4s ease-in-out infinite;
+}
+.cv-pip-in {
+  animation: cv-pip-in 0.2s ease forwards;
+}
+
+/* Stagger delays */
+.cv-stagger-1 {
+  animation-delay: 0ms;
+}
+.cv-stagger-2 {
+  animation-delay: 60ms;
+}
+.cv-stagger-3 {
+  animation-delay: 120ms;
+}
+.cv-stagger-4 {
+  animation-delay: 180ms;
+}
+.cv-stagger-5 {
+  animation-delay: 240ms;
+}
+.cv-stagger-6 {
+  animation-delay: 300ms;
+}
+
+.cv-scrollbar-none {
+  scrollbar-width: none;
+}
+.cv-scrollbar-none::-webkit-scrollbar {
+  display: none;
+}

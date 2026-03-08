@@ -13,7 +13,6 @@ import {
 import { useMemo } from 'react';
 import { $api } from '~/api/openapi';
 import { TableStateHandler } from '~/components/table/table-state-handler';
-import { getColorByReturnPercentage } from '~/lib/common';
 import { format } from '~/lib/format';
 import type { ElementType } from '~/lib/types';
 import { TradeHistoryFilter } from './trade-history-filter';
@@ -58,12 +57,22 @@ export function TradesTable() {
         header: 'Type',
         cell: (info) => (
           <Badge
-            fz={10}
+            fz={9}
             radius="sm"
             variant="light"
-            w={50}
-            bd={`1px solid ${info.getValue<string>() === 'BUY' ? 'var(--mantine-color-teal-8)' : 'var(--mantine-color-red-9)'}`}
-            color={info.getValue<string>() === 'BUY' ? 'teal' : 'red'}>
+            w={54}
+            h={20}
+            tt="uppercase"
+            fw={800}
+            lts="0.05em"
+            color={info.getValue<string>() === 'BUY' ? 'profit' : 'loss'}
+            styles={{
+              root: {
+                border: info.getValue<string>() === 'BUY' ? '1px solid var(--cv-profit-dim)' : '1px solid var(--cv-loss-dim)',
+                backgroundColor: info.getValue<string>() === 'BUY' ? 'var(--cv-profit-muted)' : 'var(--cv-loss-muted)',
+                color: info.getValue<string>() === 'BUY' ? 'var(--cv-profit)' : 'var(--cv-loss)'
+              }
+            }}>
             {info.getValue<string>()}
           </Badge>
         )
@@ -73,9 +82,9 @@ export function TradesTable() {
         id: 'portfolioName',
         header: 'Portfolio',
         cell: (info) => (
-          <Badge tt="revert" fw={500} py="xs" px="sm" variant="outline" radius="sm" color="violet">
-            <Text inherit>{info.getValue<string>()}</Text>
-          </Badge>
+          <Text inherit fw={700} className="cv-badge-neutral">
+            {info.getValue<string>()}
+          </Text>
         )
       },
       {
@@ -86,7 +95,7 @@ export function TradesTable() {
           </Text>
         ),
         cell: (info) => (
-          <Text inherit ta="right">
+          <Text inherit ta="right" className="cv-mono" fw={600}>
             {info.getValue<number>()}
           </Text>
         )
@@ -99,7 +108,7 @@ export function TradesTable() {
           </Text>
         ),
         cell: (info) => (
-          <Text inherit ta="right">
+          <Text inherit ta="right" className="cv-mono" fw={600}>
             {format.currency(info.getValue<number>(), { currency: info.row.original.position.currencyCode })}
           </Text>
         )
@@ -118,11 +127,11 @@ export function TradesTable() {
 
           return (
             <Stack gap={0}>
-              <Text inherit ta="right" fw="600">
+              <Text inherit ta="right" fw={700} className="cv-mono">
                 {format.currency(quantity * price, { currency: info.row.original.position.currencyCode })}
               </Text>
               {returnValue && (
-                <Text inherit ta="right" fz="11" c={getColorByReturnPercentage(returnValue)}>
+                <Text inherit ta="right" fz="11" fw={700} className="cv-mono" c={returnValue >= 0 ? 'profit.5' : 'loss.5'}>
                   {format.currency(returnValue, { currency: info.row.original.position.currencyCode })}
                 </Text>
               )}

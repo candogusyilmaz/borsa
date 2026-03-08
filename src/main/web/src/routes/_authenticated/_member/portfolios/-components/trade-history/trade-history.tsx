@@ -23,7 +23,7 @@ export function TradeHistoryTable({ positionId, avgCost }: { positionId: string;
         accessorKey: 'actionDate',
         header: 'Date',
         cell: (info) => (
-          <Text inherit c="gray.4">
+          <Text inherit c="dimmed" fz={11} fw={500}>
             {format.toShortDate(new Date(info.getValue<string>()))}
           </Text>
         ),
@@ -32,37 +32,67 @@ export function TradeHistoryTable({ positionId, avgCost }: { positionId: string;
       {
         accessorKey: 'type',
         header: 'Type',
-        cell: (info) => (
-          <Badge
-            fz={10}
-            radius="sm"
-            variant="light"
-            w={50}
-            bd={`1px solid ${info.getValue<string>() === 'BUY' ? 'var(--mantine-color-teal-8)' : 'var(--mantine-color-red-9)'}`}
-            color={info.getValue<string>() === 'BUY' ? 'teal' : 'red'}>
-            {info.getValue<string>()}
-          </Badge>
-        )
+        cell: (info) => {
+          const type = info.getValue<string>();
+          const isBuy = type === 'BUY';
+          return (
+            <Badge
+              fz={9}
+              radius="sm"
+              variant="light"
+              w={54}
+              h={20}
+              tt="uppercase"
+              fw={800}
+              lts="0.05em"
+              color={isBuy ? 'profit' : 'loss'}
+              styles={{
+                root: {
+                  border: isBuy ? '1px solid var(--cv-profit-dim)' : '1px solid var(--cv-loss-dim)',
+                  backgroundColor: isBuy ? 'var(--cv-profit-muted)' : 'var(--cv-loss-muted)',
+                  color: isBuy ? 'var(--cv-profit)' : 'var(--cv-loss)'
+                }
+              }}>
+              {type}
+            </Badge>
+          );
+        }
       },
       {
         accessorKey: 'price',
         header: () => 'Price',
-        cell: (info) => <Text inherit>{format.currency(info.getValue<number>())}</Text>
+        cell: (info) => (
+          <Text inherit fz={12} fw={600} ff="var(--mantine-font-family-monospace)">
+            {format.currency(info.getValue<number>())}
+          </Text>
+        )
       },
       {
         accessorKey: 'quantity',
         header: () => 'Trade Qty',
-        cell: (info) => <Text inherit>{info.getValue<number>()}</Text>
+        cell: (info) => (
+          <Text inherit fz={12} fw={500} ff="var(--mantine-font-family-monospace)">
+            {info.getValue<number>()}
+          </Text>
+        )
       },
       {
         accessorKey: 'newQuantity',
         header: () => 'New Qty',
-        cell: (info) => <Text inherit>{info.getValue<number>()}</Text>
+        cell: (info) => (
+          <Text inherit fz={12} fw={600} ff="var(--mantine-font-family-monospace)">
+            {info.getValue<number>()}
+          </Text>
+        )
       },
       {
         accessorKey: 'newTotal',
         header: () => 'New Total',
-        cell: (info) => <Text inherit>{format.currency(info.getValue<number>())}</Text>
+        cell: (info) => (
+          <Text inherit fz={12} fw={600} c="var(--cv-brand-500)" ff="var(--mantine-font-family-monospace)">
+            {format.currency(info.getValue<number>())}
+          </Text>
+        )
       }
     ],
     []
@@ -101,73 +131,82 @@ export function TradeHistoryTable({ positionId, avgCost }: { positionId: string;
 
   return (
     <div className={classes.expandedContent}>
-      <Group justify="space-between" mb="md">
-        <Stack gap="3" align="flex-start">
-          <Text fw={600} fz="14">
-            Position Breakdown: <span style={{ color: 'var(--mantine-color-blue-4)' }}>{trades?.[0]?.position.instrumentSymbol}</span>
+      <Group justify="space-between" mb="lg">
+        <Stack gap="2" align="flex-start">
+          <Text fw={800} fz="16" tt="uppercase" lts="0.02em">
+            Position Breakdown: <span style={{ color: 'var(--cv-brand-500)' }}>{trades?.[0]?.position.instrumentSymbol}</span>
           </Text>
-          <Text fz={12} c="dimmed">
-            Displaying trades that contribute to current open quantity.
+          <Text fz={11} c="dimmed" fw={500}>
+            Displaying active trades contributing to the current open quantity.
           </Text>
         </Stack>
 
-        <Group>
+        <Group gap="sm">
           <Stack
             gap={2}
             align="flex-start"
             style={{
-              backgroundColor: 'var(--mantine-color-dark-6)',
-              borderRadius: '4px',
-              padding: '0.5rem 1rem',
-              border: '1px solid var(--mantine-color-dark-5)'
+              backgroundColor: 'var(--cv-card-bg)',
+              backdropFilter: 'var(--cv-card-blur)',
+              borderRadius: '8px',
+              padding: '0.6rem 1.25rem',
+              border: '1px solid var(--cv-border)'
             }}>
-            <Text fz={10} fw={700} c="dimmed" tt="uppercase">
+            <Text fz={9} fw={800} c="dimmed" tt="uppercase" lts="0.1em">
               Total Volume
             </Text>
-            <Text fz={12} fw={600}>
-              {trades?.length ?? 0} trade{trades?.length !== 1 ? 's' : ''}
+            <Text fz={14} fw={700} ff="var(--mantine-font-family-monospace)">
+              {trades?.length ?? 0} <span style={{ fontSize: '10px', fontWeight: 500, opacity: 0.6 }}>Trades</span>
             </Text>
           </Stack>
           <Stack
             gap={2}
             align="flex-start"
             style={{
-              backgroundColor: 'var(--mantine-color-dark-6)',
-              borderRadius: '4px',
-              padding: '0.5rem 1rem',
-              border: '1px solid var(--mantine-color-dark-5)'
+              backgroundColor: 'var(--cv-card-bg)',
+              backdropFilter: 'var(--cv-card-blur)',
+              borderRadius: '8px',
+              padding: '0.6rem 1.25rem',
+              border: '1px solid var(--cv-border)'
             }}>
-            <Text fz={10} fw={700} c="dimmed" tt="uppercase">
+            <Text fz={9} fw={800} c="dimmed" tt="uppercase" lts="0.1em">
               Break Even
             </Text>
-            <Text fz={12} fw={600}>
-              {format.currency(avgCost, { currency: trades[0]?.position.currencyCode })}
+            <Text fz={14} fw={700} ff="var(--mantine-font-family-monospace)" style={{ color: 'var(--cv-brand-500)' }}>
+              {format.currency(avgCost, { currency: trades?.[0]?.position.currencyCode })}
             </Text>
           </Stack>
         </Group>
       </Group>
-      <Stack gap={0} bg="dark.5" bdrs={'sm'} bd="1px solid var(--mantine-color-gray-8)">
+
+      <Stack gap={0} bdrs={'md'} bd="1px solid var(--cv-border)" bg="var(--cv-card-bg)" style={{ overflow: 'hidden' }}>
         <Group
           py={12}
           px={18}
           justify="space-between"
           align="center"
           style={{
-            borderBottom: '1px solid var(--mantine-color-gray-8)'
+            borderBottom: '1px solid var(--cv-border)',
+            backgroundColor: 'var(--cv-row-hover)'
           }}>
-          <Group gap={8} c="gray.5">
-            <IconClock size={16} color="var(--mantine-color-blue-4)" />
-            <Text fz={12} fw={600} tt="uppercase">
-              Trade History
+          <Group gap={8}>
+            <IconClock size={16} stroke={2.5} color="var(--cv-brand-500)" />
+            <Text fz={10} fw={800} tt="uppercase" lts="0.15em" c="dimmed">
+              Trade History Records
             </Text>
           </Group>
-          <Badge radius="sm" variant="default" tt="revert" py="sm" bg="dark.4" bd="1px solid var(--mantine-color-dark-3)" lts="0.005em">
-            <Text fz={11} c="gray.6" fw={500}>
-              {trades.length} Active Record{trades.length !== 1 ? 's' : ''}
-            </Text>
+          <Badge
+            radius="sm"
+            variant="outline"
+            tt="none"
+            h={24}
+            bg="var(--cv-card-bg)"
+            bd="1px solid var(--cv-border)"
+            styles={{ label: { color: 'var(--cv-text-muted)', fontWeight: 600, fontSize: '10px' } }}>
+            {trades?.length} Active {trades?.length !== 1 ? 'Entries' : 'Entry'}
           </Badge>
         </Group>
-        <Table unstyled className={classes.table} verticalSpacing="sm">
+        <Table className={classes.table} verticalSpacing="md" withRowBorders={false}>
           <Table.Thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <Table.Tr key={headerGroup.id}>
