@@ -4,17 +4,15 @@
 ============================================================= */
 
 /* ── Bar shell ────────────────────────────────────────────── */
+/* No position:fixed — sits in normal column flex flow to survive pinch-zoom */
 .nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: var(--cv-z-bottom-nav);
   background: var(--cv-bottom-nav-bg);
   backdrop-filter: var(--cv-topbar-blur);
   -webkit-backdrop-filter: var(--cv-topbar-blur);
   border-top: 1px solid var(--cv-border);
   padding-bottom: env(safe-area-inset-bottom, 0px);
+  /* Shrink to content; flex sibling <main> takes the remaining space */
+  flex-shrink: 0;
 }
 
 .inner {

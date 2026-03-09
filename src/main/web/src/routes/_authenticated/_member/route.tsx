@@ -106,9 +106,7 @@ function RouteComponent() {
         <Sidebar />
       )}
       {/* Main Container */}
-      <main
-        className="main-content custom-scrollbar"
-        style={isMobile ? { paddingBottom: 'calc(60px + env(safe-area-inset-bottom, 0px))' } : undefined}>
+      <main className="main-content custom-scrollbar">
         <Outlet />
       </main>
 

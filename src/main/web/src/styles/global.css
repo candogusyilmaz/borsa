@@ -68,6 +68,14 @@ html {
   width: 100%;
 }
 
+/* On mobile, stack vertically so the bottom nav sits in normal flow
+   (prevents it from disappearing on pinch-zoom) */
+@media (max-width: 1023px) {
+  .layout-wrapper {
+    flex-direction: column;
+  }
+}
+
 /* 3. RESPONSIVE SIDEBAR */
 .sidebar {
   display: flex;
