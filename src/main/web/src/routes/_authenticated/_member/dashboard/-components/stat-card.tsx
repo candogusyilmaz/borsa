@@ -15,7 +15,7 @@ interface BaseStatCardProps {
 }
 
 export function StatCard({ title, subtitle, displayValue, currencyCode, percentageChange, icon, statusValue }: BaseStatCardProps) {
-  // U se percentageChange as default for colors if statusValue isn't provided
+  // Use percentageChange as default for colors if statusValue isn't provided
   const trackValue = statusValue ?? percentageChange;
   const isNa = trackValue === null || trackValue === undefined;
   const isPositive = !isNa && trackValue >= 0;
