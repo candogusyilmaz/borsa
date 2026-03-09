@@ -7,7 +7,7 @@ import { GoogleSignInButton } from '~/components/auth/google-sign-in-button';
 import { useThemeToggle } from '~/hooks/use-theme-toggle';
 import { useAuthentication } from '~/lib/AuthenticationContext';
 import { alerts } from '~/lib/alert';
-import styles from '../login/auth.module.css';
+import styles from './auth.module.css';
 
 export const Route = createFileRoute('/(auth)/register')({
   head: () => ({
