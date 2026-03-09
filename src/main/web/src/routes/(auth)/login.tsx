@@ -3,13 +3,13 @@ import { useForm } from '@mantine/form';
 import type { CredentialResponse } from '@react-oauth/google';
 import { IconMoon, IconSun } from '@tabler/icons-react';
 import { createFileRoute, Link, redirect } from '@tanstack/react-router';
-import { GoogleSignInButton } from '~/components/auth/GoogleSignInButton';
+import { GoogleSignInButton } from '~/components/auth/google-sign-in-button';
 import { useThemeToggle } from '~/hooks/use-theme-toggle';
 import { useAuthentication } from '~/lib/AuthenticationContext';
 import { alerts } from '~/lib/alert';
 import styles from './auth.module.css';
 
-export const Route = createFileRoute('/login/')({
+export const Route = createFileRoute('/(auth)/login')({
   head: () => ({
     meta: [
       {

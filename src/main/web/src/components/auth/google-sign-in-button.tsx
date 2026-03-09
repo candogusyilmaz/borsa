@@ -1,5 +1,5 @@
 import { type CredentialResponse, GoogleLogin } from '@react-oauth/google';
-import styles from './GoogleSignInButton.module.css';
+import styles from './google-sign-in-button.module.css';
 
 interface GoogleSignInButtonProps {
   onSuccess: (response: CredentialResponse) => void;

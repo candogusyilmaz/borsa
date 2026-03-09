@@ -296,36 +296,36 @@ export function PositionsTable() {
             ))}
           </Table.Thead>
           <Table.Tbody>
-            {table.getRowModel().rows.map((row) => (
-              <Fragment key={row.id}>
-                <Table.Tr
-                  onClick={() => {
-                    const wasExpanded = row.getIsExpanded();
-                    table.resetExpanded();
-                    if (!wasExpanded) {
-                      row.toggleExpanded(true);
-                    }
-                  }}
-                  className={classes.tableRow}
-                  data-expanded={row.getIsExpanded() ? 'true' : 'false'}>
-                  {row.getVisibleCells().map((cell) => (
-                    <Table.Td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</Table.Td>
-                  ))}
-                </Table.Tr>
-                {row.getIsExpanded() && (
-                  <tr className={classes.expandedRowContainer}>
-                    <td colSpan={row.getVisibleCells().length}>
-                      <TradeHistoryTable positionId={row.original.id} avgCost={row.original.avgCost} />
-                    </td>
-                  </tr>
-                )}
-              </Fragment>
-            ))}
             <TableStateHandler
               status={status}
               empty={positions?.length === 0 || table.getRowCount() === 0}
-              span={table.getVisibleFlatColumns().length}
-            />
+              span={table.getVisibleFlatColumns().length}>
+              {table.getRowModel().rows.map((row) => (
+                <Fragment key={row.id}>
+                  <Table.Tr
+                    onClick={() => {
+                      const wasExpanded = row.getIsExpanded();
+                      table.resetExpanded();
+                      if (!wasExpanded) {
+                        row.toggleExpanded(true);
+                      }
+                    }}
+                    className={classes.tableRow}
+                    data-expanded={row.getIsExpanded() ? 'true' : 'false'}>
+                    {row.getVisibleCells().map((cell) => (
+                      <Table.Td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</Table.Td>
+                    ))}
+                  </Table.Tr>
+                  {row.getIsExpanded() && (
+                    <tr className={classes.expandedRowContainer}>
+                      <td colSpan={row.getVisibleCells().length}>
+                        <TradeHistoryTable positionId={row.original.id} avgCost={row.original.avgCost} />
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
+              ))}
+            </TableStateHandler>
           </Table.Tbody>
         </Table>
       </Table.ScrollContainer>

@@ -202,14 +202,15 @@ export function TradesTable() {
             ))}
           </thead>
           <tbody>
-            {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} className={classes.tableRow}>
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
-                ))}
-              </tr>
-            ))}
-            <TableStateHandler status={status} empty={trades?.length === 0} span={table.getVisibleFlatColumns().length} />
+            <TableStateHandler status={status} empty={trades?.length === 0} span={table.getVisibleFlatColumns().length}>
+              {table.getRowModel().rows.map((row) => (
+                <tr key={row.id} className={classes.tableRow}>
+                  {row.getVisibleCells().map((cell) => (
+                    <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                  ))}
+                </tr>
+              ))}
+            </TableStateHandler>
           </tbody>
         </Table>
       </Table.ScrollContainer>

@@ -4,11 +4,13 @@ import { ErrorState } from './error-state';
 import { LoadingState } from './loading-state';
 
 export function TableStateHandler({
+  children,
   status,
   empty,
   span,
   height = 500
 }: {
+  children?: React.ReactNode;
   status: 'pending' | 'error' | 'success';
   span?: number;
   empty?: boolean;
@@ -44,5 +46,5 @@ export function TableStateHandler({
     );
   }
 
-  return null;
+  return <>{children}</>;
 }
