@@ -4,7 +4,9 @@ import { createFileRoute } from '@tanstack/react-router';
 import { MonthlyRevenueOverview } from '~/components/Portfolio/MonthlyRevenueOverview';
 import { TransactionHistory } from '~/components/Portfolio/TransactionHistory';
 import { usePortfolioName } from '~/hooks/use-portfolio-name';
+import { usePositions } from '~/hooks/use-positions';
 import { ArchivePortfolioButton } from './-components/archive-portfolio/archive-portfolio';
+import { PortfolioEmptyState } from './-components/portfolio-empty-state/portfolio-empty-state';
 import { PortfolioOverviewCard } from './-components/portfolio-overview/portfolio-overview-card';
 import { PositionsTable } from './-components/positions-table/positions-table';
 
@@ -16,6 +18,9 @@ export const Route = createFileRoute('/_authenticated/_member/portfolios/$portfo
 function RouteComponent() {
   const { portfolioId } = Route.useParams();
   const portfolioName = usePortfolioName(portfolioId);
+  const { data: positions, status } = usePositions(Number(portfolioId));
+
+  const isEmpty = status === 'success' && positions?.length === 0;
 
   return (
     <Container
@@ -41,8 +46,16 @@ function RouteComponent() {
             <ArchivePortfolioButton portfolioId={portfolioId} />
           </Group>
         </Group>
-        <PortfolioOverviewCard />
-        <PositionsTable key={portfolioId} />
+
+        {isEmpty ? (
+          <PortfolioEmptyState />
+        ) : (
+          <>
+            <PortfolioOverviewCard />
+            <PositionsTable key={portfolioId} />
+          </>
+        )}
+
         <MonthlyRevenueOverview />
         <TransactionHistory />
       </Stack>

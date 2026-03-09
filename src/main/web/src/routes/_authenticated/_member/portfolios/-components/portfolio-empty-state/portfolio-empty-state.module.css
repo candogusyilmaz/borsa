@@ -1,0 +1,113 @@
+/* ── Root wrapper ────────────────────────────────────── */
+
+.root {
+  border-radius: var(--mantine-radius-md);
+  border: 1px solid var(--cv-border);
+  overflow: hidden;
+  background: linear-gradient(
+    145deg,
+    rgba(99, 102, 241, 0.07) 0%,
+    transparent 55%
+  );
+}
+
+.inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mantine-spacing-xl);
+  padding: calc(var(--mantine-spacing-xl) * 2) var(--mantine-spacing-xl);
+  text-align: center;
+}
+
+@media (min-width: 56em) {
+  .inner {
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    gap: calc(var(--mantine-spacing-xl) * 2.5);
+    padding: calc(var(--mantine-spacing-xl) * 2);
+  }
+}
+
+/* ── Icon visual cluster ─────────────────────────────── */
+
+.visual {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+/* Decorative dot grid behind the icons */
+.visual::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    circle,
+    rgba(99, 102, 241, 0.18) 1px,
+    transparent 1px
+  );
+  background-size: 16px 16px;
+  border-radius: 50%;
+}
+
+.iconMain {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 4px 16px rgba(99, 102, 241, 0.25));
+}
+
+.iconFloat1 {
+  position: absolute;
+  top: 10px;
+  right: 8px;
+  filter: drop-shadow(0 2px 8px rgba(139, 92, 246, 0.2));
+}
+
+.iconFloat2 {
+  position: absolute;
+  bottom: 14px;
+  left: 8px;
+  filter: drop-shadow(0 2px 8px rgba(99, 102, 241, 0.2));
+}
+
+/* ── Content area ────────────────────────────────────── */
+
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Feature hint chips ──────────────────────────────── */
+
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--mantine-spacing-sm);
+}
+
+@media (max-width: 56em) {
+  .featureGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.featureChip {
+  padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
+  border-radius: var(--mantine-radius-md);
+  border: 1px solid var(--cv-border);
+  background: color-mix(in srgb, var(--mantine-color-body) 80%, transparent);
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.featureChip:hover {
+  border-color: rgba(99, 102, 241, 0.3);
+  background: rgba(99, 102, 241, 0.04);
+}

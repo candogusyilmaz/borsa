@@ -4,6 +4,7 @@ import { useForm } from '@mantine/form';
 import { useQueryClient } from '@tanstack/react-query';
 import { useParams } from '@tanstack/react-router';
 import { $api } from '~/api/openapi';
+import { usePositions } from '~/hooks/use-positions';
 import { alerts } from '~/lib/alert';
 import { getCurrencySymbol } from '~/lib/currency';
 
@@ -18,13 +19,7 @@ export function SellTransactionForm({ stockId, close }: SellTransactionFormProps
 
   const client = useQueryClient();
   const { data } = $api.useQuery('get', '/api/instruments');
-  const { data: positions } = $api.useQuery('get', '/api/positions', {
-    params: {
-      query: {
-        portfolioId: Number(portfolioId!)
-      }
-    }
-  });
+  const { data: positions } = usePositions(Number(portfolioId));
 
   const form = useForm({
     mode: 'controlled',
@@ -190,7 +185,8 @@ export function SellTransactionForm({ stockId, close }: SellTransactionFormProps
           />
         </SimpleGrid>
         <DateTimePicker
-          label="DATE"
+          label="EXECUTION DATE"
+          radius="md"
           {...form.getInputProps('actionDate')}
           styles={{
             label: {

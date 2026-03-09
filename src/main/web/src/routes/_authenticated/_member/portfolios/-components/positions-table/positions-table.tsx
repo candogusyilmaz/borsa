@@ -3,10 +3,10 @@ import { IconChevronDown, IconChevronUp } from '@tabler/icons-react';
 import { useParams } from '@tanstack/react-router';
 import { type ColumnDef, flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from '@tanstack/react-table';
 import { Fragment, useMemo } from 'react';
-import { $api } from '~/api/openapi';
 import { useBulkTransactionModalStore } from '~/components/Transaction/BulkTransactionModal';
 import { useTransactionModalStore } from '~/components/Transaction/TransactionModal';
 import { TableStateHandler } from '~/components/table/table-state-handler';
+import { usePositions } from '~/hooks/use-positions';
 import { isDataStale } from '~/lib/common';
 import { format } from '~/lib/format';
 import type { ElementType } from '~/lib/types';
@@ -17,7 +17,7 @@ export function PositionsTable() {
   const { portfolioId } = useParams({
     from: '/_authenticated/_member/portfolios/$portfolioId'
   });
-  const { data: positions, status } = $api.useQuery('get', '/api/positions', { params: { query: { portfolioId: Number(portfolioId) } } });
+  const { data: positions, status } = usePositions(Number(portfolioId));
   const openModal = useTransactionModalStore((state) => state.open);
   const openBulkTransactionModal = useBulkTransactionModalStore((s) => s.open);
 

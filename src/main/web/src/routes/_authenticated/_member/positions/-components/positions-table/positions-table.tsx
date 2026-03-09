@@ -12,8 +12,8 @@ import {
   useReactTable
 } from '@tanstack/react-table';
 import React, { Fragment, useMemo } from 'react';
-import { $api } from '~/api/openapi';
 import { TableStateHandler } from '~/components/table/table-state-handler';
+import { usePositions } from '~/hooks/use-positions';
 import { getColorByReturnPercentage, isDataStale } from '~/lib/common';
 import { format } from '~/lib/format';
 import type { ElementType } from '~/lib/types';
@@ -26,7 +26,7 @@ export function PositionsTable() {
   const { page, q } = useSearch({
     from: '/_authenticated/_member/positions'
   });
-  const { data: positions, status } = $api.useQuery('get', '/api/positions');
+  const { data: positions, status } = usePositions();
 
   const columns = useMemo<ColumnDef<ElementType<typeof positions>>[]>(
     () => [

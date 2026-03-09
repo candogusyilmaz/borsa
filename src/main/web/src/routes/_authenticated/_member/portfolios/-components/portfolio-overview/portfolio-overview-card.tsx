@@ -2,10 +2,10 @@ import { Box, Card, Group, rem, SimpleGrid, Stack, Text } from '@mantine/core';
 import { IconActivity, IconArrowDown, IconArrowUp, IconChartPie, IconTrendingUp } from '@tabler/icons-react';
 import { useParams } from '@tanstack/react-router';
 import { useMemo } from 'react';
-import { $api } from '~/api/openapi';
 import type { paths } from '~/api/schema';
 import { ErrorView } from '~/components/ErrorView';
 import { LoadingView } from '~/components/LoadingView';
+import { usePositions } from '~/hooks/use-positions';
 import { format } from '~/lib/format';
 import classes from './styles.module.css';
 
@@ -21,9 +21,7 @@ type Positions = paths['/api/positions']['get']['responses'][200]['content']['*/
 
 export function PortfolioOverviewCard() {
   const { portfolioId } = useParams({ strict: false });
-  const { data, status } = $api.useQuery('get', '/api/positions', {
-    params: { query: { portfolioId: Number(portfolioId!) } }
-  });
+  const { data, status } = usePositions(Number(portfolioId));
 
   if (status === 'pending') {
     return (

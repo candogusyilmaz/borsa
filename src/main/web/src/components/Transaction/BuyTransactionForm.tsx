@@ -201,7 +201,8 @@ export function BuyTransactionForm({ stockId, close }: BuyTransactionFormProps) 
           />
         </SimpleGrid>
         <DateTimePicker
-          label="DATE"
+          label="EXECUTION DATE"
+          radius="md"
           styles={{
             label: {
               fontSize: 12,
