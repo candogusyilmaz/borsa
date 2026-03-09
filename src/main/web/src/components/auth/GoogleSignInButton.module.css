@@ -1,0 +1,90 @@
+/* GoogleSignInButton — custom Google auth trigger button     *
+ * Uses an invisible-overlay technique: the real GoogleLogin  *
+ * component (iframe) sits on top with opacity:0 so the token *
+ * flow is unchanged; the user sees our styled button below.  */
+
+.button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 48px;
+  border-radius: 0.75rem;
+  border: 1px solid var(--cv-border);
+  background: var(--cv-card-bg);
+  backdrop-filter: var(--cv-card-blur);
+  -webkit-backdrop-filter: var(--cv-card-blur);
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+  /* Ensure the iframe overlay receives all pointer events */
+  pointer-events: none;
+}
+
+.button:hover {
+  border-color: rgba(99, 102, 241, 0.35);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  transform: translateY(-1px);
+}
+
+.button:active {
+  transform: translateY(0);
+}
+
+/* ── Visual face (non-interactive layer) ────────────────────── */
+.face {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  padding: 0 1.25rem;
+}
+
+.iconWrap {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.label {
+  font-family: var(--mantine-font-family);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.015em;
+  color: var(--cv-text-main);
+  white-space: nowrap;
+}
+
+/* ── Invisible Google iframe overlay ────────────────────────── *
+ * Sits above our visual button. The GoogleLogin component      *
+ * renders inside here. We scale its child div up so the whole  *
+ * button area is a valid click-target for the iframe.          */
+.overlay {
+  position: absolute;
+  inset: 0 0 0 -2px; /* extend 2px left so no edge is missed */
+  overflow: hidden;
+  opacity: 0.001; /* near-zero = invisible but pointer events work */
+  z-index: 10;
+  pointer-events: all;
+  cursor: pointer;
+  /* Force light color-scheme so Google renders without dark flicker */
+  color-scheme: light;
+}
+
+/* Scale up the GoogleLogin root div 4× from the top-left origin.
+ * Original Google button ≈ 200 × 40px → appears 800 × 160px after
+ * scale, which more than covers any reasonable button width/height.
+ * Clicks within our button map back to valid iframe coordinates.  */
+.overlay > :global(div) {
+  transform: scale(4);
+  transform-origin: top left;
+}
