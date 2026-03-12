@@ -22,7 +22,8 @@ import java.time.temporal.ChronoUnit;
 @RequiredArgsConstructor
 public class TokenService {
     private static final long ACCESS_TOKEN_EXPIRATION_IN_SECONDS = 60 * 60 * 1;
-    private static final long REFRESH_TOKEN_EXPIRATION_IN_SECONDS = 60 * 60 * 24 * 7;
+    private static final long REFRESH_TOKEN_REMEMBER_ME_EXPIRATION_IN_SECONDS = 60 * 60 * 24 * 30;
+    private static final long REFRESH_TOKEN_EXPIRATION_IN_SECONDS = 60 * 60 * 24;
 
     private final UserDetailsService userService;
 
@@ -35,16 +36,54 @@ public class TokenService {
         return (User) userService.loadUserByUsername(username);
     }
 
-    public ResponseEntity<TokenCreateResponse> create(User principal) {
-        var body = this.createAccessToken(principal);
-        var cookie = this.createRefreshTokenCookie(principal);
-
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie).body(body);
+    public boolean getRememberMe(String refreshToken) {
+        var jwt = jwtDecoder.decode(refreshToken);
+        Boolean rememberMe = jwt.getClaimAsBoolean("rememberMe");
+        return Boolean.TRUE.equals(rememberMe);
     }
 
-    public String createRefreshTokenCookie(User principal) {
+    public ResponseEntity<TokenCreateResponse> create(User principal, boolean rememberMe) {
+        var accessTokenCookie = this.createAccessTokenCookie(principal);
+        var refreshTokenCookie = this.createRefreshTokenCookie(principal, rememberMe);
+        var body = TokenCreateResponse.from(principal);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, accessTokenCookie)
+                .header(HttpHeaders.SET_COOKIE, refreshTokenCookie)
+                .body(body);
+    }
+
+    public ResponseEntity<Void> clearCookies() {
+        var clearAccessToken = ResponseCookie.from("access-token", "")
+                .path("/")
+                .maxAge(0)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("none")
+                .build()
+                .toString();
+
+        var clearRefreshToken = ResponseCookie.from("refresh-token", "")
+                .path("/api/auth/refresh-token")
+                .maxAge(0)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("none")
+                .build()
+                .toString();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, clearAccessToken)
+                .header(HttpHeaders.SET_COOKIE, clearRefreshToken)
+                .build();
+    }
+
+    public String createRefreshTokenCookie(User principal, boolean rememberMe) {
         var now = Instant.now();
-        var expiresAt = now.plus(REFRESH_TOKEN_EXPIRATION_IN_SECONDS, ChronoUnit.SECONDS);
+        long expirationSeconds = rememberMe
+                ? REFRESH_TOKEN_REMEMBER_ME_EXPIRATION_IN_SECONDS
+                : REFRESH_TOKEN_EXPIRATION_IN_SECONDS;
+        var expiresAt = now.plus(expirationSeconds, ChronoUnit.SECONDS);
 
         var claims =
                 JwtClaimsSet.builder()
@@ -52,13 +91,14 @@ public class TokenService {
                         .issuedAt(now)
                         .expiresAt(expiresAt)
                         .subject(principal.getEmail())
+                        .claim("rememberMe", rememberMe)
                         .build();
 
         var token = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
 
         return ResponseCookie.from("refresh-token", token)
-                .path("/")
-                .maxAge(REFRESH_TOKEN_EXPIRATION_IN_SECONDS)
+                .path("/api/auth/refresh-token")
+                .maxAge(expirationSeconds)
                 .httpOnly(true)
                 .secure(true)
                 .sameSite("none")
@@ -66,7 +106,7 @@ public class TokenService {
                 .toString();
     }
 
-    public TokenCreateResponse createAccessToken(User principal) {
+    public String createAccessTokenCookie(User principal) {
         var now = Instant.now();
         var expiresAt = now.plus(ACCESS_TOKEN_EXPIRATION_IN_SECONDS, ChronoUnit.SECONDS);
 
@@ -79,6 +119,14 @@ public class TokenService {
                         .build();
 
         var token = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-        return TokenCreateResponse.from(principal, token);
+
+        return ResponseCookie.from("access-token", token)
+                .path("/")
+                .maxAge(ACCESS_TOKEN_EXPIRATION_IN_SECONDS)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("none")
+                .build()
+                .toString();
     }
 }
