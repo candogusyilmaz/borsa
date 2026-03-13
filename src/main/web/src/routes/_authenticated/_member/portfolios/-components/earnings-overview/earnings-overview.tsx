@@ -243,7 +243,7 @@ export function EarningsOverview({ portfolioId }: Props) {
       {!isEmpty && (
         <Stack gap={8} mb="md">
           <Text className={classes.totalAmount} data-compact={compact || undefined} data-numeric>
-            {format.toCurrency(animatedTotal, false, currencyCode)}
+            {format.currency(animatedTotal, { currency: currencyCode, compactDisplay: 'short' })}
           </Text>
           {change !== null && (
             <Group gap={8} align="center" wrap="wrap">
@@ -274,7 +274,7 @@ export function EarningsOverview({ portfolioId }: Props) {
             {displayIdx === defaultIdx ? ' (latest)' : ''}
           </Text>
           <Text size="sm" fw={700} className={classes.detailAmount} data-numeric>
-            {format.toCurrency(displayBar.amount, false, currencyCode)}
+            {format.currency(displayBar.amount, { currency: currencyCode, compactDisplay: 'short' })}
           </Text>
         </Group>
       )}
