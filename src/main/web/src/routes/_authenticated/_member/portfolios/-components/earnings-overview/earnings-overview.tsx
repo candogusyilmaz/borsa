@@ -1,8 +1,12 @@
-import { ActionIcon, Badge, Card, Group, SegmentedControl, Skeleton, Stack, Text } from '@mantine/core';
-import { IconChevronLeft, IconChevronRight, IconTrendingDown, IconTrendingUp } from '@tabler/icons-react';
+import { Card, Group, SegmentedControl, Skeleton, Stack, Text } from '@mantine/core';
+import { IconTrendingDown, IconTrendingUp } from '@tabler/icons-react';
 import dayjs from 'dayjs';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { $api } from '~/api/openapi';
+import { PeriodNavigator } from '~/components/period-navigator';
+import { useAnimatedNumber } from '~/hooks/use-animated-number';
+import { useContainerWidth } from '~/hooks/use-container-width';
+import { useDebouncedHover } from '~/hooks/use-debounced-hover';
 import { format } from '~/lib/format';
 import classes from './earnings-overview.module.css';
 
@@ -14,68 +18,6 @@ type BarItem = { label: string; amount: number; state: 'normal' | 'future' | 'em
 type Props = {
   portfolioId: number;
 };
-
-function useAnimatedNumber(value: number) {
-  const [display, setDisplay] = useState(value);
-  const prevRef = useRef(value);
-  useEffect(() => {
-    const start = prevRef.current;
-    const end = value;
-    const duration = 500;
-    const t0 = performance.now();
-    const tick = (now: number) => {
-      const p = Math.min((now - t0) / duration, 1);
-      const ease = 1 - (1 - p) ** 3;
-      setDisplay(start + (end - start) * ease);
-      if (p < 1) requestAnimationFrame(tick);
-      else prevRef.current = end;
-    };
-    requestAnimationFrame(tick);
-  }, [value]);
-  return display;
-}
-
-function useContainerWidth(ref: { current: HTMLElement | null }) {
-  const [width, setWidth] = useState(0);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const ro = new ResizeObserver((entries) => {
-      if (entries[0]) setWidth(entries[0].contentRect.width);
-    });
-    ro.observe(el);
-    setWidth(el.offsetWidth);
-    return () => ro.disconnect();
-  }, [ref]);
-  return width;
-}
-
-/**
- * Returns stable onEnter/onLeave handlers where the leave is debounced.
- * If onEnter fires within LEAVE_DEBOUNCE_MS of a leave, the leave is cancelled.
- */
-const LEAVE_DEBOUNCE_MS = 150;
-
-function useDebouncedHover(setHoveredIdx: (i: number | null) => void) {
-  const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const onEnter = (i: number) => {
-    if (leaveTimer.current !== null) {
-      clearTimeout(leaveTimer.current);
-      leaveTimer.current = null;
-    }
-    setHoveredIdx(i);
-  };
-
-  const onLeave = () => {
-    leaveTimer.current = setTimeout(() => {
-      setHoveredIdx(null);
-      leaveTimer.current = null;
-    }, LEAVE_DEBOUNCE_MS);
-  };
-
-  return { onEnter, onLeave };
-}
 
 const EMPTY_BAR_HEIGHTS = [38, 62, 48, 75, 52, 68, 44];
 
@@ -90,34 +32,6 @@ function EmptyState() {
       <p className={classes.emptyTitle}>No trades this period</p>
       <p className={classes.emptySubtitle}>Sell a position to see your earnings show up here.</p>
     </div>
-  );
-}
-
-function PeriodNavigator({
-  label,
-  onPrev,
-  onNext,
-  canPrev = true,
-  canNext = true
-}: {
-  label: string;
-  onPrev: () => void;
-  onNext: () => void;
-  canPrev?: boolean;
-  canNext?: boolean;
-}) {
-  return (
-    <Group gap={2} align="center" wrap="nowrap">
-      <ActionIcon size="xs" variant="subtle" onClick={onPrev} disabled={!canPrev}>
-        <IconChevronLeft size={13} />
-      </ActionIcon>
-      <Text size="xs" fw={600} style={{ minWidth: 80, textAlign: 'center', whiteSpace: 'nowrap' }}>
-        {label}
-      </Text>
-      <ActionIcon size="xs" variant="subtle" onClick={onNext} disabled={!canNext}>
-        <IconChevronRight size={13} />
-      </ActionIcon>
-    </Group>
   );
 }
 
@@ -331,25 +245,17 @@ export function EarningsOverview({ portfolioId }: Props) {
           <Text className={classes.totalAmount} data-compact={compact || undefined} data-numeric>
             {format.toCurrency(animatedTotal, false, currencyCode)}
           </Text>
-          <Group gap={8} align="center" wrap="wrap">
-            {change !== null ? (
-              <Badge
-                variant="light"
-                color={isPositive ? 'profit' : 'loss'}
-                radius="xl"
-                leftSection={isPositive ? <IconTrendingUp size={12} /> : <IconTrendingDown size={12} />}>
-                {isPositive ? '+' : ''}
+          {change !== null && (
+            <Group gap={8} align="center" wrap="wrap">
+              <span className={isPositive ? 'cv-badge-profit' : 'cv-badge-loss'}>
+                {isPositive ? <IconTrendingUp size={11} /> : <IconTrendingDown size={11} />}
                 {Math.abs(change).toFixed(1)}%
-              </Badge>
-            ) : (
-              <Badge variant="light" color="gray" radius="xl">
-                N/A
-              </Badge>
-            )}
-            <Text size="xs" c="dimmed">
-              vs last period
-            </Text>
-          </Group>
+              </span>
+              <Text size="xs" c="dimmed">
+                vs last period
+              </Text>
+            </Group>
+          )}
         </Stack>
       )}
 
