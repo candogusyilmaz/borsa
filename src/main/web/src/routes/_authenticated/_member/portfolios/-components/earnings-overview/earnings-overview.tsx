@@ -111,7 +111,7 @@ function PeriodNavigator({
       <ActionIcon size="xs" variant="subtle" onClick={onPrev} disabled={!canPrev}>
         <IconChevronLeft size={13} />
       </ActionIcon>
-      <Text size="xs" fw={600} style={{ minWidth: 56, textAlign: 'center', whiteSpace: 'nowrap' }}>
+      <Text size="xs" fw={600} style={{ minWidth: 80, textAlign: 'center', whiteSpace: 'nowrap' }}>
         {label}
       </Text>
       <ActionIcon size="xs" variant="subtle" onClick={onNext} disabled={!canNext}>
@@ -326,30 +326,32 @@ export function EarningsOverview({ portfolioId }: Props) {
       </Group>
 
       {/* Total amount + change badge */}
-      <Stack gap={8} mb="md">
-        <Text className={classes.totalAmount} data-compact={compact || undefined} data-numeric>
-          {format.toCurrency(animatedTotal, false, currencyCode)}
-        </Text>
-        <Group gap={8} align="center" wrap="wrap">
-          {change !== null ? (
-            <Badge
-              variant="light"
-              color={isPositive ? 'profit' : 'loss'}
-              radius="xl"
-              leftSection={isPositive ? <IconTrendingUp size={12} /> : <IconTrendingDown size={12} />}>
-              {isPositive ? '+' : ''}
-              {Math.abs(change).toFixed(1)}%
-            </Badge>
-          ) : (
-            <Badge variant="light" color="gray" radius="xl">
-              N/A
-            </Badge>
-          )}
-          <Text size="xs" c="dimmed">
-            vs last period
+      {!isEmpty && (
+        <Stack gap={8} mb="md">
+          <Text className={classes.totalAmount} data-compact={compact || undefined} data-numeric>
+            {format.toCurrency(animatedTotal, false, currencyCode)}
           </Text>
-        </Group>
-      </Stack>
+          <Group gap={8} align="center" wrap="wrap">
+            {change !== null ? (
+              <Badge
+                variant="light"
+                color={isPositive ? 'profit' : 'loss'}
+                radius="xl"
+                leftSection={isPositive ? <IconTrendingUp size={12} /> : <IconTrendingDown size={12} />}>
+                {isPositive ? '+' : ''}
+                {Math.abs(change).toFixed(1)}%
+              </Badge>
+            ) : (
+              <Badge variant="light" color="gray" radius="xl">
+                N/A
+              </Badge>
+            )}
+            <Text size="xs" c="dimmed">
+              vs last period
+            </Text>
+          </Group>
+        </Stack>
+      )}
 
       {/* Bar chart or empty state */}
       {isEmpty ? (
