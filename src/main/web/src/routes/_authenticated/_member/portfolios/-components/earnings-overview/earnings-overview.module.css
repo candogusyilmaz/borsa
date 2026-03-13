@@ -1,0 +1,186 @@
+/* ──────────────────────────────────────────────────────────────
+   EarningsOverview — earnings-overview.module.css
+   Uses Canverse design tokens exclusively — no hardcoded colors.
+────────────────────────────────────────────────────────────── */
+
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--mantine-color-dimmed);
+}
+
+.totalAmount {
+  font-family: "JetBrains Mono", monospace;
+  font-feature-settings: "tnum" 1;
+  font-variant-numeric: tabular-nums;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--cv-text-main);
+}
+
+/* ── Bar chart ─────────────────────────────────────────────── */
+
+.barChart {
+  display: flex;
+  /* stretch so every button is full chart height — makes the whole column hoverable */
+  align-items: stretch;
+  gap: 6px;
+  height: 110px;
+}
+
+.barCol {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  /* push bar + label to bottom so bars grow upward */
+  justify-content: flex-end;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  /* reset button defaults */
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.bar {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  opacity: 0.22;
+  /* height is set inline in px */
+  transition:
+    height 0.2s var(--cv-ease-smooth),
+    opacity 0.15s ease,
+    transform 0.15s ease;
+  transform-origin: bottom;
+}
+
+.barCol:hover .bar {
+  opacity: 0.55;
+}
+
+.barActive {
+  opacity: 1 !important;
+  transform: scaleY(1.04);
+}
+
+.barBrand {
+  background: var(--cv-brand-500);
+}
+
+.barLoss {
+  background: var(--cv-loss);
+}
+
+/* Future months — very faint, indicate not yet reached */
+.barCol[data-state="future"] {
+  cursor: default;
+}
+.barCol[data-state="future"] .bar {
+  opacity: 0.08;
+}
+.barCol[data-state="future"]:hover .bar {
+  opacity: 0.13;
+}
+.barCol[data-state="future"] .barLabel {
+  opacity: 0.3;
+}
+
+/* Past / current month with zero trades */
+.barCol[data-state="empty"] .bar {
+  opacity: 0.1;
+}
+.barCol[data-state="empty"]:hover .bar {
+  opacity: 0.28;
+}
+.barCol[data-state="empty"] .barLabel {
+  opacity: 0.45;
+}
+
+.barLabel {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--mantine-color-dimmed);
+  transition:
+    color 0.15s ease,
+    font-weight 0.15s ease;
+}
+
+.barLabelActive {
+  font-weight: 700;
+  color: var(--cv-text-main);
+}
+
+/* ── Detail row ────────────────────────────────────────────── */
+
+.detailRow {
+  border-top: 1px solid var(--cv-border);
+}
+
+.detailAmount {
+  font-family: "JetBrains Mono", monospace;
+  font-feature-settings: "tnum" 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.barLabelHidden {
+  visibility: hidden;
+}
+
+/* ── Empty State ──────────────────────────────────────────── */
+
+@keyframes ewpulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.75;
+  }
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 0 4px;
+  gap: 6px;
+}
+
+.emptyBars {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 72px;
+  margin-bottom: 4px;
+}
+
+.emptyBar {
+  width: 22px;
+  border-radius: 4px 4px 0 0;
+  background: var(--mantine-color-default-border);
+  animation: ewpulse 1.5s ease-in-out infinite;
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--mantine-color-dimmed);
+}
+
+.emptySubtitle {
+  margin: 0;
+  font-size: 11px;
+  color: var(--mantine-color-dimmed);
+  font-weight: 500;
+  text-align: center;
+  max-width: 200px;
+  line-height: 1.6;
+  opacity: 0.65;
+}

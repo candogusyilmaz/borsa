@@ -279,6 +279,29 @@ fieldset:disabled .mantine-active:active {
   background: var(--cv-icon-inactive-bg);
 }
 
+/* ── SegmentedControl ─────────────────────────────────────── */
+.mantine-SegmentedControl-root {
+  background: var(--cv-input-bg);
+  border: 1px solid var(--cv-border);
+}
+.mantine-SegmentedControl-indicator {
+  background: var(--mantine-color-default);
+  border: 1px solid var(--cv-border);
+  box-shadow: var(--mantine-shadow-xs);
+}
+[data-mantine-color-scheme="dark"] .mantine-SegmentedControl-indicator {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.13);
+  box-shadow: none;
+}
+.mantine-SegmentedControl-label {
+  color: var(--mantine-color-dimmed);
+  transition: color 0.15s ease;
+}
+.mantine-SegmentedControl-label[data-active] {
+  color: var(--cv-text-main);
+}
+
 /* ── Tabs ─────────────────────────────────────────────────── */
 .mantine-Tabs-tab[data-active] {
   color: var(--cv-brand-400);

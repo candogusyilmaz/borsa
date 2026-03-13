@@ -9,10 +9,18 @@ const UNPROTECTED_ROUTES = ['/api/auth/token', '/api/auth/google', '/api/auth/re
 
 const authMiddleware = {
   onRequest({ schemaPath, request }) {
-    if (UNPROTECTED_ROUTES.some((pathname) => schemaPath.startsWith(pathname))) {
+    const pathname = new URL(request.url).pathname;
+    const requestPath = schemaPath ?? pathname;
+
+    if (UNPROTECTED_ROUTES.some((route) => requestPath.startsWith(route) || pathname.startsWith(route))) {
       return;
     }
-    request.headers.set('Authorization', `Bearer ${getToken()}`);
+
+    const token = getToken();
+    if (token) {
+      request.headers.set('Authorization', `Bearer ${token}`);
+    }
+
     return;
   }
 };

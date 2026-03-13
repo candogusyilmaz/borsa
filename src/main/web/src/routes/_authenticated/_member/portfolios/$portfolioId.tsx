@@ -1,11 +1,11 @@
 import { ActionIcon, Container, Group, Stack, Text, Title } from '@mantine/core';
 import { IconPencilCog, IconPointFilled } from '@tabler/icons-react';
 import { createFileRoute } from '@tanstack/react-router';
-import { MonthlyRevenueOverview } from '~/components/Portfolio/MonthlyRevenueOverview';
 import { TransactionHistory } from '~/components/Portfolio/TransactionHistory';
 import { usePortfolioName } from '~/hooks/use-portfolio-name';
 import { usePositions } from '~/hooks/use-positions';
 import { ArchivePortfolioButton } from './-components/archive-portfolio/archive-portfolio';
+import { EarningsOverview } from './-components/earnings-overview/earnings-overview';
 import { PortfolioEmptyState } from './-components/portfolio-empty-state/portfolio-empty-state';
 import { PortfolioOverviewCard } from './-components/portfolio-overview/portfolio-overview-card';
 import { PositionsTable } from './-components/positions-table/positions-table';
@@ -56,7 +56,7 @@ function RouteComponent() {
           </>
         )}
 
-        <MonthlyRevenueOverview />
+        <EarningsOverview portfolioId={Number(portfolioId)} />
         <TransactionHistory />
       </Stack>
     </Container>
