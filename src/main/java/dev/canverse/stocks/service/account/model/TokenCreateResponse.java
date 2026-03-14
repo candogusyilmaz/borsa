@@ -11,13 +11,11 @@ import java.util.List;
 public record TokenCreateResponse(
         @NotNull String name,
         @NotNull String email,
-        @NotNull String token,
         @NotNull List<String> permissions) {
-    public static TokenCreateResponse from(User user, String token) {
+    public static TokenCreateResponse from(User user) {
         return new TokenCreateResponse(
                 user.getName(),
                 user.getEmail(),
-                token,
                 user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList());
     }
 }
