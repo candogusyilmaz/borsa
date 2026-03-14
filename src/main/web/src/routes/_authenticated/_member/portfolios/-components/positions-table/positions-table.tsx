@@ -3,7 +3,7 @@ import { IconChevronDown, IconChevronUp } from '@tabler/icons-react';
 import { useParams } from '@tanstack/react-router';
 import { type ColumnDef, flexRender, getCoreRowModel, getExpandedRowModel, useReactTable } from '@tanstack/react-table';
 import { Fragment, useMemo } from 'react';
-import { useBulkTransactionModalStore } from '~/components/Transaction/BulkTransactionModal';
+import { useBulkTradeModalStore } from '~/components/bulk-trade-modal/store';
 import { useTransactionModalStore } from '~/components/Transaction/TransactionModal';
 import { TableStateHandler } from '~/components/table/table-state-handler';
 import { usePositions } from '~/hooks/use-positions';
@@ -19,7 +19,7 @@ export function PositionsTable() {
   });
   const { data: positions, status } = usePositions(Number(portfolioId));
   const openModal = useTransactionModalStore((state) => state.open);
-  const openBulkTransactionModal = useBulkTransactionModalStore((s) => s.open);
+  const openBulkTradeModal = useBulkTradeModalStore((s) => s.open);
 
   const columns = useMemo<ColumnDef<ElementType<typeof positions>>[]>(
     () => [
@@ -218,11 +218,12 @@ export function PositionsTable() {
   return (
     <div className={classes.tableWrapper}>
       <Group p="md" justify="space-between">
-        <Text fw={800} fz="12" tt="uppercase" lts="0.1em" c="dimmed">
+        <Text fw={700} fz="11" tt="uppercase" lts="0.15em" c="dimmed">
           Active Positions
         </Text>
         <Button.Group>
           <Button
+            radius="sm"
             styles={{
               root: {
                 borderColor: 'var(--cv-border)',
@@ -236,11 +237,12 @@ export function PositionsTable() {
             // from firing when these buttons are clicked.
             onClick={(e) => {
               e.stopPropagation();
-              openBulkTransactionModal(portfolioId!);
+              openBulkTradeModal(Number(portfolioId!));
             }}>
             Bulk
           </Button>
           <Button
+            radius="sm"
             styles={{
               root: {
                 borderColor: 'var(--cv-border)',
@@ -260,6 +262,7 @@ export function PositionsTable() {
             Buy
           </Button>
           <Button
+            radius="sm"
             styles={{
               root: {
                 borderColor: 'var(--cv-border)',

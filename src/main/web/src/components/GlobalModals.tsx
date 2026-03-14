@@ -1,6 +1,6 @@
+import { BulkTradeModal } from './bulk-trade-modal/bulk-trade-modal';
 import { ClearMyDataModal } from './ClearMyData';
 import { CreateNewDashboardModal } from './Dashboard/CreateNewDashboardModal';
-import { BulkTransactionModal } from './Transaction/BulkTransactionModal';
 import { TransactionModal } from './Transaction/TransactionModal';
 import { UndoTradeModal } from './Transaction/UndoTradeModal';
 
@@ -11,7 +11,7 @@ export function GlobalModals() {
       <UndoTradeModal />
       <ClearMyDataModal />
       <CreateNewDashboardModal />
-      <BulkTransactionModal />
+      <BulkTradeModal />
     </>
   );
 }

@@ -1,7 +1,7 @@
 import { Button, Group, rem, Stack, Text, ThemeIcon } from '@mantine/core';
 import { IconChartBar, IconChartPie2, IconHistory, IconPlus, IconUpload } from '@tabler/icons-react';
 import { useParams } from '@tanstack/react-router';
-import { useBulkTransactionModalStore } from '~/components/Transaction/BulkTransactionModal';
+import { useBulkTradeModalStore } from '~/components/bulk-trade-modal/store';
 import { useTransactionModalStore } from '~/components/Transaction/TransactionModal';
 import classes from './portfolio-empty-state.module.css';
 
@@ -26,7 +26,7 @@ const FEATURES = [
 export function PortfolioEmptyState() {
   const { portfolioId } = useParams({ strict: false });
   const openTransaction = useTransactionModalStore((s) => s.open);
-  const openBulk = useBulkTransactionModalStore((s) => s.open);
+  const openBulk = useBulkTradeModalStore((s) => s.open);
 
   return (
     <div className={classes.root}>
@@ -85,7 +85,7 @@ export function PortfolioEmptyState() {
             <Button leftSection={<IconPlus size={15} />} onClick={() => openTransaction('Buy')}>
               Record a Trade
             </Button>
-            <Button variant="default" leftSection={<IconUpload size={15} />} onClick={() => openBulk(portfolioId!)}>
+            <Button variant="default" leftSection={<IconUpload size={15} />} onClick={() => openBulk(Number(portfolioId!))}>
               Import Trades
             </Button>
           </Group>

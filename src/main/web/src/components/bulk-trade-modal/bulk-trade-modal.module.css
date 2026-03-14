@@ -1,0 +1,321 @@
+/* ── Modal layout — fixed-header, scrollable-body ──────────── */
+.modalBody {
+  display: flex;
+  flex-direction: column;
+  /* fill modal content area exactly */
+  max-height: calc(100dvh - 120px);
+  overflow: hidden;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 24px 18px;
+  border-bottom: 1px solid var(--cv-border);
+  background: var(--cv-modal-bg);
+  flex-shrink: 0;
+}
+
+.modalIconBox {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.closeBtn {
+  margin-left: auto;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--cv-border);
+  background: transparent;
+  color: var(--mantine-color-dimmed);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.closeBtn:hover {
+  background: var(--cv-input-bg);
+  color: var(--cv-text-main);
+}
+
+/* ── Stats row ─────────────────────────────────────────────── */
+.statsRow {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--cv-border);
+  flex-shrink: 0;
+  background: var(--cv-modal-bg);
+}
+
+.statItem {
+  flex: 1;
+  padding: 14px 20px;
+}
+
+.statItem + .statItem {
+  border-left: 1px solid var(--cv-border);
+}
+
+.statLabel {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--mantine-color-dimmed);
+  margin-bottom: 5px;
+}
+
+.statValue {
+  font-family: var(--mantine-font-family-monospace);
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--cv-text-main);
+  font-feature-settings: "tnum" 1;
+}
+
+/* ── AI-Power Pack button ─────────────────────────────────────── */
+.aiBtn {
+  color: var(--mantine-color-violet-5) !important;
+  transition: background 0.15s !important;
+}
+
+.aiBtn:not(:disabled):hover {
+  background: rgba(168, 85, 247, 0.08) !important;
+}
+
+/* ── Toolbar ───────────────────────────────────────────────── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--cv-border);
+  background: var(--cv-input-bg);
+  flex-wrap: wrap;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ── Scrollable table region ───────────────────────────────── */
+.tableRegion {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+  /* cap at ~6 rows so modal stops growing and content scrolls */
+  max-height: 350px;
+}
+
+/* ── Footer ────────────────────────────────────────────────── */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-top: 1px solid var(--cv-border);
+  background: var(--cv-input-bg);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* ── Empty state ───────────────────────────────────────────── */
+.emptyState {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--mantine-color-dimmed);
+}
+
+/* ── Dropzone wrapper ──────────────────────────────────────── */
+.dropzoneWrap {
+  padding: 12px 16px 0;
+  flex-shrink: 0;
+}
+
+/* ── Type pill (custom button) ─────────────────────────────── */
+.typePill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: var(--mantine-font-family-monospace);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  transition: opacity 0.15s;
+  background: transparent;
+  border: 1px solid transparent;
+}
+
+.typePillBuy {
+  border-color: rgba(34, 197, 94, 0.3);
+  background: rgba(34, 197, 94, 0.08);
+  color: var(--mantine-color-profit-5);
+}
+
+.typePillSell {
+  border-color: rgba(244, 63, 94, 0.3);
+  background: rgba(244, 63, 94, 0.08);
+  color: var(--mantine-color-loss-5);
+}
+
+.typeDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.typeChevron {
+  margin-left: auto;
+  opacity: 0.45;
+}
+
+.typeDropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  z-index: 300;
+  background: var(--cv-modal-bg);
+  border: 1px solid var(--cv-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.typeOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  cursor: pointer;
+  font-family: var(--mantine-font-family-monospace);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  transition: background 0.1s;
+  width: 100%;
+  background: transparent;
+  border: none;
+  text-align: left;
+}
+.typeOption:hover {
+  background: var(--cv-input-bg);
+}
+
+/* ── Asset Combobox (Mantine) ──────────────────────────────── */
+
+/* Mantine Combobox.Dropdown container */
+.assetDropdown {
+  background: var(--cv-modal-bg);
+  border: 1px solid var(--cv-border);
+  border-radius: 8px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+  padding: 4px;
+}
+
+/* Applied to TextInput's inner <input> element via classNames.input */
+.assetInput {
+  background: var(--cv-input-bg);
+  border-color: var(--cv-border);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--cv-text-main);
+}
+.assetInput:hover {
+  border-color: rgba(99, 102, 241, 0.35);
+}
+.assetInput:focus,
+.assetInput[data-focused] {
+  border-color: rgba(99, 102, 241, 0.6);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+/* Applied to Combobox.Option elements via classNames.option */
+.assetOption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.1s;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+.assetOption:hover,
+.assetOption[data-combobox-active],
+.assetOption[data-combobox-selected] {
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.assetTicker {
+  font-family: var(--mantine-font-family-monospace);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--cv-text-main);
+  min-width: 70px;
+}
+
+.assetName {
+  font-size: 12px;
+  color: var(--mantine-color-dimmed);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assetTag {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.assetEmpty {
+  padding: 14px 12px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--mantine-color-dimmed);
+}
+
+/* ── Table sticky header ───────────────────────────────────── */
+.tableHead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  /* must be fully opaque — --cv-input-bg is rgba in dark mode and rows bleed through */
+  background: var(--mantine-color-body);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--mantine-color-dimmed);
+  border-bottom: 1px solid var(--cv-border);
+  white-space: nowrap;
+  padding: 10px 10px;
+}
+
+/* virtual spacer rows must not affect layout */
+.virtualSpacer {
+  height: 0;
+  padding: 0;
+  border: none;
+}
