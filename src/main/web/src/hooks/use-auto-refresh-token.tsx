@@ -40,8 +40,6 @@ export function useAutoRefreshToken() {
       const refreshBefore = 60 * 1000; // refresh 1 minute before expiry
       const delay = expMs - now - refreshBefore;
 
-      console.log({ expMs, delay });
-
       if (delay <= 0) {
         refreshTokenFn(); // already expired, refresh immediately
       } else {
@@ -60,7 +58,6 @@ export function useAutoRefreshToken() {
           return;
         }
         localStorage.setItem('user', JSON.stringify(res.data));
-        console.log('Token refreshed successfully');
 
         // schedule the next refresh using the new access token
         scheduleRefresh(res.data.token);
@@ -68,6 +65,8 @@ export function useAutoRefreshToken() {
         console.error('Token refresh failed', err);
       }
     }
+
+    refreshTokenFn();
 
     return () => {
       if (refreshTimeout.current) clearTimeout(refreshTimeout.current);

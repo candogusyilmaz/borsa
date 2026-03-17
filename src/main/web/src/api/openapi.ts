@@ -5,7 +5,7 @@ import { getToken } from './token';
 
 const api = import.meta.env.VITE_API_BASE_URL as string | undefined;
 
-const UNPROTECTED_ROUTES = ['/api/auth/token', '/api/auth/google', '/api/auth/refresh-token', '/api/auth/register'];
+const UNPROTECTED_ROUTES: (keyof paths)[] = ['/api/auth/token', '/api/auth/google', '/api/auth/refresh-token', '/api/auth/register'];
 
 const authMiddleware = {
   onRequest({ schemaPath, request }) {
@@ -25,7 +25,11 @@ const authMiddleware = {
   }
 };
 
-export const client = createFetchClient<paths>({ baseUrl: api });
+export const client = createFetchClient<paths>({
+  baseUrl: api,
+  credentials: 'include'
+});
+
 client.use(authMiddleware);
 
 export const $api = createClient(client);
