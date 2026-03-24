@@ -35,7 +35,7 @@ body,
 
 body {
   background: var(--cv-page-gradient);
-  min-height: 100dvh;
+  min-height: 100vh;
 }
 
 /* Solid fallback painted on the viewport canvas — prevents black
