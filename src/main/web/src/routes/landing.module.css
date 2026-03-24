@@ -27,13 +27,16 @@
 
 .nav {
   position: fixed;
-  top: env(safe-area-inset-top, 0px);
+  top: 0;
   left: 0;
   right: 0;
   z-index: 50;
   backdrop-filter: blur(12px);
   background-color: rgba(0, 0, 0, 0.5);
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  /* Extend nav background behind the notch so scroll content
+     doesn't show through the safe-area gap.                  */
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 .nav-content {

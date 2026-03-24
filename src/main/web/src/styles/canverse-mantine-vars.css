@@ -38,8 +38,13 @@ body {
   min-height: 100dvh;
 }
 
-html {
-  background: var(--cv-page-gradient);
+/* Solid fallback painted on the viewport canvas — prevents black
+   in safe-area inset regions on iOS standalone PWA.              */
+:root[data-mantine-color-scheme="light"] {
+  background-color: #f8fafc;
+}
+:root[data-mantine-color-scheme="dark"] {
+  background-color: #020617;
 }
 
 @media screen and (max-device-width: 31.25em) {

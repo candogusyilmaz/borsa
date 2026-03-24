@@ -1,12 +1,20 @@
-html,
-body {
+html {
+  /* The viewport canvas (behind <html>) only uses background-color,
+     not gradients. Set a solid color per color-scheme so no black
+     ever shows in safe-area regions on iOS.                        */
+  height: 100%;
   overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  /* position:fixed prevents iOS Safari rubber-band / overscroll.   */
   position: fixed;
   width: 100%;
   height: 100%;
+  overflow: hidden;
   overscroll-behavior: none;
-  /* Background must cover the entire viewport including safe-area
-     regions (notch, home indicator) so no black shows through. */
+  margin: 0;
   background: var(--bg-gradient);
 }
 
