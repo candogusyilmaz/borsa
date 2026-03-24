@@ -1,24 +1,15 @@
-html {
-  height: 100%;
-  overflow: hidden;
-  overscroll-behavior: none;
-}
-
+html,
 body {
-  /* position:fixed prevents iOS Safari rubber-band / overscroll.
-     inset:0 ensures body stretches to all screen edges including
-     behind the notch and home indicator (viewport-fit=cover).    */
-  position: fixed;
-  inset: 0;
   overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100%;
   overscroll-behavior: none;
-  margin: 0;
-  background: var(--bg-gradient);
 }
 
 #root {
-  position: absolute;
-  inset: 0;
+  width: 100%;
+  height: 100%;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -81,10 +72,12 @@ body {
   display: flex;
   flex-direction: row;
   min-height: 100vh;
+  min-height: 100dvh;
   background: var(--bg-gradient);
   color: var(--text-main);
   overflow: hidden;
   height: 100vh;
+  height: 100dvh;
   width: 100%;
 }
 
@@ -93,15 +86,6 @@ body {
 @media (max-width: 1023px) {
   .layout-wrapper {
     flex-direction: column;
-    /* Push content below the status bar / notch.
-       The background gradient still fills behind it. */
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-left: env(safe-area-inset-left, 0px);
-    padding-right: env(safe-area-inset-right, 0px);
-    /* Use 100% of #root (which is inset:0 = true full screen) instead of
-       100dvh, which on some iOS PWA builds excludes the bottom safe-area
-       zone — causing the bottom nav to show double the home-indicator gap. */
-    height: 100%;
   }
 }
 
