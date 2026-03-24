@@ -1,17 +1,15 @@
 html {
-  /* The viewport canvas (behind <html>) only uses background-color,
-     not gradients. Set a solid color per color-scheme so no black
-     ever shows in safe-area regions on iOS.                        */
   height: 100%;
   overflow: hidden;
   overscroll-behavior: none;
 }
 
 body {
-  /* position:fixed prevents iOS Safari rubber-band / overscroll.   */
+  /* position:fixed prevents iOS Safari rubber-band / overscroll.
+     inset:0 ensures body stretches to all screen edges including
+     behind the notch and home indicator (viewport-fit=cover).    */
   position: fixed;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   overflow: hidden;
   overscroll-behavior: none;
   margin: 0;
@@ -19,8 +17,8 @@ body {
 }
 
 #root {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
