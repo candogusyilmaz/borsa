@@ -10,6 +10,7 @@ import dev.canverse.stocks.repository.UserRepository;
 import dev.canverse.stocks.security.AuthenticationProvider;
 import dev.canverse.stocks.service.account.model.OnboardingRequest;
 import dev.canverse.stocks.service.account.model.UserRegistrationRequest;
+import dev.canverse.stocks.service.account.model.UserView;
 
 import lombok.RequiredArgsConstructor;
 
@@ -49,6 +50,13 @@ public class UserService implements UserDetailsService {
         return userRepository
                 .findById(AuthenticationProvider.getUser().getId())
                 .map(User::getOnboardingCompleted)
+                .orElseThrow(() -> new IllegalArgumentException("User not found."));
+    }
+
+    public UserView getMe() {
+        return userRepository
+                .findById(AuthenticationProvider.getUser().getId())
+                .map(UserView::from)
                 .orElseThrow(() -> new IllegalArgumentException("User not found."));
     }
 

@@ -1,3 +1,4 @@
+import { googleLogout } from '@react-oauth/google';
 import { type UseMutationResult, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 import { client } from '~/api/openapi.ts';
@@ -71,9 +72,10 @@ export function AuthenticationProvider({ children }: Readonly<AuthProviderProps>
   const logout = useMemo(
     () => async () => {
       localStorage.removeItem('user');
-      queryClient.removeQueries();
       setUser(null);
+      googleLogout();
       await sleep(1);
+      queryClient.invalidateQueries();
     },
     [queryClient]
   );
