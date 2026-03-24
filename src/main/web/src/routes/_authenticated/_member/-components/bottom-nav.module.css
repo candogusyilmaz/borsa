@@ -17,7 +17,7 @@
 
 .inner {
   display: flex;
-  height: 60px;
+  height: 52px;
 }
 
 /* ── Shared tab shell — works for both <a> (Link) and <button> ── */

@@ -5,9 +5,9 @@ body {
   width: 100%;
   height: 100%;
   overscroll-behavior: none;
-  /* No safe-area padding here — background must extend edge-to-edge
-     behind the notch/home indicator. Individual layout components
-     handle their own insets (layout-wrapper top, bottom-nav bottom). */
+  /* Background must cover the entire viewport including safe-area
+     regions (notch, home indicator) so no black shows through. */
+  background: var(--bg-gradient);
 }
 
 #root {

@@ -6,6 +6,8 @@
   justify-content: center;
   min-height: 100vh;
   padding: 3rem 1rem;
+  padding-top: max(3rem, env(safe-area-inset-top, 0px));
+  padding-bottom: max(3rem, env(safe-area-inset-bottom, 0px));
   transition: background 0.3s ease;
   background: var(--bg-gradient);
 }

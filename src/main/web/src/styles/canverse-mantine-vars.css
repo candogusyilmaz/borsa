@@ -38,6 +38,10 @@ body {
   min-height: 100dvh;
 }
 
+html {
+  background: var(--cv-page-gradient);
+}
+
 @media screen and (max-device-width: 31.25em) {
   body,
   :host {
