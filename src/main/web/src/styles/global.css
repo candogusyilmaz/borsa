@@ -100,6 +100,10 @@ body {
     padding-top: env(safe-area-inset-top, 0px);
     padding-left: env(safe-area-inset-left, 0px);
     padding-right: env(safe-area-inset-right, 0px);
+    /* Use 100% of #root (which is inset:0 = true full screen) instead of
+       100dvh, which on some iOS PWA builds excludes the bottom safe-area
+       zone — causing the bottom nav to show double the home-indicator gap. */
+    height: 100%;
   }
 }
 

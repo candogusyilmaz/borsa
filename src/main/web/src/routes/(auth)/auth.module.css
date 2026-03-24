@@ -33,7 +33,9 @@
 /* ── Theme toggle ────────────────────────────────────────────── */
 .themeToggle {
   position: absolute;
-  top: 1.25rem;
+  /* Offset below the status-bar / notch safe area so the button
+     is never hidden behind the battery / time icons on iOS PWA. */
+  top: calc(1.25rem + env(safe-area-inset-top, 0px));
   right: 1.25rem;
   z-index: 20;
   background: var(--cv-card-bg) !important;
@@ -436,6 +438,8 @@
 @media (max-width: 768px) {
   .pageWrapper {
     grid-template-columns: 1fr;
+    /* Single row fills all space so formPanel can scroll if content overflows */
+    grid-template-rows: 1fr;
     /* Safe area insets for standalone PWA on mobile */
     padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -464,7 +468,7 @@
   }
 
   .themeToggle {
-    top: 1rem;
+    top: calc(1rem + env(safe-area-inset-top, 0px));
     right: 1rem;
   }
 }

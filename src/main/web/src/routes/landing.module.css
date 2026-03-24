@@ -1,5 +1,6 @@
 .container {
   min-height: 100vh;
+  min-height: 100dvh; /* better on modern iOS PWA: dvh tracks the true full-screen height */
   background-color: #000;
   color: #fff;
   overflow: hidden;
