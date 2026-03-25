@@ -1,4 +1,4 @@
-html,
+/* html,
 body {
   overflow: hidden;
   position: fixed;
@@ -14,7 +14,7 @@ body {
   height: 100%;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-}
+} */
 
 /* 1. ROOT VARIABLES - Listening to Mantine's attribute on HTML tag */
 :root[data-mantine-color-scheme="light"] {
