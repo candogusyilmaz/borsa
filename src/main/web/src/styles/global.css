@@ -5,11 +5,10 @@ body {
   width: 100%;
   height: 100%;
   overscroll-behavior: none;
-  margin: 0;
 }
 
 #root {
-  margin: 0;
+  min-height: var(--app-height);
   width: 100%;
   height: 100%;
   overflow-y: auto;

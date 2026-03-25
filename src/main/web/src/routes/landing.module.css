@@ -1,5 +1,5 @@
 .container {
-  min-height: 100vh;
+  min-height: var(--app-height);
   background-color: #000;
   color: #fff;
   overflow: hidden;
