@@ -41,7 +41,7 @@ public class TokenController {
             @Valid @RequestBody UserRegistrationRequest request) {
         var user = userService.register(request);
 
-        return tokenService.create(user);
+        return tokenService.create(user, false);
     }
 
     @PostMapping("/token")
@@ -53,7 +53,7 @@ public class TokenController {
 
         userService.updateLastLogin(user.getId());
 
-        return tokenService.create(user);
+        return tokenService.create(user, login.rememberMe());
     }
 
     @PostMapping("/refresh-token")
@@ -64,8 +64,14 @@ public class TokenController {
         }
 
         var user = tokenService.getSecurityUser(refreshToken.get());
+        var rememberMe = tokenService.getRememberMe(refreshToken.get());
 
-        return tokenService.create(user);
+        return tokenService.create(user, rememberMe);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout() {
+        return tokenService.clearCookies();
     }
 
     @PostMapping("/google")
@@ -91,7 +97,7 @@ public class TokenController {
 
             userService.updateLastLogin(user.getId());
 
-            return tokenService.create(user);
+            return tokenService.create(user, false);
         } catch (JwtException e) {
             throw new RuntimeException("Invalid Google token");
         }
