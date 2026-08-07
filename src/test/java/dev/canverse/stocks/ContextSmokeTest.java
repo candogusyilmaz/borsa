@@ -1,10 +1,10 @@
 package dev.canverse.stocks;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 import dev.canverse.stocks.platform.id.IdGenerator;
 import java.time.Clock;
 import java.time.ZoneOffset;
-
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,8 +41,10 @@ class ContextSmokeTest {
     }
 
     @Test
-    void zeroReplacementApplicationMigrationsApplied() {
-        assertThat(flyway.info().applied()).isEmpty();
+    void oneFoundationMigrationApplied() {
+        var applied = flyway.info().applied();
+        assertThat(applied).hasSize(1);
+        assertThat(applied[0].getVersion().toString()).isEqualTo("1");
     }
 
     @Test
@@ -55,9 +57,36 @@ class ContextSmokeTest {
         assertThat(count).isZero();
     }
 
-@Test
-void infrastructureBeansAreAvailable() {
-    assertThat(clock.getZone()).isEqualTo(ZoneOffset.UTC);
-    assertThat(idGenerator.next()).isNotNull();
-}
+    @Test
+    void fiveFoundationTablesExistInCorrectSchemas() {
+        var tables = jdbcTemplate.queryForList(
+                "SELECT table_schema || '.' || table_name"
+                        + " FROM information_schema.tables"
+                        + " WHERE (table_schema = 'identity' AND table_name IN ('user_account','auth_identity','device_session'))"
+                        + " OR (table_schema = 'platform' AND table_name IN ('security_event','job'))",
+                String.class);
+        assertThat(tables)
+                .containsExactlyInAnyOrder(
+                        "identity.user_account",
+                        "identity.auth_identity",
+                        "identity.device_session",
+                        "platform.security_event",
+                        "platform.job");
+    }
+
+    @Test
+    void noApplicationDomainTableCreatedInPublicSchema() {
+        var count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM information_schema.tables"
+                        + " WHERE table_schema = 'public'"
+                        + " AND table_name NOT IN ('flyway_schema_history')",
+                Integer.class);
+        assertThat(count).isZero();
+    }
+
+    @Test
+    void infrastructureBeansAreAvailable() {
+        assertThat(clock.getZone()).isEqualTo(ZoneOffset.UTC);
+        assertThat(idGenerator.next()).isNotNull();
+    }
 }

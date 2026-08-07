@@ -73,6 +73,21 @@ Do not restate cross-cutting rules already owned by `accounting-contract.md`; re
 1. ...
 2. ...
 
+## Documentation completion
+
+Before this implementation unit is considered complete:
+
+- fill in this specification's Completion Record;
+- update `docs/implementation/STATE.md` with:
+  - newly implemented capabilities;
+  - database migration/version changes;
+  - new architectural/domain decisions;
+  - newly discovered deferred work;
+- update `progress-report.md` if project-level progress changed.
+
+Do not put detailed implementation history into STATE.md.
+Keep it as a concise handoff of the current repository state.
+
 ## Verification commands
 
 ```bash
