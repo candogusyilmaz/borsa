@@ -26,6 +26,13 @@ Instruction precedence for implementation is:
 
 If two authoritative documents genuinely conflict, stop expanding scope and surface the conflict rather than silently choosing a convenient interpretation.
 
+## Git and review workflow
+
+- Treat implementation PR specifications as human-review units; they do not require a separate Git branch.
+- The user owns Git history. Unless explicitly requested, do not create/switch branches, commit, amend, merge, rebase, reset, stash, clean, tag, or push. Make working-tree changes only.
+- Do not advance `docs/implementation/CURRENT.md` to the next PR automatically. Keep the active PR selected until the user has reviewed the diff and explicitly advances it.
+- You may inspect Git state/history (`git status`, `git diff`, `git log`, `git show`, `git rev-parse`) when useful, but do not mutate Git state.
+
 ## Current technology baseline
 
 - Java 25. Use stable/final Java 25 features where they improve clarity. Do not enable preview, incubator or experimental JDK features unless an explicit later PR approves one.
