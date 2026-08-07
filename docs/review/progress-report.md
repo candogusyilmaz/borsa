@@ -6,25 +6,26 @@ Scope: Spring Boot backend, PostgreSQL dump, database migration strategy, modula
 
 ## At a glance
 
-| Area | Status | Evidence/result |
-|---|---|---|
-| Existing backend/dump discovery | Complete | Current Java/resources, migrations, configuration and supplied PostgreSQL schema dump inventoried |
-| Backend correctness/security audit | Complete as design review | [backend-audit.md](backend-audit.md) |
-| Business/analytics target design | Complete as design review | [business-logic-and-analytics-design.md](business-logic-and-analytics-design.md) |
-| Feature catalogue | Complete as plan | 32 features in [implementable-features.md](implementable-features.md) |
-| Cash/account/funding design | Complete as plan | [cash-accounts-and-funding-design.md](cash-accounts-and-funding-design.md) |
-| Physical-asset/TCO design | Complete as plan | [real-asset-lifecycle-tco-design.md](real-asset-lifecycle-tco-design.md) |
-| Consolidated backend scratch-rewrite plan | Complete and authoritative | [backend-master-plan.md](backend-master-plan.md), including exact R0–R16 implementation increments and supersession rules |
-| Accounting contract | Initial implementation contract complete | [accounting-contract.md](accounting-contract.md): shared posting/time/fee/cost-basis/FX/balance/valuation/performance/projection semantics |
-| New target database | Created by user, not yet initialized/verified by this review | PostgreSQL database name `extreme_accounting` |
-| Fresh database baseline | Not started | Current active migrations remain `V2`–`V14`; no replacement `V1` exists |
-| Modular-monolith package refactor | Not started | Current global layer packages remain unchanged |
-| Ledger/account implementation | Not started | Current model remains position/BUY/SELL-centric |
-| Offline/synthetic data framework | Not started | Design exists; no dataset/source abstraction or loader yet |
-| Feature implementation beyond current tracker | Not started | Planned in dependency stages; no new production code in review work |
-| Automated backend coverage | Critical gap | One `contextLoads` test only |
+| Area                                          | Status                                                       | Evidence/result                                                                                                                                    |
+| --------------------------------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Existing backend/dump discovery               | Complete                                                     | Current Java/resources, migrations, configuration and supplied PostgreSQL schema dump inventoried                                                  |
+| Backend correctness/security audit            | Complete as design review                                    | [backend-audit.md](backend-audit.md)                                                                                                               |
+| Business/analytics target design              | Complete as design review                                    | [business-logic-and-analytics-design.md](business-logic-and-analytics-design.md)                                                                   |
+| Feature catalogue                             | Complete as plan                                             | 32 features in [implementable-features.md](implementable-features.md)                                                                              |
+| Cash/account/funding design                   | Complete as plan                                             | [cash-accounts-and-funding-design.md](cash-accounts-and-funding-design.md)                                                                         |
+| Physical-asset/TCO design                     | Complete as plan                                             | [real-asset-lifecycle-tco-design.md](real-asset-lifecycle-tco-design.md)                                                                           |
+| Consolidated backend scratch-rewrite plan     | Complete and authoritative                                   | [backend-master-plan.md](backend-master-plan.md), including exact R0–R16 implementation increments and supersession rules                          |
+| Accounting contract                           | Initial implementation contract complete                     | [accounting-contract.md](accounting-contract.md): shared posting/time/fee/cost-basis/FX/balance/valuation/performance/projection semantics         |
+| New target database                           | Created by user, not yet initialized/verified by this review | PostgreSQL database name `extreme_accounting`                                                                                                      |
+| PR-001 — Modern backend foundation            | **Complete**                                                 | Starting commit `b2c42e751097c7a19805c0a53b28941fa4deebce`; legacy backend deleted; Spring Boot 4.1.0 / Java 25 skeleton green; 5 tests passing    |
+| Fresh database baseline                       | Not started                                                  | Legacy V2–V14 migrations removed; no replacement `V1` exists; Flyway is enabled and reports zero applied migrations                                |
+| Modular-monolith package refactor             | Not started                                                  | Current global layer packages remain unchanged                                                                                                     |
+| Ledger/account implementation                 | Not started                                                  | Current model remains position/BUY/SELL-centric                                                                                                    |
+| Offline/synthetic data framework              | Not started                                                  | Design exists; no dataset/source abstraction or loader yet                                                                                         |
+| Feature implementation beyond current tracker | Not started                                                  | Planned in dependency stages; no new production code in review work                                                                                |
+| Automated backend coverage                    | Minimal but green                                            | 5 tests: `ContextSmokeTest` (Testcontainers PostgreSQL context, zero migrations, no legacy tables) + `InfrastructureTest` (Clock/IdGenerator seam) |
 
-Overall status: **discovery/design and implementation-contract harmonization are complete enough to begin implementation; production-code transformation is 0% started.**
+Overall status: **PR-001 complete (pending user review). Legacy backend replaced with Java 25 / Spring Boot 4.1.0 minimal skeleton. Production-business-feature implementation is 0% started; next step is PR-002 (V1 migration baseline).**
 
 ## Inputs analyzed
 
@@ -121,28 +122,28 @@ Current coarse code areas are `config`, `domain`, `integration`, `repository`, `
 
 ## Decisions recorded in this update
 
-| Decision | State |
-|---|---|
-| Development database can be dropped/recreated | Accepted from user request |
-| New rewrite database is `extreme_accounting` | Accepted from user update |
-| Use one deployable modular monolith | Accepted |
-| Direct cross-module references/coupling are allowed | Accepted |
-| Avoid excessive files/layers/interfaces | Accepted |
-| Rewrite is a clean cut, not an in-place legacy-data migration | Accepted from latest request |
-| Flyway owns all DDL; JPA contains mapping annotations only | Accepted from latest request |
-| Indexes, keys/FKs, unique/check constraints, defaults/generated SQL and cascades stay out of entities | Accepted from latest request |
-| Use JPA plus `JdbcClient`; omit MyBatis/QueryDSL unless later justified | Recommended for the minimal scratch rewrite |
-| Replace legacy migration chain with clean baseline | Recommended and placed first in implementation plan |
-| Use immutable activities plus rebuildable projections | Recommended and already detailed in prior design docs |
-| Implement every feature with manual/import/synthetic data before relying on providers | Accepted and planned |
-| Keep synthetic data clearly isolated/labeled | Required safety/trust rule |
-| Manual entry and file import are permanent primary financial-data workflows | Accepted from latest product decision |
-| Bank/Open Banking, card/broker synchronization and payment initiation are outside the near-term/R0–R16 roadmap | Accepted from latest product decision |
-| Onboarding supports explicit opening state and historical-coverage boundaries | Accepted from latest product decision |
-| Planned obligations may name intended funding accounts but actual payments are manually recorded/confirmed ledger facts | Accepted from latest product decision |
-| Shared-expense claims retain originating-payment provenance and support partial/multi-claim settlement without income/spending double-counting | Accepted from latest product decision |
-| Backend only for implementation planning | Accepted |
-| Do not create microservices or separate Maven modules | Fixed plan decision |
+| Decision                                                                                                                                       | State                                                 |
+| ---------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Development database can be dropped/recreated                                                                                                  | Accepted from user request                            |
+| New rewrite database is `extreme_accounting`                                                                                                   | Accepted from user update                             |
+| Use one deployable modular monolith                                                                                                            | Accepted                                              |
+| Direct cross-module references/coupling are allowed                                                                                            | Accepted                                              |
+| Avoid excessive files/layers/interfaces                                                                                                        | Accepted                                              |
+| Rewrite is a clean cut, not an in-place legacy-data migration                                                                                  | Accepted from latest request                          |
+| Flyway owns all DDL; JPA contains mapping annotations only                                                                                     | Accepted from latest request                          |
+| Indexes, keys/FKs, unique/check constraints, defaults/generated SQL and cascades stay out of entities                                          | Accepted from latest request                          |
+| Use JPA plus `JdbcClient`; omit MyBatis/QueryDSL unless later justified                                                                        | Recommended for the minimal scratch rewrite           |
+| Replace legacy migration chain with clean baseline                                                                                             | Recommended and placed first in implementation plan   |
+| Use immutable activities plus rebuildable projections                                                                                          | Recommended and already detailed in prior design docs |
+| Implement every feature with manual/import/synthetic data before relying on providers                                                          | Accepted and planned                                  |
+| Keep synthetic data clearly isolated/labeled                                                                                                   | Required safety/trust rule                            |
+| Manual entry and file import are permanent primary financial-data workflows                                                                    | Accepted from latest product decision                 |
+| Bank/Open Banking, card/broker synchronization and payment initiation are outside the near-term/R0–R16 roadmap                                 | Accepted from latest product decision                 |
+| Onboarding supports explicit opening state and historical-coverage boundaries                                                                  | Accepted from latest product decision                 |
+| Planned obligations may name intended funding accounts but actual payments are manually recorded/confirmed ledger facts                        | Accepted from latest product decision                 |
+| Shared-expense claims retain originating-payment provenance and support partial/multi-claim settlement without income/spending double-counting | Accepted from latest product decision                 |
+| Backend only for implementation planning                                                                                                       | Accepted                                              |
+| Do not create microservices or separate Maven modules                                                                                          | Fixed plan decision                                   |
 
 ## Decisions confirmed before implementation
 
@@ -171,43 +172,43 @@ The 2026-08-07 document harmonization establishes these implementation rules:
 
 ## Implementation stage status
 
-| Stage | Result | Status |
-|---:|---|---|
-| 0 | Risk containment and contract lock | Not started |
-| 1 | Fresh Flyway baseline and Testcontainers harness | Not started |
-| 2 | Financial accounts, immutable ledger and current trade cutover | Not started |
-| 3 | Observation platform and deterministic synthetic dataset | Not started |
-| 4 | Reconciled net worth and honest investment analytics | Not started |
-| 5 | Decision Replay and localized comparison policies | Not started |
-| 6 | Everyday spending/income/bills/cards/documents | Not started |
-| 7 | Commitments, resilience, goals, irregular income and briefs | Not started |
-| 8 | IOUs, shared expenses and selective household money | Not started |
-| 9 | Purchases/recovery/utilities/projects/protection/freelancer flows | Not started |
-| 10 | Versioned tax/government calendar policy engine | Not started |
-| 11 | Physical-asset lifecycle and TCO | Not started |
-| 12 | Stable mobile API and operational hardening | Not started |
+| Stage | Result                                                            | Status      |
+| ----: | ----------------------------------------------------------------- | ----------- |
+|     0 | Risk containment and contract lock                                | Not started |
+|     1 | Fresh Flyway baseline and Testcontainers harness                  | Not started |
+|     2 | Financial accounts, immutable ledger and current trade cutover    | Not started |
+|     3 | Observation platform and deterministic synthetic dataset          | Not started |
+|     4 | Reconciled net worth and honest investment analytics              | Not started |
+|     5 | Decision Replay and localized comparison policies                 | Not started |
+|     6 | Everyday spending/income/bills/cards/documents                    | Not started |
+|     7 | Commitments, resilience, goals, irregular income and briefs       | Not started |
+|     8 | IOUs, shared expenses and selective household money               | Not started |
+|     9 | Purchases/recovery/utilities/projects/protection/freelancer flows | Not started |
+|    10 | Versioned tax/government calendar policy engine                   | Not started |
+|    11 | Physical-asset lifecycle and TCO                                  | Not started |
+|    12 | Stable mobile API and operational hardening                       | Not started |
 
 ### Scratch-rewrite increment status
 
-| Increment | Implementation result | Status |
-|---:|---|---|
-| R0 | Preserve evidence and replace backend skeleton | Not started |
-| R1 | Foundation, identity, auth, sessions and jobs | Not started |
-| R2 | Canonical references and deterministic seeds | Not started |
-| R3 | Accounts/ledger/funding/balances — FT-31 | Not started |
-| R4 | Investing parity, funded trades and imports | Not started |
-| R5 | Observation platform and synthetic universe | Not started |
-| R6 | Timeline/net worth/investment truth — FT-01/02/11 | Not started |
-| R7 | Decision Replay and comparison — FT-06/07/08/09/12 | Not started |
-| R8 | Spending/recurrence/bills — FT-15/03/18 | Not started |
-| R9 | Income/cards/debt/documents — FT-20/29/23 | Not started |
-| R10 | Resilience/goals/irregular income/brief — FT-04/05/10/14 | Not started |
-| R11 | Household/people/claims/shared money — FT-13/16/17/28 | Not started |
-| R12 | Purchases/recovery/restricted value — FT-19/22/24 | Not started |
-| R13 | Utilities/projects/protection/freelancer — FT-25/26/27/21 | Not started |
-| R14 | Tax/government policy calendar — FT-30 | Not started |
-| R15 | Physical-asset lifecycle/TCO — FT-32 | Not started |
-| R16 | Stable API, export/delete, operations and optional providers | Not started |
+| Increment | Implementation result                                        | Status      |
+| --------: | ------------------------------------------------------------ | ----------- |
+|        R0 | Preserve evidence and replace backend skeleton               | Not started |
+|        R1 | Foundation, identity, auth, sessions and jobs                | Not started |
+|        R2 | Canonical references and deterministic seeds                 | Not started |
+|        R3 | Accounts/ledger/funding/balances — FT-31                     | Not started |
+|        R4 | Investing parity, funded trades and imports                  | Not started |
+|        R5 | Observation platform and synthetic universe                  | Not started |
+|        R6 | Timeline/net worth/investment truth — FT-01/02/11            | Not started |
+|        R7 | Decision Replay and comparison — FT-06/07/08/09/12           | Not started |
+|        R8 | Spending/recurrence/bills — FT-15/03/18                      | Not started |
+|        R9 | Income/cards/debt/documents — FT-20/29/23                    | Not started |
+|       R10 | Resilience/goals/irregular income/brief — FT-04/05/10/14     | Not started |
+|       R11 | Household/people/claims/shared money — FT-13/16/17/28        | Not started |
+|       R12 | Purchases/recovery/restricted value — FT-19/22/24            | Not started |
+|       R13 | Utilities/projects/protection/freelancer — FT-25/26/27/21    | Not started |
+|       R14 | Tax/government policy calendar — FT-30                       | Not started |
+|       R15 | Physical-asset lifecycle/TCO — FT-32                         | Not started |
+|       R16 | Stable API, export/delete, operations and optional providers | Not started |
 
 ## Documentation progress preserved
 
@@ -253,18 +254,18 @@ The first meaningful checkpoint is not “all tables created.” It is:
 
 ## Risks to monitor
 
-| Risk | Current level | Next control |
-|---|---|---|
-| Building features on an unreconstructable schema | Critical | Fresh V1 + empty migration test |
-| Incorrect financial results becoming harder to migrate | Critical | Ledger cutover before new money features |
-| Tracked signing key reuse | Critical if ever shared/deployed | Rotate/remove immediately |
-| Fake data mistaken for real data | High for future demo | Dataset isolation, synthetic provenance and command-path-only demo loader from Stage 3 |
-| Scope expansion across 32 features | High | Enforce stage exit gates and one vertical slice at a time |
-| Too many architectural files/interfaces | Medium | Follow minimal code pattern; `accounting-contract.md` is the only new cross-cutting contract file |
-| No live data/provider access | Expected, not a blocker | Manual/CSV/synthetic implementations first |
-| Jurisdiction rules becoming stale or misleading | High | Version/source/review/sample labels; suppress stale policies |
-| Almost no automated tests | Critical | Testcontainers and golden fixtures before refactor |
-| Untracked review documents being lost | High | Review and commit `docs/review/` with the implementation branch |
+| Risk                                                   | Current level                    | Next control                                                                                      |
+| ------------------------------------------------------ | -------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Building features on an unreconstructable schema       | Critical                         | Fresh V1 + empty migration test                                                                   |
+| Incorrect financial results becoming harder to migrate | Critical                         | Ledger cutover before new money features                                                          |
+| Tracked signing key reuse                              | Critical if ever shared/deployed | Rotate/remove immediately                                                                         |
+| Fake data mistaken for real data                       | High for future demo             | Dataset isolation, synthetic provenance and command-path-only demo loader from Stage 3            |
+| Scope expansion across 32 features                     | High                             | Enforce stage exit gates and one vertical slice at a time                                         |
+| Too many architectural files/interfaces                | Medium                           | Follow minimal code pattern; `accounting-contract.md` is the only new cross-cutting contract file |
+| No live data/provider access                           | Expected, not a blocker          | Manual/CSV/synthetic implementations first                                                        |
+| Jurisdiction rules becoming stale or misleading        | High                             | Version/source/review/sample labels; suppress stale policies                                      |
+| Almost no automated tests                              | Critical                         | Testcontainers and golden fixtures before refactor                                                |
+| Untracked review documents being lost                  | High                             | Review and commit `docs/review/` with the implementation branch                                   |
 
 ## Verification performed for this checkpoint
 

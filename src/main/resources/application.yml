@@ -1,44 +1,13 @@
-rsa:
-  private-key: classpath:certs/private.pem # TODO: need to move to env in production
-  public-key: classpath:certs/public.pem
-
-app:
-  market-updaters:
-    markets:
-      bist:
-        enabled: false
-        cron: '*/20 * * * * *'
-  forex-rate-api:
-    base-url: 'https://api.forexrateapi.com'
-    api-key: ${FOREX_RATE_API_KEY:your_api_key_here}
-  gemini-api-key: ${GEMINI_API_KEY:your_gemini_api_key_here}
-
-springdoc:
-  api-docs:
-    enabled: true
-    path: /v3/api-docs
-  swagger-ui:
-    enabled: true
-    path: /swagger-ui.html
-
 spring:
   application:
-    name: Finance
-
+    name: stocks
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/stocks}
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/extreme_accounting}
     username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:123}
-    driver-class-name: org.postgresql.Driver
+    password: ${DB_PASSWORD:postgres}
     hikari:
       auto-commit: false
-      maximum-pool-size: ${DB_POOL_SIZE:20}
-      minimum-idle: ${DB_MIN_IDLE:5}
-      connection-timeout: 30000
-      idle-timeout: 600000
-      max-lifetime: 1800000
-      leak-detection-threshold: 60000
-
+      maximum-pool-size: ${DB_POOL_SIZE:10}
   jpa:
     open-in-view: false
     hibernate:
@@ -47,67 +16,18 @@ spring:
       hibernate:
         format_sql: true
         generate_statistics: false
-        fail_on_pagination_over_collection_fetch: true
-        jdbc:
-          batch_size: 20
-          order_inserts: true
-          order_updates: true
-    show-sql: on
-
   flyway:
-    enabled: false
-    locations: classpath:db/migrations
-    baseline-on-migrate: true
-    out-of-order: false
-    validate-on-migrate: true
-    clean-disabled: true
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_CLIENT_ID:google_client_id_here}
-            client-secret: ${GOOGLE_CLIENT_SECRET:google_client_secret_here}
-            scope:
-              - email
-  batch:
-    jdbc:
-      initialize-schema: always
-    job:
-      enabled: false
-  task:
-    scheduling:
-      pool:
-        size: ${SCHEDULER_POOL_SIZE:5}
-      thread-name-prefix: "scheduler-"
-    execution:
-      pool:
-        core-size: ${EXECUTOR_CORE_SIZE:5}
-        max-size: ${EXECUTOR_MAX_SIZE:10}
-        queue-capacity: ${EXECUTOR_QUEUE_SIZE:100}
-      thread-name-prefix: "async-"
-
-mybatis:
-  mapper-locations: classpath:mappers/**/*.xml
-  type-handlers-package: dev.canverse.finances.infrastructure.mybatis
+    enabled: true
+    baseline-on-migrate: false
+  sql:
+    init:
+      mode: never
+  mvc:
+    problemdetails:
+      enabled: true
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
-  endpoint:
-    health:
-      show-details: when-authorized
-  prometheus:
-    metrics:
-      export:
-        enabled: true
-
-
-logging:
-  level:
-    root: INFO
-    dev.canverse: ${LOG_LEVEL:INFO}
-    org.hibernate.sql: ${SQL_LOG_LEVEL:DEBUG}
-    org.hibernate.stat: debug
+        include: health

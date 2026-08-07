@@ -60,3 +60,4 @@ node/
 
 downloaded/
 .tanstack/
+.local-secrets/
