@@ -4,10 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
-import dev.canverse.stocks.identity.application.EmailAlreadyRegisteredException;
 import dev.canverse.stocks.identity.application.LocalAccountRegistrationService;
+import dev.canverse.stocks.identity.error.IdentityErrorCode;
 import dev.canverse.stocks.identity.infrastructure.AuthIdentityRepository;
 import dev.canverse.stocks.identity.infrastructure.UserAccountRepository;
+import dev.canverse.stocks.platform.error.AppException;
 import dev.canverse.stocks.platform.id.IdGenerator;
 import jakarta.validation.ConstraintViolationException;
 import java.time.Clock;
@@ -123,8 +124,8 @@ class LocalAccountRegistrationServiceTest {
 
         var thrown = catchThrowable(() -> registrationService.register("alice.example@example.com", RAW_PASSWORD));
 
-        assertThat(thrown).isInstanceOf(EmailAlreadyRegisteredException.class);
-        assertThat(((EmailAlreadyRegisteredException) thrown).getCode()).isEqualTo("identity.email_already_registered");
+        assertThat(thrown).isExactlyInstanceOf(AppException.class);
+        assertThat(((AppException) thrown).getErrorCode()).isEqualTo(IdentityErrorCode.EMAIL_ALREADY_REGISTERED);
         assertThat(thrown).hasMessage("The email address is already registered.");
         assertThat(userAccountRepository.count()).isOne();
         assertThat(authIdentityRepository.count()).isOne();
@@ -176,8 +177,8 @@ class LocalAccountRegistrationServiceTest {
 
         var thrown = catchThrowable(() -> registrationService.register("Collision@example.com", RAW_PASSWORD));
 
-        assertThat(thrown).isInstanceOf(EmailAlreadyRegisteredException.class);
-        assertThat(((EmailAlreadyRegisteredException) thrown).getCode()).isEqualTo("identity.email_already_registered");
+        assertThat(thrown).isExactlyInstanceOf(AppException.class);
+        assertThat(((AppException) thrown).getErrorCode()).isEqualTo(IdentityErrorCode.EMAIL_ALREADY_REGISTERED);
         assertThat(userAccountRepository.count()).isOne();
         assertThat(authIdentityRepository.count()).isOne();
         assertThat(userAccountRepository.findById(fixtureUserId).orElseThrow().getEmail())

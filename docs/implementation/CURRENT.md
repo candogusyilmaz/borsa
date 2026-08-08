@@ -4,18 +4,18 @@ Status: **ACTIVE**
 
 Specification:
 
-[PR-005 — Atomic local account registration](PR-005-atomic-local-account-registration.md)
+[PR-007 — HTTP local account registration](PR-007-http-local-account-registration.md)
 
 Implementation agents must read the complete specification and implement only that scope.
+
+PR-001 through PR-006 are complete. PR-006 has been reviewed and is ready for the user-owned commit.
+
+PR-005 established atomic application-layer local registration. PR-006 established the shared RFC 9457 error boundary and request trace correlation.
+
+PR-007 exposes only the existing local-registration workflow through `POST /api/v1/auth/register`. Do not add login, tokens, sessions, Spring Security, rate limiting, frontend changes, or another domain workflow.
 
 The user owns Git history. Make working-tree changes only.
 
 Do not commit, create or switch branches, merge, rebase, tag, reset, stash, or push unless explicitly requested.
 
-PR-001, PR-002, PR-003, and PR-004 have been reviewed and accepted by the user.
-
-Treat the current repository state as the starting point. Do not reimplement earlier work or resurrect deleted legacy backend code.
-
-Do not advance this pointer after implementation.
-
-It remains on PR-005 until the user has reviewed and accepted the resulting diff.
+Do not advance this pointer after implementation. It remains on PR-007 until the user has reviewed and accepted the resulting diff.

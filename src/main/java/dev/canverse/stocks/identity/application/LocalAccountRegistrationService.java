@@ -2,8 +2,10 @@ package dev.canverse.stocks.identity.application;
 
 import dev.canverse.stocks.identity.domain.AuthIdentity;
 import dev.canverse.stocks.identity.domain.UserAccount;
+import dev.canverse.stocks.identity.error.IdentityErrorCode;
 import dev.canverse.stocks.identity.infrastructure.AuthIdentityRepository;
 import dev.canverse.stocks.identity.infrastructure.UserAccountRepository;
+import dev.canverse.stocks.platform.error.AppException;
 import dev.canverse.stocks.platform.id.IdGenerator;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -50,7 +52,7 @@ public class LocalAccountRegistrationService {
         var encodedPasswordHash = passwordEncoder.encode(rawPassword);
 
         if (userAccountRepository.existsByEmailNormalized(emailNormalized)) {
-            throw new EmailAlreadyRegisteredException();
+            throw new AppException(IdentityErrorCode.EMAIL_ALREADY_REGISTERED);
         }
 
         var registrationTime = clock.instant();
@@ -65,7 +67,7 @@ public class LocalAccountRegistrationService {
                     authIdentityId, savedUserAccount, emailNormalized, encodedPasswordHash, registrationTime));
         } catch (DataIntegrityViolationException exception) {
             if (isDuplicateLocalEmailConstraint(exception)) {
-                throw new EmailAlreadyRegisteredException(exception);
+                throw new AppException(IdentityErrorCode.EMAIL_ALREADY_REGISTERED, exception);
             }
             throw exception;
         }

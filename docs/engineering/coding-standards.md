@@ -125,11 +125,47 @@ Avoid `FooService` + `FooServiceImpl`, `FooUseCase`, `FooPort`, `FooAdapter`, ma
 
 ## 9. Errors and exceptions
 
-- Domain/application exceptions should carry stable semantic error codes, not HTTP concerns.
-- Map exceptions to HTTP problem details in one boundary layer.
-- Do not catch `Exception` just to log/rethrow or convert everything to HTTP 500.
-- Preserve causes for observability while returning safe client details.
-- Expected validation/conflict/not-found conditions are not error-level log spam.
+### 9.1 Application error contract
+
+- Expected application failures use the shared `AppException` / `ErrorCode` mechanism. Do not introduce parallel base exceptions, ad-hoc error DTOs, or `ResponseStatusException` for expected domain/application outcomes.
+- Cross-cutting codes belong in `CommonErrorCode`. Capability-specific enums belong in that capability's `error` package, for example `identity/error/IdentityErrorCode`.
+- Error-code constants describe the condition without repeating their capability: use `IdentityErrorCode.INVALID_CREDENTIALS`, not `IDENTITY_INVALID_CREDENTIALS`.
+- Each error code defines:
+  - its stable enum/code name;
+  - HTTP status metadata used by the boundary handler;
+  - a safe developer-facing description;
+  - the exact required interpolation-parameter keys;
+  - its derived message key, such as `error.identity.invalid_credentials`.
+- Client behavior branches on the stable `code`, never an English message. `key` and `params` are display/localization inputs, not alternative machine codes.
+- `AppException` validates exact parameter-key equality at construction. Missing and extra keys are programmer errors and fail immediately with `IllegalStateException`.
+- Exception parameter maps and nested collection/map values are immutable after construction.
+- Preserve an underlying cause when it is useful for diagnosis, but never expose the cause or its message to clients.
+- Prefer throwing `new AppException(SomeErrorCode.CONDITION, ...)` directly. Add a capability-specific exception subclass only when it provides concrete behavior beyond naming one error code.
+
+### 9.2 HTTP error boundary
+
+- Map exceptions to HTTP in the single global `GlobalExceptionHandler`; controllers and application services do not build `ProblemDetail` responses.
+- Every globally owned error response is RFC 9457 `application/problem+json` and includes the standard `type`, `title`, `status`, and `instance` fields plus stable `code`, `key`, `traceId`, and injected-clock `timestamp` extensions.
+- Use the project problem-type base `https://canverse.dev/problems/` followed by the lower-kebab error code.
+- Include non-empty, safe params for 4xx application errors only. Omit `params` from every 5xx response, even when the server-side exception carries them.
+- Never serialize exception messages, causes, stack traces, Java class names, SQL, constraint names, provider bodies, secrets, or developer descriptions as internal-error details.
+- Framework and persistence failures use stable common fallback codes. Translate a database constraint to a more specific capability error only inside the service that understands that named invariant; unknown integrity failures fall back safely at the HTTP boundary.
+- Do not catch `Exception` merely to log and rethrow. The final global catch-all owns unexpected 500 logging and safe response conversion.
+- Expected validation, conflict, and not-found outcomes are not error-level log spam. Unexpected and internal 5xx failures are logged with their server-side exception for diagnosis.
+
+### 9.3 Validation errors
+
+- Bean Validation, MVC method validation, and application method validation use `CommonErrorCode.VALIDATION_FAILED` with HTTP 422 and one `params.errors[]` structure.
+- Each validation entry contains `field`, validated application `key`, and safe `detail`; it may include safe constraint attributes such as `min`, `max`, or `value` under nested `params`.
+- Built-in Jakarta constraints map to stable `error.fields.common.*` keys. Explicit custom templates use validated application keys such as `{error.fields.identity.password_too_short}`.
+- Never send Jakarta/Hibernate bundle keys, malformed placeholders, arbitrary validation messages, rejected values, or class names as validation keys. Unknown constraints use the safe `error.fields.common.unmapped_constraint` fallback and are logged as implementation/configuration defects.
+
+### 9.4 Request correlation
+
+- `RequestTraceFilter` owns request correlation for the current application. It generates a server-owned trace ID through `IdGenerator`, stores it on the request, and returns it in `X-Trace-Id`.
+- Every globally handled `ProblemDetail.traceId` equals the response `X-Trace-Id` value.
+- Do not trust an inbound `X-Trace-Id` as authoritative and do not create controller-specific trace-ID mechanisms.
+- Distributed tracing/OpenTelemetry is introduced only when a concrete later requirement approves it; it must integrate with, not silently replace, the public error-correlation contract.
 
 ## 10. Security and ownership
 
