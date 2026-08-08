@@ -74,6 +74,24 @@ Established:
 - `dev.canverse.stocks.platform.infrastructure.JobRepository`
 - `EntityMappingTest` — five Testcontainers PostgreSQL mapping/load tests; Hibernate `ddl-auto: validate` passes against V1
 
+### PR-004 — V1 mapping package alignment
+
+Status: **COMPLETED**
+
+Accepted commit: `eed342e`
+
+Specification:
+
+`PR-004-v1-mapping-package-alignment.md`
+
+Established:
+
+- five V1 entities reside in capability `domain` packages;
+- five Spring Data repositories reside in capability `infrastructure` packages;
+- the entities use the accepted Lombok getter/protected-constructor convention;
+- Maven explicitly registers Lombok as an annotation processor for clean Java 25 builds;
+- V1 mappings, repository behavior, and database/API behavior remain unchanged.
+
 ## Current database
 
 Migration version: `V1`
@@ -153,33 +171,34 @@ dev.canverse.stocks
 - JSON fields are initially mapped as opaque JSON strings with Hibernate JSON JDBC typing; final write-side representation is deferred until a real write use case requires it.
 - Lombok is an accepted project dependency. Touched JPA entities use `@Getter` and `@NoArgsConstructor(access = AccessLevel.PROTECTED)`; Spring components use `@RequiredArgsConstructor` where appropriate.
 - Capability code uses the fixed `domain`, `application`, `infrastructure`, `configuration`, and `web` sub-packages from `coding-standards.md`, omitting unused sub-packages.
+- `LocalAccountRegistrationService` is the first identity write workflow: one transaction creates a `user_account` and its `LOCAL` `auth_identity`, and an identity flush failure rolls both rows back.
 
 ## Active implementation unit
 
-PR-004 realigns the ten accepted V1 entity/repository types with the fixed capability sub-packages and Lombok entity convention. The implementation is behavior-preserving and remains active pending user review; it does not add authentication.
+PR-005 implements the first atomic local-account registration application workflow: email normalization, password hashing, and transactional creation of `user_account` plus its `LOCAL` `auth_identity`. It remains active pending user review.
 
-See `CURRENT.md` and `PR-004-v1-mapping-package-alignment.md` for the authoritative active scope.
+See `CURRENT.md` and `PR-005-atomic-local-account-registration.md` for the authoritative active scope.
 
 ## Next likely implementation areas
 
-These are planning hints for work after PR-004, not active specifications.
+These are planning hints for work after PR-005, not active specifications.
 
 Likely sequence:
 
-1. local authentication foundation;
+1. remaining local authentication HTTP/login/token foundation;
 2. refresh sessions / rotation / logout / revocation;
 3. security events and authentication abuse protection;
 4. durable job claim/retry worker;
 5. V2 reference migration.
 
-The exact next behavioral implementation unit must be designed just-in-time after PR-004 is reviewed and accepted.
+The exact next behavioral implementation unit must be designed just-in-time after PR-005 is reviewed and accepted.
 
 Do not treat this list as a promise of PR numbering or exact scope.
 
 ## Known issues / deferred work
 
-- No authentication behavior yet.
-- No Spring Security configuration yet.
+- No HTTP authentication, login, token, or security-filter behavior yet; local registration is application-layer only.
+- No Spring Security web/filter-chain configuration yet.
 - Maven explicitly registers Lombok on the annotation-processor path so Lombok-generated entity accessors and constructors compile on Java 25.
 - No reference data yet.
 - No ledger yet.

@@ -1,6 +1,6 @@
 # PR-004 — V1 mapping package alignment
 
-Status: **ACTIVE**
+Status: **COMPLETE**
 
 ## Goal
 

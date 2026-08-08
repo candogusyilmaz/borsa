@@ -20,10 +20,11 @@ Scope: Spring Boot backend, PostgreSQL dump, database migration strategy, modula
 | PR-001 — Modern backend foundation                 | **Complete**                                                 | Starting commit `b2c42e751097c7a19805c0a53b28941fa4deebce`; legacy backend deleted; Spring Boot 4.1.0 / Java 25 skeleton green; 5 tests passing                                                                              |
 | Fresh database baseline (`V1__foundation.sql`)     | **Complete**                                                 | Accepted in PR-002 (`dee5b02`); 8 application schemas and 5 foundation tables with required constraints/indexes; fresh PostgreSQL migrates cleanly to V1                                                                   |
 | PR-003 — Identity and platform JPA entity mappings | **Complete**                                                 | Accepted in `97a06b7`; 5 JPA entities + 5 repositories; Hibernate `ddl-auto: validate` and all 29 tests pass                                                                                                                  |
-| PR-004 — V1 mapping package alignment              | **Implemented (pending user review)**                         | 5 entities moved to `domain`, 5 repositories moved to `infrastructure`, Lombok accessors/constructors applied, and Lombok explicitly configured as a Java 25 annotation processor; fresh V1 mapping tests and all 29 tests pass |
-| Automated backend coverage                         | 29 tests, all green                                          | `ContextSmokeTest` (6 tests), `EntityMappingTest` (5 tests), `FoundationMigrationTest` (16 tests), `InfrastructureTest` (2 tests)                                                                                            |
+| PR-004 — V1 mapping package alignment              | **Complete**                                                  | Accepted in `eed342e`; 5 entities moved to `domain`, 5 repositories moved to `infrastructure`, Lombok conventions applied, and clean Java 25 annotation processing configured                                            |
+| PR-005 — Atomic local account registration        | **Implemented (pending user review)**                         | Transactional local registration, delegating password hashing, duplicate-constraint translation, rollback semantics, and 4 PostgreSQL service tests pass                                                                         |
+| Automated backend coverage                         | 33 tests, all green                                          | `ContextSmokeTest` (6 tests), `EntityMappingTest` (5 tests), `FoundationMigrationTest` (16 tests), `InfrastructureTest` (2 tests), `LocalAccountRegistrationServiceTest` (4 tests)                                  |
 
-Overall status: **PR-004 implemented pending user review. The five V1 mappings now use the authoritative capability sub-packages and Lombok convention; Maven explicitly configures Lombok as a Java 25 annotation processor, and Hibernate `ddl-auto: validate`, all 29 tests, and `verify` pass.**
+Overall status: **PR-004 reviewed and accepted in `eed342e`. PR-005 implements atomic application-layer local account registration and remains active pending user review; clean Java 25 `verify` passes with all 33 tests.**
 
 ## Inputs analyzed
 
@@ -191,7 +192,7 @@ The 2026-08-07 document harmonization establishes these implementation rules:
 | Increment | Implementation result                                        | Status      |
 | --------: | ------------------------------------------------------------ | ----------- |
 |        R0 | Preserve evidence and replace backend skeleton               | Not started |
-|        R1 | Foundation, identity, auth, sessions and jobs                | Not started |
+|        R1 | Foundation, identity, auth, sessions and jobs                | In progress — PR-005 local registration slice implemented; remaining auth/session/job work deferred |
 |        R2 | Canonical references and deterministic seeds                 | Not started |
 |        R3 | Accounts/ledger/funding/balances — FT-31                     | Not started |
 |        R4 | Investing parity, funded trades and imports                  | Not started |

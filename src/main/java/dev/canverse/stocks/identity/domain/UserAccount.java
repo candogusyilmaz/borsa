@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -27,4 +28,14 @@ public class UserAccount {
     private Instant createdAt;
 
     private Instant updatedAt;
+
+    public static UserAccount register(UUID id, String email, String emailNormalized, Instant registrationTime) {
+        var userAccount = new UserAccount();
+        userAccount.id = Objects.requireNonNull(id, "id");
+        userAccount.email = Objects.requireNonNull(email, "email");
+        userAccount.emailNormalized = Objects.requireNonNull(emailNormalized, "emailNormalized");
+        userAccount.createdAt = Objects.requireNonNull(registrationTime, "registrationTime");
+        userAccount.updatedAt = registrationTime;
+        return userAccount;
+    }
 }
