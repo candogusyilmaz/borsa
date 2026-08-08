@@ -1,6 +1,6 @@
 # Backend rewrite implementation state
 
-Last updated: 2026-08-07
+Last updated: 2026-08-08
 
 ## Current technology
 
@@ -14,85 +14,186 @@ Last updated: 2026-08-07
 
 ## Git workflow
 
-- Working branch: rewrite
-- User owns commits and Git operations.
-- Agents leave changes uncommitted.
+- Working branch: `rewrite`
+- The user owns commits and Git operations.
+- Agents leave implementation changes uncommitted unless explicitly instructed otherwise.
 
 ## Completed implementation units
 
 ### PR-001 — Modern backend foundation
 
-Status: COMPLETED
+Status: **COMPLETED**
 
 Established:
 
 - Java 25 / Spring Boot 4 foundation
 - legacy backend removed
 - frontend preserved
-- Clock abstraction
-- IdGenerator abstraction
-- ProblemDetail foundation
+- `Clock` abstraction
+- `IdGenerator` abstraction
+- Problem Details foundation
 - Testcontainers smoke test
-- Flyway configured with no migrations
+- Flyway configured for the replacement backend
 
 ### PR-002 — V1 foundation database
 
-Status: ACTIVE
+Status: **COMPLETED**
 
 Specification:
-PR-002-v1-foundation-database.md
+
+`PR-002-v1-foundation-database.md`
+
+Established:
+
+- eight application schemas: `identity`, `reference`, `ledger`, `data`, `money`, `analysis`, `asset`, `platform`
+- five V1 foundation tables: `identity.user_account`, `identity.auth_identity`, `identity.device_session`, `platform.security_event`, `platform.job`
+- Flyway-owned primary keys, foreign keys, unique constraints, checks, defaults, and indexes
+- PostgreSQL/Testcontainers migration and constraint coverage
+
+### PR-003 — Identity and platform JPA entity mappings
+
+Status: **IMPLEMENTED (pending user review)**
+
+Specification:
+
+`PR-003-identity-jpa-entity-mappings.md`
+
+Established:
+
+- `dev.canverse.stocks.identity.UserAccount` — maps `identity.user_account`
+- `dev.canverse.stocks.identity.UserAccountRepository`
+- `dev.canverse.stocks.identity.AuthIdentity` — maps `identity.auth_identity`; lazy mandatory FK to `UserAccount`
+- `dev.canverse.stocks.identity.AuthIdentityRepository`
+- `dev.canverse.stocks.identity.DeviceSession` — maps `identity.device_session`; lazy mandatory FK to `UserAccount`; `replacedBySessionId` as plain `UUID`
+- `dev.canverse.stocks.identity.DeviceSessionRepository`
+- `dev.canverse.stocks.platform.SecurityEvent` — maps `platform.security_event`; nullable lazy FK to `UserAccount`; `details` as `@JdbcTypeCode(SqlTypes.JSON) String`
+- `dev.canverse.stocks.platform.SecurityEventRepository`
+- `dev.canverse.stocks.platform.Job` — maps `platform.job`; nullable lazy FK to `UserAccount`; `payload` as `@JdbcTypeCode(SqlTypes.JSON) String`
+- `dev.canverse.stocks.platform.JobRepository`
+- `EntityMappingTest` — five Testcontainers PostgreSQL mapping/load tests; Hibernate `ddl-auto: validate` passes against V1
 
 ## Current database
 
-Expected migration version:
-V1 after PR-002
+Migration version: `V1`
 
 Schemas:
 
-- identity
-- reference
-- ledger
-- data
-- money
-- analysis
-- asset
-- platform
+- `identity`
+- `reference`
+- `ledger`
+- `data`
+- `money`
+- `analysis`
+- `asset`
+- `platform`
 
-Tables implemented:
+Tables:
 
-- none before PR-002
+### identity
+
+- `user_account`
+- `auth_identity`
+- `device_session`
+
+### platform
+
+- `security_event`
+- `job`
+
+### currently empty schemas
+
+- `reference`
+- `ledger`
+- `data`
+- `money`
+- `analysis`
+- `asset`
+
+## Current application state
+
+Implemented production foundation:
+
+```text
+dev.canverse.stocks
+├── ServerApplication
+└── platform
+    ├── config
+    │   └── TimeConfiguration
+    ├── id
+    │   ├── IdGenerator
+    │   └── UuidIdGenerator
+    └── web
+        └── ApiExceptionHandler
+```
+
+PR-003 is expected to add:
+
+```text
+dev.canverse.stocks.identity
+├── UserAccount
+├── UserAccountRepository
+├── AuthIdentity
+├── AuthIdentityRepository
+├── DeviceSession
+└── DeviceSessionRepository
+
+dev.canverse.stocks.platform
+├── SecurityEvent
+├── SecurityEventRepository
+├── Job
+└── JobRepository
+```
+
+These expected PR-003 files are not considered implemented until the PR is reviewed and accepted.
 
 ## Important decisions discovered during implementation
 
-None yet.
+- Flyway SQL is the only DDL authority.
+- PostgreSQL integrity constraints remain authoritative even when JPA mappings exist.
+- For PostgreSQL Testcontainers JDBC fixtures targeting `timestamptz`, use `OffsetDateTime` parameters rather than raw `Instant` values with `JdbcTemplate`.
+- JPA entities may use `Instant` for persisted timestamp fields.
+- PR-003 is read/mapping-oriented. It does not establish entity mutation APIs or JPA write semantics.
+- JSON fields are initially mapped as opaque JSON strings with Hibernate JSON JDBC typing; final write-side representation is deferred until a real write use case requires it.
 
-## Next likely units
+## Next likely implementation areas
 
-These are planning hints, not active specifications:
+These are planning hints only, not active specifications.
 
-1. Identity JPA mappings
-2. Registration/local authentication
-3. Sessions/token rotation
-4. Security events/throttling
-5. Durable job execution
+Likely sequence:
 
-Exact scope must be designed just-in-time.
+1. local authentication foundation;
+2. refresh sessions / rotation / logout / revocation;
+3. security events and authentication abuse protection;
+4. durable job claim/retry worker;
+5. V2 reference migration.
+
+The exact next implementation unit must be designed just-in-time after the active PR is reviewed and accepted.
+
+Do not treat this list as a promise of PR numbering or exact scope.
 
 ## Known issues / deferred work
 
-- No authentication yet.
+- No authentication behavior yet.
+- No Spring Security configuration yet.
 - No reference data yet.
 - No ledger yet.
-- Frontend still targets legacy APIs.
-- Bank/broker connectivity explicitly deferred.
+- No financial-account model yet.
+- The frontend still targets legacy APIs.
+- Bank/broker connectivity remains explicitly deferred.
+- JPA write semantics for database-defaulted fields are not established yet.
+- JPA JSON write semantics are not established yet.
 
 ## Resume instructions
 
 To continue planning implementation:
 
-1. read this file;
-2. read `backend-master-plan.md`;
-3. read `accounting-contract.md` when financial behavior is involved;
-4. inspect the most recently completed PR specification;
-5. inspect current repository state/diff;
-6. design only the next reviewable PR.
+1. read `AGENTS.md`;
+2. read this file;
+3. read `docs/implementation/CURRENT.md`;
+4. read the active PR specification;
+5. read `docs/review/backend-master-plan.md`;
+6. read `docs/review/accounting-contract.md` when financial behavior is involved;
+7. inspect the actual repository state and relevant latest diff;
+8. design only the next human-reviewable implementation unit.
+
+Do not require historical chat context to continue the rewrite.

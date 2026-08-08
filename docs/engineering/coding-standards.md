@@ -42,21 +42,26 @@ These standards define **how code is written**. Product scope and sequencing liv
 
 ## 4. Package and class structure
 
-Organize by coarse capability, for example:
+Organize by coarse capability. Within each capability use these fixed sub-packages:
 
 ```text
 dev.canverse.stocks
   identity/
+    domain/          ← JPA entities, value objects
+    application/     ← transactional services, use cases
+    infrastructure/  ← Spring Data repositories, external adapters
+    configuration/   ← Spring @Configuration classes
+    web/             ← controllers, request/response records
   reference/
-  ledger/
-  data/
-  money/
-  analysis/
-  asset/
-  platform/
+    domain/
+    application/
+    infrastructure/
+    configuration/
+    web/
+  ... (same structure for every capability)
 ```
 
-Within a capability, keep files near the behavior they support. Do not recreate global `controller/`, `service/`, `repository/`, `entity/`, `dto/` top-level layers.
+Do not create these as global top-level layers at the root package level. Omit a sub-package entirely when a capability has no code in that layer yet. Within a crowded capability sub-package, a further feature-group split (e.g. `money/application/spending/`) is acceptable.
 
 Avoid `FooService` + `FooServiceImpl`, `FooUseCase`, `FooPort`, `FooAdapter`, mapper interfaces and command-handler classes when one cohesive class is enough. Introduce interfaces for:
 
@@ -70,8 +75,14 @@ Avoid `FooService` + `FooServiceImpl`, `FooUseCase`, `FooPort`, `FooAdapter`, ma
 - Entities are not API DTOs and must never be serialized directly to clients.
 - Prefer field access and a protected no-arg constructor where Hibernate requires one.
 - Do not expose blanket public setters. Mutating methods should express domain intent (`rename`, `archive`, `changePolicy`) and enforce relevant invariants.
-- Do not use Lombok `@Data` on entities. Avoid entity `@Builder` when it makes invalid partially initialized states easy to create.
-- Lombok may be used narrowly (`@Getter`, protected no-args constructor, etc.) if it reduces boilerplate without hiding semantics. Records replace most DTO Lombok usage.
+- Use `@Getter` on JPA entities and value objects instead of writing public getters manually.
+- Use `@NoArgsConstructor(access = AccessLevel.PROTECTED)` on JPA entities; Hibernate requires a no-arg constructor and `PROTECTED` prevents accidental direct instantiation.
+- Use `@RequiredArgsConstructor` on Spring components (services, configuration) where constructor injection over `final` fields is appropriate.
+- `@Setter` is permitted on non-entity classes where mutable state is explicitly intended.
+- Do not use `@Data` on entities; it generates `equals`/`hashCode`/`toString` from all fields which causes correctness and performance problems with JPA proxies.
+- Do not use `@Builder` on entities; it hides the entity lifecycle and makes partially-initialized states trivial to create accidentally.
+- Do not use `@AllArgsConstructor` on entities; Hibernate does not need it and it implies a public construction path that bypasses invariants.
+- Records replace Lombok for immutable API request/response types, commands, and small value objects.
 - Explicitly mark associations `LAZY` unless eager loading is a deliberate measured requirement. Do not rely on JPA's eager to-one default.
 - Prefer unidirectional relationships. Add bidirectional navigation only when both directions are genuinely needed and tested.
 - Avoid large object graphs and cascading by default. Cascade only when lifecycle ownership is real.

@@ -197,37 +197,37 @@ The corresponding Flyway SQL—not the entity—declares `owner_id NOT NULL`, th
 
 The repository file [db-dump.sql](db-dump.sql) has SHA-256 `FABDA56B6737FA710A37436FFA731BDFB8852EB5275BDF5000C981C1FD2AE8BD`. It is a PostgreSQL 15.1 schema dump containing 28 `CREATE TABLE` statements and no `COPY` or `INSERT INTO` data statements.
 
-| Schema | Tables | Content |
-|---|---:|---|
-| `account` | 5 | Users, roles, permissions, join tables |
-| `instrument` | 6 | Markets, instruments, stock/crypto subtype tables, current snapshots, market currencies |
-| `portfolio` | 8 | Portfolios, positions, transactions, histories/snapshots/performance, dashboards |
-| `public` | 9 | Countries, currencies, Flyway history structure, and six Spring Batch tables |
+| Schema       | Tables | Content                                                                                 |
+| ------------ | -----: | --------------------------------------------------------------------------------------- |
+| `account`    |      5 | Users, roles, permissions, join tables                                                  |
+| `instrument` |      6 | Markets, instruments, stock/crypto subtype tables, current snapshots, market currencies |
+| `portfolio`  |      8 | Portfolios, positions, transactions, histories/snapshots/performance, dashboards        |
+| `public`     |      9 | Countries, currencies, Flyway history structure, and six Spring Batch tables            |
 
 It is useful as an inventory, not as a restorable target model.
 
 ### Confirmed dump/migration problems
 
-| ID | Finding | Decision |
-|---|---|---|
-| DBP-01 | The repository starts at `V2`; migrations depend on pre-existing `users`, `holdings`, `countries`, `stocks`, and other tables. | Replace `V2`–`V14` with a new development baseline and later coherent migrations. Git history is the legacy record. |
-| DBP-02 | Flyway is disabled in the default development profile and only enabled in production. | Enable Flyway in development, test, and production; test empty-to-latest on every build. |
-| DBP-03 | The repository dump contains six Spring Batch tables although no corresponding backend batch job was found. The earlier pasted attachment had a duplicated line, but the repository dump itself has one `status` column per relevant table. | Remove legacy Spring Batch tables/config unless Spring Batch is deliberately adopted later. |
-| DBP-04 | `convert_currency` and `currencies.exchange_rate` contain one mutable latest rate and implicitly normalize through USD. | Replace them with immutable FX series/observations and an application calculation policy. |
-| DBP-05 | `instrument_snapshots` stores only one row per instrument/currency. | Keep an optional latest projection, but make immutable observations authoritative. |
-| DBP-06 | `positions.currency_code`, `instrument_snapshots.currency_code`, and `market_currencies.currency_code` have no currency foreign key. | Use a canonical ISO-like currency code reference with foreign keys everywhere. |
-| DBP-07 | `positions.instrument_id` is nullable in the dump despite the JPA association being mandatory. | Make it non-null and enforce unique position identity in the replacement projection. |
-| DBP-08 | `positions.total` is `numeric(20,8)` while the entity requests `numeric(38,18)`; timestamps mix with/without timezone. | Choose one numeric/time policy and make migration, JPA, and API agree. |
-| DBP-09 | `position_daily_snapshots.quantity` is an integer although holdings support decimal quantities; several generated results round to scale 2. | Remove this table from the trusted model. Build exact daily valuation projections from ledger + observations. |
-| DBP-10 | Generated percentage columns can produce `NULL` while declared `NOT NULL`; persisted performance categories can become stale. | Calculate versioned analytics in application/read models and store inputs/results with provenance when caching. |
-| DBP-11 | There is no uniqueness constraint for `(portfolio, instrument, currency)` and no idempotency/concurrency primitive. | Add immutable client event IDs, deterministic replay, and projection locking/versioning. |
-| DBP-12 | Duplicate indexes exist on portfolio user and position portfolio columns. | Keep only indexes demonstrated by constraints/query plans. |
-| DBP-13 | Role/permission join tables lack pair uniqueness; many foreign keys have generated names and no deliberate deletion policy. | Add meaningful names, pair uniqueness, and explicit restrict/cascade behavior. |
-| DBP-14 | Public PostgreSQL enums include a now-unused `tag_type`; instrument types will expand substantially. | Prefer application enums stored as constrained text or reference rows; avoid PostgreSQL enums for rapidly growing concepts. |
-| DBP-15 | The dump contains both transaction `notes` and JSON metadata despite the migration intending to replace notes. | Replace the transaction model with canonical activity provenance/notes/tags rather than preserve drift. |
-| DBP-16 | Market currencies are created but never populated by `V13`; instrument queries can consequently return nothing. | Seed deterministic reference/market-currency relationships in the new baseline. |
-| DBP-17 | `V5` hardcodes market ID `3` for BIST and depends on tables not created by the migration chain. | Seed by stable code/natural key, never generated numeric IDs. |
-| DBP-18 | The schema dump contains no actual data or Flyway-history rows. | Treat it as schema evidence only; it is not a backup of user/reference data. |
+| ID     | Finding                                                                                                                                                                                                                                     | Decision                                                                                                                    |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| DBP-01 | The repository starts at `V2`; migrations depend on pre-existing `users`, `holdings`, `countries`, `stocks`, and other tables.                                                                                                              | Replace `V2`–`V14` with a new development baseline and later coherent migrations. Git history is the legacy record.         |
+| DBP-02 | Flyway is disabled in the default development profile and only enabled in production.                                                                                                                                                       | Enable Flyway in development, test, and production; test empty-to-latest on every build.                                    |
+| DBP-03 | The repository dump contains six Spring Batch tables although no corresponding backend batch job was found. The earlier pasted attachment had a duplicated line, but the repository dump itself has one `status` column per relevant table. | Remove legacy Spring Batch tables/config unless Spring Batch is deliberately adopted later.                                 |
+| DBP-04 | `convert_currency` and `currencies.exchange_rate` contain one mutable latest rate and implicitly normalize through USD.                                                                                                                     | Replace them with immutable FX series/observations and an application calculation policy.                                   |
+| DBP-05 | `instrument_snapshots` stores only one row per instrument/currency.                                                                                                                                                                         | Keep an optional latest projection, but make immutable observations authoritative.                                          |
+| DBP-06 | `positions.currency_code`, `instrument_snapshots.currency_code`, and `market_currencies.currency_code` have no currency foreign key.                                                                                                        | Use a canonical ISO-like currency code reference with foreign keys everywhere.                                              |
+| DBP-07 | `positions.instrument_id` is nullable in the dump despite the JPA association being mandatory.                                                                                                                                              | Make it non-null and enforce unique position identity in the replacement projection.                                        |
+| DBP-08 | `positions.total` is `numeric(20,8)` while the entity requests `numeric(38,18)`; timestamps mix with/without timezone.                                                                                                                      | Choose one numeric/time policy and make migration, JPA, and API agree.                                                      |
+| DBP-09 | `position_daily_snapshots.quantity` is an integer although holdings support decimal quantities; several generated results round to scale 2.                                                                                                 | Remove this table from the trusted model. Build exact daily valuation projections from ledger + observations.               |
+| DBP-10 | Generated percentage columns can produce `NULL` while declared `NOT NULL`; persisted performance categories can become stale.                                                                                                               | Calculate versioned analytics in application/read models and store inputs/results with provenance when caching.             |
+| DBP-11 | There is no uniqueness constraint for `(portfolio, instrument, currency)` and no idempotency/concurrency primitive.                                                                                                                         | Add immutable client event IDs, deterministic replay, and projection locking/versioning.                                    |
+| DBP-12 | Duplicate indexes exist on portfolio user and position portfolio columns.                                                                                                                                                                   | Keep only indexes demonstrated by constraints/query plans.                                                                  |
+| DBP-13 | Role/permission join tables lack pair uniqueness; many foreign keys have generated names and no deliberate deletion policy.                                                                                                                 | Add meaningful names, pair uniqueness, and explicit restrict/cascade behavior.                                              |
+| DBP-14 | Public PostgreSQL enums include a now-unused `tag_type`; instrument types will expand substantially.                                                                                                                                        | Prefer application enums stored as constrained text or reference rows; avoid PostgreSQL enums for rapidly growing concepts. |
+| DBP-15 | The dump contains both transaction `notes` and JSON metadata despite the migration intending to replace notes.                                                                                                                              | Replace the transaction model with canonical activity provenance/notes/tags rather than preserve drift.                     |
+| DBP-16 | Market currencies are created but never populated by `V13`; instrument queries can consequently return nothing.                                                                                                                             | Seed deterministic reference/market-currency relationships in the new baseline.                                             |
+| DBP-17 | `V5` hardcodes market ID `3` for BIST and depends on tables not created by the migration chain.                                                                                                                                             | Seed by stable code/natural key, never generated numeric IDs.                                                               |
+| DBP-18 | The schema dump contains no actual data or Flyway-history rows.                                                                                                                                                                             | Treat it as schema evidence only; it is not a backup of user/reference data.                                                |
 
 ### What should be retained conceptually
 
@@ -249,19 +249,33 @@ It is useful as an inventory, not as a restorable target model.
 
 The package names below are coarse. They deliberately do not create one module per feature.
 
-| Java package | Owns | Main feature families |
-|---|---|---|
-| `identity` | User, credentials/external identities, device sessions, household membership/grants | Authentication, FT-13 permissions, export/deletion ownership |
-| `reference` | Countries, currencies, instruments, markets, calendars, providers, policy identities | Shared reference data for every module |
-| `ledger` | Financial accounts, cash pockets, immutable activities/postings, corrections, idempotency, balances, reconciliation, imports | FND-01, FT-01, FT-31 and the truth behind all posted money |
-| `investing` | Portfolio groupings, trade commands, position/lot projections, investment income/actions | Current share tracking, FT-02, FT-11 |
-| `data` | Observation series, market/FX/rate/CPI observations, ingestion runs, manual/synthetic/provider sources, quality | FND-02, all analytics and scenarios |
-| `money` | Spending/income/categories, contracts/bills/cards/debt, people/claims, purchases/recoveries, documents/projects | FT-03/15–30 except planning-heavy parts |
-| `analysis` | Valuation, daily NAV, performance/decomposition, calculation runs, scenarios, Decision Replay, goals/resilience/briefs | FND-03/04/05, FT-02/04–12/14 |
-| `assets` | Physical-asset lifecycle, meters, consumption, cost links, service/warranty, valuations, TCO/disposal | FT-32 |
-| `platform` | Security configuration, file storage abstraction, durable jobs, clock/ID support, demo-data loader, API errors | Cross-cutting infrastructure only |
+| Java package | Owns                                                                                                                         | Main feature families                                        |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `identity`   | User, credentials/external identities, device sessions, household membership/grants                                          | Authentication, FT-13 permissions, export/deletion ownership |
+| `reference`  | Countries, currencies, instruments, markets, calendars, providers, policy identities                                         | Shared reference data for every module                       |
+| `ledger`     | Financial accounts, cash pockets, immutable activities/postings, corrections, idempotency, balances, reconciliation, imports | FND-01, FT-01, FT-31 and the truth behind all posted money   |
+| `investing`  | Portfolio groupings, trade commands, position/lot projections, investment income/actions                                     | Current share tracking, FT-02, FT-11                         |
+| `data`       | Observation series, market/FX/rate/CPI observations, ingestion runs, manual/synthetic/provider sources, quality              | FND-02, all analytics and scenarios                          |
+| `money`      | Spending/income/categories, contracts/bills/cards/debt, people/claims, purchases/recoveries, documents/projects              | FT-03/15–30 except planning-heavy parts                      |
+| `analysis`   | Valuation, daily NAV, performance/decomposition, calculation runs, scenarios, Decision Replay, goals/resilience/briefs       | FND-03/04/05, FT-02/04–12/14                                 |
+| `assets`     | Physical-asset lifecycle, meters, consumption, cost links, service/warranty, valuations, TCO/disposal                        | FT-32                                                        |
+| `platform`   | Security configuration, file storage abstraction, durable jobs, clock/ID support, demo-data loader, API errors               | Cross-cutting infrastructure only                            |
 
-Subpackages inside `money` such as `spending`, `commitments`, `people`, `income`, and `purchases` are acceptable once a package becomes crowded. Do not create separate Maven modules.
+### Sub-package structure within each capability
+
+Every capability module uses these fixed sub-packages:
+
+```text
+dev.canverse.stocks
+  identity/
+    domain/          ← JPA entities, value objects
+    application/     ← transactional services, use cases
+    infrastructure/  ← Spring Data repositories, external adapters
+    configuration/   ← Spring @Configuration classes
+    web/             ← controllers, request/response records
+```
+
+Omit a sub-package entirely when a capability has no code in that layer yet — do not create empty packages. A further feature-group split inside a sub-package (e.g. `money/application/spending/`) is acceptable when the package becomes large.
 
 ### Coupling rules
 
@@ -309,16 +323,16 @@ The worker claims jobs with `FOR UPDATE SKIP LOCKED`, records attempts/error/hea
 
 Database schemas are coarse ownership aids and do not need to match every Java package.
 
-| Schema | Intended records |
-|---|---|
-| `identity` | Users, auth identities, device sessions, roles, households, members, scoped grants |
-| `reference` | Currency/country/market/instrument identities, aliases, calendars, source/policy catalogues |
-| `ledger` | Financial accounts/cash pockets, activities, money/security postings, idempotency, reconciliation/import state, portfolio groupings and balance/position projections |
-| `data` | Datasets/providers, series, immutable price/FX/rate/CPI/manual-value observations, ingestion runs and latest-observation projections |
-| `money` | Categories/rules, obligations/contracts/bills, debt/card terms, income, claims, purchases/receipts, documents, projects |
-| `analysis` | Valuations/NAV, calculation runs, scenarios, plans/goals, decision journal and insights |
-| `asset` | Physical assets, lifecycle/interest, meters/readings, consumption/cost links, service/warranty, valuations/disposal |
-| `platform` | Durable jobs, audit/security events and storage-object metadata; business document metadata remains in `money` |
+| Schema      | Intended records                                                                                                                                                     |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `identity`  | Users, auth identities, device sessions, roles, households, members, scoped grants                                                                                   |
+| `reference` | Currency/country/market/instrument identities, aliases, calendars, source/policy catalogues                                                                          |
+| `ledger`    | Financial accounts/cash pockets, activities, money/security postings, idempotency, reconciliation/import state, portfolio groupings and balance/position projections |
+| `data`      | Datasets/providers, series, immutable price/FX/rate/CPI/manual-value observations, ingestion runs and latest-observation projections                                 |
+| `money`     | Categories/rules, obligations/contracts/bills, debt/card terms, income, claims, purchases/receipts, documents, projects                                              |
+| `analysis`  | Valuations/NAV, calculation runs, scenarios, plans/goals, decision journal and insights                                                                              |
+| `asset`     | Physical assets, lifecycle/interest, meters/readings, consumption/cost links, service/warranty, valuations/disposal                                                  |
+| `platform`  | Durable jobs, audit/security events and storage-object metadata; business document metadata remains in `money`                                                       |
 
 `public` should contain only Flyway/extension metadata that cannot be placed elsewhere. Cross-schema foreign keys are expected.
 
@@ -392,19 +406,19 @@ Do not pre-create hundreds of speculative columns/tables. The target table descr
 
 ### Coherent future migration slices
 
-| Migration slice | Creates/changes |
-|---|---|
-| `V1__foundation` | Schemas, users/auth identities/device sessions, audit/security events and durable platform jobs |
-| `V2__reference` | Countries, currencies, markets, instruments/aliases/calendars and stable-code reference seeds |
-| `V3__ledger_investing` | Financial accounts/cash pockets, immutable activities/postings/idempotency/reconciliation, portfolio groupings and projections |
-| `V4__observations` | Datasets/providers/series/immutable price, FX, rate, CPI and manual-value observations plus latest projections |
-| `V5__analysis` | Daily valuation/performance, calculation runs, scenarios and dependency manifests |
-| `V6__everyday_money` | Categories/rules, recurring expectations, contracts/bills, cards/debt, income and documents/actions |
-| `V7__planning` | Goals/resilience, decision journal/briefs and plan calculation snapshots |
-| `V8__people_household` | Counterparties, claims/shared expenses, households/members/scoped grants and family flows |
-| `V9__purchases_protection` | Purchases/receipts/recoveries/stored value, utilities, projects, protection and invoices |
-| `V10__policy_calendar` | Versioned jurisdiction/policy/rule/calendar records |
-| `V11__physical_assets` | Physical-asset lifecycle, interests, meters/consumption, costs, service/warranty, valuations and disposal |
+| Migration slice            | Creates/changes                                                                                                                |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `V1__foundation`           | Schemas, users/auth identities/device sessions, audit/security events and durable platform jobs                                |
+| `V2__reference`            | Countries, currencies, markets, instruments/aliases/calendars and stable-code reference seeds                                  |
+| `V3__ledger_investing`     | Financial accounts/cash pockets, immutable activities/postings/idempotency/reconciliation, portfolio groupings and projections |
+| `V4__observations`         | Datasets/providers/series/immutable price, FX, rate, CPI and manual-value observations plus latest projections                 |
+| `V5__analysis`             | Daily valuation/performance, calculation runs, scenarios and dependency manifests                                              |
+| `V6__everyday_money`       | Categories/rules, recurring expectations, contracts/bills, cards/debt, income and documents/actions                            |
+| `V7__planning`             | Goals/resilience, decision journal/briefs and plan calculation snapshots                                                       |
+| `V8__people_household`     | Counterparties, claims/shared expenses, households/members/scoped grants and family flows                                      |
+| `V9__purchases_protection` | Purchases/receipts/recoveries/stored value, utilities, projects, protection and invoices                                       |
+| `V10__policy_calendar`     | Versioned jurisdiction/policy/rule/calendar records                                                                            |
+| `V11__physical_assets`     | Physical-asset lifecycle, interests, meters/consumption, costs, service/warranty, valuations and disposal                      |
 
 Names/versions may change as implementation progresses. The rule is one coherent, deployable, tested slice per migration—not one giant future schema or one file per table.
 
@@ -455,13 +469,13 @@ These development versions may later converge into one user-facing versioned hou
 
 Every imported or observed fact has a source mode:
 
-| Mode | Meaning | Allowed use |
-|---|---|---|
-| `USER_ENTERED` | User entered/reviewed the value | Actual user history, with manual quality label |
-| `FILE_IMPORTED` | CSV/JSON/statement file with retained batch/row provenance | Actual history after validation/review |
-| `REFERENCE_SEED` | Stable application reference/policy sample | Startup/reference behavior |
-| `SYNTHETIC` | Deterministic generated/test/demo value | Demo and automated tests only; always visibly fake |
-| `PROVIDER` | Value obtained from a real external provider | Actual analytics subject to licence/quality/coverage |
+| Mode             | Meaning                                                    | Allowed use                                          |
+| ---------------- | ---------------------------------------------------------- | ---------------------------------------------------- |
+| `USER_ENTERED`   | User entered/reviewed the value                            | Actual user history, with manual quality label       |
+| `FILE_IMPORTED`  | CSV/JSON/statement file with retained batch/row provenance | Actual history after validation/review               |
+| `REFERENCE_SEED` | Stable application reference/policy sample                 | Startup/reference behavior                           |
+| `SYNTHETIC`      | Deterministic generated/test/demo value                    | Demo and automated tests only; always visibly fake   |
+| `PROVIDER`       | Value obtained from a real external provider               | Actual analytics subject to licence/quality/coverage |
 
 Common observation/provenance fields include dataset/source ID, source kind, provider key, effective time, publication/ingestion time, revision, original unit/currency, normalized value, quality flags, confidence, licence/retention metadata, and `synthetic` status.
 
@@ -527,23 +541,23 @@ Business, valuation and scenario tests must not require an HTTP mock server.
 
 ### Offline/fake replacement matrix
 
-| Needed data | First implementation without internet | Synthetic/test implementation | Later provider path |
-|---|---|---|---|
-| Instrument prices/total-return data | CSV/manual observation import | Seeded scripted/random-walk series with gaps, splits and revisions | Licensed market-data adapter |
-| FX | Manual executed rates plus CSV reference series | Deterministic TRY/USD/EUR/GBP series | Central-bank/licensed FX adapter |
-| Deposit/rate products | User-entered terms and sample policy | Fixed/rolling sample schedules | Bank/product/rate source |
-| CPI/inflation | CSV/manual index values and personal basket | Deterministic monthly index | Official statistics source |
-| Bank/broker activity | Manual entry and reviewed CSV import | Synthetic statements containing duplicates/corrections | Deferred future account/broker connectivity; outside this roadmap |
-| Corporate actions | Manual reviewed event | Split/dividend/merger fixtures | Licensed corporate-action source |
-| Bills/subscriptions/contracts | Manual entry/CSV | Synthetic recurring contracts and price changes | Bank/email/biller discovery later |
-| Receipts/documents | Manual structured form and file attachment | Fixture extraction JSON and stub OCR results | OCR/document provider |
-| Product prices/return windows | Manual receipt lines/policies | Sample catalogue and recovery cases | Licensed retailer/product source |
-| Utility use/tariffs | Manual meter/tariff entries and CSV | Synthetic seasonal usage and tiered tariff | Utility/open-data/provider adapter |
-| Vehicle/asset valuations | Manual appraisal/range/offer | Synthetic depreciation/market-value observations | Licensed valuation/VIN source |
-| Tax/government rules | Versioned sample policy pack | Edge-case sample jurisdiction | Official content plus specialist review |
-| Notifications | In-app action queue | Capturing/log sender | Email/push provider |
-| AI categorization/import | Deterministic rules and review form | Fixed classifier/extraction fixtures | Optional model provider |
-| Authentication | Local email/password/dev tokens | Test principals/JWT fixtures | Google/OIDC and future providers |
+| Needed data                         | First implementation without internet           | Synthetic/test implementation                                      | Later provider path                                               |
+| ----------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------- |
+| Instrument prices/total-return data | CSV/manual observation import                   | Seeded scripted/random-walk series with gaps, splits and revisions | Licensed market-data adapter                                      |
+| FX                                  | Manual executed rates plus CSV reference series | Deterministic TRY/USD/EUR/GBP series                               | Central-bank/licensed FX adapter                                  |
+| Deposit/rate products               | User-entered terms and sample policy            | Fixed/rolling sample schedules                                     | Bank/product/rate source                                          |
+| CPI/inflation                       | CSV/manual index values and personal basket     | Deterministic monthly index                                        | Official statistics source                                        |
+| Bank/broker activity                | Manual entry and reviewed CSV import            | Synthetic statements containing duplicates/corrections             | Deferred future account/broker connectivity; outside this roadmap |
+| Corporate actions                   | Manual reviewed event                           | Split/dividend/merger fixtures                                     | Licensed corporate-action source                                  |
+| Bills/subscriptions/contracts       | Manual entry/CSV                                | Synthetic recurring contracts and price changes                    | Bank/email/biller discovery later                                 |
+| Receipts/documents                  | Manual structured form and file attachment      | Fixture extraction JSON and stub OCR results                       | OCR/document provider                                             |
+| Product prices/return windows       | Manual receipt lines/policies                   | Sample catalogue and recovery cases                                | Licensed retailer/product source                                  |
+| Utility use/tariffs                 | Manual meter/tariff entries and CSV             | Synthetic seasonal usage and tiered tariff                         | Utility/open-data/provider adapter                                |
+| Vehicle/asset valuations            | Manual appraisal/range/offer                    | Synthetic depreciation/market-value observations                   | Licensed valuation/VIN source                                     |
+| Tax/government rules                | Versioned sample policy pack                    | Edge-case sample jurisdiction                                      | Official content plus specialist review                           |
+| Notifications                       | In-app action queue                             | Capturing/log sender                                               | Email/push provider                                               |
+| AI categorization/import            | Deterministic rules and review form             | Fixed classifier/extraction fixtures                               | Optional model provider                                           |
+| Authentication                      | Local email/password/dev tokens                 | Test principals/JWT fixtures                                       | Google/OIDC and future providers                                  |
 
 ### One coherent demo universe
 
@@ -1040,40 +1054,40 @@ Exit gate: [mobile-api-readiness.md](mobile-api-readiness.md) is satisfied and t
 
 The detailed behavior and acceptance criteria live in [implementable-features.md](implementable-features.md). This table ensures no planned feature is lost.
 
-| Feature | Stage | Primary module | Works without internet through |
-|---|---:|---|---|
-| FT-01 Reconciled Money Timeline/net worth | 4 | ledger/analysis | Manual/CSV activities and manual valuations |
-| FT-02 Investment Truth/return explanation | 4 | investing/analysis | Synthetic/manual price/FX series |
-| FT-03 Money Calendar | 6 | money | User-entered contracts/recurrence |
-| FT-04 Available after commitments/runway | 7 | analysis | Account balances + entered commitments |
-| FT-05 Goals/sinking funds | 7 | analysis | User plans and manual target values |
-| FT-06 Decision Replay | 5 | analysis | Synthetic/manual observations |
-| FT-07 Deposit/debt/FX engines | 5 | analysis | User terms + sample policy packs |
-| FT-08 Personal purchasing power | 5 | analysis | Personal basket + synthetic/manual CPI |
-| FT-09 Purchase/life decisions | 5 | analysis | User assumptions + sample templates |
-| FT-10 Irregular income/tax reserve | 7 | money/analysis | Manual income and sample reserve policy |
-| FT-11 Contribution-first rebalancing | 4 | investing/analysis | Entered target allocation |
-| FT-12 Decision journal/review | 5 | analysis | User-entered decision and saved scenario |
-| FT-13 Selective household money | 8 | identity | Local household/test principals |
-| FT-14 Evidence-backed Money Brief | 7 | analysis | Deterministic read models/rules |
-| FT-15 Spending/monthly close | 6 | money/ledger | Manual/CSV transactions |
-| FT-16 Personal IOUs/private loans | 8 | money | Manual counterparties/claims |
-| FT-17 Shared expenses/settlement | 8 | money | Manual groups/allocations |
-| FT-18 Bills/subscriptions/contracts | 6 | money | Entered contracts and sample recurrence |
-| FT-19 Shopping/receipts/purchases | 9 | money | Manual lines + fixture extractor |
-| FT-20 Income/payslips/benefits | 6 | money | Manual/CSV statement components |
-| FT-21 Freelancer invoices | 9 | money | Manual invoices/claims |
-| FT-22 Refunds/disputes/warranties/claims | 9 | money | Manual cases/documents |
-| FT-23 Document vault/action queue | 6 | money/platform | Local files + stub extraction |
-| FT-24 Cash/gift cards/store credit/rewards | 9 | ledger/money | Manual restricted-value accounts |
-| FT-25 Utility/tariff intelligence | 9 | money/analysis | Manual meters + sample tariff |
-| FT-26 Event/project money | 9 | money | User projects over canonical records |
-| FT-27 Insurance/protection map | 9 | money | Manual policies/documents |
-| FT-28 Family support/gifts/giving | 8 | money | Manual transfers/claims |
-| FT-29 Cards/BNPL/overdraft/installments | 6 | ledger/money | User-entered terms/statements |
-| FT-30 Tax/government calendar | 10 | money/analysis | Versioned sample/manual policy pack |
-| FT-31 Multi-account cash/funding | 2 | ledger | Manual/CSV accounts and postings |
-| FT-32 Physical-asset lifecycle/TCO | 11 | assets | Manual meters/costs/value + synthetic asset series |
+| Feature                                    | Stage | Primary module     | Works without internet through                     |
+| ------------------------------------------ | ----: | ------------------ | -------------------------------------------------- |
+| FT-01 Reconciled Money Timeline/net worth  |     4 | ledger/analysis    | Manual/CSV activities and manual valuations        |
+| FT-02 Investment Truth/return explanation  |     4 | investing/analysis | Synthetic/manual price/FX series                   |
+| FT-03 Money Calendar                       |     6 | money              | User-entered contracts/recurrence                  |
+| FT-04 Available after commitments/runway   |     7 | analysis           | Account balances + entered commitments             |
+| FT-05 Goals/sinking funds                  |     7 | analysis           | User plans and manual target values                |
+| FT-06 Decision Replay                      |     5 | analysis           | Synthetic/manual observations                      |
+| FT-07 Deposit/debt/FX engines              |     5 | analysis           | User terms + sample policy packs                   |
+| FT-08 Personal purchasing power            |     5 | analysis           | Personal basket + synthetic/manual CPI             |
+| FT-09 Purchase/life decisions              |     5 | analysis           | User assumptions + sample templates                |
+| FT-10 Irregular income/tax reserve         |     7 | money/analysis     | Manual income and sample reserve policy            |
+| FT-11 Contribution-first rebalancing       |     4 | investing/analysis | Entered target allocation                          |
+| FT-12 Decision journal/review              |     5 | analysis           | User-entered decision and saved scenario           |
+| FT-13 Selective household money            |     8 | identity           | Local household/test principals                    |
+| FT-14 Evidence-backed Money Brief          |     7 | analysis           | Deterministic read models/rules                    |
+| FT-15 Spending/monthly close               |     6 | money/ledger       | Manual/CSV transactions                            |
+| FT-16 Personal IOUs/private loans          |     8 | money              | Manual counterparties/claims                       |
+| FT-17 Shared expenses/settlement           |     8 | money              | Manual groups/allocations                          |
+| FT-18 Bills/subscriptions/contracts        |     6 | money              | Entered contracts and sample recurrence            |
+| FT-19 Shopping/receipts/purchases          |     9 | money              | Manual lines + fixture extractor                   |
+| FT-20 Income/payslips/benefits             |     6 | money              | Manual/CSV statement components                    |
+| FT-21 Freelancer invoices                  |     9 | money              | Manual invoices/claims                             |
+| FT-22 Refunds/disputes/warranties/claims   |     9 | money              | Manual cases/documents                             |
+| FT-23 Document vault/action queue          |     6 | money/platform     | Local files + stub extraction                      |
+| FT-24 Cash/gift cards/store credit/rewards |     9 | ledger/money       | Manual restricted-value accounts                   |
+| FT-25 Utility/tariff intelligence          |     9 | money/analysis     | Manual meters + sample tariff                      |
+| FT-26 Event/project money                  |     9 | money              | User projects over canonical records               |
+| FT-27 Insurance/protection map             |     9 | money              | Manual policies/documents                          |
+| FT-28 Family support/gifts/giving          |     8 | money              | Manual transfers/claims                            |
+| FT-29 Cards/BNPL/overdraft/installments    |     6 | ledger/money       | User-entered terms/statements                      |
+| FT-30 Tax/government calendar              |    10 | money/analysis     | Versioned sample/manual policy pack                |
+| FT-31 Multi-account cash/funding           |     2 | ledger             | Manual/CSV accounts and postings                   |
+| FT-32 Physical-asset lifecycle/TCO         |    11 | assets             | Manual meters/costs/value + synthetic asset series |
 
 ## Testing strategy
 
