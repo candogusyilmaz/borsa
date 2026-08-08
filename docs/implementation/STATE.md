@@ -52,7 +52,9 @@ Established:
 
 ### PR-003 — Identity and platform JPA entity mappings
 
-Status: **IMPLEMENTED (pending user review)**
+Status: **COMPLETED**
+
+Accepted commit: `97a06b7`
 
 Specification:
 
@@ -60,16 +62,16 @@ Specification:
 
 Established:
 
-- `dev.canverse.stocks.identity.UserAccount` — maps `identity.user_account`
-- `dev.canverse.stocks.identity.UserAccountRepository`
-- `dev.canverse.stocks.identity.AuthIdentity` — maps `identity.auth_identity`; lazy mandatory FK to `UserAccount`
-- `dev.canverse.stocks.identity.AuthIdentityRepository`
-- `dev.canverse.stocks.identity.DeviceSession` — maps `identity.device_session`; lazy mandatory FK to `UserAccount`; `replacedBySessionId` as plain `UUID`
-- `dev.canverse.stocks.identity.DeviceSessionRepository`
-- `dev.canverse.stocks.platform.SecurityEvent` — maps `platform.security_event`; nullable lazy FK to `UserAccount`; `details` as `@JdbcTypeCode(SqlTypes.JSON) String`
-- `dev.canverse.stocks.platform.SecurityEventRepository`
-- `dev.canverse.stocks.platform.Job` — maps `platform.job`; nullable lazy FK to `UserAccount`; `payload` as `@JdbcTypeCode(SqlTypes.JSON) String`
-- `dev.canverse.stocks.platform.JobRepository`
+- `dev.canverse.stocks.identity.domain.UserAccount` — maps `identity.user_account`
+- `dev.canverse.stocks.identity.infrastructure.UserAccountRepository`
+- `dev.canverse.stocks.identity.domain.AuthIdentity` — maps `identity.auth_identity`; lazy mandatory FK to `UserAccount`
+- `dev.canverse.stocks.identity.infrastructure.AuthIdentityRepository`
+- `dev.canverse.stocks.identity.domain.DeviceSession` — maps `identity.device_session`; lazy mandatory FK to `UserAccount`; `replacedBySessionId` as plain `UUID`
+- `dev.canverse.stocks.identity.infrastructure.DeviceSessionRepository`
+- `dev.canverse.stocks.platform.domain.SecurityEvent` — maps `platform.security_event`; nullable lazy FK to `UserAccount`; `details` as `@JdbcTypeCode(SqlTypes.JSON) String`
+- `dev.canverse.stocks.platform.infrastructure.SecurityEventRepository`
+- `dev.canverse.stocks.platform.domain.Job` — maps `platform.job`; nullable lazy FK to `UserAccount`; `payload` as `@JdbcTypeCode(SqlTypes.JSON) String`
+- `dev.canverse.stocks.platform.infrastructure.JobRepository`
 - `EntityMappingTest` — five Testcontainers PostgreSQL mapping/load tests; Hibernate `ddl-auto: validate` passes against V1
 
 ## Current database
@@ -111,12 +113,27 @@ Tables:
 
 ## Current application state
 
-Implemented production foundation:
+Implemented production foundation and V1 mappings in the authoritative capability sub-packages:
 
 ```text
 dev.canverse.stocks
 ├── ServerApplication
+├── identity
+│   ├── domain
+│   │   ├── UserAccount
+│   │   ├── AuthIdentity
+│   │   └── DeviceSession
+│   └── infrastructure
+│       ├── UserAccountRepository
+│       ├── AuthIdentityRepository
+│       └── DeviceSessionRepository
 └── platform
+    ├── domain
+    │   ├── SecurityEvent
+    │   └── Job
+    ├── infrastructure
+    │   ├── SecurityEventRepository
+    │   └── JobRepository
     ├── config
     │   └── TimeConfiguration
     ├── id
@@ -126,26 +143,6 @@ dev.canverse.stocks
         └── ApiExceptionHandler
 ```
 
-PR-003 is expected to add:
-
-```text
-dev.canverse.stocks.identity
-├── UserAccount
-├── UserAccountRepository
-├── AuthIdentity
-├── AuthIdentityRepository
-├── DeviceSession
-└── DeviceSessionRepository
-
-dev.canverse.stocks.platform
-├── SecurityEvent
-├── SecurityEventRepository
-├── Job
-└── JobRepository
-```
-
-These expected PR-003 files are not considered implemented until the PR is reviewed and accepted.
-
 ## Important decisions discovered during implementation
 
 - Flyway SQL is the only DDL authority.
@@ -154,10 +151,18 @@ These expected PR-003 files are not considered implemented until the PR is revie
 - JPA entities may use `Instant` for persisted timestamp fields.
 - PR-003 is read/mapping-oriented. It does not establish entity mutation APIs or JPA write semantics.
 - JSON fields are initially mapped as opaque JSON strings with Hibernate JSON JDBC typing; final write-side representation is deferred until a real write use case requires it.
+- Lombok is an accepted project dependency. Touched JPA entities use `@Getter` and `@NoArgsConstructor(access = AccessLevel.PROTECTED)`; Spring components use `@RequiredArgsConstructor` where appropriate.
+- Capability code uses the fixed `domain`, `application`, `infrastructure`, `configuration`, and `web` sub-packages from `coding-standards.md`, omitting unused sub-packages.
+
+## Active implementation unit
+
+PR-004 realigns the ten accepted V1 entity/repository types with the fixed capability sub-packages and Lombok entity convention. The implementation is behavior-preserving and remains active pending user review; it does not add authentication.
+
+See `CURRENT.md` and `PR-004-v1-mapping-package-alignment.md` for the authoritative active scope.
 
 ## Next likely implementation areas
 
-These are planning hints only, not active specifications.
+These are planning hints for work after PR-004, not active specifications.
 
 Likely sequence:
 
@@ -167,7 +172,7 @@ Likely sequence:
 4. durable job claim/retry worker;
 5. V2 reference migration.
 
-The exact next implementation unit must be designed just-in-time after the active PR is reviewed and accepted.
+The exact next behavioral implementation unit must be designed just-in-time after PR-004 is reviewed and accepted.
 
 Do not treat this list as a promise of PR numbering or exact scope.
 
@@ -175,6 +180,7 @@ Do not treat this list as a promise of PR numbering or exact scope.
 
 - No authentication behavior yet.
 - No Spring Security configuration yet.
+- Maven explicitly registers Lombok on the annotation-processor path so Lombok-generated entity accessors and constructors compile on Java 25.
 - No reference data yet.
 - No ledger yet.
 - No financial-account model yet.

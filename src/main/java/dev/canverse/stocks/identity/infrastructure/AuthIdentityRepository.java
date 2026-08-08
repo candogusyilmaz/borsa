@@ -1,5 +1,6 @@
-package dev.canverse.stocks.identity;
+package dev.canverse.stocks.identity.infrastructure;
 
+import dev.canverse.stocks.identity.domain.AuthIdentity;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 

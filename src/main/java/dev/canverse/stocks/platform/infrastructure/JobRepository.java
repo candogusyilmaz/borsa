@@ -1,5 +1,6 @@
-package dev.canverse.stocks.platform;
+package dev.canverse.stocks.platform.infrastructure;
 
+import dev.canverse.stocks.platform.domain.Job;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 

@@ -2,11 +2,11 @@ package dev.canverse.stocks;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import dev.canverse.stocks.identity.AuthIdentityRepository;
-import dev.canverse.stocks.identity.DeviceSessionRepository;
-import dev.canverse.stocks.identity.UserAccountRepository;
-import dev.canverse.stocks.platform.JobRepository;
-import dev.canverse.stocks.platform.SecurityEventRepository;
+import dev.canverse.stocks.identity.infrastructure.AuthIdentityRepository;
+import dev.canverse.stocks.identity.infrastructure.DeviceSessionRepository;
+import dev.canverse.stocks.identity.infrastructure.UserAccountRepository;
+import dev.canverse.stocks.platform.infrastructure.JobRepository;
+import dev.canverse.stocks.platform.infrastructure.SecurityEventRepository;
 import jakarta.persistence.EntityManager;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;

@@ -1,6 +1,6 @@
 # PR-002 — V1 foundation database
 
-Status: **ACTIVE**
+Status: **COMPLETE**
 
 ## Goal
 

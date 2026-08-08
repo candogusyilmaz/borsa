@@ -1,6 +1,6 @@
 # Backend transformation progress report
 
-Report date: 2026-08-07
+Report date: 2026-08-08
 
 Scope: Spring Boot backend, PostgreSQL dump, database migration strategy, modular-monolith design, offline/fake data approach, and implementation readiness. React was not reviewed or changed in this update.
 
@@ -18,11 +18,12 @@ Scope: Spring Boot backend, PostgreSQL dump, database migration strategy, modula
 | Accounting contract                                | Initial implementation contract complete                     | [accounting-contract.md](accounting-contract.md): shared posting/time/fee/cost-basis/FX/balance/valuation/performance/projection semantics                                                                                   |
 | New target database                                | Created by user, not yet initialized/verified by this review | PostgreSQL database name `extreme_accounting`                                                                                                                                                                                |
 | PR-001 — Modern backend foundation                 | **Complete**                                                 | Starting commit `b2c42e751097c7a19805c0a53b28941fa4deebce`; legacy backend deleted; Spring Boot 4.1.0 / Java 25 skeleton green; 5 tests passing                                                                              |
-| Fresh database baseline (`V1__foundation.sql`)     | **Complete (pending user review)**                           | 8 application schemas created; 5 foundation tables (`identity.user_account/auth_identity/device_session`, `platform.security_event/job`) with all required constraints and indexes; Flyway migrates a fresh DB to v1 cleanly |
-| PR-003 — Identity and platform JPA entity mappings | **Implemented (pending user review)**                        | 5 JPA entities + 5 repositories in `identity`/`platform`; Hibernate `ddl-auto: validate` passes; `EntityMappingTest` (5 tests) + all pre-existing tests green; 29 tests total                                                |
+| Fresh database baseline (`V1__foundation.sql`)     | **Complete**                                                 | Accepted in PR-002 (`dee5b02`); 8 application schemas and 5 foundation tables with required constraints/indexes; fresh PostgreSQL migrates cleanly to V1                                                                   |
+| PR-003 — Identity and platform JPA entity mappings | **Complete**                                                 | Accepted in `97a06b7`; 5 JPA entities + 5 repositories; Hibernate `ddl-auto: validate` and all 29 tests pass                                                                                                                  |
+| PR-004 — V1 mapping package alignment              | **Implemented (pending user review)**                         | 5 entities moved to `domain`, 5 repositories moved to `infrastructure`, Lombok accessors/constructors applied, and Lombok explicitly configured as a Java 25 annotation processor; fresh V1 mapping tests and all 29 tests pass |
 | Automated backend coverage                         | 29 tests, all green                                          | `ContextSmokeTest` (6 tests), `EntityMappingTest` (5 tests), `FoundationMigrationTest` (16 tests), `InfrastructureTest` (2 tests)                                                                                            |
 
-Overall status: **PR-003 implemented (pending user review). Five JPA entity mappings and five `JpaRepository` interfaces established for the V1 foundation tables. Hibernate `ddl-auto: validate` passes against fresh PostgreSQL V1. 29 tests pass. Next step is user review and acceptance of PR-003.**
+Overall status: **PR-004 implemented pending user review. The five V1 mappings now use the authoritative capability sub-packages and Lombok convention; Maven explicitly configures Lombok as a Java 25 annotation processor, and Hibernate `ddl-auto: validate`, all 29 tests, and `verify` pass.**
 
 ## Inputs analyzed
 

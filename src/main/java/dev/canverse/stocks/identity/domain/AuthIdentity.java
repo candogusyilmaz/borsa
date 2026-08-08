@@ -1,4 +1,4 @@
-package dev.canverse.stocks.identity;
+package dev.canverse.stocks.identity.domain;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -8,9 +8,14 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "auth_identity", schema = "identity")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AuthIdentity {
 
     @Id
@@ -29,34 +34,4 @@ public class AuthIdentity {
     private Instant createdAt;
 
     private Instant updatedAt;
-
-    protected AuthIdentity() {}
-
-    public UUID getId() {
-        return id;
-    }
-
-    public UserAccount getUserAccount() {
-        return userAccount;
-    }
-
-    public String getProvider() {
-        return provider;
-    }
-
-    public String getProviderSubject() {
-        return providerSubject;
-    }
-
-    public String getPasswordHash() {
-        return passwordHash;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public Instant getUpdatedAt() {
-        return updatedAt;
-    }
 }

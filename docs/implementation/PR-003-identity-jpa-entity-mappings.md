@@ -1,6 +1,6 @@
 # PR-003 — Identity and platform JPA entity mappings
 
-Status: **ACTIVE**
+Status: **COMPLETE**
 
 ## Goal
 
