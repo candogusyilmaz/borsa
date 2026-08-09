@@ -7,6 +7,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -42,4 +43,35 @@ public class DeviceSession {
     private String revokeReason;
 
     private UUID replacedBySessionId;
+
+    public static DeviceSession initialGeneration(
+            UUID id,
+            UserAccount userAccount,
+            String refreshTokenHash,
+            String deviceLabel,
+            Instant createdAt,
+            Instant expiresAt) {
+        Objects.requireNonNull(id, "id");
+        Objects.requireNonNull(userAccount, "userAccount");
+        Objects.requireNonNull(refreshTokenHash, "refreshTokenHash");
+        Objects.requireNonNull(createdAt, "createdAt");
+        Objects.requireNonNull(expiresAt, "expiresAt");
+        if (!expiresAt.isAfter(createdAt)) {
+            throw new IllegalArgumentException("expiresAt must be after createdAt");
+        }
+
+        var deviceSession = new DeviceSession();
+        deviceSession.id = id;
+        deviceSession.userAccount = userAccount;
+        deviceSession.familyId = id;
+        deviceSession.refreshTokenHash = refreshTokenHash;
+        deviceSession.deviceLabel = deviceLabel;
+        deviceSession.createdAt = createdAt;
+        deviceSession.lastUsedAt = null;
+        deviceSession.expiresAt = expiresAt;
+        deviceSession.revokedAt = null;
+        deviceSession.revokeReason = null;
+        deviceSession.replacedBySessionId = null;
+        return deviceSession;
+    }
 }

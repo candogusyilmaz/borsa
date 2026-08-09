@@ -1,6 +1,6 @@
 # PR-009 — Automated-batch state reconciliation
 
-Status: **ACTIVE**
+Status: **COMPLETE**
 
 ## Goal
 
@@ -109,6 +109,10 @@ Fill this before marking PR-009 complete.
 ### Starting commit
 
 - `61fe8a6` (`pr-008`).
+
+### Accepted commit
+
+- `82f6a34` (`reconcile automated batch state`).
 
 ### Implemented
 

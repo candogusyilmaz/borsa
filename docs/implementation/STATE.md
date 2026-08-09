@@ -145,6 +145,31 @@ Established:
 - pure fallback and PostgreSQL/Testcontainers coverage proving timing-control flow and unchanged persisted identity state;
 - no HTTP login, principal, token, session, security-event, abuse-control, schema, migration, or entity-mapping behavior.
 
+### PR-009 - Automated-batch state reconciliation
+
+Status: **COMPLETED**
+
+Accepted commit: `82f6a34`
+
+Established:
+
+- repository implementation documents reconciled with the accepted PR-008 commit;
+- automated local-commit batches use `git commit --no-verify` only after required verification and independent review;
+- no production, test, migration, dependency, configuration, frontend, or backend-behavior change.
+
+### PR-010 - Initial opaque refresh-session issuance
+
+Status: **IMPLEMENTED AND INDEPENDENTLY REVIEWED - READY FOR SUPERVISOR COMMIT**
+
+Established:
+
+- immutable `stocks.identity.refresh-session.lifetime` configuration with a positive 30-day default;
+- 32-byte `SecureRandom` refresh tokens encoded as unpadded Base64url and deterministically hashed with SHA-256 for storage;
+- one initial `DeviceSession` construction path whose session ID is also its token-family ID and whose usage, revocation, and replacement state begins null;
+- transactional session issuance that rechecks user eligibility, persists only the token hash, and returns the raw token once with its session ID and expiry;
+- pure configuration/token coverage and PostgreSQL/Testcontainers coverage for initial issuance, optional labels, independent device families, disabled/missing users, and raw-token non-persistence;
+- no HTTP login, access token, refresh rotation, logout/revocation, principal/filter-chain, security-event, abuse-control, schema, migration, dependency, or frontend behavior.
+
 ## Current database
 
 Migration version: `V1`
@@ -246,20 +271,21 @@ dev.canverse.stocks
 - The versioned local-registration endpoint is intentionally unauthenticated: it delegates once to the PR-005 transactional workflow and returns only the new user ID; login, tokens, sessions, and Spring Security remain deferred.
 - HTTP registration validation occurs before the service workflow, while duplicate and malformed-request failures retain the shared PR-006 ProblemDetail and trace-correlation behavior.
 - Local credential verification is application-only and read-only: it normalizes the lookup email with `Locale.ROOT`, performs one password match with a constructed dummy-hash fallback when needed, rejects disabled accounts uniformly, and returns only the associated user UUID. Structural validation is deferred to the future HTTP login boundary; the service has no validation annotations.
+- Initial refresh-session issuance is application-only: it rechecks user eligibility, uses injected clock/ID generation and a positive configured lifetime, returns one high-entropy raw token, and stores only its SHA-256 Base64url hash in the existing `device_session` table.
 
 ## Active implementation unit
 
-PR-009 automated-batch state reconciliation is active. It reconciles these implementation documents with the completed PR-008 commit and makes no production, test, migration, dependency, runtime-configuration, frontend, or backend-behavior change.
+PR-010 initial opaque refresh-session issuance is active. It adds only the transactional creation of a first server-side session generation for an already authenticated eligible user, returning the raw token once and persisting only its hash.
 
-See `CURRENT.md` and `PR-009-automated-batch-state-reconciliation.md` for the authoritative active scope.
+See `CURRENT.md` and `PR-010-initial-refresh-session-issuance.md` for the authoritative active scope.
 
 ## Next likely implementation areas
 
-These are planning hints for work after the PR-009 reconciliation commit, not active specifications.
+These are planning hints for work after PR-010, not active specifications.
 
 Likely sequence:
 
-1. HTTP login and the minimum token/session boundary, split into reviewable units;
+1. HTTP login and the minimum access-token/session boundary, composing the accepted credential-verification and initial-session workflows in separately reviewable units;
 2. refresh sessions / rotation / logout / revocation;
 3. security events and authentication abuse protection;
 4. durable job claim/retry worker;
@@ -271,7 +297,8 @@ Do not treat this list as a promise of PR numbering or exact scope.
 
 ## Known issues / deferred work
 
-- No HTTP authentication, login, token, or security-filter behavior yet; application-layer local credential verification and unauthenticated registration do not establish a principal or session.
+- No HTTP authentication, login, access-token, or security-filter behavior yet; application-layer credential verification and initial refresh-session issuance do not establish a principal or HTTP authentication flow.
+- No refresh-token lookup, rotation/reuse detection, logout, revocation, or session listing/deletion behavior yet.
 - No Spring Security web/filter-chain configuration yet.
 - Maven explicitly registers Lombok on the annotation-processor path so Lombok-generated entity accessors and constructors compile on Java 25.
 - No reference data yet.
