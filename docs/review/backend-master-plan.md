@@ -141,7 +141,7 @@ All newly implemented APIs use these rules from their first release; R16 audits/
 ### File economy
 
 - Prefer one cohesive service per aggregate/workflow, not one class per operation.
-- Keep request/response records beside the controller or service when they are not reused.
+- Keep API request/response records in the owning capability's directional `input`/`output` packages; keep application commands and query results with the application workflow that owns them.
 - Do not create a repository interface and wrapper repository for the same table.
 - Use JPA for aggregate writes/simple reads and Spring `JdbcClient`/explicit SQL for complex read models. Do not restore MyBatis/QueryDSL in the scratch rewrite unless a concrete query proves they add value.
 - Add one Flyway migration per coherent release slice, not one migration file per table.
@@ -272,7 +272,9 @@ dev.canverse.stocks
     application/     ← transactional services, use cases
     infrastructure/  ← Spring Data repositories, external adapters
     configuration/   ← Spring @Configuration classes
-    web/             ← controllers, request/response records
+    input/            ← inbound HTTP/API request records
+    output/           ← outbound HTTP/API response records
+    web/              ← controllers
 ```
 
 Omit a sub-package entirely when a capability has no code in that layer yet — do not create empty packages. A further feature-group split inside a sub-package (e.g. `money/application/spending/`) is acceptable when the package becomes large.
@@ -302,7 +304,7 @@ For a normal workflow, start with:
 - one Spring Data repository where CRUD is needed;
 - one service containing transaction and invariant logic;
 - one controller for related endpoints;
-- request/response records beside the controller/service unless shared;
+- API request records in the capability `input` package and response records in `output`;
 - one query/read-model class only when the screen/report justifies it.
 
 Do not automatically add a domain interface, implementation, mapper, factory, command handler, query handler, and event class for every operation.

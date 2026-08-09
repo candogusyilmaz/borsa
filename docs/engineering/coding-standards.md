@@ -36,6 +36,9 @@ These standards define **how code is written**. Product scope and sequencing liv
 - Omit `@Autowired` on a single constructor.
 - Put transaction boundaries on cohesive application/domain services, not controllers.
 - Keep controllers thin: HTTP parsing/validation/auth context → application service → response mapping.
+- Prefer composed HTTP method mappings with a direct path string such as `@PostMapping("register")`; omit `value`/`path` when only one path is mapped.
+- Do not add `consumes` or `produces` attributes to ordinary JSON request mappings. Let Spring's message converters and content negotiation infer the media types; add explicit media-type constraints only when a mapping ambiguity or a concrete non-default media-type contract requires them.
+- For a fixed HTTP status, prefer `@ResponseStatus` and return the response body directly. Use `ResponseEntity` only when the handler needs a dynamic status, response-specific headers, or other response-level control.
 - Use `@ConfigurationProperties` for grouped application configuration rather than scattered `@Value` fields.
 - Keep `spring.jpa.open-in-view=false`. Do not rely on lazy loading from controllers/serializers.
 - Use framework abstractions only when they simplify a real requirement. Avoid generic base services/controllers/repositories that erase domain intent.
@@ -51,17 +54,23 @@ dev.canverse.stocks
     application/     ← transactional services, use cases
     infrastructure/  ← Spring Data repositories, external adapters
     configuration/   ← Spring @Configuration classes
-    web/             ← controllers, request/response records
+    input/            ← inbound HTTP/API request records
+    output/           ← outbound HTTP/API response records
+    web/              ← controllers
   reference/
     domain/
     application/
     infrastructure/
     configuration/
+    input/
+    output/
     web/
   ... (same structure for every capability)
 ```
 
 Do not create these as global top-level layers at the root package level. Omit a sub-package entirely when a capability has no code in that layer yet. Within a crowded capability sub-package, a further feature-group split (e.g. `money/application/spending/`) is acceptable.
+
+API DTO placement is directional: request records belong in the owning capability's `input` package and response records belong in its `output` package, even when used by only one controller. Keep application commands and query results in `application`; do not move every Java method input/output into the API DTO packages. Do not add a parallel `dto` package.
 
 Avoid `FooService` + `FooServiceImpl`, `FooUseCase`, `FooPort`, `FooAdapter`, mapper interfaces and command-handler classes when one cohesive class is enough. Introduce interfaces for:
 
@@ -114,6 +123,7 @@ Avoid `FooService` + `FooServiceImpl`, `FooUseCase`, `FooPort`, `FooAdapter`, ma
 
 - New public endpoints live under `/api/v1`.
 - API request/response models are records unless mutability is specifically required.
+- Annotate response DTO components with `@NotNull` when the API contract guarantees they are present, so future OpenAPI/Swagger generation can express required response fields accurately; omit it for conditionally absent fields.
 - External IDs are opaque strings/UUIDs; do not expose database implementation details.
 - Financial decimals are canonical decimal strings according to the accounting contract/OpenAPI schema; do not send JavaScript-sensitive floating numbers.
 - Use Bean Validation at the HTTP boundary and domain/application validation for invariants that cannot be expressed structurally.

@@ -1,6 +1,6 @@
 # Backend transformation progress report
 
-Report date: 2026-08-08
+Report date: 2026-08-09
 
 Scope: Spring Boot backend, PostgreSQL dump, database migration strategy, modular-monolith design, offline/fake data approach, and implementation readiness. React was not reviewed or changed in this update.
 
@@ -23,9 +23,20 @@ Scope: Spring Boot backend, PostgreSQL dump, database migration strategy, modula
 | PR-004 — V1 mapping package alignment              | **Complete**                                                  | Accepted in `eed342e`; 5 entities moved to `domain`, 5 repositories moved to `infrastructure`, Lombok conventions applied, and clean Java 25 annotation processing configured                                            |
 | PR-005 — Atomic local account registration        | **Complete**                                                  | Transactional local registration, delegating password hashing, duplicate-constraint translation, rollback semantics, and 4 PostgreSQL service tests pass                                                                         |
 | PR-006 — Stable RFC 9457 error handling           | **Complete**                                                  | Structured `AppException`/`ErrorCode` contract, direct identity error-code use without a redundant exception wrapper, one global ProblemDetail handler, trace correlation, safe framework/persistence fallbacks, and 18 focused unit/MockMvc tests pass |
-| Automated backend coverage                         | 51 tests, all green                                          | Existing 33 tests plus `ErrorContractTest` (8 tests) and `GlobalExceptionHandlerIntegrationTest` (10 tests)                                                                                                                       |
+| PR-007 — HTTP local account registration           | **Complete — ready for user-owned commit**                     | Versioned `POST /api/v1/auth/register`, 201 JSON user-ID response, directional identity input/output DTOs, shared validation/duplicate/malformed error contract, and 4 PostgreSQL-backed HTTP tests pass                                  |
+| PR-008 — Local password credential verification    | **Active specification — not implemented**                     | Next bounded unit: read-only local credential verification with uniform invalid-credential behavior; no HTTP login, token, session, or security-filter work                                                                            |
+| Automated backend coverage                         | 55 tests, all green                                          | Existing 51 tests plus `LocalAccountRegistrationHttpTest` (4 tests)                                                                                                                       |
 
-Overall status: **PR-006 has been reviewed and is ready for the user-owned commit; clean Java 25 verification passes with all 51 tests. PR-007 is the active specification and adds only the HTTP boundary for local registration.**
+Overall status: **PR-007 has been reviewed and accepted for the user-owned commit; clean Java 25 verification passes with all 55 tests. PR-008 is the active specification and adds only application-layer local credential verification.**
+
+## Latest implementation checkpoint — PR-007
+
+- Date: 2026-08-09.
+- Production change: one `POST /api/v1/auth/register` controller with request/response records under the identity module's `input` and `output` packages; no migration, entity, repository, service, error-contract, trace-contract, or frontend changes.
+- HTTP coverage: success/commit, case-insensitive duplicate, validation-before-write, and malformed-body cases against PostgreSQL Testcontainers and the real Spring web context.
+- Verification: Spotless, the 18-test focused suite, the full 55-test suite, and `verify` all pass; `git diff --check` passes.
+- Database/schema result: unchanged V1 schema; no Flyway migration added or modified.
+- Follow-up: user-owned commit. `CURRENT.md` now points to the separately bounded PR-008 credential-verification specification; its implementation has not started.
 
 ## Inputs analyzed
 

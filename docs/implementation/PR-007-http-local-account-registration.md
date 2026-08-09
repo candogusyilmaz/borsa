@@ -1,6 +1,6 @@
 # PR-007 — HTTP local account registration
 
-Status: **ACTIVE**
+Status: **COMPLETE**
 
 ## Goal
 
@@ -70,9 +70,9 @@ POST /api/v1/auth/register
 
 Do not add a controller interface, mapper, command handler, façade, generic response envelope, or authentication abstraction.
 
-### 2. Add request and response records beside the controller
+### 2. Add request and response records in the identity DTO packages
 
-Keep the one-use HTTP records beside the controller rather than creating a DTO hierarchy.
+Place the HTTP request record in `dev.canverse.stocks.identity.input` and the response record in `dev.canverse.stocks.identity.output`, following the repository's directional API DTO convention. Do not add a parallel generic `dto` package or mapper abstraction.
 
 Request JSON:
 
@@ -192,10 +192,13 @@ Do not add or modify a Flyway migration, constraint, index, entity mapping, or r
 Expected production-code surface:
 
 ```text
-src/main/java/dev/canverse/stocks/identity/web/
-└── LocalAccountRegistrationController.java
-    ├── request record
-    └── response record
+src/main/java/dev/canverse/stocks/identity/
+├── input/
+│   └── RegistrationRequest.java
+├── output/
+│   └── RegistrationResponse.java
+└── web/
+    └── LocalAccountRegistrationController.java
 ```
 
 Expected test surface:
@@ -329,7 +332,7 @@ All PR-001 through PR-006 tests must remain green.
 
 1. Exactly one new production controller exposes `POST /api/v1/auth/register`.
 2. The endpoint consumes JSON and returns 201 JSON with exactly one `userId` UUID field on success.
-3. Request and response models are records kept beside the controller.
+3. Request and response models are records kept in `identity.input` and `identity.output`, respectively.
 4. HTTP validation exactly matches the accepted PR-005 email/password structural rules.
 5. The controller delegates once to `LocalAccountRegistrationService` and contains no domain/persistence behavior.
 6. A 201 response is backed by committed `user_account` and `LOCAL auth_identity` rows in PostgreSQL.
@@ -378,24 +381,34 @@ Fill this before marking PR-007 complete.
 
 ### Starting commit
 
-- Record the user-created commit containing PR-006 before implementation begins.
+- `a0bcd9bca6bcd6cbb099b815056acf6fb0281330` (`pr-006`)
 
 ### Implemented
 
-- ...
+- Added `LocalAccountRegistrationController` with the single `POST /api/v1/auth/register` JSON handler and HTTP-boundary validation.
+- Added one-use request and response records under `identity.input` and `identity.output`; successful responses contain only the opaque `userId` and return HTTP 201 JSON without a `Location` header.
+- Added PostgreSQL/Testcontainers MockMvc coverage using the real Spring web context, controller, registration service, repositories, global handler, and trace filter for success, duplicate, validation, and malformed-body behavior.
+- Preserved the PR-005 registration workflow and PR-006 error/trace contracts without changing entities, repositories, application services, migrations, or schema.
 
 ### Deviations from specification
 
-- None / ...
+- None.
 
 ### New decisions
 
-- None / ...
+- Capability-owned HTTP request DTOs reside in directional `input` packages and response DTOs in `output` packages; the coding standards and backend master plan now define this convention.
+- The HTTP integration test builds MockMvc from the real `WebApplicationContext` and explicitly registers the production `RequestTraceFilter` because the current test setup does not auto-configure MockMvc filters.
+- The registration handler uses `@PostMapping("register")` and `@ResponseStatus(HttpStatus.CREATED)` with a direct response body; Spring infers JSON conversion and content negotiation without explicit `consumes` or `produces` mapping attributes.
+- Error-case requests advertise `application/json` while asserting the global handler's `application/problem+json` responses; this lets Spring reach body validation/parsing while keeping the success mapping media-type-neutral.
 
 ### Tests executed
 
-- ...
+- `./mvnw spotless:check` (PowerShell: `mvnw.cmd spotless:check`) → BUILD SUCCESS.
+- `./mvnw -Dtest=LocalAccountRegistrationHttpTest,LocalAccountRegistrationServiceTest,GlobalExceptionHandlerIntegrationTest test` (PowerShell equivalent) → 18 tests, 0 failures, 0 errors.
+- `./mvnw test` (PowerShell equivalent) → 55 tests, 0 failures, 0 errors.
+- `./mvnw verify` (PowerShell equivalent) → BUILD SUCCESS, including Spotless and all 55 tests.
+- `git diff --check` → PASSED.
 
 ### Follow-up work
 
-- ...
+- PR-007 was reviewed and accepted by the user. Credential verification, HTTP login, tokens, sessions, Spring Security, and later authentication work remain separate implementation units.
