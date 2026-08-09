@@ -1,6 +1,6 @@
 # PR-008 — Local password credential verification
 
-Status: **ACTIVE**
+Status: **COMPLETE**
 
 ## Goal
 
@@ -308,6 +308,10 @@ Fill this before marking PR-008 complete.
 ### Starting commit
 
 - `0046bd0` (`pr-007`), the user-created commit containing the reviewed PR-007 state.
+
+### Accepted commit
+
+- `61fe8a6` (`pr-008`).
 
 ### Implemented
 

@@ -14,7 +14,7 @@ Last updated: 2026-08-09
 
 ## Git workflow
 
-- Working branch: `rewrite`
+- Working branch: `rewrite-agent-batch`
 - The user owns commits and Git operations.
 - Agents leave implementation changes uncommitted unless explicitly instructed otherwise.
 
@@ -131,7 +131,9 @@ Established:
 
 ### PR-008 - Local password credential verification
 
-Status: **IMPLEMENTED - PENDING USER REVIEW**
+Status: **COMPLETED**
+
+Accepted commit: `61fe8a6`
 
 Established:
 
@@ -247,13 +249,13 @@ dev.canverse.stocks
 
 ## Active implementation unit
 
-PR-008 local password credential verification is implemented in the working tree pending user review. It does not add an HTTP login endpoint, tokens, device sessions, Spring Security web configuration, or abuse controls.
+PR-009 automated-batch state reconciliation is active. It reconciles these implementation documents with the completed PR-008 commit and makes no production, test, migration, dependency, runtime-configuration, frontend, or backend-behavior change.
 
-See `CURRENT.md` and `PR-008-local-password-authentication.md` for the authoritative active scope.
+See `CURRENT.md` and `PR-009-automated-batch-state-reconciliation.md` for the authoritative active scope.
 
 ## Next likely implementation areas
 
-These are planning hints for work after PR-008, not active specifications.
+These are planning hints for work after the PR-009 reconciliation commit, not active specifications.
 
 Likely sequence:
 
@@ -263,7 +265,7 @@ Likely sequence:
 4. durable job claim/retry worker;
 5. V2 reference migration.
 
-The exact next behavioral implementation unit must be designed just-in-time after PR-008 is reviewed and accepted.
+The exact next behavioral implementation unit must be designed just-in-time from the reconciled committed state.
 
 Do not treat this list as a promise of PR numbering or exact scope.
 

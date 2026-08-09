@@ -24,10 +24,10 @@ Scope: Spring Boot backend, PostgreSQL dump, database migration strategy, modula
 | PR-005 — Atomic local account registration         | **Complete**                                                 | Transactional local registration, delegating password hashing, duplicate-constraint translation, rollback semantics, and 4 PostgreSQL service tests pass                                                                                                |
 | PR-006 — Stable RFC 9457 error handling            | **Complete**                                                 | Structured `AppException`/`ErrorCode` contract, direct identity error-code use without a redundant exception wrapper, one global ProblemDetail handler, trace correlation, safe framework/persistence fallbacks, and 18 focused unit/MockMvc tests pass |
 | PR-007 — HTTP local account registration           | **Complete**                                                 | Versioned `POST /api/v1/auth/register`, 201 JSON user-ID response, directional identity input/output DTOs, shared validation/duplicate/malformed error contract, and 4 PostgreSQL-backed HTTP tests pass                                                |
-| PR-008 — Local password credential verification    | **Implemented — pending user review**                        | Read-only local credential verification, uniform `INVALID_CREDENTIALS`, dummy-hash fallback, disabled/null-hash rejection, and five focused tests; no HTTP login, token, session, or security-filter work                                               |
+| PR-008 — Local password credential verification    | **Complete**                                                 | Accepted in `61fe8a6`; read-only local credential verification, uniform `INVALID_CREDENTIALS`, dummy-hash fallback, disabled/null-hash rejection, and five focused tests; no HTTP login, token, session, or security-filter work                          |
 | Automated backend coverage                         | 60 tests, all green                                          | Existing 55 tests plus `LocalPasswordAuthenticationServiceTest` (4 tests) and `LocalPasswordAuthenticationTimingTest` (1 test)                                                                                                                          |
 
-Overall status: **PR-008 is implemented and pending user review; clean Java 25 verification passes with all 60 tests. HTTP login, tokens, sessions, Spring Security web configuration, and abuse controls remain deferred. Structural input validation is intentionally deferred to the future HTTP login boundary.**
+Overall status: **PR-008 is complete at `61fe8a6`; its clean Java 25 verification passed with all 60 tests. PR-009 is the active documentation-only state reconciliation. HTTP login, tokens, sessions, Spring Security web configuration, and abuse controls remain deferred. Structural input validation is intentionally deferred to the future HTTP login boundary.**
 
 ## Latest implementation checkpoint — PR-008
 
@@ -37,7 +37,8 @@ Overall status: **PR-008 is implemented and pending user review; clean Java 25 v
 - Coverage: one pure fallback test plus four PostgreSQL/Testcontainers service tests cover construction-time dummy encoding, success/casing, indistinguishable failures, disabled accounts, null hashes, and persisted-state immutability.
 - Verification: `spotless:check`, the 13-test focused suite, the full 60-test suite, `verify`, and `git diff --check` all pass.
 - Database/schema result: unchanged V1 schema; no Flyway migration, constraint, index, or entity mapping was added or modified.
-- Follow-up: `CURRENT.md` remains on PR-008 pending user review; structural validation belongs at the future HTTP login boundary, while HTTP login and durable authentication/session behavior remain separate future units.
+- Accepted commit: `61fe8a6` (`pr-008`).
+- Follow-up: `CURRENT.md` points to the documentation-only PR-009 reconciliation; structural validation belongs at the future HTTP login boundary, while HTTP login and durable authentication/session behavior remain separate future units.
 
 ## Latest implementation checkpoint — PR-007
 
@@ -214,7 +215,7 @@ The 2026-08-07 document harmonization establishes these implementation rules:
 | Increment | Implementation result                                        | Status                                                                                                           |
 | --------: | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
 |        R0 | Preserve evidence and replace backend skeleton               | Not started                                                                                                      |
-|        R1 | Foundation, identity, auth, sessions and jobs                | In progress — PR-008 credential verification implemented; HTTP login, sessions, jobs and abuse controls deferred |
+|        R1 | Foundation, identity, auth, sessions and jobs                | In progress — PR-008 credential verification complete at `61fe8a6`; HTTP login, sessions, jobs and abuse controls deferred |
 |        R2 | Canonical references and deterministic seeds                 | Not started                                                                                                      |
 |        R3 | Accounts/ledger/funding/balances — FT-31                     | Not started                                                                                                      |
 |        R4 | Investing parity, funded trades and imports                  | Not started                                                                                                      |

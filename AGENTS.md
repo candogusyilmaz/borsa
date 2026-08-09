@@ -53,7 +53,7 @@ The supervising planning/review agent may:
 
 - inspect Git state and history;
 - stage files belonging to a completed active PR;
-- create exactly one local commit for each successfully completed PR;
+- create exactly one local commit for each successfully completed PR using `git commit --no-verify`;
 - after that commit, advance repository implementation state and begin planning exactly one next PR.
 
 The supervising agent must:
@@ -61,8 +61,11 @@ The supervising agent must:
 - commit only after independent review reports no unresolved `MUST FIX` findings;
 - run or verify all required acceptance checks before committing;
 - stage only files belonging to the active PR;
+- always create automated batch commits with `git commit --no-verify`;
 - ensure the working tree is clean after the commit before beginning the next PR;
 - derive the next PR from the newly committed repository state rather than pre-planning future PRs.
+
+`--no-verify` only bypasses local Git hooks. It does not waive any acceptance criterion, test, lint, migration, integration-test, or verification command required by the active PR or repository documentation.
 
 The supervising agent must never:
 
