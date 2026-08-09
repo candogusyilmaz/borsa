@@ -1,6 +1,6 @@
 # PR-015 — Database-backed access-token authentication
 
-Status: **ACTIVE**
+Status: **COMPLETE**
 
 ## Goal
 
@@ -256,6 +256,10 @@ Fill this before marking PR-015 complete.
 
 - `4621473` (`decode local access tokens`).
 
+### Accepted commit
+
+- `3d86ff2` (`authenticate local access tokens`).
+
 ### Implemented
 
 - Added only Boot-managed `spring-security-oauth2-resource-server` as a direct library dependency, without a starter, version override, or HTTP security configuration.
@@ -282,5 +286,5 @@ Fill this before marking PR-015 complete.
 
 ### Follow-up work
 
-- Independent review passed with no `MUST FIX` or `SHOULD FIX` findings; supervisor acceptance/local commit remains pending.
+- Independent review passed with no `MUST FIX` or `SHOULD FIX` findings; accepted in local commit `3d86ff2` (`authenticate local access tokens`).
 - Bearer-token extraction, `SecurityFilterChain`, HTTP authentication/error delivery, authorization, roles/permissions, owner helpers, persistent key management, refresh rotation/reuse handling, logout/revocation, security events, jobs, and abuse controls remain separate future units.

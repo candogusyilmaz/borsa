@@ -250,10 +250,10 @@ class LocalAccessTokenAuthenticationConverterTest {
     }
 
     @Test
-    void resourceServerLibraryAndConverterAddNoHttpSecurityBoundary() {
+    void converterRemainsSingleBeanWhenHttpSecurityBoundaryIsInstalled() {
         assertThat(applicationContext.getBeansOfType(LocalAccessTokenAuthenticationConverter.class))
                 .hasSize(1);
-        assertThat(applicationContext.getBeansOfType(SecurityFilterChain.class)).isEmpty();
+        assertThat(applicationContext.getBeansOfType(SecurityFilterChain.class)).hasSize(1);
     }
 
     private IssuedIdentity registerAndIssueAccess(
