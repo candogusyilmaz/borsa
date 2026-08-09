@@ -159,7 +159,9 @@ Established:
 
 ### PR-010 - Initial opaque refresh-session issuance
 
-Status: **IMPLEMENTED AND INDEPENDENTLY REVIEWED - READY FOR SUPERVISOR COMMIT**
+Status: **COMPLETED**
+
+Accepted commit: `c3c9fd6`
 
 Established:
 
@@ -169,6 +171,22 @@ Established:
 - transactional session issuance that rechecks user eligibility, persists only the token hash, and returns the raw token once with its session ID and expiry;
 - pure configuration/token coverage and PostgreSQL/Testcontainers coverage for initial issuance, optional labels, independent device families, disabled/missing users, and raw-token non-persistence;
 - no HTTP login, access token, refresh rotation, logout/revocation, principal/filter-chain, security-event, abuse-control, schema, migration, dependency, or frontend behavior.
+
+## Active implementation work
+
+### PR-011 - Local access-token issuance
+
+Status: **IMPLEMENTED AND INDEPENDENTLY REVIEWED - READY FOR SUPERVISOR COMMIT**
+
+Established in the working tree:
+
+- immutable `stocks.identity.access-token` issuer, audience, lifetime, and key-ID configuration with exact local defaults and fail-fast validation;
+- one startup-local 2048-bit RSA key pair and one Boot-managed Spring Security JOSE encoder restricted to RS256, with no key persistence or exposure;
+- read-only access-token issuance for an existing eligible device session, with exact `iss`, `sub`, singleton-string `aud`, `iat`, `nbf`, `exp`, `jti`, and `sid` claims and expiry capped by the session expiry;
+- explicit NumericDate handling that observes the clock once at full precision, truncates signed/returned time claims down to whole seconds, and rejects a non-positive representable window before token-instance ID generation;
+- uniform parameterless invalid-credential rejection for missing, revoked, expired, disabled-user, and unrepresentably near-expiry sessions before token-instance ID generation;
+- pure configuration/key tests and PostgreSQL/Testcontainers coverage for raw signed-token JSON, signature verification, fractional time normalization, fresh `jti` values, expiry capping, fail-closed eligibility, and unchanged persisted state;
+- no HTTP login, production JWT decoder/resource server, bearer filter chain, principal, persistent key, refresh rotation, schema, migration, repository-query, or frontend behavior.
 
 ## Current database
 
@@ -272,16 +290,17 @@ dev.canverse.stocks
 - HTTP registration validation occurs before the service workflow, while duplicate and malformed-request failures retain the shared PR-006 ProblemDetail and trace-correlation behavior.
 - Local credential verification is application-only and read-only: it normalizes the lookup email with `Locale.ROOT`, performs one password match with a constructed dummy-hash fallback when needed, rejects disabled accounts uniformly, and returns only the associated user UUID. Structural validation is deferred to the future HTTP login boundary; the service has no validation annotations.
 - Initial refresh-session issuance is application-only: it rechecks user eligibility, uses injected clock/ID generation and a positive configured lifetime, returns one high-entropy raw token, and stores only its SHA-256 Base64url hash in the existing `device_session` table.
+- Local access-token issuance is application-only and read-only: one disposable RSA key pair is generated at startup, RS256 tokens are issued only for an eligible existing session, raw `aud` uses Nimbus's RFC-valid singleton string, NumericDate values are truncated down to whole seconds without exceeding full-precision session expiry, and neither compact tokens nor token-instance IDs are persisted.
 
 ## Active implementation unit
 
-PR-010 initial opaque refresh-session issuance is active. It adds only the transactional creation of a first server-side session generation for an already authenticated eligible user, returning the raw token once and persisting only its hash.
+PR-011 local access-token issuance is active. Its implementation, required verification, and independent review are complete with no remaining findings; it is ready for supervisor acceptance and local commit.
 
-See `CURRENT.md` and `PR-010-initial-refresh-session-issuance.md` for the authoritative active scope.
+See `CURRENT.md` and `PR-011-local-access-token-issuance.md` for the authoritative active scope.
 
 ## Next likely implementation areas
 
-These are planning hints for work after PR-010, not active specifications.
+These are planning hints for work after PR-011, not active specifications.
 
 Likely sequence:
 
@@ -297,7 +316,7 @@ Do not treat this list as a promise of PR numbering or exact scope.
 
 ## Known issues / deferred work
 
-- No HTTP authentication, login, access-token, or security-filter behavior yet; application-layer credential verification and initial refresh-session issuance do not establish a principal or HTTP authentication flow.
+- No HTTP authentication, login, bearer-token validation, principal, or security-filter behavior yet; application-layer credential verification, initial refresh-session issuance, and local access-token issuance do not establish an HTTP authentication flow.
 - No refresh-token lookup, rotation/reuse detection, logout, revocation, or session listing/deletion behavior yet.
 - No Spring Security web/filter-chain configuration yet.
 - Maven explicitly registers Lombok on the annotation-processor path so Lombok-generated entity accessors and constructors compile on Java 25.

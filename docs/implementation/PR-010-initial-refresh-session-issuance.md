@@ -1,6 +1,6 @@
 # PR-010 — Initial opaque refresh-session issuance
 
-Status: **ACTIVE**
+Status: **COMPLETE**
 
 ## Goal
 
@@ -309,6 +309,10 @@ Fill this before marking PR-010 complete.
 ### Starting commit
 
 - `82f6a34` (`reconcile automated batch state`).
+
+### Accepted commit
+
+- `c3c9fd6` (`issue initial opaque refresh sessions`).
 
 ### Implemented
 
