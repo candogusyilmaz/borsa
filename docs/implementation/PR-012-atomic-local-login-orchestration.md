@@ -1,6 +1,6 @@
 # PR-012 — Atomic local login orchestration
 
-Status: **ACTIVE**
+Status: **COMPLETE**
 
 ## Goal
 
@@ -222,6 +222,10 @@ Fill this before marking PR-012 complete.
 ### Starting commit
 
 - `6aa57b6` (`issue local access tokens`).
+
+### Accepted commit
+
+- `5570f8d` (`orchestrate atomic local login`).
 
 ### Implemented
 

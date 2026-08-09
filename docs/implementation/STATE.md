@@ -188,19 +188,34 @@ Established:
 - pure configuration/key tests and PostgreSQL/Testcontainers coverage for raw signed-token JSON, signature verification, fractional time normalization, fresh `jti` values, expiry capping, fail-closed eligibility, and unchanged persisted state;
 - no HTTP login, production JWT decoder/resource server, bearer filter chain, principal, persistent key, refresh rotation, schema, migration, repository-query, or frontend behavior.
 
-## Active implementation work
-
 ### PR-012 - Atomic local login orchestration
 
-Status: **IMPLEMENTED AND INDEPENDENTLY REVIEWED - READY FOR SUPERVISOR COMMIT**
+Status: **COMPLETED**
 
-Established in the working tree:
+Accepted commit: `5570f8d`
+
+Established:
 
 - one ordinary write transaction that composes accepted local credential verification, initial refresh-session issuance, and access-token issuance in that order without duplicating their logic;
 - one immutable application result containing only the issued session identifier, raw access/refresh tokens, and their exact expiries;
 - null email/password internal-caller enforcement and unchanged nullable device-label pass-through, with no service-level Bean Validation;
 - PostgreSQL/Testcontainers proof that successful login commits one exact composed session/result, invalid credentials short-circuit before ID/JWT issuance, and an unchecked JWT-encoding failure rolls the flushed session back unchanged;
 - no HTTP/API, bearer validation, refresh rotation, schema, migration, configuration, dependency, or frontend change.
+
+## Active implementation work
+
+### PR-013 - Opaque refresh-session authentication
+
+Status: **IMPLEMENTED AND INDEPENDENTLY REVIEWED - READY FOR SUPERVISOR COMMIT**
+
+Established in the working tree:
+
+- exact-input deterministic SHA-256 Base64url hashing of presented opaque refresh tokens through the accepted concrete generator, with generation delegating to the same hash path;
+- one Spring Data derived lookup by unique stored refresh-token hash and one read-only authentication workflow returning only an eligible session UUID;
+- one clock observation, hash operation, and lookup per non-null attempt, with null rejected before any collaborator work;
+- uniform parameterless invalid-credential rejection for unknown, revoked, expired-at-or-before-now, and disabled-user sessions with no writes;
+- pure generator/control-flow tests and PostgreSQL/Testcontainers coverage proving exact active-session resolution, safe indistinguishable failures, expiry equality rejection, and unchanged user/identity/session rows;
+- no HTTP delivery, rotation/reuse response, logout/revocation, schema, dependency, configuration, or frontend change.
 
 ## Current database
 
@@ -306,21 +321,22 @@ dev.canverse.stocks
 - Initial refresh-session issuance is application-only: it rechecks user eligibility, uses injected clock/ID generation and a positive configured lifetime, returns one high-entropy raw token, and stores only its SHA-256 Base64url hash in the existing `device_session` table.
 - Local access-token issuance is application-only and read-only: one disposable RSA key pair is generated at startup, RS256 tokens are issued only for an eligible existing session, raw `aud` uses Nimbus's RFC-valid singleton string, NumericDate values are truncated down to whole seconds without exceeding full-precision session expiry, and neither compact tokens nor token-instance IDs are persisted.
 - Local login orchestration is application-only: its outer default-`REQUIRED` write transaction composes the three accepted service beans so a downstream unchecked access-token failure rolls back the already-flushed session insert, while non-transactional token/ID generation may still be consumed.
+- Opaque refresh-session authentication is application-only and read-only: it hashes the exact presented credential, performs one unique stored-hash lookup, and returns only an unrevoked, unexpired, enabled-user session UUID; the observation neither mutates session state nor grants permission to rotate.
 
 ## Active implementation unit
 
-PR-012 atomic local login orchestration is active. Its implementation, required verification, and independent review are complete with no findings; it is ready for supervisor acceptance and local commit.
+PR-013 opaque refresh-session authentication is active. Its implementation, required verification, and independent review are complete with no findings; it is ready for supervisor acceptance and local commit.
 
-See `CURRENT.md` and `PR-012-atomic-local-login-orchestration.md` for the authoritative active scope.
+See `CURRENT.md` and `PR-013-opaque-refresh-session-authentication.md` for the authoritative active scope.
 
 ## Next likely implementation areas
 
-These are planning hints for work after PR-012, not active specifications.
+These are planning hints for work after PR-013, not active specifications.
 
 Likely sequence:
 
-1. HTTP login and token delivery over the accepted atomic application workflow;
-2. refresh sessions / rotation / logout / revocation;
+1. refresh-session rotation and family-reuse response over an authenticated opaque credential;
+2. HTTP login/token delivery after resolving the distinct web-cookie and native-response transport requirements;
 3. security events and authentication abuse protection;
 4. durable job claim/retry worker;
 5. V2 reference migration.
@@ -332,7 +348,7 @@ Do not treat this list as a promise of PR numbering or exact scope.
 ## Known issues / deferred work
 
 - No HTTP authentication, login route/token delivery, bearer-token validation, principal, or security-filter behavior yet; the atomic local-login application workflow does not establish an HTTP authentication flow.
-- No refresh-token lookup, rotation/reuse detection, logout, revocation, or session listing/deletion behavior yet.
+- No refresh rotation/replacement, family-reuse detection/response, logout, explicit revocation, or session listing/deletion behavior yet; read-only opaque credential authentication does not authorize a later mutation.
 - No Spring Security web/filter-chain configuration yet.
 - Maven explicitly registers Lombok on the annotation-processor path so Lombok-generated entity accessors and constructors compile on Java 25.
 - No reference data yet.
