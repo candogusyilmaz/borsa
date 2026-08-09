@@ -217,13 +217,13 @@ Established:
 - pure generator/control-flow tests and PostgreSQL/Testcontainers coverage proving exact active-session resolution, safe indistinguishable failures, expiry equality rejection, and unchanged persisted state;
 - no HTTP delivery, rotation/reuse response, logout/revocation, schema, dependency, configuration, or frontend change.
 
-## Active implementation work
-
 ### PR-014 - Local access-token decoding
 
-Status: **IMPLEMENTED AND INDEPENDENTLY REVIEWED - READY FOR SUPERVISOR COMMIT**
+Status: **COMPLETED**
 
-Implemented scope:
+Accepted commit: `4621473`
+
+Established:
 
 - one production decoder using the existing startup-local RSA public key and RS256 only;
 - one strict local validator for the accepted access-token header, claim, identifier, and validity-window envelope using the injected clock and no implicit skew;
@@ -231,6 +231,23 @@ Implemented scope:
 - no HTTP bearer boundary, principal, user/session eligibility lookup, persistence, dependency, key-management, refresh behavior, or frontend change.
 
 Independent review passed after correcting the stale PR-013 specification status and accepted-commit record; no `MUST FIX` or `SHOULD FIX` findings remain.
+
+## Active implementation work
+
+### PR-015 - Database-backed access-token authentication
+
+Status: **IMPLEMENTED AND INDEPENDENTLY REVIEWED - READY FOR SUPERVISOR COMMIT**
+
+Implemented scope:
+
+- one direct Boot-managed Spring Security resource-server library module supplies standard JWT authentication token/exception types without installing HTTP security;
+- one exact session/user owner-scoped repository lookup and one read-only decoded-JWT converter recheck current session/user eligibility;
+- successful conversion returns a minimal authenticated `JwtAuthenticationToken` named by canonical user UUID with no authorities;
+- pure collaborator and PostgreSQL/Testcontainers coverage proves claim-validation order, one scoped query, current eligibility, cross-user rejection, safe failures, unchanged persisted state, and no `SecurityFilterChain`;
+- Spotless, the 15-test focused suite, the full 95-test suite, and `verify`/package pass with no failures, errors, or skipped tests;
+- no security filter chain, bearer extraction, HTTP/API, role/permission/owner helper, mutation, schema, key-management, refresh behavior, or frontend change.
+
+Independent review passed with no `MUST FIX` or `SHOULD FIX` findings. All required verification is complete; only supervisor acceptance/local commit remains pending. `CURRENT.md` stays on PR-015 until that completion boundary.
 
 ## Current database
 
@@ -341,19 +358,19 @@ dev.canverse.stocks
 
 ## Active implementation unit
 
-PR-014 local access-token decoding remains active under the automated-batch transition rule. Its bounded implementation, required verification, and independent review are complete with no remaining findings; it is ready for the supervisor's local commit.
+PR-015 database-backed access-token authentication remains active under the automated-batch transition rule. Its bounded implementation, required verification, and independent review are complete with no findings; it is ready for the supervisor's local commit.
 
-See `CURRENT.md` and `PR-014-local-access-token-decoding.md` for the authoritative active scope.
+See `CURRENT.md` and `PR-015-database-backed-access-token-authentication.md` for the authoritative active scope.
 
 ## Next likely implementation areas
 
-These are planning hints for work after PR-014, not active specifications.
+These are planning hints for work after PR-015, not active specifications.
 
 Likely sequence:
 
-1. an authenticated access-token principal/session-eligibility conversion over the accepted decoder;
-2. refresh-session rotation and family-reuse response after resolving lifetime/reuse-policy choices;
-3. HTTP login/token delivery after resolving the distinct web-cookie and native-response transport requirements;
+1. refresh-session rotation and family-reuse response after resolving lifetime/reuse-policy choices;
+2. HTTP login/token delivery and bearer security after resolving the distinct web-cookie and native-response transport requirements;
+3. owner/principal helpers and endpoint authorization over the accepted authentication token;
 4. security events and authentication abuse protection;
 5. durable job claim/retry worker or the V2 reference migration.
 
@@ -363,7 +380,7 @@ Do not treat this list as a promise of PR numbering or exact scope.
 
 ## Known issues / deferred work
 
-- No HTTP authentication, login route/token delivery, bearer filter chain, authenticated principal, or security-filter behavior yet; the local decoder alone will not establish an HTTP authentication flow or recheck user/session eligibility.
+- No HTTP authentication, login route/token delivery, bearer filter chain, endpoint authorization, roles/permissions, or owner helpers yet; the database-backed converter does not itself install an HTTP security boundary.
 - No refresh rotation/replacement, family-reuse detection/response, logout, explicit revocation, or session listing/deletion behavior yet; read-only opaque credential authentication does not authorize a later mutation.
 - No Spring Security web/filter-chain configuration yet.
 - Maven explicitly registers Lombok on the annotation-processor path so Lombok-generated entity accessors and constructors compile on Java 25.

@@ -1,6 +1,6 @@
 # PR-014 — Local access-token decoding
 
-Status: **ACTIVE**
+Status: **COMPLETE**
 
 ## Goal
 
@@ -223,6 +223,10 @@ Fill this before marking PR-014 complete.
 ### Starting commit
 
 - `7bb7c40` (`authenticate opaque refresh sessions`).
+
+### Accepted commit
+
+- `4621473` (`decode local access tokens`).
 
 ### Implemented
 

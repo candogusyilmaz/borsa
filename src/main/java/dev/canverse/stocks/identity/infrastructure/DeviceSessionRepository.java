@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface DeviceSessionRepository extends JpaRepository<DeviceSession, UUID> {
 
     Optional<DeviceSession> findByRefreshTokenHash(String refreshTokenHash);
+
+    Optional<DeviceSession> findByIdAndUserAccount_Id(UUID sessionId, UUID userAccountId);
 }

@@ -4,14 +4,14 @@ Status: **ACTIVE**
 
 Specification:
 
-[PR-014 — Local access-token decoding](PR-014-local-access-token-decoding.md)
+[PR-015 — Database-backed access-token authentication](PR-015-database-backed-access-token-authentication.md)
 
 Implementation agents must read the complete specification and implement only that scope.
 
-Local commit `7bb7c40` contains the completed PR-013 opaque refresh-session authentication. PR-014 adds only production cryptographic and structural decoding of the already accepted local access-token envelope.
+Local commit `4621473` contains the completed PR-014 local access-token decoder. PR-015 adds only current database eligibility and minimal Spring authentication conversion for an already decoded local access JWT.
 
-Do not add an HTTP endpoint or API DTO, resource-server/filter chain/principal, user/session lookup, persistent signing-key infrastructure, refresh rotation or family-reuse response, logout/revocation, security-event/abuse-control behavior, schema change, frontend work, or another domain workflow.
+Do not add an HTTP endpoint or API DTO, security filter chain/bearer extraction, role/permission/owner helper, persistent signing-key infrastructure, refresh rotation or family-reuse response, logout/revocation, security-event/abuse-control behavior, schema change, frontend work, or another domain workflow.
 
 Implementation and review agents must not mutate Git state. The supervising agent alone may stage and create the one local PR commit after independent review and verification.
 
-Do not advance this pointer during implementation or review. It remains on PR-014 until the supervisor commits the completed unit.
+Do not advance this pointer during implementation or review. It remains on PR-015 until the supervisor commits the completed unit.
