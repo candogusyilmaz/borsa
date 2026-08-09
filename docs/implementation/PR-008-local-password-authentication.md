@@ -307,24 +307,31 @@ Fill this before marking PR-008 complete.
 
 ### Starting commit
 
-- Record the user-created commit containing PR-007 before implementation begins.
+- `0046bd0` (`pr-007`), the user-created commit containing the reviewed PR-007 state.
 
 ### Implemented
 
-- ...
+- Added `IdentityErrorCode.INVALID_CREDENTIALS` with HTTP 401 metadata, no parameters, and the derived key `error.identity.invalid_credentials`.
+- Added the single `AuthIdentityRepository.findByProviderAndProviderSubject(...)` lookup.
+- Added read-only `LocalPasswordAuthenticationService.authenticate(...)` with `LOCAL`/`Locale.ROOT` lookup, one password match per attempt, dummy-hash fallback, disabled-account rejection, and UUID-only success.
+- Added the pure dummy-hash control-flow test and four PostgreSQL/Testcontainers service cases for success, indistinguishable failures, disabled accounts, and null hashes.
 
 ### Deviations from specification
 
-- None / ...
+- Per explicit user direction, the service does not use `@Validated` or method-parameter validation annotations. Structural input validation remains deferred to the future HTTP login boundary; the service-level structural-validation test is therefore not included.
 
 ### New decisions
 
-- None / ...
+- None.
 
 ### Tests executed
 
-- ...
+- `./mvnw.cmd spotless:check` → BUILD SUCCESS.
+- `./mvnw.cmd -Dtest=LocalPasswordAuthenticationServiceTest,LocalPasswordAuthenticationTimingTest,LocalAccountRegistrationServiceTest,LocalAccountRegistrationHttpTest test` → 13 tests, 0 failures, 0 errors.
+- `./mvnw.cmd test` → 60 tests, 0 failures, 0 errors.
+- `./mvnw.cmd verify` → BUILD SUCCESS, including Spotless and all 60 tests.
+- `git diff --check` → PASSED.
 
 ### Follow-up work
 
-- ...
+- HTTP login, principals, tokens, device sessions, Spring Security web configuration, security events, abuse controls, and all later authentication work remain deferred to separately scoped units.

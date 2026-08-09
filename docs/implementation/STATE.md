@@ -129,6 +129,20 @@ Established:
 - PostgreSQL-backed MockMvc coverage proving committed two-row registration, no-write failures, trace correlation, and password non-leakage.
 - identity input/output records kept outside the controller in `identity.input` and `identity.output`.
 
+### PR-008 - Local password credential verification
+
+Status: **IMPLEMENTED - PENDING USER REVIEW**
+
+Established:
+
+- parameterless `IdentityErrorCode.INVALID_CREDENTIALS` with HTTP 401 metadata and the derived `error.identity.invalid_credentials` key;
+- one `LOCAL` identity lookup using the normalized email and the existing provider-subject uniqueness constraint;
+- read-only local credential verification returning only the enabled user's UUID; service-level `@Validated` and parameter validation annotations are intentionally absent, with structural validation deferred to the future HTTP login boundary;
+- uniform invalid-credential failures for unknown email, wrong password, null local hash, and disabled account;
+- one password match for every structurally valid attempt, including a service-owned dummy hash for missing/null hashes;
+- pure fallback and PostgreSQL/Testcontainers coverage proving timing-control flow and unchanged persisted identity state;
+- no HTTP login, principal, token, session, security-event, abuse-control, schema, migration, or entity-mapping behavior.
+
 ## Current database
 
 Migration version: `V1`
@@ -229,10 +243,11 @@ dev.canverse.stocks
 - Bean Validation, method validation, and framework validation failures use `VALIDATION_FAILED` with safe, shape-validated validation keys.
 - The versioned local-registration endpoint is intentionally unauthenticated: it delegates once to the PR-005 transactional workflow and returns only the new user ID; login, tokens, sessions, and Spring Security remain deferred.
 - HTTP registration validation occurs before the service workflow, while duplicate and malformed-request failures retain the shared PR-006 ProblemDetail and trace-correlation behavior.
+- Local credential verification is application-only and read-only: it normalizes the lookup email with `Locale.ROOT`, performs one password match with a constructed dummy-hash fallback when needed, rejects disabled accounts uniformly, and returns only the associated user UUID. Structural validation is deferred to the future HTTP login boundary; the service has no validation annotations.
 
 ## Active implementation unit
 
-PR-008 implements local password credential verification at the application layer. It does not add an HTTP login endpoint, tokens, device sessions, Spring Security web configuration, or abuse controls.
+PR-008 local password credential verification is implemented in the working tree pending user review. It does not add an HTTP login endpoint, tokens, device sessions, Spring Security web configuration, or abuse controls.
 
 See `CURRENT.md` and `PR-008-local-password-authentication.md` for the authoritative active scope.
 
@@ -254,7 +269,7 @@ Do not treat this list as a promise of PR numbering or exact scope.
 
 ## Known issues / deferred work
 
-- No HTTP authentication, login, token, or security-filter behavior yet; local registration is the only unauthenticated HTTP workflow and does not establish a principal or session.
+- No HTTP authentication, login, token, or security-filter behavior yet; application-layer local credential verification and unauthenticated registration do not establish a principal or session.
 - No Spring Security web/filter-chain configuration yet.
 - Maven explicitly registers Lombok on the annotation-processor path so Lombok-generated entity accessors and constructors compile on Java 25.
 - No reference data yet.

@@ -61,3 +61,4 @@ node/
 downloaded/
 .tanstack/
 .local-secrets/
+.codex

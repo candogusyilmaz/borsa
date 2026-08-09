@@ -28,10 +28,102 @@ If two authoritative documents genuinely conflict, stop expanding scope and surf
 
 ## Git and review workflow
 
-- Treat implementation PR specifications as human-review units; they do not require a separate Git branch.
-- The user owns Git history. Unless explicitly requested, do not create/switch branches, commit, amend, merge, rebase, reset, stash, clean, tag, or push. Make working-tree changes only.
-- Do not advance `docs/implementation/CURRENT.md` to the next PR automatically. Keep the active PR selected until the user has reviewed the diff and explicitly advances it.
+Implementation PR specifications are human-review units; they do not require a separate Git branch.
+
+### Default workflow
+
+Unless the user explicitly activates an automated local-commit batch:
+
+- The user owns Git history.
+- Do not create/switch branches, commit, amend, merge, rebase, reset, stash, clean, tag, or push.
+- Make working-tree changes only.
+- Do not advance `docs/implementation/CURRENT.md` to the next PR automatically.
+- Keep the active PR selected until the user has reviewed the diff and explicitly advances it.
 - You may inspect Git state/history (`git status`, `git diff`, `git log`, `git show`, `git rev-parse`) when useful, but do not mutate Git state.
+
+### Automated local-commit batch
+
+This mode is active only when the user's current task explicitly requests an autonomous multi-PR/local-commit workflow.
+
+In this mode, responsibilities are separated by agent role:
+
+#### Supervising agent
+
+The supervising planning/review agent may:
+
+- inspect Git state and history;
+- stage files belonging to a completed active PR;
+- create exactly one local commit for each successfully completed PR;
+- after that commit, advance repository implementation state and begin planning exactly one next PR.
+
+The supervising agent must:
+
+- commit only after independent review reports no unresolved `MUST FIX` findings;
+- run or verify all required acceptance checks before committing;
+- stage only files belonging to the active PR;
+- ensure the working tree is clean after the commit before beginning the next PR;
+- derive the next PR from the newly committed repository state rather than pre-planning future PRs.
+
+The supervising agent must never:
+
+- push;
+- create or update remote branches;
+- create GitHub pull requests;
+- amend an existing commit;
+- rebase;
+- reset;
+- merge;
+- cherry-pick;
+- stash or clean away user work;
+- modify Git remotes;
+- force-update history.
+
+#### Implementation agent
+
+The implementation agent must not mutate Git state.
+
+It may inspect Git state/history when useful, but must not:
+
+- stage;
+- commit;
+- branch;
+- amend;
+- merge;
+- rebase;
+- reset;
+- stash;
+- clean;
+- tag;
+- push.
+
+It leaves its implementation in the working tree for independent review.
+
+#### Review agent
+
+The review agent is read-only.
+
+It must inspect the actual complete diff and changed files, but must not:
+
+- modify production code;
+- modify tests;
+- modify documentation;
+- stage or commit files;
+- perform any other Git mutation.
+
+#### PR transition rule
+
+In automated local-commit batch mode, `docs/implementation/CURRENT.md` remains on the active PR throughout implementation and review.
+
+It may advance only after:
+
+1. every acceptance criterion has been verified;
+2. required tests and verification commands pass;
+3. independent review has no unresolved `MUST FIX` findings;
+4. the completed PR has been committed locally.
+
+Only then may the supervising agent derive and create exactly one next PR specification.
+
+If the current PR cannot satisfy these conditions, do not advance `CURRENT.md`.
 
 ## Current technology baseline
 
@@ -79,3 +171,5 @@ If two authoritative documents genuinely conflict, stop expanding scope and surf
 - Fill the PR specification completion record: implemented scope, deviations, tests, follow-ups.
 - Update `docs/review/progress-report.md` when the PR materially changes implementation status or architectural decisions.
 - Preserve unrelated user changes. Never reset/delete unrelated work to make a task easier.
+- In automated local-commit batch mode, completion documentation belongs to the same local commit as the implementation it describes.
+- A PR is not complete merely because the implementation agent reports success. Completion requires independent review, successful required verification, and the supervising agent's final acceptance.

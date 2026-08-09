@@ -5,7 +5,8 @@ import java.util.Set;
 import org.springframework.http.HttpStatus;
 
 public enum IdentityErrorCode implements ErrorCode {
-    EMAIL_ALREADY_REGISTERED(HttpStatus.CONFLICT, "The email address is already registered.");
+    EMAIL_ALREADY_REGISTERED(HttpStatus.CONFLICT, "The email address is already registered."),
+    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "The provided credentials are invalid.");
 
     private final HttpStatus status;
     private final String description;
