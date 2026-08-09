@@ -8,6 +8,7 @@ import dev.canverse.stocks.identity.configuration.LocalAccessTokenConfiguration;
 import java.net.URI;
 import java.security.KeyPair;
 import java.security.interfaces.RSAPublicKey;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -17,14 +18,16 @@ import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 
 class AccessTokenPropertiesTest {
 
-    private final ApplicationContextRunner contextRunner =
-            new ApplicationContextRunner().withUserConfiguration(LocalAccessTokenConfiguration.class);
+    private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
+            .withBean(Clock.class, Clock::systemUTC)
+            .withUserConfiguration(LocalAccessTokenConfiguration.class);
 
     @Test
     void absentPropertiesBindExactDefaultsAndCreateOneLocalRsaSigner() {
@@ -38,6 +41,7 @@ class AccessTokenPropertiesTest {
 
             assertThat(context.getBeansOfType(KeyPair.class)).hasSize(1);
             assertThat(context.getBeansOfType(JwtEncoder.class)).hasSize(1);
+            assertThat(context.getBeansOfType(JwtDecoder.class)).hasSize(1);
             var keyPair = context.getBean(KeyPair.class);
             assertThat(context.getBean(KeyPair.class)).isSameAs(keyPair);
             assertThat(context.getBean(JwtEncoder.class)).isSameAs(context.getBean(JwtEncoder.class));

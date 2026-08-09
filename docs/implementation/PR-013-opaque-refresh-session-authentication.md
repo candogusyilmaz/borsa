@@ -1,6 +1,6 @@
 # PR-013 — Opaque refresh-session authentication
 
-Status: **ACTIVE**
+Status: **COMPLETE**
 
 ## Goal
 
@@ -242,6 +242,10 @@ Fill this before marking PR-013 complete.
 ### Starting commit
 
 - `5570f8d` (`orchestrate atomic local login`).
+
+### Accepted commit
+
+- `7bb7c40` (`authenticate opaque refresh sessions`).
 
 ### Implemented
 

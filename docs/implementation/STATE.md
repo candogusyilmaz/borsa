@@ -202,20 +202,35 @@ Established:
 - PostgreSQL/Testcontainers proof that successful login commits one exact composed session/result, invalid credentials short-circuit before ID/JWT issuance, and an unchecked JWT-encoding failure rolls the flushed session back unchanged;
 - no HTTP/API, bearer validation, refresh rotation, schema, migration, configuration, dependency, or frontend change.
 
-## Active implementation work
-
 ### PR-013 - Opaque refresh-session authentication
 
-Status: **IMPLEMENTED AND INDEPENDENTLY REVIEWED - READY FOR SUPERVISOR COMMIT**
+Status: **COMPLETED**
 
-Established in the working tree:
+Accepted commit: `7bb7c40`
+
+Established:
 
 - exact-input deterministic SHA-256 Base64url hashing of presented opaque refresh tokens through the accepted concrete generator, with generation delegating to the same hash path;
 - one Spring Data derived lookup by unique stored refresh-token hash and one read-only authentication workflow returning only an eligible session UUID;
-- one clock observation, hash operation, and lookup per non-null attempt, with null rejected before any collaborator work;
+- one clock observation, hash operation, and lookup per non-null attempt, with null rejected before collaborator work;
 - uniform parameterless invalid-credential rejection for unknown, revoked, expired-at-or-before-now, and disabled-user sessions with no writes;
-- pure generator/control-flow tests and PostgreSQL/Testcontainers coverage proving exact active-session resolution, safe indistinguishable failures, expiry equality rejection, and unchanged user/identity/session rows;
+- pure generator/control-flow tests and PostgreSQL/Testcontainers coverage proving exact active-session resolution, safe indistinguishable failures, expiry equality rejection, and unchanged persisted state;
 - no HTTP delivery, rotation/reuse response, logout/revocation, schema, dependency, configuration, or frontend change.
+
+## Active implementation work
+
+### PR-014 - Local access-token decoding
+
+Status: **IMPLEMENTED AND INDEPENDENTLY REVIEWED - READY FOR SUPERVISOR COMMIT**
+
+Implemented scope:
+
+- one production decoder using the existing startup-local RSA public key and RS256 only;
+- one strict local validator for the accepted access-token header, claim, identifier, and validity-window envelope using the injected clock and no implicit skew;
+- focused real-encoder/decoder coverage for valid local tokens, untrusted key/algorithm rejection, exact envelope failures, and safe validation errors;
+- no HTTP bearer boundary, principal, user/session eligibility lookup, persistence, dependency, key-management, refresh behavior, or frontend change.
+
+Independent review passed after correcting the stale PR-013 specification status and accepted-commit record; no `MUST FIX` or `SHOULD FIX` findings remain.
 
 ## Current database
 
@@ -322,24 +337,25 @@ dev.canverse.stocks
 - Local access-token issuance is application-only and read-only: one disposable RSA key pair is generated at startup, RS256 tokens are issued only for an eligible existing session, raw `aud` uses Nimbus's RFC-valid singleton string, NumericDate values are truncated down to whole seconds without exceeding full-precision session expiry, and neither compact tokens nor token-instance IDs are persisted.
 - Local login orchestration is application-only: its outer default-`REQUIRED` write transaction composes the three accepted service beans so a downstream unchecked access-token failure rolls back the already-flushed session insert, while non-transactional token/ID generation may still be consumed.
 - Opaque refresh-session authentication is application-only and read-only: it hashes the exact presented credential, performs one unique stored-hash lookup, and returns only an unrevoked, unexpired, enabled-user session UUID; the observation neither mutates session state nor grants permission to rotate.
+- Local access-token decoding is application-only: one decoder reuses the startup-local RSA public key under RS256 and one package-local validator requires the exact configured access-token header, issuer, singleton audience, canonical UUID identifiers, raw whole-second NumericDates, and no-skew validity window while returning one safe constant `invalid_token` result for repository-owned envelope failures.
 
 ## Active implementation unit
 
-PR-013 opaque refresh-session authentication is active. Its implementation, required verification, and independent review are complete with no findings; it is ready for supervisor acceptance and local commit.
+PR-014 local access-token decoding remains active under the automated-batch transition rule. Its bounded implementation, required verification, and independent review are complete with no remaining findings; it is ready for the supervisor's local commit.
 
-See `CURRENT.md` and `PR-013-opaque-refresh-session-authentication.md` for the authoritative active scope.
+See `CURRENT.md` and `PR-014-local-access-token-decoding.md` for the authoritative active scope.
 
 ## Next likely implementation areas
 
-These are planning hints for work after PR-013, not active specifications.
+These are planning hints for work after PR-014, not active specifications.
 
 Likely sequence:
 
-1. refresh-session rotation and family-reuse response over an authenticated opaque credential;
-2. HTTP login/token delivery after resolving the distinct web-cookie and native-response transport requirements;
-3. security events and authentication abuse protection;
-4. durable job claim/retry worker;
-5. V2 reference migration.
+1. an authenticated access-token principal/session-eligibility conversion over the accepted decoder;
+2. refresh-session rotation and family-reuse response after resolving lifetime/reuse-policy choices;
+3. HTTP login/token delivery after resolving the distinct web-cookie and native-response transport requirements;
+4. security events and authentication abuse protection;
+5. durable job claim/retry worker or the V2 reference migration.
 
 The exact next behavioral implementation unit must be designed just-in-time from the reconciled committed state.
 
@@ -347,7 +363,7 @@ Do not treat this list as a promise of PR numbering or exact scope.
 
 ## Known issues / deferred work
 
-- No HTTP authentication, login route/token delivery, bearer-token validation, principal, or security-filter behavior yet; the atomic local-login application workflow does not establish an HTTP authentication flow.
+- No HTTP authentication, login route/token delivery, bearer filter chain, authenticated principal, or security-filter behavior yet; the local decoder alone will not establish an HTTP authentication flow or recheck user/session eligibility.
 - No refresh rotation/replacement, family-reuse detection/response, logout, explicit revocation, or session listing/deletion behavior yet; read-only opaque credential authentication does not authorize a later mutation.
 - No Spring Security web/filter-chain configuration yet.
 - Maven explicitly registers Lombok on the annotation-processor path so Lombok-generated entity accessors and constructors compile on Java 25.
