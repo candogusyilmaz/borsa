@@ -172,13 +172,13 @@ Established:
 - pure configuration/token coverage and PostgreSQL/Testcontainers coverage for initial issuance, optional labels, independent device families, disabled/missing users, and raw-token non-persistence;
 - no HTTP login, access token, refresh rotation, logout/revocation, principal/filter-chain, security-event, abuse-control, schema, migration, dependency, or frontend behavior.
 
-## Active implementation work
-
 ### PR-011 - Local access-token issuance
 
-Status: **IMPLEMENTED AND INDEPENDENTLY REVIEWED - READY FOR SUPERVISOR COMMIT**
+Status: **COMPLETED**
 
-Established in the working tree:
+Accepted commit: `6aa57b6`
+
+Established:
 
 - immutable `stocks.identity.access-token` issuer, audience, lifetime, and key-ID configuration with exact local defaults and fail-fast validation;
 - one startup-local 2048-bit RSA key pair and one Boot-managed Spring Security JOSE encoder restricted to RS256, with no key persistence or exposure;
@@ -187,6 +187,20 @@ Established in the working tree:
 - uniform parameterless invalid-credential rejection for missing, revoked, expired, disabled-user, and unrepresentably near-expiry sessions before token-instance ID generation;
 - pure configuration/key tests and PostgreSQL/Testcontainers coverage for raw signed-token JSON, signature verification, fractional time normalization, fresh `jti` values, expiry capping, fail-closed eligibility, and unchanged persisted state;
 - no HTTP login, production JWT decoder/resource server, bearer filter chain, principal, persistent key, refresh rotation, schema, migration, repository-query, or frontend behavior.
+
+## Active implementation work
+
+### PR-012 - Atomic local login orchestration
+
+Status: **IMPLEMENTED AND INDEPENDENTLY REVIEWED - READY FOR SUPERVISOR COMMIT**
+
+Established in the working tree:
+
+- one ordinary write transaction that composes accepted local credential verification, initial refresh-session issuance, and access-token issuance in that order without duplicating their logic;
+- one immutable application result containing only the issued session identifier, raw access/refresh tokens, and their exact expiries;
+- null email/password internal-caller enforcement and unchanged nullable device-label pass-through, with no service-level Bean Validation;
+- PostgreSQL/Testcontainers proof that successful login commits one exact composed session/result, invalid credentials short-circuit before ID/JWT issuance, and an unchecked JWT-encoding failure rolls the flushed session back unchanged;
+- no HTTP/API, bearer validation, refresh rotation, schema, migration, configuration, dependency, or frontend change.
 
 ## Current database
 
@@ -291,20 +305,21 @@ dev.canverse.stocks
 - Local credential verification is application-only and read-only: it normalizes the lookup email with `Locale.ROOT`, performs one password match with a constructed dummy-hash fallback when needed, rejects disabled accounts uniformly, and returns only the associated user UUID. Structural validation is deferred to the future HTTP login boundary; the service has no validation annotations.
 - Initial refresh-session issuance is application-only: it rechecks user eligibility, uses injected clock/ID generation and a positive configured lifetime, returns one high-entropy raw token, and stores only its SHA-256 Base64url hash in the existing `device_session` table.
 - Local access-token issuance is application-only and read-only: one disposable RSA key pair is generated at startup, RS256 tokens are issued only for an eligible existing session, raw `aud` uses Nimbus's RFC-valid singleton string, NumericDate values are truncated down to whole seconds without exceeding full-precision session expiry, and neither compact tokens nor token-instance IDs are persisted.
+- Local login orchestration is application-only: its outer default-`REQUIRED` write transaction composes the three accepted service beans so a downstream unchecked access-token failure rolls back the already-flushed session insert, while non-transactional token/ID generation may still be consumed.
 
 ## Active implementation unit
 
-PR-011 local access-token issuance is active. Its implementation, required verification, and independent review are complete with no remaining findings; it is ready for supervisor acceptance and local commit.
+PR-012 atomic local login orchestration is active. Its implementation, required verification, and independent review are complete with no findings; it is ready for supervisor acceptance and local commit.
 
-See `CURRENT.md` and `PR-011-local-access-token-issuance.md` for the authoritative active scope.
+See `CURRENT.md` and `PR-012-atomic-local-login-orchestration.md` for the authoritative active scope.
 
 ## Next likely implementation areas
 
-These are planning hints for work after PR-011, not active specifications.
+These are planning hints for work after PR-012, not active specifications.
 
 Likely sequence:
 
-1. HTTP login and the minimum access-token/session boundary, composing the accepted credential-verification and initial-session workflows in separately reviewable units;
+1. HTTP login and token delivery over the accepted atomic application workflow;
 2. refresh sessions / rotation / logout / revocation;
 3. security events and authentication abuse protection;
 4. durable job claim/retry worker;
@@ -316,7 +331,7 @@ Do not treat this list as a promise of PR numbering or exact scope.
 
 ## Known issues / deferred work
 
-- No HTTP authentication, login, bearer-token validation, principal, or security-filter behavior yet; application-layer credential verification, initial refresh-session issuance, and local access-token issuance do not establish an HTTP authentication flow.
+- No HTTP authentication, login route/token delivery, bearer-token validation, principal, or security-filter behavior yet; the atomic local-login application workflow does not establish an HTTP authentication flow.
 - No refresh-token lookup, rotation/reuse detection, logout, revocation, or session listing/deletion behavior yet.
 - No Spring Security web/filter-chain configuration yet.
 - Maven explicitly registers Lombok on the annotation-processor path so Lombok-generated entity accessors and constructors compile on Java 25.

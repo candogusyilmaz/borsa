@@ -1,6 +1,6 @@
 # PR-011 — Local access-token issuance
 
-Status: **ACTIVE**
+Status: **COMPLETE**
 
 ## Goal
 
@@ -315,6 +315,10 @@ Fill this before marking PR-011 complete.
 ### Starting commit
 
 - `c3c9fd6` (`issue initial opaque refresh sessions`).
+
+### Accepted commit
+
+- `6aa57b6` (`issue local access tokens`).
 
 ### Implemented
 
