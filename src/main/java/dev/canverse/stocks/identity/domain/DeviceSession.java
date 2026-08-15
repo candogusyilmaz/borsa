@@ -19,6 +19,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class DeviceSession {
 
+    public static final String ROTATED_REVOKE_REASON = "ROTATED";
+    public static final String REUSE_DETECTED_REVOKE_REASON = "REUSE_DETECTED";
+
     @Id
     private UUID id;
 
@@ -73,5 +76,79 @@ public class DeviceSession {
         deviceSession.revokeReason = null;
         deviceSession.replacedBySessionId = null;
         return deviceSession;
+    }
+
+    public DeviceSession rotate(UUID replacementId, String replacementRefreshTokenHash, Instant observedAt) {
+        var replacement = createReplacement(replacementId, replacementRefreshTokenHash, observedAt);
+        consumeForRotation(observedAt);
+        linkReplacement(replacementId);
+        return replacement;
+    }
+
+    public DeviceSession createReplacement(UUID replacementId, String replacementRefreshTokenHash, Instant observedAt) {
+        Objects.requireNonNull(replacementId, "replacementId");
+        Objects.requireNonNull(replacementRefreshTokenHash, "replacementRefreshTokenHash");
+        Objects.requireNonNull(observedAt, "observedAt");
+        validateRotatable(replacementId, observedAt);
+        return replacementGeneration(replacementId, replacementRefreshTokenHash, observedAt);
+    }
+
+    public void consumeForRotation(Instant observedAt) {
+        Objects.requireNonNull(observedAt, "observedAt");
+        validateRotatable(null, observedAt);
+        lastUsedAt = observedAt;
+        revokedAt = observedAt;
+        revokeReason = ROTATED_REVOKE_REASON;
+    }
+
+    public void linkReplacement(UUID replacementId) {
+        Objects.requireNonNull(replacementId, "replacementId");
+        if (id.equals(replacementId)) {
+            throw new IllegalArgumentException("A replacement generation requires a fresh id");
+        }
+        if (!ROTATED_REVOKE_REASON.equals(revokeReason) || revokedAt == null) {
+            throw new IllegalStateException("Only a consumed generation can be linked");
+        }
+        if (replacedBySessionId != null) {
+            throw new IllegalStateException("A generation can only have one replacement");
+        }
+        replacedBySessionId = replacementId;
+    }
+
+    public void revokeForReuse(Instant observedAt) {
+        Objects.requireNonNull(observedAt, "observedAt");
+        if (revokedAt == null && replacedBySessionId == null) {
+            revokedAt = observedAt;
+            revokeReason = REUSE_DETECTED_REVOKE_REASON;
+        }
+    }
+
+    private DeviceSession replacementGeneration(
+            UUID replacementId, String replacementRefreshTokenHash, Instant createdAt) {
+        var replacement = new DeviceSession();
+        replacement.id = replacementId;
+        replacement.userAccount = userAccount;
+        replacement.familyId = familyId;
+        replacement.refreshTokenHash = replacementRefreshTokenHash;
+        replacement.deviceLabel = deviceLabel;
+        replacement.createdAt = createdAt;
+        replacement.lastUsedAt = null;
+        replacement.expiresAt = expiresAt;
+        replacement.revokedAt = null;
+        replacement.revokeReason = null;
+        replacement.replacedBySessionId = null;
+        return replacement;
+    }
+
+    private void validateRotatable(UUID replacementId, Instant observedAt) {
+        if (replacementId != null && id.equals(replacementId)) {
+            throw new IllegalArgumentException("A replacement generation requires a fresh id");
+        }
+        if (revokedAt != null || replacedBySessionId != null) {
+            throw new IllegalStateException("Only an active generation can be rotated");
+        }
+        if (!expiresAt.isAfter(observedAt)) {
+            throw new IllegalStateException("An expired generation cannot be rotated");
+        }
     }
 }

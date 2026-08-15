@@ -25,7 +25,7 @@ This is one coherent security vertical slice: database locking and session mutat
 
 ## Starting state
 
-Starting commit: **the user-owned commit accepting PR-017**. Its hash does not exist in the inspected repository yet and must be recorded here before implementation begins. Do not invent a hash and do not implement PR-018 on a state that omits the reviewed PR-017 work.
+Starting commit: **`7f55288`**, the user-owned commit accepting PR-017. This is the actual inspected repository commit; it is recorded here before PR-018 production implementation begins.
 
 PR-017 is independently reviewed and its required focused PostgreSQL suite, full 105-test suite, Spotless check, and Maven `verify` gate pass. The accepted starting behavior includes:
 
@@ -464,24 +464,29 @@ Fill this before marking PR-018 complete.
 
 ### Starting commit
 
-- Pending user-owned PR-017 commit.
+- `7f55288` — user-owned PR-017 acceptance commit.
 
 ### Implemented
 
-- ...
+- Added explicit refresh request/response contracts, append-oriented entity rotation/reuse behavior, preliminary hash projection, owner pessimistic locking, fixed-expiry transactional rotation, committed reuse revocation, successor-bound access-token issuance, JSON-only refresh HTTP delivery, shared hardened cookie construction, and exact public matcher scope.
+- Added pure domain/control-flow tests, PostgreSQL tests for normal rotation, invalid-state no-op behavior, rollback, reuse, and two-transaction duplicate consumption, and real-filter HTTP/security tests covering both delivery channels, credential-channel validation, exact cookie properties, non-leakage, content-type/CORS boundaries, reuse response, statelessness, and route scope.
 
 ### Deviations from specification
 
-- None / ...
+- None. The existing immediate `replaced_by_session_id` foreign key is satisfied with the required JPA sequence: consume and flush the predecessor, persist and flush the active successor, link and flush the predecessor, then issue the access token. No schema or migration change was introduced.
 
 ### New decisions
 
-- None / ...
+- Keep the V1 immediate FK unchanged and use the existing JPA repositories for all rotation writes; no public state or generic persistence abstraction was added.
 
 ### Tests executed
 
-- ...
+- `./mvnw spotless:check` — passed after formatting.
+- `./mvnw -Dtest=DeviceSessionRotationTest,RefreshSessionRotationControlFlowTest,RefreshSessionRotationServiceTest,LocalRefreshHttpTest,LocalLoginHttpTest,ApiBearerSecurityHttpTest,AccessTokenIssuanceServiceTest,RefreshSessionAuthenticationServiceTest,GlobalExceptionHandlerIntegrationTest test` — 45 tests passed, 0 failures/errors/skips.
+- `./mvnw test` — 124 tests passed, 0 failures/errors/skips.
+- `./mvnw verify` — passed, including the full 124-test suite and Spotless.
+- `git status --short` and `git diff --check` — passed; no Git mutation performed.
 
 ### Follow-up work
 
-- ...
+- Logout/session listing or user-selected revocation, security events/abuse controls, authorization/owner helpers, cross-site deployment/CORS/general CSRF, persistent keys, jobs, frontend, schema, and financial work remain deferred.

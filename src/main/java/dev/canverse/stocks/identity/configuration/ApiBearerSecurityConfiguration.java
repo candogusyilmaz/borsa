@@ -39,6 +39,8 @@ public class ApiBearerSecurityConfiguration {
                         .permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login")
                         .permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/refresh")
+                        .permitAll()
                         .anyRequest()
                         .authenticated())
                 .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(authenticationEntryPoint))
