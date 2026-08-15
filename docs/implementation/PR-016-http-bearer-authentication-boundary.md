@@ -1,6 +1,6 @@
 # PR-016 — HTTP bearer authentication boundary
 
-Status: **ACTIVE**
+Status: **COMPLETE**
 
 ## Goal
 
@@ -181,6 +181,10 @@ Fill this before marking PR-016 complete.
 
 - `3d86ff2` (`authenticate local access tokens`).
 
+### Accepted commit
+
+- `9fcbb69` (`install stateless bearer authentication`).
+
 ### Implemented
 
 - Added the Boot-managed servlet security starter and test-scoped Boot 4 MVC test starter while retaining the accepted direct resource-server library.
@@ -214,5 +218,5 @@ Fill this before marking PR-016 complete.
 
 ### Follow-up work
 
-- Supervisor acceptance/local commit remains pending; `CURRENT.md` and this specification remain active until that completion boundary.
+- PR-016 was accepted in local commit `9fcbb69`; `CURRENT.md` advanced only in the subsequent planning invocation.
 - Login/refresh token delivery, refresh rotation and reuse response, logout/revocation, roles/permissions/owner helpers, security events, jobs, abuse controls, persistent signing keys, and financial roadmap work remain separate future units.

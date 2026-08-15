@@ -110,7 +110,7 @@ class ApiBearerSecurityHttpTest {
     }
 
     @Test
-    void chainHasExactScopeAndOnlyRegistrationIsPublic() throws Exception {
+    void chainHasExactScopeAndRegistrationAndLoginArePublic() throws Exception {
         assertThat(applicationContext.getBeansOfType(SecurityFilterChain.class)).hasSize(1);
         var registrationTraceId = uuid("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1");
         var userAccountId = uuid("10000000-0000-4000-8000-000000000001");

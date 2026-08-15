@@ -4,14 +4,16 @@ Status: **ACTIVE**
 
 Specification:
 
-[PR-016 — HTTP bearer authentication boundary](PR-016-http-bearer-authentication-boundary.md)
+[PR-018 — Refresh-session rotation, reuse response, and HTTP refresh](PR-018-refresh-session-rotation-and-http-refresh.md)
 
 Implementation agents must read the complete specification and implement only that scope.
 
-Local commit `3d86ff2` contains the completed PR-015 database-backed access-token authentication converter. PR-016 installs only the scoped stateless HTTP bearer boundary over the accepted decoder and converter.
+PR-017's local-login and explicit response-body/cookie delivery implementation has passed independent review, its focused PostgreSQL suite, the full 105-test suite, Spotless, and Maven `verify`. The user still owns the accepting commit: record that commit hash in PR-018 before production implementation begins, and do not invent it.
 
-Do not add a production endpoint or API DTO, login/refresh transport, role/permission/owner helper, access-denied policy, persistent signing-key infrastructure, refresh rotation or family-reuse response, logout/revocation, security-event/abuse-control behavior, schema change, frontend work, or another domain workflow.
+PR-018 is one substantial refresh-lifecycle vertical slice: PostgreSQL-backed owner locking, append-oriented token rotation, committed family revocation on replaced-token reuse, successor-bound access-token issuance, one public JSON-only refresh endpoint, exact native/cookie delivery, shared cookie construction, and the required transaction/concurrency/security tests.
 
-Implementation and review agents must not mutate Git state. The supervising agent alone may stage and create the one local PR commit after independent review and verification.
+Do not add logout/session listing or user-selected revocation, rolling expiry, refresh retry tolerance, cross-site cookie/CORS/general CSRF infrastructure, security events/abuse controls, authorization/owner helpers, persistent signing keys, schema/dependency/frontend changes, jobs, or another domain workflow.
 
-Do not advance this pointer during implementation or review. It remains on PR-016 until the supervisor commits the completed unit.
+The user-owned `AGENTS.md` modification remains outside production scope and must not be reverted. Agents perform no Git operations.
+
+Do not advance this pointer during implementation or review. It remains on PR-018 until the supervising user accepts the completed unit.

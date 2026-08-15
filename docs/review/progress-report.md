@@ -1,6 +1,6 @@
 # Backend transformation progress report
 
-Report date: 2026-08-09
+Report date: 2026-08-15
 
 Scope: Spring Boot backend, PostgreSQL dump, database migration strategy, modular-monolith design, offline/fake data approach, and implementation readiness. React was not reviewed or changed in this update.
 
@@ -32,12 +32,34 @@ Scope: Spring Boot backend, PostgreSQL dump, database migration strategy, modula
 | PR-013 — Opaque refresh-session authentication    | **Complete**                                                  | Accepted in `7bb7c40`; exact presented-token hashing, one unique stored-hash lookup, and read-only eligible-session authentication returning only the session UUID; no rotation, HTTP/API, or token-delivery surface                                  |
 | PR-014 — Local access-token decoding               | **Complete**                                                  | Accepted in `4621473`; one production decoder over the existing local RSA public key plus strict RS256/header/claim/time-envelope validation; no bearer filter, principal, HTTP, persistence, or key-management surface                         |
 | PR-015 — Database-backed access-token authentication | **Complete**                                                   | Accepted in `3d86ff2`; one owner-scoped session/user lookup and one read-only decoded-JWT converter produce a minimal authority-free Spring JWT authentication only for a currently eligible exact pair                                                    |
-| PR-016 — HTTP bearer authentication boundary          | **Implemented and reviewed; ready for supervisor commit**     | One servlet-only stateless `/api/v1/**` chain keeps registration public, reuses the accepted decoder/converter, and maps expected bearer failures into the existing trace-correlated RFC 9457 contract                                                   |
-| Automated backend coverage                         | 99 tests, all green                                          | Existing 95 tests plus 4 real-filter PostgreSQL HTTP/security boundary cases                                                                                                                                                                              |
+| PR-016 — HTTP bearer authentication boundary          | **Complete in local commit `9fcbb69`**                         | One servlet-only stateless `/api/v1/**` chain keeps registration public, reuses the accepted decoder/converter, and maps expected bearer failures into the existing trace-correlated RFC 9457 contract                                                   |
+| PR-017 — HTTP local login and explicit token delivery | **Implementation/review complete; awaiting user commit**      | One public login POST exposes the accepted atomic workflow through explicit response-body or hardened same-site cookie delivery; correction review and all required gates pass |
+| PR-018 — Refresh rotation/reuse and HTTP refresh       | **Active specification; implementation not started**          | One substantial vertical slice specifies owner locking, append-oriented rotation, committed family reuse response, successor access issuance, native/cookie HTTP delivery, and concurrency/security proof |
+| Automated backend coverage                         | 105 tests green; PR-017 adds 6 focused cases                  | The new suite covers response/cookie delivery, exact session/token binding, credential failures, validation/parsing, route scope, and statelessness; focused and full PostgreSQL-backed execution passes |
 
-Overall status: **PR-015 is accepted in local commit `3d86ff2`. PR-016 HTTP bearer authentication is implemented, independently reviewed after correction cycle 1 with no remaining findings, and fully verified with all 99 tests green; it is ready for the supervisor's local commit. Production login/refresh delivery, authorities/owner helpers, persistent signing keys, refresh rotation/reuse response, logout/revocation, and abuse controls remain deferred.**
+Overall status: **PR-016 is complete in local commit `9fcbb69`. PR-017's corrected implementation, independent review, focused/full PostgreSQL suites, Spotless, and `verify` are complete; its user-owned accepting commit remains pending. PR-018 is the active specification but must record that real commit hash before implementation. Logout/session management, authorities/owner helpers, persistent signing keys, and abuse controls remain deferred.**
 
-## Active implementation checkpoint — PR-016
+## Active implementation specification — PR-018
+
+- Date: 2026-08-15.
+- Starting commit: pending the user-owned commit accepting PR-017; agents must not invent the hash or implement from a state that omits PR-017.
+- Planned capability: fixed-absolute-expiry refresh-session rotation with append-oriented predecessor/successor history, user-row pessimistic locking, committed active-family revocation on replaced-token reuse, and access-token issuance bound to the successor generation.
+- Planned HTTP/security boundary: one public JSON-only `POST /api/v1/auth/refresh` with explicit response-body or hardened same-site cookie credential/delivery channels, exact shared cookie construction, no CORS, and browser-simple content types rejected before rotation.
+- Required proof: real PostgreSQL rollback and concurrency tests, family-reuse response, both HTTP delivery modes, exact route/filter scope, retained login cookie behavior, full suite, Spotless, and Maven `verify`.
+- Non-goals: logout/session listing or user-selected revocation, rolling expiry/retry grace, cross-site deployment/CORS/general CSRF infrastructure, events/abuse controls, authorization helpers, persistent keys, schema/dependency/frontend/jobs/financial work.
+
+## Latest implementation checkpoint — PR-017
+
+- Date: 2026-08-15.
+- Starting commit: `9fcbb69` (`install stateless bearer authentication`).
+- Production change: one explicit `RefreshTokenDelivery` enum, one validated `LocalLoginRequest`, one nullable-cookie-aware `LocalLoginResponse`, one thin `LocalLoginController`, and two exact public POST matchers in the existing stateless API chain.
+- HTTP behavior: response-body mode emits the raw refresh token only in JSON; cookie mode emits it only in one Spring `ResponseCookie` header with `/api/v1/auth`, `Secure`, `HttpOnly`, `SameSite=Strict`, host-only scope, positive whole-second `Max-Age`, and an expiry bounded by the session lifetime. Both modes return exact session/access metadata and explicit no-store/no-cache headers.
+- Coverage: six real-filter PostgreSQL `MockMvc` cases cover committed response-body and cookie sessions, production decoder/session authentication, hash-only persistence, unchanged identity state, uniform credential failures, all requested structural/parsing boundaries, exact route scope, trace correlation, and no servlet session.
+- Verification: `spotless:check`, the focused 29-test suite, the full 105-test suite, and `verify` pass with 0 failures, 0 errors, and 0 skipped tests. The cookie test asserts the exact refresh-session expiry truncated to whole seconds.
+- Review status: correction cycle 1 fixed the exact refresh-cookie `Expires` value and completion wording. Independent whole-diff review passed with no remaining `MUST FIX` or `SHOULD FIX` findings; the reviewer reran the focused 29-test PostgreSQL suite, full 105-test suite, Spotless, and `verify` successfully. The user-owned commit remains pending.
+- Non-goals: no refresh endpoint/consumption/rotation/reuse handling, logout/revocation, cross-site cookie/CORS/CSRF policy, authorization, roles/permissions, persistent keys, security events, abuse controls, schema/dependency/frontend work, or financial behavior.
+
+## Latest implementation checkpoint — PR-016
 
 - Date: 2026-08-09.
 - Starting commit: `3d86ff2` (`authenticate local access tokens`).
@@ -45,7 +67,7 @@ Overall status: **PR-015 is accepted in local commit `3d86ff2`. PR-016 HTTP bear
 - Security behavior: `POST /api/v1/auth/register` remains public; every other matched route requires the accepted strict decoder plus database-backed current-session converter; outside routes remain unmatched; authentication is never stored in an HTTP session.
 - Coverage: the 4-case real-filter PostgreSQL `MockMvc` suite proves exact chain scope, committed public registration, uniform trace-correlated `401` responses, valid authority-free JWT identity, unchanged persistence, and headerless follow-up rejection. Spotless, the exact 16-test focused gate, the full 99-test suite, and `verify`/package pass with 0 failures, 0 errors, and 0 skipped tests.
 - Planning/test reconciliation: the active specification corrected the actual PR-006 filename and explicitly superseded only PR-015's historical no-chain assertion, retaining proof of one converter alongside exactly one production chain.
-- Review status: correction-cycle-1 whole-diff review passed with no remaining `MUST FIX` or `SHOULD FIX` findings. The documentation-only correction reconciled four stale `STATE.md` claims about public registration, decoder HTTP wiring, HTTP bearer authentication, and Spring Security filter-chain configuration. Supervisor acceptance/local commit remains pending.
+- Review status: correction-cycle-1 whole-diff review passed with no remaining `MUST FIX` or `SHOULD FIX` findings. The documentation-only correction reconciled four stale `STATE.md` claims about public registration, decoder HTTP wiring, HTTP bearer authentication, and Spring Security filter-chain configuration. PR-016 was accepted in local commit `9fcbb69` before PR-017 began.
 - Non-goals: no production endpoint/DTO, login/refresh transport decision, roles/permissions/owner helper, refresh/logout mutation, schema/key-policy/frontend work, or financial behavior.
 
 ## Latest implementation checkpoint — PR-015
@@ -302,7 +324,7 @@ The 2026-08-07 document harmonization establishes these implementation rules:
 | Increment | Implementation result                                        | Status                                                                                                           |
 | --------: | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
 |        R0 | Preserve evidence and replace backend skeleton               | Not started                                                                                                      |
-|        R1 | Foundation, identity, auth, sessions and jobs                | In progress — PR-015 accepted in `3d86ff2`; PR-016 stateless HTTP bearer authentication is implemented, independently reviewed, fully verified, and ready for supervisor commit; login/refresh delivery, authorization, rotation/revocation, jobs and abuse controls remain deferred |
+|        R1 | Foundation, identity, auth, sessions and jobs                | In progress — PR-016 is complete in `9fcbb69`; PR-017 implementation/review are complete pending user commit; PR-018 refresh rotation/reuse/HTTP is specified but unimplemented; logout/session management, authorization, jobs and abuse controls remain deferred |
 |        R2 | Canonical references and deterministic seeds                 | Not started                                                                                                      |
 |        R3 | Accounts/ledger/funding/balances — FT-31                     | Not started                                                                                                      |
 |        R4 | Investing parity, funded trades and imports                  | Not started                                                                                                      |

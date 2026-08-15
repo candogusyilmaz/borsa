@@ -26,107 +26,99 @@ Instruction precedence for implementation is:
 
 If two authoritative documents genuinely conflict, stop expanding scope and surface the conflict rather than silently choosing a convenient interpretation.
 
-## Git and review workflow
+## Manual agent workflow
+
+The user manually controls planning, implementation, review, Git history, and PR transitions.
+
+Do not spawn, invoke, delegate to, or coordinate other coding agents or subagents. Do not create background tasks or autonomous multi-agent workflows. Do not automatically chain planning, implementation, review, or the next PR.
+
+Each invocation performs only the role explicitly requested by the user's current prompt:
+
+- planning: inspect the repository state, create exactly one next PR specification, and update implementation planning documents as requested;
+- implementation: implement only the currently active PR in the working tree;
+- review: inspect the completed implementation and report findings without modifying files;
+- other work: follow the user's explicit request without assuming one of the roles above.
+
+Repository-defined agent files may be read when the user explicitly asks for them, but they must never be invoked or delegated to automatically.
+
+## Git workflow
+
+The user owns Git history.
+
+Unless the user explicitly requests a specific Git operation:
+
+- do not create or switch branches;
+- do not stage files;
+- do not commit or amend;
+- do not merge, rebase, reset, cherry-pick, stash, clean, or tag;
+- do not push;
+- do not modify remotes;
+- do not create GitHub pull requests;
+- do not force-update history.
+
+Git inspection is allowed when useful, including:
+
+- `git status`
+- `git diff`
+- `git log`
+- `git show`
+- `git rev-parse`
+
+Implementation work must remain in the working tree for the user's review.
+
+Review work is read-only. A review invocation must not modify production code, tests, documentation, or Git state unless the user explicitly changes that role.
+
+## PR lifecycle
 
 Implementation PR specifications are human-review units; they do not require a separate Git branch.
 
-### Default workflow
+`docs/implementation/CURRENT.md` identifies the active implementation unit.
 
-Unless the user explicitly activates an automated local-commit batch:
+During implementation:
 
-- The user owns Git history.
-- Do not create/switch branches, commit, amend, merge, rebase, reset, stash, clean, tag, or push.
-- Make working-tree changes only.
-- Do not advance `docs/implementation/CURRENT.md` to the next PR automatically.
-- Keep the active PR selected until the user has reviewed the diff and explicitly advances it.
-- You may inspect Git state/history (`git status`, `git diff`, `git log`, `git show`, `git rev-parse`) when useful, but do not mutate Git state.
+- keep `CURRENT.md` pointing at the active PR;
+- do not advance to another PR;
+- do not create future PR specifications;
+- complete only the active PR.
 
-### Automated local-commit batch
+During review:
 
-This mode is active only when the user's current task explicitly requests an autonomous multi-PR/local-commit workflow.
+- review the actual complete diff and changed files;
+- do not advance `CURRENT.md`;
+- do not create the next PR;
+- classify unresolved issues clearly.
 
-In this mode, responsibilities are separated by agent role:
+When the user later invokes the planning prompt, the planning invocation may derive exactly one next PR from the repository's then-current state and update `CURRENT.md` accordingly.
 
-#### Supervising agent
+The user decides when reviewed work is committed and when the repository is ready to move to the next PR.
 
-The supervising planning/review agent may:
+## PR sizing
 
-- inspect Git state and history;
-- stage files belonging to a completed active PR;
-- create exactly one local commit for each successfully completed PR using `git commit --no-verify`;
-- after that commit, advance repository implementation state and begin planning exactly one next PR.
+Future PRs should be substantial, coherent capability slices rather than the repository's earlier micro-PRs. Human reviewability still matters, but the default planning bias is to combine tightly coupled work until the PR reaches a meaningful end-to-end capability boundary.
 
-The supervising agent must:
+These sizing rules apply when planning the next PR. They never authorize an implementation agent to broaden the already-active specification; finish the active PR exactly as written.
 
-- commit only after independent review reports no unresolved `MUST FIX` findings;
-- run or verify all required acceptance checks before committing;
-- stage only files belonging to the active PR;
-- always create automated batch commits with `git commit --no-verify`;
-- ensure the working tree is clean after the commit before beginning the next PR;
-- derive the next PR from the newly committed repository state rather than pre-planning future PRs.
+Use the following sizing rules:
 
-`--no-verify` only bypasses local Git hooks. It does not waive any acceptance criterion, test, lint, migration, integration-test, or verification command required by the active PR or repository documentation.
+- Target roughly **six to ten times the implementation surface of the earlier micro-PR style**. This is a directional heuristic, not a line-count quota.
+- Start from the largest coherent capability boundary that one careful reviewer can still understand in a focused review session. Split only after identifying a concrete independent capability, invariant, migration risk, or review-complexity boundary.
+- A normal PR should contain several substantive behaviors or invariants and usually cross multiple application layers. Three to six tightly coupled implementation steps is a useful default range.
+- Prefer a complete user-visible vertical slice or meaningful subsystem increment over a single technical step or boundary wrapper.
+- One PR may intentionally include the database/migration change, JPA/domain mapping, repository behavior, application service/orchestration, HTTP boundary, and the required tests when they all implement one coherent capability.
+- Prefer combining adjacent steps that have no useful independent product or invariant boundary. Existing prerequisites are a reason to include more of the remaining capability, not a reason to create a thin exposure-only PR.
+- Do not create a PR whose main purpose is merely adding one DTO, one repository method, one service wrapper, one controller endpoint, one mapper, one configuration class, or tests around already-complete behavior. A boundary-only PR is acceptable only when that boundary itself carries substantial independently reviewable security, compatibility, or operational risk, and the specification must explain that exception.
+- Do not split a capability merely because it crosses application layers.
+- Split work when it contains independent business capabilities, independent invariants, a risky migration that deserves isolated review, or a diff large enough that a careful human review becomes difficult.
+- Do not make a PR larger by adding unrelated cleanup, speculative abstractions, future infrastructure, or later roadmap work.
+- A good PR should leave the repository at a meaningful, demonstrable, testable capability boundary rather than an arbitrary code-layer boundary.
+- R0–R16 are roadmap increments, not PR sizes. A single roadmap increment may require multiple PRs, and a single PR may cover several tightly coupled steps within that increment when doing so produces a clearer review unit.
 
-The supervising agent must never:
+Examples:
 
-- push;
-- create or update remote branches;
-- create GitHub pull requests;
-- amend an existing commit;
-- rebase;
-- reset;
-- merge;
-- cherry-pick;
-- stash or clean away user work;
-- modify Git remotes;
-- force-update history.
-
-#### Implementation agent
-
-The implementation agent must not mutate Git state.
-
-It may inspect Git state/history when useful, but must not:
-
-- stage;
-- commit;
-- branch;
-- amend;
-- merge;
-- rebase;
-- reset;
-- stash;
-- clean;
-- tag;
-- push.
-
-It leaves its implementation in the working tree for independent review.
-
-#### Review agent
-
-The review agent is read-only.
-
-It must inspect the actual complete diff and changed files, but must not:
-
-- modify production code;
-- modify tests;
-- modify documentation;
-- stage or commit files;
-- perform any other Git mutation.
-
-#### PR transition rule
-
-In automated local-commit batch mode, `docs/implementation/CURRENT.md` remains on the active PR throughout implementation and review.
-
-It may advance only after:
-
-1. every acceptance criterion has been verified;
-2. required tests and verification commands pass;
-3. independent review has no unresolved `MUST FIX` findings;
-4. the completed PR has been committed locally.
-
-Only then may the supervising agent derive and create exactly one next PR specification.
-
-If the current PR cannot satisfy these conditions, do not advance `CURRENT.md`.
+- Prefer registration persistence + validation + application orchestration + HTTP endpoint + integration tests in one PR when they form one registration capability.
+- Prefer refresh-session locking + rotation + reuse detection + family revocation + HTTP refresh delivery + persistence/security tests in one PR when they form one refresh lifecycle capability.
+- Prefer a coherent reference-data increment containing migration/seeds + mappings + repository/query behavior + API exposure + migration/HTTP tests rather than separate schema, mapping, and endpoint PRs.
+- Avoid separate PRs for entity mapping, repository creation, service creation, controller exposure, response mapping, and HTTP tests when each PR is only a mechanical prerequisite for the next.
 
 ## Current technology baseline
 
@@ -144,7 +136,8 @@ If the current PR cannot satisfy these conditions, do not advance `CURRENT.md`.
 - Organize Java by coarse business capability. Direct service calls, JPA references, SQL joins and cross-schema foreign keys are allowed.
 - A capability owns writes/invariants for its tables; strict module isolation is not a goal.
 - Do not introduce microservices, brokers, separate Maven modules, ports-and-adapters ceremony or generic frameworks without a concrete requirement in the active PR.
-- R0–R16 are roadmap increments, not PR sizes. Keep each PR small enough for a human to review comfortably. Do not implement later roadmap items "while here."
+- Favor the simplest implementation that correctly completes the active capability.
+- Do not implement later roadmap items "while here."
 
 ## Financial guardrails
 
@@ -173,6 +166,6 @@ If the current PR cannot satisfy these conditions, do not advance `CURRENT.md`.
 - Run the relevant pure, Testcontainers, API/security and migration tests before claiming completion.
 - Fill the PR specification completion record: implemented scope, deviations, tests, follow-ups.
 - Update `docs/review/progress-report.md` when the PR materially changes implementation status or architectural decisions.
-- Preserve unrelated user changes. Never reset/delete unrelated work to make a task easier.
-- In automated local-commit batch mode, completion documentation belongs to the same local commit as the implementation it describes.
-- A PR is not complete merely because the implementation agent reports success. Completion requires independent review, successful required verification, and the supervising agent's final acceptance.
+- Preserve unrelated user changes. Never reset or delete unrelated work to make a task easier.
+- Implementation completion does not authorize a commit or transition to the next PR.
+- A PR is ready for the user's commit decision only when its acceptance criteria are satisfied, required verification passes, and the manually invoked review has no unresolved `MUST FIX` findings.
