@@ -1,6 +1,6 @@
 # PR-018 — Refresh-session rotation, reuse response, and HTTP refresh
 
-Status: **ACTIVE**
+Status: **COMPLETE IN ACCEPTED COMMIT `d1eea9a`**
 
 ## Goal
 
@@ -465,6 +465,10 @@ Fill this before marking PR-018 complete.
 ### Starting commit
 
 - `7f55288` — user-owned PR-017 acceptance commit.
+
+### Accepted commit
+
+- `d1eea9a` — accepted PR-018 implementation and completion documentation.
 
 ### Implemented
 

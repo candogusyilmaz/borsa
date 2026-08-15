@@ -1,10 +1,12 @@
 package dev.canverse.stocks.identity.web;
 
+import dev.canverse.stocks.identity.application.LocalLoginAttemptService;
 import dev.canverse.stocks.identity.application.LocalLoginResult;
-import dev.canverse.stocks.identity.application.LocalLoginService;
 import dev.canverse.stocks.identity.input.LocalLoginRequest;
 import dev.canverse.stocks.identity.input.RefreshTokenDelivery;
 import dev.canverse.stocks.identity.output.LocalLoginResponse;
+import dev.canverse.stocks.platform.web.trace.RequestTraceFilter;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.time.Clock;
 import java.time.Instant;
@@ -20,17 +22,25 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/auth")
 public class LocalLoginController {
 
-    private final LocalLoginService loginService;
+    private final LocalLoginAttemptService loginAttemptService;
     private final Clock clock;
 
-    public LocalLoginController(LocalLoginService loginService, Clock clock) {
-        this.loginService = loginService;
+    public LocalLoginController(LocalLoginAttemptService loginAttemptService, Clock clock) {
+        this.loginAttemptService = loginAttemptService;
         this.clock = clock;
     }
 
     @PostMapping("login")
-    public ResponseEntity<LocalLoginResponse> login(@Valid @RequestBody LocalLoginRequest request) {
-        var loginResult = loginService.login(request.email(), request.password(), request.deviceLabel());
+    public ResponseEntity<LocalLoginResponse> login(
+            @Valid @RequestBody LocalLoginRequest request, HttpServletRequest servletRequest) {
+        var remoteAddr = servletRequest.getRemoteAddr();
+        var traceId = (String) servletRequest.getAttribute(RequestTraceFilter.TRACE_ID_ATTRIBUTE);
+        if (traceId == null) {
+            traceId = "unknown";
+        }
+
+        var loginResult = loginAttemptService.attemptLogin(
+                request.email(), request.password(), request.deviceLabel(), remoteAddr, traceId);
         var serverTime = clock.instant();
         var refreshToken = request.refreshTokenDelivery() == RefreshTokenDelivery.RESPONSE_BODY
                 ? loginResult.refreshToken()

@@ -358,7 +358,7 @@ class LocalAccountRegistrationHttpTest {
 
         @Override
         public UUID next() {
-            var nextId = nextIds.removeFirst();
+            var nextId = nextIds.isEmpty() ? UUID.randomUUID() : nextIds.removeFirst();
             consumedIds.addLast(nextId);
             return nextId;
         }

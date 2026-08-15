@@ -83,6 +83,9 @@ class RefreshSessionRotationServiceTest {
     dev.canverse.stocks.identity.application.RefreshSessionAuthenticationService refreshAuthenticationService;
 
     @Autowired
+    dev.canverse.stocks.platform.application.SecurityEventRecorder securityEventRecorder;
+
+    @Autowired
     dev.canverse.stocks.identity.application.LocalAccessTokenAuthenticationConverter accessTokenConverter;
 
     @Autowired
@@ -272,6 +275,7 @@ class RefreshSessionRotationServiceTest {
                 deviceSessionRepository,
                 userAccountRepository,
                 failingAccessService,
+                securityEventRecorder,
                 clock,
                 idGenerator);
 
@@ -445,7 +449,7 @@ class RefreshSessionRotationServiceTest {
 
         @Override
         public synchronized UUID next() {
-            var id = nextIds.removeFirst();
+            var id = nextIds.isEmpty() ? UUID.randomUUID() : nextIds.removeFirst();
             consumedIds.addLast(id);
             return id;
         }

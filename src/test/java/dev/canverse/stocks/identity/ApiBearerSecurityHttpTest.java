@@ -17,6 +17,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
@@ -319,7 +320,7 @@ class ApiBearerSecurityHttpTest {
     }
 
     private List<String> concat(List<String> values, String extra) {
-        var combined = new java.util.ArrayList<>(values);
+        var combined = new ArrayList<>(values);
         combined.add(extra);
         return List.copyOf(combined);
     }
@@ -402,7 +403,7 @@ class ApiBearerSecurityHttpTest {
 
         @Override
         public UUID next() {
-            return nextIds.removeFirst();
+            return nextIds.isEmpty() ? UUID.randomUUID() : nextIds.removeFirst();
         }
     }
 

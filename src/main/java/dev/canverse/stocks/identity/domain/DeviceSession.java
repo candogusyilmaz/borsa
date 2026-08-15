@@ -21,6 +21,9 @@ public class DeviceSession {
 
     public static final String ROTATED_REVOKE_REASON = "ROTATED";
     public static final String REUSE_DETECTED_REVOKE_REASON = "REUSE_DETECTED";
+    public static final String USER_LOGOUT_REVOKE_REASON = "USER_LOGOUT";
+    public static final String USER_LOGOUT_ALL_REVOKE_REASON = "USER_LOGOUT_ALL";
+    public static final String USER_REVOKED_REVOKE_REASON = "USER_REVOKED";
 
     @Id
     private UUID id;
@@ -120,6 +123,18 @@ public class DeviceSession {
         if (revokedAt == null && replacedBySessionId == null) {
             revokedAt = observedAt;
             revokeReason = REUSE_DETECTED_REVOKE_REASON;
+        }
+    }
+
+    public void revokeTerminal(String reason, Instant observedAt) {
+        Objects.requireNonNull(reason, "reason");
+        Objects.requireNonNull(observedAt, "observedAt");
+        if (replacedBySessionId != null) {
+            throw new IllegalStateException("A historical replaced generation cannot be terminally revoked");
+        }
+        if (revokedAt == null) {
+            revokedAt = observedAt;
+            revokeReason = reason;
         }
     }
 

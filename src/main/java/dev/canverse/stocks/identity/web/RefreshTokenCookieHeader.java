@@ -35,4 +35,22 @@ public final class RefreshTokenCookieHeader {
                 .matcher(refreshCookie.toString())
                 .replaceFirst(Matcher.quoteReplacement("Expires=" + expires));
     }
+
+    public static String clear() {
+        var refreshCookie = ResponseCookie.from(REFRESH_COOKIE_NAME, "")
+                .path(REFRESH_COOKIE_PATH)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Strict")
+                .maxAge(0)
+                .build();
+        var expires = "Thu, 01 Jan 1970 00:00:00 GMT";
+        var cookieString = refreshCookie.toString();
+        if (COOKIE_EXPIRES_ATTRIBUTE.matcher(cookieString).find()) {
+            return COOKIE_EXPIRES_ATTRIBUTE
+                    .matcher(cookieString)
+                    .replaceFirst(Matcher.quoteReplacement("Expires=" + expires));
+        }
+        return cookieString + "; Expires=" + expires;
+    }
 }

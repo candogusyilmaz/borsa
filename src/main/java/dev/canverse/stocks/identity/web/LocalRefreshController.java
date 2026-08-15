@@ -1,16 +1,23 @@
 package dev.canverse.stocks.identity.web;
 
+import dev.canverse.stocks.identity.application.AuthenticationAbuseProtection;
 import dev.canverse.stocks.identity.application.LocalRefreshResult;
 import dev.canverse.stocks.identity.application.RefreshSessionRotationService;
 import dev.canverse.stocks.identity.error.IdentityErrorCode;
 import dev.canverse.stocks.identity.input.LocalRefreshRequest;
 import dev.canverse.stocks.identity.input.RefreshTokenDelivery;
 import dev.canverse.stocks.identity.output.LocalRefreshResponse;
+import dev.canverse.stocks.platform.application.SecurityEventRecorder;
 import dev.canverse.stocks.platform.error.AppException;
+import dev.canverse.stocks.platform.web.trace.RequestTraceFilter;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.time.Clock;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -28,20 +35,50 @@ public class LocalRefreshController {
     private static final String REFRESH_COOKIE_NAME = "refresh-token";
 
     private final RefreshSessionRotationService rotationService;
+    private final AuthenticationAbuseProtection abuseProtection;
+    private final SecurityEventRecorder securityEventRecorder;
     private final Clock clock;
 
-    public LocalRefreshController(RefreshSessionRotationService rotationService, Clock clock) {
+    public LocalRefreshController(
+            RefreshSessionRotationService rotationService,
+            AuthenticationAbuseProtection abuseProtection,
+            SecurityEventRecorder securityEventRecorder,
+            Clock clock) {
         this.rotationService = rotationService;
+        this.abuseProtection = abuseProtection;
+        this.securityEventRecorder = securityEventRecorder;
         this.clock = clock;
     }
 
     @PostMapping(value = "refresh", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<LocalRefreshResponse> refresh(
             @Valid @RequestBody LocalRefreshRequest request, HttpServletRequest servletRequest) {
-        var rawRefreshToken = selectCredential(request, servletRequest);
-        var result = rotationService
-                .rotate(rawRefreshToken)
-                .orElseThrow(() -> new AppException(IdentityErrorCode.INVALID_CREDENTIALS));
+        var remoteAddr = servletRequest.getRemoteAddr();
+        var traceId = (String) servletRequest.getAttribute(RequestTraceFilter.TRACE_ID_ATTRIBUTE);
+        if (traceId == null) {
+            traceId = "unknown";
+        }
+
+        if (abuseProtection.checkRefreshAllowed(remoteAddr) == AuthenticationAbuseProtection.CheckResult.BLOCKED) {
+            throw new AppException(IdentityErrorCode.AUTHENTICATION_THROTTLED);
+        }
+
+        String rawRefreshToken;
+        try {
+            rawRefreshToken = selectCredential(request, servletRequest);
+        } catch (AppException exception) {
+            handleRefreshFailure(remoteAddr, traceId);
+            throw exception;
+        }
+
+        var resultOpt = rotationService.rotate(rawRefreshToken);
+        if (resultOpt.isEmpty()) {
+            handleRefreshFailure(remoteAddr, traceId);
+            throw new AppException(IdentityErrorCode.INVALID_CREDENTIALS);
+        }
+
+        abuseProtection.recordRefreshSuccess(remoteAddr);
+        var result = resultOpt.get();
         var serverTime = clock.instant();
         var responseRefreshToken =
                 request.refreshTokenDelivery() == RefreshTokenDelivery.RESPONSE_BODY ? result.refreshToken() : null;
@@ -56,6 +93,20 @@ public class LocalRefreshController {
                     RefreshTokenCookieHeader.create(result.refreshToken(), result.refreshTokenExpiresAt(), serverTime));
         }
         return new ResponseEntity<>(response, headers, HttpStatus.OK);
+    }
+
+    private void handleRefreshFailure(String remoteAddr, String traceId) {
+        var transitionOpt = abuseProtection.recordRefreshFailure(remoteAddr);
+        if (transitionOpt.isPresent()) {
+            var transition = transitionOpt.get();
+            try {
+                securityEventRecorder.recordAnonymousRequiresNew(
+                        SecurityEventRecorder.REFRESH_THROTTLED, Map.of("traceId", traceId, "operation", "REFRESH"));
+            } catch (RuntimeException exception) {
+                abuseProtection.rollbackThrottle(transition);
+                throw exception;
+            }
+        }
     }
 
     private String selectCredential(LocalRefreshRequest request, HttpServletRequest servletRequest) {
@@ -75,12 +126,12 @@ public class LocalRefreshController {
         throw invalidCredentials();
     }
 
-    private java.util.List<String> refreshCookieValues(HttpServletRequest servletRequest) {
+    private List<String> refreshCookieValues(HttpServletRequest servletRequest) {
         var cookies = servletRequest.getCookies();
         if (cookies == null) {
-            return java.util.List.of();
+            return List.of();
         }
-        return java.util.Arrays.stream(cookies)
+        return Arrays.stream(cookies)
                 .filter(cookie -> Objects.equals(REFRESH_COOKIE_NAME, cookie.getName()))
                 .map(Cookie::getValue)
                 .toList();
@@ -94,8 +145,7 @@ public class LocalRefreshController {
         return new AppException(IdentityErrorCode.INVALID_CREDENTIALS);
     }
 
-    private LocalRefreshResponse toResponse(
-            LocalRefreshResult result, java.time.Instant serverTime, String refreshToken) {
+    private LocalRefreshResponse toResponse(LocalRefreshResult result, Instant serverTime, String refreshToken) {
         return new LocalRefreshResponse(
                 result.sessionId(),
                 result.accessToken(),

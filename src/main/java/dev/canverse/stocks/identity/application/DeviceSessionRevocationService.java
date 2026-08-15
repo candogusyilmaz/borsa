@@ -1,0 +1,137 @@
+package dev.canverse.stocks.identity.application;
+
+import dev.canverse.stocks.identity.domain.DeviceSession;
+import dev.canverse.stocks.identity.error.IdentityErrorCode;
+import dev.canverse.stocks.identity.infrastructure.DeviceSessionRepository;
+import dev.canverse.stocks.identity.infrastructure.UserAccountRepository;
+import dev.canverse.stocks.platform.application.SecurityEventRecorder;
+import dev.canverse.stocks.platform.error.AppException;
+import java.time.Clock;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class DeviceSessionRevocationService {
+
+    private final UserAccountRepository userAccountRepository;
+    private final DeviceSessionRepository deviceSessionRepository;
+    private final SecurityEventRecorder securityEventRecorder;
+    private final Clock clock;
+
+    @Transactional
+    public void logoutCurrentSession(UUID userAccountId, UUID currentSessionId) {
+        Objects.requireNonNull(userAccountId, "userAccountId");
+        Objects.requireNonNull(currentSessionId, "currentSessionId");
+
+        var owner = userAccountRepository
+                .findByIdForUpdate(userAccountId)
+                .orElseThrow(() -> new AppException(IdentityErrorCode.INVALID_CREDENTIALS));
+        if (owner.getDisabledAt() != null) {
+            throw new AppException(IdentityErrorCode.INVALID_CREDENTIALS);
+        }
+
+        var currentSession = deviceSessionRepository
+                .findByIdAndUserAccount_Id(currentSessionId, userAccountId)
+                .orElseThrow(() -> new AppException(IdentityErrorCode.INVALID_CREDENTIALS));
+
+        var familyId = currentSession.getFamilyId();
+        var terminalSession = deviceSessionRepository
+                .findByUserAccount_IdAndFamilyIdAndReplacedBySessionIdIsNull(userAccountId, familyId)
+                .orElseThrow(() -> new IllegalStateException("Missing terminal generation for family " + familyId));
+
+        var observedAt = clock.instant();
+        if (terminalSession.getRevokedAt() == null) {
+            terminalSession.revokeTerminal(DeviceSession.USER_LOGOUT_REVOKE_REASON, observedAt);
+            deviceSessionRepository.saveAndFlush(terminalSession);
+            securityEventRecorder.record(
+                    userAccountId,
+                    SecurityEventRecorder.CURRENT_SESSION_LOGGED_OUT,
+                    Map.of("familyId", familyId.toString()));
+            deviceSessionRepository.flush();
+        }
+    }
+
+    @Transactional
+    public void logoutAllSessions(UUID userAccountId) {
+        Objects.requireNonNull(userAccountId, "userAccountId");
+
+        var owner = userAccountRepository
+                .findByIdForUpdate(userAccountId)
+                .orElseThrow(() -> new AppException(IdentityErrorCode.INVALID_CREDENTIALS));
+        if (owner.getDisabledAt() != null) {
+            throw new AppException(IdentityErrorCode.INVALID_CREDENTIALS);
+        }
+
+        var terminalSessions =
+                deviceSessionRepository.findByUserAccount_IdAndReplacedBySessionIdIsNullOrderByFamilyIdAsc(
+                        userAccountId);
+
+        var observedAt = clock.instant();
+        var revokedCount = 0;
+        for (var session : terminalSessions) {
+            if (session.getRevokedAt() == null) {
+                session.revokeTerminal(DeviceSession.USER_LOGOUT_ALL_REVOKE_REASON, observedAt);
+                deviceSessionRepository.save(session);
+                revokedCount++;
+            }
+        }
+        deviceSessionRepository.flush();
+
+        if (revokedCount > 0) {
+            securityEventRecorder.record(
+                    userAccountId,
+                    SecurityEventRecorder.ALL_SESSIONS_LOGGED_OUT,
+                    Map.of("revokedFamilyCount", revokedCount));
+            deviceSessionRepository.flush();
+        }
+    }
+
+    @Transactional
+    public boolean revokeSelectedFamily(UUID userAccountId, UUID currentSessionId, UUID targetFamilyId) {
+        Objects.requireNonNull(userAccountId, "userAccountId");
+        Objects.requireNonNull(currentSessionId, "currentSessionId");
+        Objects.requireNonNull(targetFamilyId, "targetFamilyId");
+
+        var owner = userAccountRepository
+                .findByIdForUpdate(userAccountId)
+                .orElseThrow(() -> new AppException(IdentityErrorCode.INVALID_CREDENTIALS));
+        if (owner.getDisabledAt() != null) {
+            throw new AppException(IdentityErrorCode.INVALID_CREDENTIALS);
+        }
+
+        var currentSession = deviceSessionRepository
+                .findByIdAndUserAccount_Id(currentSessionId, userAccountId)
+                .orElseThrow(() -> new AppException(IdentityErrorCode.INVALID_CREDENTIALS));
+
+        var isCurrentFamily = targetFamilyId.equals(currentSession.getFamilyId());
+
+        var terminalSessionOpt = deviceSessionRepository.findByUserAccount_IdAndFamilyIdAndReplacedBySessionIdIsNull(
+                userAccountId, targetFamilyId);
+
+        if (terminalSessionOpt.isEmpty()) {
+            if (!deviceSessionRepository.existsByUserAccount_IdAndFamilyId(userAccountId, targetFamilyId)) {
+                throw new AppException(IdentityErrorCode.SESSION_NOT_FOUND);
+            }
+            throw new IllegalStateException("Missing terminal generation for family " + targetFamilyId);
+        }
+
+        var terminalSession = terminalSessionOpt.get();
+        var observedAt = clock.instant();
+        if (terminalSession.getRevokedAt() == null) {
+            terminalSession.revokeTerminal(DeviceSession.USER_REVOKED_REVOKE_REASON, observedAt);
+            deviceSessionRepository.saveAndFlush(terminalSession);
+            securityEventRecorder.record(
+                    userAccountId,
+                    SecurityEventRecorder.DEVICE_SESSION_REVOKED,
+                    Map.of("familyId", targetFamilyId.toString()));
+            deviceSessionRepository.flush();
+        }
+
+        return isCurrentFamily;
+    }
+}

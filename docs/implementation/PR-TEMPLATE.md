@@ -6,6 +6,13 @@ Status: DRAFT | ACTIVE | COMPLETE
 
 One short paragraph describing the observable outcome of this PR.
 
+## Sizing and boundary rationale
+
+- Comparison baseline: accepted PR-018 (`d1eea9a`) production surface.
+- Expected production surface: files/layers and approximate gross production implementation size; explain how it reaches at least five times the fixed PR-018 baseline without counting tests or documentation.
+- Combined steps: identify the tightly coupled behaviors carried together and why separating them would leave a mechanical or incomplete boundary.
+- Review boundary: explain why the scope remains one coherent focused review and name any independent neighboring capability deliberately excluded.
+
 ## Source documents
 
 - `docs/review/backend-master-plan.md` — R?/relevant sections

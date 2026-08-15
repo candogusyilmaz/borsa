@@ -3,8 +3,10 @@ package dev.canverse.stocks.identity.application;
 import dev.canverse.stocks.identity.infrastructure.DeviceSessionRepository;
 import dev.canverse.stocks.identity.infrastructure.SecureRefreshTokenGenerator;
 import dev.canverse.stocks.identity.infrastructure.UserAccountRepository;
+import dev.canverse.stocks.platform.application.SecurityEventRecorder;
 import dev.canverse.stocks.platform.id.IdGenerator;
 import java.time.Clock;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ public class RefreshSessionRotationService {
     private final DeviceSessionRepository deviceSessionRepository;
     private final UserAccountRepository userAccountRepository;
     private final AccessTokenIssuanceService accessTokenIssuanceService;
+    private final SecurityEventRecorder securityEventRecorder;
     private final Clock clock;
     private final IdGenerator idGenerator;
 
@@ -51,6 +54,13 @@ public class RefreshSessionRotationService {
                     .ifPresent(activeSession -> {
                         activeSession.revokeForReuse(observedAt);
                         deviceSessionRepository.saveAndFlush(activeSession);
+                        securityEventRecorder.record(
+                                ownerProjection.get().userAccountId(),
+                                SecurityEventRecorder.REFRESH_REUSE_DETECTED,
+                                Map.of(
+                                        "familyId", session.getFamilyId().toString(),
+                                        "sessionId", session.getId().toString()));
+                        deviceSessionRepository.flush();
                     });
             return Optional.empty();
         }

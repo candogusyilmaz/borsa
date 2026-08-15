@@ -6,7 +6,10 @@ import org.springframework.http.HttpStatus;
 
 public enum IdentityErrorCode implements ErrorCode {
     EMAIL_ALREADY_REGISTERED(HttpStatus.CONFLICT, "The email address is already registered."),
-    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "The provided credentials are invalid.");
+    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "The provided credentials are invalid."),
+    INVALID_SESSION_CURSOR(HttpStatus.BAD_REQUEST, "The session cursor is invalid."),
+    SESSION_NOT_FOUND(HttpStatus.NOT_FOUND, "The device session was not found."),
+    AUTHENTICATION_THROTTLED(HttpStatus.TOO_MANY_REQUESTS, "Too many authentication attempts.");
 
     private final HttpStatus status;
     private final String description;

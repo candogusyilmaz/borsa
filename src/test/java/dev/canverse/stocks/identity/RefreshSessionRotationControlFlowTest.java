@@ -28,6 +28,7 @@ class RefreshSessionRotationControlFlowTest {
         var deviceSessionRepository = mock(DeviceSessionRepository.class);
         var userAccountRepository = mock(UserAccountRepository.class);
         var accessTokenIssuanceService = mock(AccessTokenIssuanceService.class);
+        var securityEventRecorder = mock(dev.canverse.stocks.platform.application.SecurityEventRecorder.class);
         var clock = mock(Clock.class);
         var idGenerator = mock(dev.canverse.stocks.platform.id.IdGenerator.class);
         var service = new RefreshSessionRotationService(
@@ -35,6 +36,7 @@ class RefreshSessionRotationControlFlowTest {
                 deviceSessionRepository,
                 userAccountRepository,
                 accessTokenIssuanceService,
+                securityEventRecorder,
                 clock,
                 idGenerator);
 
@@ -47,6 +49,7 @@ class RefreshSessionRotationControlFlowTest {
                 deviceSessionRepository,
                 userAccountRepository,
                 accessTokenIssuanceService,
+                securityEventRecorder,
                 clock,
                 idGenerator);
     }
@@ -57,6 +60,7 @@ class RefreshSessionRotationControlFlowTest {
         var deviceSessionRepository = mock(DeviceSessionRepository.class);
         var userAccountRepository = mock(UserAccountRepository.class);
         var accessTokenIssuanceService = mock(AccessTokenIssuanceService.class);
+        var securityEventRecorder = mock(dev.canverse.stocks.platform.application.SecurityEventRecorder.class);
         var clock = mock(Clock.class);
         var idGenerator = mock(dev.canverse.stocks.platform.id.IdGenerator.class);
         when(refreshTokenGenerator.hash("presented-token")).thenReturn("stored-hash");
@@ -67,6 +71,7 @@ class RefreshSessionRotationControlFlowTest {
                 deviceSessionRepository,
                 userAccountRepository,
                 accessTokenIssuanceService,
+                securityEventRecorder,
                 clock,
                 idGenerator);
 
@@ -80,6 +85,7 @@ class RefreshSessionRotationControlFlowTest {
                 deviceSessionRepository,
                 userAccountRepository,
                 accessTokenIssuanceService,
+                securityEventRecorder,
                 clock,
                 idGenerator);
     }
@@ -90,6 +96,7 @@ class RefreshSessionRotationControlFlowTest {
         var deviceSessionRepository = mock(DeviceSessionRepository.class);
         var userAccountRepository = mock(UserAccountRepository.class);
         var accessTokenIssuanceService = mock(AccessTokenIssuanceService.class);
+        var securityEventRecorder = mock(dev.canverse.stocks.platform.application.SecurityEventRecorder.class);
         var clock = mock(Clock.class);
         var idGenerator = mock(dev.canverse.stocks.platform.id.IdGenerator.class);
         var sessionId = UUID.randomUUID();
@@ -105,6 +112,7 @@ class RefreshSessionRotationControlFlowTest {
                 deviceSessionRepository,
                 userAccountRepository,
                 accessTokenIssuanceService,
+                securityEventRecorder,
                 clock,
                 idGenerator);
 
@@ -121,6 +129,7 @@ class RefreshSessionRotationControlFlowTest {
                 deviceSessionRepository,
                 userAccountRepository,
                 accessTokenIssuanceService,
+                securityEventRecorder,
                 clock,
                 idGenerator);
     }

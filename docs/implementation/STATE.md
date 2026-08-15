@@ -284,6 +284,24 @@ Established:
 
 Spotless, the 29-test focused suite, the full 105-test suite, and `verify` pass with no failures, errors, or skipped tests. Independent correction-cycle review fixed the exact cookie `Expires` value and passed with no remaining `MUST FIX` or `SHOULD FIX` findings. The user-owned accepting commit is `7f55288`.
 
+### PR-018 - Refresh-session rotation, reuse response, and HTTP refresh
+
+Status: **COMPLETE IN ACCEPTED COMMIT `d1eea9a`**
+
+Starting commit: `7f55288`
+
+Established:
+
+- one owner-lock-first transactional refresh rotation workflow with post-lock reload and one clock observation;
+- append-oriented predecessor consumption and successor insertion under the unchanged immediate replacement FK and partial active-family uniqueness constraint;
+- fixed absolute family expiry, successor-bound access-token issuance, and full rollback on downstream issuance/runtime failure;
+- committed active-family revocation with `REUSE_DETECTED` before the uniform replaced-token `401` response;
+- one public JSON-only `POST /api/v1/auth/refresh` using exact single-channel response-body or hardened host-only cookie credential/delivery semantics;
+- shared exact refresh-cookie construction for login and refresh;
+- real PostgreSQL rollback/reuse/locking/concurrent-duplicate coverage plus real-filter content-type/CORS/route/stateless security coverage.
+
+Spotless, the 45-test focused suite, the full 124-test suite, and Maven `verify` passed with no failures, errors, or skipped tests. The accepting commit is `d1eea9a`.
+
 ## Current database
 
 Migration version: `V1`
@@ -399,22 +417,47 @@ PR-017 additionally adds `identity.input.LocalLoginRequest`, `identity.input.Ref
 - Reuse of a replaced generation locks the same owner row, revokes the remaining active family generation with `REUSE_DETECTED`, flushes and returns an empty service outcome; the controller raises `INVALID_CREDENTIALS` only after that transaction returns. The fixed absolute family expiry is inherited by every successor.
 - `POST /api/v1/auth/refresh` is the only new public route. It accepts JSON only, selects exactly one body/cookie credential, returns no-store/no-cache metadata, uses the shared hardened host-only cookie helper for cookie delivery, and remains inside the single stateless bearer chain with no CORS or general CSRF subsystem.
 
+### PR-019 — Authenticated identity and session security lifecycle
+
+Status: **IMPLEMENTATION COMPLETE (AWAITING REVIEW)**
+
+Specification:
+
+`PR-019-authenticated-identity-and-session-security-lifecycle.md`
+
+Established:
+
+- `AuthenticatedIdentity` and `AuthenticatedIdentityResolver` for typed extraction of authenticated `userAccountId` and `sessionId` from `SecurityContextHolder`.
+- Owner-scoped query endpoints and read repository:
+  - `GET /api/v1/me` returning authenticated user ID, email, and registration timestamp.
+  - `GET /api/v1/auth/sessions` with keyset pagination (`limit` up to 100, `cursor` codec with Base64url encoding of timestamp + family ID).
+  - `GET /api/v1/auth/sessions/{familyId}` returning single family details with accurate status (`CURRENT`, `ACTIVE`, `REVOKED`, `EXPIRED`).
+- Owner-locked device session revocation and logout:
+  - `POST /api/v1/auth/logout` supporting `CURRENT_SESSION` and `ALL_SESSIONS`.
+  - `DELETE /api/v1/auth/sessions/{familyId}` for user-selected family termination.
+  - `RefreshTokenCookieHeader.clear()` generating exact expired Set-Cookie header.
+- Safe audit security event recording:
+  - `SecurityEventRecorder` persisting safe, sanitized JSON events to `platform.security_event`.
+  - Transactional propagation: `REQUIRED` for session mutations and `REQUIRES_NEW` for anonymous failure / throttle events.
+- In-memory process-local authentication abuse protection:
+  - `AuthenticationAbuseProtection` using SHA-256 Base64url domain-separated fingerprints, per-bucket window tracking, fail-closed capacity bounding, transition-specific compare-and-set rollback, and deterministic pruning for login, registration, and refresh endpoints.
+- Full unit, integration, and HTTP test coverage across 104 tests in the identity module (210 tests total repository-wide).
+
 ## Active implementation unit
 
-PR-018 refresh-session rotation, reuse response, and HTTP refresh is the active specification. It is one substantial R1 vertical slice covering owner-row locking, append-oriented generation replacement, committed family revocation when a replaced token is reused, successor-bound access-token issuance, the public JSON-only refresh boundary, explicit response-body/cookie delivery, and transaction/concurrency/security tests.
+PR-019 authenticated identity and session security lifecycle is implemented in the working tree and ready for user review.
 
-PR-017's implementation and review are complete in user-owned commit `7f55288`. PR-018 implementation is now present in the working tree and remains the active unit until the supervising user reviews and accepts it. See `CURRENT.md` and `PR-018-refresh-session-rotation-and-http-refresh.md`; do not broaden the active scope.
+See `CURRENT.md` and `PR-019-authenticated-identity-and-session-security-lifecycle.md`.
 
 ## Next likely implementation areas
 
-These are planning hints for work after PR-018, not active specifications.
+These are planning hints for work after PR-019, not active specifications.
 
-Likely sequence after PR-018:
+Likely sequence after PR-019:
 
-1. logout/revocation and owner-scoped session management using PR-018's accepted owner-lock discipline;
-2. owner/principal helpers and endpoint authorization over the accepted authenticated identity;
-3. security events and authentication abuse protection;
-4. durable job claim/retry worker or the V2 reference migration.
+1. durable platform job claim/heartbeat/retry/recovery behavior using the existing V1 table;
+2. the coherent V2 reference migration, mappings, manual administration/search API, deterministic seeds, and tests;
+3. persistent signing-key/OIDC/recovery work only when a separately reviewed security boundary requires it.
 
 The exact next behavioral implementation unit must be designed just-in-time from the reconciled committed state.
 
@@ -422,8 +465,8 @@ Do not treat this list as a promise of PR numbering or exact scope.
 
 ## Known issues / deferred work
 
-- HTTP bearer authentication is installed for `/api/v1/**`; PR-017 login/delivery and PR-018 refresh rotation/delivery are implemented in the working tree, while endpoint authorization, roles/permissions, owner helpers, logout, explicit revocation, and session listing/deletion remain deferred.
-- The rotation implementation preserves the unchanged immediate replacement FK through a transactional JPA sequence that flushes the consumed predecessor before the active successor is inserted, then links the predecessor. This is the main persistence subtlety for review. No migration/schema change was made, and invalid-state, rollback/reuse/concurrency coverage is present.
+- PR-019 is fully implemented in the working tree and passes all 210 tests including Testcontainers PostgreSQL integration tests and Spotless validation.
+- Keyset pagination in `DeviceSessionReadRepository` casts `s.id` to `text` inside the PostgreSQL `MAX` aggregate function to support UUID types across PostgreSQL versions.
 - Maven explicitly registers Lombok on the annotation-processor path so Lombok-generated entity accessors and constructors compile on Java 25.
 - No reference data yet.
 - No ledger yet.

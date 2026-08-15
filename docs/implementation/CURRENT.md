@@ -4,16 +4,16 @@ Status: **ACTIVE**
 
 Specification:
 
-[PR-018 — Refresh-session rotation, reuse response, and HTTP refresh](PR-018-refresh-session-rotation-and-http-refresh.md)
+[PR-019 — Authenticated identity and session security lifecycle](PR-019-authenticated-identity-and-session-security-lifecycle.md)
 
 Implementation agents must read the complete specification and implement only that scope.
 
-PR-017's local-login and explicit response-body/cookie delivery implementation was accepted in user-owned commit `7f55288` after independent review, its focused PostgreSQL suite, the full 105-test suite, Spotless, and Maven `verify`.
+PR-018's owner-locked refresh rotation, committed reuse response, successor access-token issuance, and JSON/cookie refresh delivery were accepted in commit `d1eea9a` after its focused 45-test gate, full 124-test suite, Spotless, Maven `verify`, and completion record passed.
 
-PR-018 is one substantial refresh-lifecycle vertical slice: PostgreSQL-backed owner locking, append-oriented token rotation, committed family revocation on replaced-token reuse, successor-bound access-token issuance, one public JSON-only refresh endpoint, exact native/cookie delivery, shared cookie construction, and the required transaction/concurrency/security tests.
+PR-019 is one substantial local-identity security subsystem increment: typed authenticated identity, `/me`, owner-scoped logical session reads, current/all/selected-family revocation, exact logout cookie clearing, durable security events, and bounded process-local login/register/refresh abuse protection with transaction/concurrency/security coverage.
 
-Do not add logout/session listing or user-selected revocation, rolling expiry, refresh retry tolerance, cross-site cookie/CORS/general CSRF infrastructure, security events/abuse controls, authorization/owner helpers, persistent signing keys, schema/dependency/frontend changes, jobs, or another domain workflow.
+Do not add jobs, persistent signing keys, Google/OIDC/recovery, roles/permissions/households, account export/deletion, cross-site cookie/CORS/trusted-proxy/general CSRF infrastructure, migrations/dependencies/frontend changes, reference data, or financial behavior.
 
-The user-owned `AGENTS.md` modification remains outside production scope and must not be reverted. Agents perform no Git operations.
+The user-owned `AGENTS.md` and command-playbook changes remain outside production scope and must not be reverted. Agents perform no Git operations.
 
-Do not advance this pointer during implementation or review. It remains on PR-018 until the supervising user accepts the completed unit.
+Do not advance this pointer during implementation or review. It remains on PR-019 until the supervising user accepts the completed unit.

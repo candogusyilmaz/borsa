@@ -15,6 +15,7 @@ import com.nimbusds.jose.util.JSONObjectUtils;
 import java.math.BigDecimal;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPrivateKey;
 import java.time.Clock;
 import java.time.Duration;
@@ -338,7 +339,7 @@ class LocalAccessTokenDecoderTest {
             var generator = KeyPairGenerator.getInstance("RSA");
             generator.initialize(2048);
             return generator.generateKeyPair();
-        } catch (java.security.NoSuchAlgorithmException exception) {
+        } catch (NoSuchAlgorithmException exception) {
             throw new IllegalStateException("RSA is unavailable for the test", exception);
         }
     }

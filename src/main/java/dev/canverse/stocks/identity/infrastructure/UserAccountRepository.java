@@ -2,6 +2,7 @@ package dev.canverse.stocks.identity.infrastructure;
 
 import dev.canverse.stocks.identity.domain.UserAccount;
 import jakarta.persistence.LockModeType;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -15,5 +16,5 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, UUID> 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select u from UserAccount u where u.id = :id")
     @Transactional
-    java.util.Optional<UserAccount> findByIdForUpdate(@Param("id") UUID id);
+    Optional<UserAccount> findByIdForUpdate(@Param("id") UUID id);
 }

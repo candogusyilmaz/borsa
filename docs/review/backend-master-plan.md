@@ -600,17 +600,18 @@ Feature completeness and real-data coverage are separate release dimensions and 
 
 ## Pull-request execution model
 
-R0–R16 are roadmap increments, **not pull-request sizes**. Implementation must be split into small, independently reviewable PRs. A PR should normally introduce one coherent user capability, invariant, migration step, or infrastructure behavior that a human can review without reconstructing several later features at once.
+R0–R16 are roadmap increments, **not pull-request sizes**. Implementation is delivered through substantial, independently reviewable vertical slices. A PR should normally introduce one coherent capability, lifecycle, or subsystem increment through all required layers so a human can review a meaningful outcome without reconstructing several later features at once.
 
 Rules:
 
-1. Write the next PR specification just in time, normally one to three PRs ahead, rather than pre-specifying the entire rewrite.
+1. Write exactly one next PR specification just in time rather than pre-specifying the entire rewrite.
 2. `docs/implementation/CURRENT.md` identifies the active PR specification. Agents should discover it through root `AGENTS.md`; the user should not need to restate the coding standards or active-spec rule in every prompt.
 3. A PR specification references this master plan, [accounting-contract.md](accounting-contract.md), and [../engineering/coding-standards.md](../engineering/coding-standards.md); it does not duplicate or silently redefine those long-lived rules.
 4. Every PR lists explicit scope, non-goals, database/API changes, invariants, required tests, acceptance criteria, and verification commands.
 5. If a PR becomes difficult to review, split it even if an agent could implement the larger change correctly. Human reviewability is a design constraint.
 6. If implementation discovers a cross-cutting rule change, update the authoritative contract first, then the PR spec, then code.
 7. At completion, record implemented scope, deviations, tests and follow-ups in the PR specification and update [progress-report.md](progress-report.md).
+8. For PR-019 and later, use accepted PR-018 (`d1eea9a`) as the fixed minimum-size baseline. Each planned unit targets at least five times PR-018's substantive production implementation surface; PR-018 added 381 and removed 30 production Java lines across 12 production files, so roughly 1,900 gross production-line additions is the comparison floor at similar density. Tests and documentation do not count, the multiplier does not compound from later enlarged PRs, and unrelated work or padding may not be added to hit it.
 
 ## Exact scratch-rewrite execution checklist
 

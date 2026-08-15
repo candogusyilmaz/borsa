@@ -2,6 +2,8 @@
 
 This file is the repository-level entry point for coding agents. Agents that support `AGENTS.md` should discover it automatically. The user should not have to repeat "follow the coding standards" or "read the current PR spec" in every prompt.
 
+For recurring Windows sandbox, Maven, Docker/Testcontainers, Git, and command-output issues, read [docs/engineering/codex-command-playbook.md](docs/engineering/codex-command-playbook.md).
+
 ## Required instruction chain
 
 Before editing backend code or migrations:
@@ -100,7 +102,7 @@ These sizing rules apply when planning the next PR. They never authorize an impl
 
 Use the following sizing rules:
 
-- Target roughly **six to ten times the implementation surface of the earlier micro-PR style**. This is a directional heuristic, not a line-count quota.
+- For PR-019 and later, use accepted PR-018 (`d1eea9a`) as the fixed sizing baseline and target at least **five times its substantive production implementation surface**. PR-018 added 381 and removed 30 production Java lines across 12 production files; an implementation with similar density therefore needs roughly 1,900 or more gross production-line additions, or a demonstrably equivalent migration/domain/API surface. Tests and documentation do not count toward this floor. This is a fixed comparison baseline, not a recursively compounding multiplier from each later enlarged PR, and it is not permission to pad a diff.
 - Start from the largest coherent capability boundary that one careful reviewer can still understand in a focused review session. Split only after identifying a concrete independent capability, invariant, migration risk, or review-complexity boundary.
 - A normal PR should contain several substantive behaviors or invariants and usually cross multiple application layers. Three to six tightly coupled implementation steps is a useful default range.
 - Prefer a complete user-visible vertical slice or meaningful subsystem increment over a single technical step or boundary wrapper.

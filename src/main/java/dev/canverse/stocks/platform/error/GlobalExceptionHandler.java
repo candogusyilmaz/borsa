@@ -9,12 +9,15 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.ConversionNotSupportedException;
+import org.springframework.beans.TypeMismatchException;
+import org.springframework.context.MessageSourceResolvable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -28,6 +31,7 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.validation.method.MethodValidationException;
+import org.springframework.validation.method.MethodValidationResult;
 import org.springframework.validation.method.ParameterErrors;
 import org.springframework.validation.method.ParameterValidationResult;
 import org.springframework.web.ErrorResponseException;
@@ -38,6 +42,15 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.ServletRequestBindingException;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.MatrixVariable;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
@@ -48,7 +61,7 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-@org.springframework.web.bind.annotation.RestControllerAdvice
+@RestControllerAdvice
 @RequiredArgsConstructor
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
@@ -57,7 +70,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private final Clock clock;
 
-    @org.springframework.web.bind.annotation.ExceptionHandler(AppException.class)
+    @ExceptionHandler(AppException.class)
     public ResponseEntity<Object> handleAppException(AppException exception, WebRequest request) {
         var errorCode = exception.getErrorCode();
         if (errorCode.getStatus().is5xxServerError()) {
@@ -77,7 +90,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return problemResponse(errorCode, exception.getParams(), HttpHeaders.EMPTY, request);
     }
 
-    @org.springframework.web.bind.annotation.ExceptionHandler(ConstraintViolationException.class)
+    @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Object> handleConstraintViolation(
             ConstraintViolationException exception, WebRequest request) {
         var errors = exception.getConstraintViolations().stream()
@@ -86,16 +99,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return validationResponse(errors, HttpHeaders.EMPTY, request);
     }
 
-    @org.springframework.web.bind.annotation.ExceptionHandler({
-        DataIntegrityViolationException.class,
-        ObjectOptimisticLockingFailureException.class
-    })
+    @ExceptionHandler({DataIntegrityViolationException.class, ObjectOptimisticLockingFailureException.class})
     public ResponseEntity<Object> handlePersistenceConflict(Exception exception, WebRequest request) {
         log.warn("Persistence conflict traceId={}", traceId(request), exception);
         return problemResponse(CommonErrorCode.STATE_CONFLICT, Map.of(), HttpHeaders.EMPTY, request);
     }
 
-    @org.springframework.web.bind.annotation.ExceptionHandler(Exception.class)
+    @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleUnexpected(Exception exception, WebRequest request) {
         log.error("Unhandled exception traceId={}", traceId(request), exception);
         return problemResponse(
@@ -220,10 +230,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Override
     protected ResponseEntity<Object> handleTypeMismatch(
-            org.springframework.beans.TypeMismatchException exception,
-            HttpHeaders headers,
-            HttpStatusCode status,
-            WebRequest request) {
+            TypeMismatchException exception, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         return frameworkResponse(CommonErrorCode.MALFORMED_REQUEST, headers, request, exception);
     }
 
@@ -276,8 +283,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return problemResponse(CommonErrorCode.VALIDATION_FAILED, Map.of("errors", safeErrors), headers, request);
     }
 
-    private List<Map<String, Object>> validationErrors(
-            org.springframework.validation.method.MethodValidationResult exception) {
+    private List<Map<String, Object>> validationErrors(MethodValidationResult exception) {
         var errors = new ArrayList<Map<String, Object>>();
         for (var result : exception.getParameterValidationResults()) {
             if (result instanceof ParameterErrors parameterErrors) {
@@ -322,8 +328,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return validationEntry(field, constraintName, messageTemplate, attributes);
     }
 
-    private Map<String, Object> validationError(
-            String field, org.springframework.context.MessageSourceResolvable error) {
+    private Map<String, Object> validationError(String field, MessageSourceResolvable error) {
         return validationEntry(field, constraintName(error.getCodes()), error.getDefaultMessage(), Map.of());
     }
 
@@ -429,28 +434,27 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static String parameterName(ParameterValidationResult result) {
         var parameter = result.getMethodParameter();
-        var requestParam = parameter.getParameterAnnotation(org.springframework.web.bind.annotation.RequestParam.class);
+        var requestParam = parameter.getParameterAnnotation(RequestParam.class);
         if (requestParam != null && hasText(requestParam.name())) {
             return requestParam.name();
         }
-        var pathVariable = parameter.getParameterAnnotation(org.springframework.web.bind.annotation.PathVariable.class);
+        var pathVariable = parameter.getParameterAnnotation(PathVariable.class);
         if (pathVariable != null && hasText(pathVariable.name())) {
             return pathVariable.name();
         }
-        var requestHeader =
-                parameter.getParameterAnnotation(org.springframework.web.bind.annotation.RequestHeader.class);
+        var requestHeader = parameter.getParameterAnnotation(RequestHeader.class);
         if (requestHeader != null && hasText(requestHeader.name())) {
             return requestHeader.name();
         }
-        var requestPart = parameter.getParameterAnnotation(org.springframework.web.bind.annotation.RequestPart.class);
+        var requestPart = parameter.getParameterAnnotation(RequestPart.class);
         if (requestPart != null && hasText(requestPart.name())) {
             return requestPart.name();
         }
-        var cookie = parameter.getParameterAnnotation(org.springframework.web.bind.annotation.CookieValue.class);
+        var cookie = parameter.getParameterAnnotation(CookieValue.class);
         if (cookie != null && hasText(cookie.name())) {
             return cookie.name();
         }
-        var matrix = parameter.getParameterAnnotation(org.springframework.web.bind.annotation.MatrixVariable.class);
+        var matrix = parameter.getParameterAnnotation(MatrixVariable.class);
         if (matrix != null && hasText(matrix.name())) {
             return matrix.name();
         }
@@ -487,11 +491,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     private static String toKebabCase(String code) {
-        return code.toLowerCase(java.util.Locale.ROOT).replace('_', '-');
+        return code.toLowerCase(Locale.ROOT).replace('_', '-');
     }
 
     private static URI requestUri(WebRequest request) {
-        if (request instanceof org.springframework.web.context.request.ServletWebRequest servletWebRequest) {
+        if (request instanceof ServletWebRequest servletWebRequest) {
             return URI.create(servletWebRequest.getRequest().getRequestURI());
         }
         var description = request.getDescription(false);

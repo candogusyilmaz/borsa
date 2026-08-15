@@ -1,0 +1,74 @@
+package dev.canverse.stocks.identity.web;
+
+import dev.canverse.stocks.identity.application.AuthenticatedIdentityResolver;
+import dev.canverse.stocks.identity.application.DeviceSessionQueryService;
+import dev.canverse.stocks.identity.application.DeviceSessionRevocationService;
+import dev.canverse.stocks.identity.output.DeviceSessionPageResponse;
+import dev.canverse.stocks.identity.output.DeviceSessionResponse;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/v1/auth/sessions")
+@Validated
+@RequiredArgsConstructor
+public class DeviceSessionController {
+
+    private final AuthenticatedIdentityResolver identityResolver;
+    private final DeviceSessionQueryService queryService;
+    private final DeviceSessionRevocationService revocationService;
+
+    @GetMapping
+    public ResponseEntity<DeviceSessionPageResponse> listSessions(
+            Authentication authentication,
+            @RequestParam(required = false) @Min(1) @Max(100) Integer limit,
+            @RequestParam(required = false) String cursor) {
+        var identity = identityResolver.resolve(authentication);
+        var response = queryService.listSessions(identity.userAccountId(), identity.sessionId(), limit, cursor);
+
+        var headers = new HttpHeaders();
+        headers.setCacheControl("no-store");
+        headers.setPragma("no-cache");
+        return new ResponseEntity<>(response, headers, HttpStatus.OK);
+    }
+
+    @GetMapping("{familyId}")
+    public ResponseEntity<DeviceSessionResponse> getSession(
+            Authentication authentication, @PathVariable UUID familyId) {
+        var identity = identityResolver.resolve(authentication);
+        var response = queryService.getSessionDetail(identity.userAccountId(), identity.sessionId(), familyId);
+
+        var headers = new HttpHeaders();
+        headers.setCacheControl("no-store");
+        headers.setPragma("no-cache");
+        return new ResponseEntity<>(response, headers, HttpStatus.OK);
+    }
+
+    @DeleteMapping("{familyId}")
+    public ResponseEntity<Void> revokeSession(Authentication authentication, @PathVariable UUID familyId) {
+        var identity = identityResolver.resolve(authentication);
+        var isCurrentFamily =
+                revocationService.revokeSelectedFamily(identity.userAccountId(), identity.sessionId(), familyId);
+
+        var headers = new HttpHeaders();
+        headers.setCacheControl("no-store");
+        headers.setPragma("no-cache");
+        if (isCurrentFamily) {
+            headers.add(HttpHeaders.SET_COOKIE, RefreshTokenCookieHeader.clear());
+        }
+        return new ResponseEntity<>(headers, HttpStatus.NO_CONTENT);
+    }
+}

@@ -8,6 +8,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -34,4 +35,23 @@ public class SecurityEvent {
 
     @JdbcTypeCode(SqlTypes.JSON)
     private String details;
+
+    public static SecurityEvent create(
+            UUID id, UserAccount userAccount, String eventType, Instant occurredAt, String details) {
+        Objects.requireNonNull(id, "id");
+        Objects.requireNonNull(eventType, "eventType");
+        Objects.requireNonNull(occurredAt, "occurredAt");
+        Objects.requireNonNull(details, "details");
+        if (!details.startsWith("{") || !details.endsWith("}")) {
+            throw new IllegalArgumentException("details must be a JSON object");
+        }
+
+        var event = new SecurityEvent();
+        event.id = id;
+        event.userAccount = userAccount;
+        event.eventType = eventType;
+        event.occurredAt = occurredAt;
+        event.details = details;
+        return event;
+    }
 }

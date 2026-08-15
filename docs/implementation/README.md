@@ -15,9 +15,9 @@ Do not use `CURRENT.md` as the specification itself. It is only a stable pointer
 
 ## When to write PR specifications
 
-Write specs just in time, normally one to three PRs ahead. Do not pre-specify the full R0–R16 roadmap because implementation will reveal constraints and better boundaries.
+Write exactly one next specification just in time. Do not pre-specify the full R0–R16 roadmap because implementation will reveal constraints and better boundaries.
 
-A PR should normally represent one coherent capability/invariant/infrastructure behavior. If a human reviewer cannot understand the full diff comfortably, split it further.
+A PR should normally represent one coherent capability, lifecycle, or subsystem increment carried through every layer needed for a meaningful testable outcome. Do not split tightly coupled layers merely to reduce the diff.
 
 ## Authority
 
@@ -49,5 +49,7 @@ There is no hard line-count limit because migrations/tests/domain code differ in
 > Can one reviewer verify the schema changes, invariants, API behavior and tests without mentally loading multiple future capabilities?
 
 If not, split the PR.
+
+For PR-019 and later, accepted PR-018 (`d1eea9a`) is also the fixed minimum-size comparison: each planned PR targets at least five times PR-018's substantive production implementation surface. PR-018 added 381 and removed 30 production Java lines across 12 production files, so roughly 1,900 gross production-line additions is the planning floor when implementation density is comparable. Migrations and dense domain behavior may provide equivalent surface; tests and documentation do not count. The multiplier is fixed to PR-018 rather than compounded from each subsequent PR. Never satisfy it with unrelated cleanup, duplicate abstractions, or padding; combine only tightly coupled behavior that still forms one focused review unit.
 
 Use `PR-TEMPLATE.md` when creating each specification.
