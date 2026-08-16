@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jayway.jsonpath.JsonPath;
+import dev.canverse.stocks.identity.application.AuthenticatedIdentityToken;
 import dev.canverse.stocks.identity.application.LocalAccountRegistrationService;
 import dev.canverse.stocks.identity.application.LocalLoginService;
 import dev.canverse.stocks.platform.web.trace.RequestTraceFilter;
@@ -37,7 +38,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -224,7 +224,7 @@ class ApiBearerSecurityHttpTest {
         var authentication = probeController.lastAuthentication();
         assertThat(authentication).isNotNull();
         assertThat(authentication.getName()).isEqualTo(issued.userAccountId().toString());
-        assertThat(authentication.getToken().getClaimAsString("sid"))
+        assertThat(authentication.getCredentials().getClaimAsString("sid"))
                 .isEqualTo(issued.sessionId().toString());
         assertThat(authentication.getAuthorities()).isEmpty();
         assertNoSession(result);
@@ -347,16 +347,16 @@ class ApiBearerSecurityHttpTest {
 
         private final AtomicInteger apiInvocations = new AtomicInteger();
         private final AtomicInteger outsideInvocations = new AtomicInteger();
-        private final AtomicReference<JwtAuthenticationToken> lastAuthentication = new AtomicReference<>();
+        private final AtomicReference<AuthenticatedIdentityToken> lastAuthentication = new AtomicReference<>();
 
         @GetMapping(API_PROBE_PATH)
         Map<String, Object> apiProbe(Authentication authentication) {
             apiInvocations.incrementAndGet();
-            var jwtAuthentication = (JwtAuthenticationToken) authentication;
+            var jwtAuthentication = (AuthenticatedIdentityToken) authentication;
             lastAuthentication.set(jwtAuthentication);
             return Map.of(
                     "name", jwtAuthentication.getName(),
-                    "sid", jwtAuthentication.getToken().getClaimAsString("sid"),
+                    "sid", jwtAuthentication.getCredentials().getClaimAsString("sid"),
                     "authorities", jwtAuthentication.getAuthorities());
         }
 
@@ -380,7 +380,7 @@ class ApiBearerSecurityHttpTest {
             return outsideInvocations.get();
         }
 
-        JwtAuthenticationToken lastAuthentication() {
+        AuthenticatedIdentityToken lastAuthentication() {
             return lastAuthentication.get();
         }
     }

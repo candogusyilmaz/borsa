@@ -1,6 +1,6 @@
 package dev.canverse.stocks.reference.web;
 
-import dev.canverse.stocks.identity.application.AuthenticatedIdentityResolver;
+import dev.canverse.stocks.identity.application.model.AuthenticatedIdentity;
 import dev.canverse.stocks.platform.web.CacheHeaders;
 import dev.canverse.stocks.reference.application.InstrumentSearchService;
 import dev.canverse.stocks.reference.application.ManualInstrumentService;
@@ -16,7 +16,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,31 +33,29 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ManualInstrumentController {
 
-    private final AuthenticatedIdentityResolver identityResolver;
     private final ManualInstrumentService manualInstrumentService;
     private final InstrumentSearchService searchService;
 
     @PostMapping
     public ResponseEntity<InstrumentResponse> create(
-            Authentication authentication, @Valid @RequestBody ManualInstrumentCreateRequest request) {
-        var identity = identityResolver.resolve(authentication);
+            @AuthenticationPrincipal AuthenticatedIdentity identity,
+            @Valid @RequestBody ManualInstrumentCreateRequest request) {
         var response = manualInstrumentService.create(identity.userAccountId(), request);
         return new ResponseEntity<>(response, CacheHeaders.noStore(), HttpStatus.CREATED);
     }
 
     @PutMapping("{instrumentId}")
     public ResponseEntity<InstrumentResponse> update(
-            Authentication authentication,
+            @AuthenticationPrincipal AuthenticatedIdentity identity,
             @PathVariable UUID instrumentId,
             @Valid @RequestBody ManualInstrumentUpdateRequest request) {
-        var identity = identityResolver.resolve(authentication);
         var response = manualInstrumentService.update(identity.userAccountId(), instrumentId, request);
         return new ResponseEntity<>(response, CacheHeaders.noStore(), HttpStatus.OK);
     }
 
     @GetMapping("{instrumentId}")
-    public ResponseEntity<InstrumentResponse> get(Authentication authentication, @PathVariable UUID instrumentId) {
-        var identity = identityResolver.resolve(authentication);
+    public ResponseEntity<InstrumentResponse> get(
+            @AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID instrumentId) {
         return new ResponseEntity<>(
                 manualInstrumentService.get(identity.userAccountId(), instrumentId),
                 CacheHeaders.noStore(),
@@ -66,7 +64,7 @@ public class ManualInstrumentController {
 
     @GetMapping
     public ResponseEntity<InstrumentPageResponse> search(
-            Authentication authentication,
+            @AuthenticationPrincipal AuthenticatedIdentity identity,
             @RequestParam(required = false) String query,
             @RequestParam(required = false) UUID marketId,
             @RequestParam(required = false) InstrumentType type,
@@ -76,7 +74,6 @@ public class ManualInstrumentController {
                     @Max(InstrumentSearchService.MAX_LIMIT)
                     int limit,
             @RequestParam(required = false) String cursor) {
-        var identity = identityResolver.resolve(authentication);
         var response =
                 searchService.search(identity.userAccountId(), query, marketId, type, includeInactive, limit, cursor);
         return new ResponseEntity<>(response, CacheHeaders.noStore(), HttpStatus.OK);

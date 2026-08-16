@@ -1,8 +1,8 @@
 package dev.canverse.stocks.identity.application;
 
+import dev.canverse.stocks.identity.application.model.AuthenticatedIdentity;
 import dev.canverse.stocks.identity.infrastructure.DeviceSessionRepository;
 import java.time.Clock;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +10,6 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +35,7 @@ public class LocalAccessTokenAuthenticationConverter implements Converter<Jwt, A
                 .filter(session -> session.isActiveAndUserEnabled(observedAt))
                 .orElseThrow(this::invalidBearerToken);
 
-        return new JwtAuthenticationToken(jwt, List.of(), userAccountId.toString());
+        return new AuthenticatedIdentityToken(new AuthenticatedIdentity(userAccountId, sessionId), jwt);
     }
 
     private UUID parseCanonicalUuid(Object claim) {

@@ -80,10 +80,11 @@ public class RefreshSessionRotationService {
         var replacementId = idGenerator.next();
         var replacement = session.createReplacement(replacementId, replacementToken.hash(), observedAt);
         session.consumeForRotation(observedAt);
+        // The predecessor must release the active-family index before the replacement is inserted.
         deviceSessionRepository.saveAndFlush(session);
         deviceSessionRepository.saveAndFlush(replacement);
+        // Link only after the replacement exists because the database enforces this foreign key.
         session.linkReplacement(replacementId);
-        deviceSessionRepository.saveAndFlush(session);
 
         var accessToken = accessTokenIssuanceService.issue(replacementId);
         return Optional.of(new LocalRefreshResult(

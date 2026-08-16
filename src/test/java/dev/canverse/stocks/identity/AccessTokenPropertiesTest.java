@@ -7,10 +7,12 @@ import dev.canverse.stocks.identity.configuration.AccessTokenProperties;
 import dev.canverse.stocks.identity.configuration.LocalAccessTokenConfiguration;
 import java.net.URI;
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Base64;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -78,18 +80,19 @@ class AccessTokenPropertiesTest {
 
     @Test
     void invalidPropertyValuesAreRejected() {
-        assertThatThrownBy(() -> new AccessTokenProperties(null, "audience", Duration.ofMinutes(1), "key"))
+        assertThatThrownBy(() -> new AccessTokenProperties(null, "audience", Duration.ofMinutes(1), "key", null, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("issuer must be an absolute URI");
         assertThatThrownBy(() -> new AccessTokenProperties(
-                        URI.create("https://issuer.test"), null, Duration.ofMinutes(1), "key"))
+                        URI.create("https://issuer.test"), null, Duration.ofMinutes(1), "key", null, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("audience must not be blank");
-        assertThatThrownBy(() -> new AccessTokenProperties(URI.create("https://issuer.test"), "audience", null, "key"))
+        assertThatThrownBy(() -> new AccessTokenProperties(
+                        URI.create("https://issuer.test"), "audience", null, "key", null, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("lifetime must be positive");
         assertThatThrownBy(() -> new AccessTokenProperties(
-                        URI.create("https://issuer.test"), "audience", Duration.ofMinutes(1), null))
+                        URI.create("https://issuer.test"), "audience", Duration.ofMinutes(1), null, null, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("keyId must not be blank");
 
@@ -110,6 +113,40 @@ class AccessTokenPropertiesTest {
         }
     }
 
+    @Test
+    void configuredPkcs8AndX509PemKeysAreLoadedAsOneSigningPair() throws Exception {
+        var generator = KeyPairGenerator.getInstance("RSA");
+        generator.initialize(2048);
+        var configuredKeyPair = generator.generateKeyPair();
+
+        contextRunner
+                .withPropertyValues(
+                        "stocks.identity.access-token.private-key-pem="
+                                + pem(
+                                        "PRIVATE KEY",
+                                        configuredKeyPair.getPrivate().getEncoded()),
+                        "stocks.identity.access-token.public-key-pem="
+                                + pem(
+                                        "PUBLIC KEY",
+                                        configuredKeyPair.getPublic().getEncoded()))
+                .run(context -> {
+                    assertThat(context.getStartupFailure()).isNull();
+                    var loadedKeyPair = context.getBean(KeyPair.class);
+                    assertThat(loadedKeyPair.getPrivate().getEncoded())
+                            .containsExactly(configuredKeyPair.getPrivate().getEncoded());
+                    assertThat(loadedKeyPair.getPublic().getEncoded())
+                            .containsExactly(configuredKeyPair.getPublic().getEncoded());
+                });
+    }
+
+    @Test
+    void keyMaterialMustBeConfiguredAsACompletePair() {
+        assertThatThrownBy(() -> new AccessTokenProperties(
+                        URI.create("https://issuer.test"), "audience", Duration.ofMinutes(1), "key", "private", null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("privateKeyPem and publicKeyPem must be configured together");
+    }
+
     private Throwable rootCause(Throwable throwable) {
         assertThat(throwable).isNotNull();
         var rootCause = throwable;
@@ -120,4 +157,10 @@ class AccessTokenPropertiesTest {
     }
 
     private record InvalidProperty(String property, String expectedMessage) {}
+
+    private String pem(String type, byte[] encoded) {
+        return "-----BEGIN " + type + "-----"
+                + Base64.getEncoder().encodeToString(encoded)
+                + "-----END " + type + "-----";
+    }
 }

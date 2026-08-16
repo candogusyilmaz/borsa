@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 import dev.canverse.stocks.identity.application.AccessTokenIssuanceService;
+import dev.canverse.stocks.identity.application.AuthenticatedIdentityToken;
 import dev.canverse.stocks.identity.application.LocalAccessTokenAuthenticationConverter;
 import dev.canverse.stocks.identity.application.LocalAccountRegistrationService;
 import dev.canverse.stocks.identity.application.RefreshSessionIssuanceService;
@@ -37,7 +38,6 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -121,14 +121,15 @@ class LocalAccessTokenAuthenticationConverterTest {
 
         var converted = converter.convert(fixture.jwt());
 
-        assertThat(converted).isExactlyInstanceOf(JwtAuthenticationToken.class);
-        var authentication = (JwtAuthenticationToken) converted;
+        assertThat(converted).isExactlyInstanceOf(AuthenticatedIdentityToken.class);
+        var authentication = (AuthenticatedIdentityToken) converted;
         assertThat(authentication.isAuthenticated()).isTrue();
-        assertThat(authentication.getToken()).isSameAs(fixture.jwt());
-        assertThat(authentication.getPrincipal()).isSameAs(fixture.jwt());
+        assertThat(authentication.getCredentials()).isSameAs(fixture.jwt());
+        assertThat(authentication.getPrincipal().userAccountId()).isEqualTo(fixture.userAccountId());
+        assertThat(authentication.getPrincipal().sessionId()).isEqualTo(fixture.sessionId());
         assertThat(authentication.getName()).isEqualTo(fixture.userAccountId().toString());
         assertThat(authentication.getAuthorities()).isEmpty();
-        assertThat(authentication.getToken().getClaimAsString("sid"))
+        assertThat(authentication.getCredentials().getClaimAsString("sid"))
                 .isEqualTo(fixture.sessionId().toString());
         assertThat(snapshot()).isEqualTo(beforeConversion);
     }

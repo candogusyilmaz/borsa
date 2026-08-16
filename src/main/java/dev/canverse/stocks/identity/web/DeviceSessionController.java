@@ -1,8 +1,8 @@
 package dev.canverse.stocks.identity.web;
 
-import dev.canverse.stocks.identity.application.AuthenticatedIdentityResolver;
 import dev.canverse.stocks.identity.application.DeviceSessionQueryService;
 import dev.canverse.stocks.identity.application.DeviceSessionRevocationService;
+import dev.canverse.stocks.identity.application.model.AuthenticatedIdentity;
 import dev.canverse.stocks.identity.web.response.DeviceSessionPageResponse;
 import dev.canverse.stocks.identity.web.response.DeviceSessionResponse;
 import dev.canverse.stocks.platform.web.CacheHeaders;
@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,16 +28,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class DeviceSessionController {
 
-    private final AuthenticatedIdentityResolver identityResolver;
     private final DeviceSessionQueryService queryService;
     private final DeviceSessionRevocationService revocationService;
 
     @GetMapping
     public ResponseEntity<DeviceSessionPageResponse> listSessions(
-            Authentication authentication,
+            @AuthenticationPrincipal AuthenticatedIdentity identity,
             @RequestParam(required = false) @Min(1) @Max(100) Integer limit,
             @RequestParam(required = false) String cursor) {
-        var identity = identityResolver.resolve(authentication);
         var response = queryService.listSessions(identity.userAccountId(), identity.sessionId(), limit, cursor);
 
         return new ResponseEntity<>(response, CacheHeaders.noStore(), HttpStatus.OK);
@@ -45,8 +43,7 @@ public class DeviceSessionController {
 
     @GetMapping("{familyId}")
     public ResponseEntity<DeviceSessionResponse> getSession(
-            Authentication authentication, @PathVariable UUID familyId) {
-        var identity = identityResolver.resolve(authentication);
+            @AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID familyId) {
         var response = queryService.getSessionDetail(identity.userAccountId(), identity.sessionId(), familyId);
 
         var headers = CacheHeaders.noStore();
@@ -54,8 +51,8 @@ public class DeviceSessionController {
     }
 
     @DeleteMapping("{familyId}")
-    public ResponseEntity<Void> revokeSession(Authentication authentication, @PathVariable UUID familyId) {
-        var identity = identityResolver.resolve(authentication);
+    public ResponseEntity<Void> revokeSession(
+            @AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID familyId) {
         var isCurrentFamily =
                 revocationService.revokeSelectedFamily(identity.userAccountId(), identity.sessionId(), familyId);
 
