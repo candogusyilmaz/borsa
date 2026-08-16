@@ -13,7 +13,6 @@ import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -66,15 +65,9 @@ public class ReferenceCatalogQueryService {
                 .map(ReferenceCatalogReadRepository.CalendarRow::date)
                 .toList();
         var storedDateSet = Set.copyOf(storedDates);
-        var missingDates = new ArrayList<LocalDate>();
-        for (var date = from; ; date = date.plusDays(1)) {
-            if (!storedDateSet.contains(date)) {
-                missingDates.add(date);
-            }
-            if (date.equals(to)) {
-                break;
-            }
-        }
+        var missingDates = from.datesUntil(to.plusDays(1))
+                .filter(date -> !storedDateSet.contains(date))
+                .toList();
         var coverage = storedRows.isEmpty()
                 ? CalendarCoverageStatus.NONE
                 : missingDates.isEmpty() ? CalendarCoverageStatus.COMPLETE : CalendarCoverageStatus.PARTIAL;

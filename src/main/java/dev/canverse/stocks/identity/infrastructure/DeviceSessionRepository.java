@@ -14,8 +14,6 @@ public interface DeviceSessionRepository extends JpaRepository<DeviceSession, UU
                     + "from DeviceSession s where s.refreshTokenHash = :refreshTokenHash")
     Optional<RefreshSessionOwnerProjection> findRefreshSessionOwnerByRefreshTokenHash(String refreshTokenHash);
 
-    Optional<DeviceSession> findByRefreshTokenHash(String refreshTokenHash);
-
     @Query("select s from DeviceSession s where s.id = :sessionId and s.userAccount.id = :userAccountId")
     Optional<DeviceSession> findOwnedById(UUID sessionId, UUID userAccountId);
 

@@ -9,14 +9,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import dev.canverse.stocks.identity.application.LocalAccountRegistrationService;
-import dev.canverse.stocks.identity.application.RefreshSessionAuthenticationService;
 import dev.canverse.stocks.identity.domain.DeviceSession;
 import dev.canverse.stocks.identity.infrastructure.AuthIdentityRepository;
 import dev.canverse.stocks.identity.infrastructure.DeviceSessionRepository;
 import dev.canverse.stocks.identity.infrastructure.SecureRefreshTokenGenerator;
 import dev.canverse.stocks.identity.infrastructure.UserAccountRepository;
-import dev.canverse.stocks.platform.id.IdGenerator;
 import dev.canverse.stocks.platform.web.trace.RequestTraceFilter;
+import dev.canverse.stocks.testing.RecordingIdGenerator;
 import java.net.HttpCookie;
 import java.time.Clock;
 import java.time.Duration;
@@ -25,9 +24,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -95,9 +91,6 @@ class LocalLoginHttpTest {
 
     @Autowired
     DeviceSessionRepository deviceSessionRepository;
-
-    @Autowired
-    RefreshSessionAuthenticationService refreshSessionAuthenticationService;
 
     @Autowired
     SecureRefreshTokenGenerator refreshTokenGenerator;
@@ -198,8 +191,6 @@ class LocalLoginHttpTest {
                 .isEqualTo(refreshTokenGenerator.hash(refreshToken))
                 .isNotEqualTo(refreshToken);
         assertThat(rawTokenTextColumnOccurrences(refreshToken)).isZero();
-        assertThat(refreshSessionAuthenticationService.authenticate(refreshToken))
-                .isEqualTo(sessionId);
         assertThat(identitySnapshot()).isEqualTo(identityBeforeLogin);
         assertThat(userAccountRepository.count()).isOne();
         assertThat(authIdentityRepository.count()).isOne();
@@ -273,8 +264,6 @@ class LocalLoginHttpTest {
                 .isEqualTo(refreshTokenGenerator.hash(refreshToken))
                 .isNotEqualTo(refreshToken);
         assertThat(rawTokenTextColumnOccurrences(refreshToken)).isZero();
-        assertThat(refreshSessionAuthenticationService.authenticate(refreshToken))
-                .isEqualTo(sessionId);
         assertThat(identitySnapshot()).isEqualTo(identityBeforeLogin);
         assertThat(deviceSessionRepository.count()).isOne();
     }
@@ -655,33 +644,6 @@ class LocalLoginHttpTest {
         @Primary
         RecordingIdGenerator recordingIdGenerator() {
             return new RecordingIdGenerator();
-        }
-    }
-
-    static final class RecordingIdGenerator implements IdGenerator {
-
-        private final Deque<UUID> nextIds = new ArrayDeque<>();
-        private final Deque<UUID> consumedIds = new ArrayDeque<>();
-
-        void setNextIds(UUID... ids) {
-            nextIds.clear();
-            consumedIds.clear();
-            nextIds.addAll(Arrays.asList(ids));
-        }
-
-        void reset() {
-            setNextIds();
-        }
-
-        Deque<UUID> consumedIds() {
-            return new ArrayDeque<>(consumedIds);
-        }
-
-        @Override
-        public UUID next() {
-            var nextId = nextIds.isEmpty() ? UUID.randomUUID() : nextIds.removeFirst();
-            consumedIds.addLast(nextId);
-            return nextId;
         }
     }
 

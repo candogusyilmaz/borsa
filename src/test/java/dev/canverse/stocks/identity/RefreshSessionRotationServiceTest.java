@@ -9,19 +9,14 @@ import dev.canverse.stocks.identity.application.AccessTokenIssuanceService;
 import dev.canverse.stocks.identity.application.LocalAccountRegistrationService;
 import dev.canverse.stocks.identity.application.RefreshSessionIssuanceService;
 import dev.canverse.stocks.identity.application.RefreshSessionRotationService;
-import dev.canverse.stocks.identity.error.IdentityErrorCode;
 import dev.canverse.stocks.identity.infrastructure.DeviceSessionRepository;
 import dev.canverse.stocks.identity.infrastructure.SecureRefreshTokenGenerator;
 import dev.canverse.stocks.identity.infrastructure.UserAccountRepository;
-import dev.canverse.stocks.platform.error.AppException;
-import dev.canverse.stocks.platform.id.IdGenerator;
+import dev.canverse.stocks.testing.RecordingIdGenerator;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -80,9 +75,6 @@ class RefreshSessionRotationServiceTest {
     RefreshSessionRotationService rotationService;
 
     @Autowired
-    dev.canverse.stocks.identity.application.RefreshSessionAuthenticationService refreshAuthenticationService;
-
-    @Autowired
     dev.canverse.stocks.platform.application.SecurityEventRecorder securityEventRecorder;
 
     @Autowired
@@ -138,13 +130,6 @@ class RefreshSessionRotationServiceTest {
 
         assertThat(rotated.sessionId()).isEqualTo(replacementId);
         assertThat(rotated.refreshTokenExpiresAt()).isEqualTo(OBSERVED_AT.plus(REFRESH_LIFETIME));
-        assertThat(refreshAuthenticationService.authenticate(rotated.refreshToken()))
-                .isEqualTo(replacementId);
-        assertThatThrownBy(() -> refreshAuthenticationService.authenticate(fixture.refreshToken()))
-                .isExactlyInstanceOf(AppException.class)
-                .extracting(exception -> ((AppException) exception).getErrorCode())
-                .isEqualTo(IdentityErrorCode.INVALID_CREDENTIALS);
-
         var oldState = persistedSession(fixture.sessionId());
         var newState = persistedSession(replacementId);
         assertThat(oldState.lastUsedAt()).isEqualTo(OBSERVED_AT);
@@ -250,10 +235,6 @@ class RefreshSessionRotationServiceTest {
         assertThat(deviceSessionRepository.findByFamilyIdAndRevokedAtIsNull(fixture.sessionId()))
                 .isEmpty();
         assertThat(persistedSession(replacementId).revokeReason()).isEqualTo("REUSE_DETECTED");
-        assertThatThrownBy(() -> refreshAuthenticationService.authenticate(fixture.refreshToken()))
-                .isInstanceOf(AppException.class);
-        assertThatThrownBy(() -> refreshAuthenticationService.authenticate(first.refreshToken()))
-                .isInstanceOf(AppException.class);
         assertThatThrownBy(() -> accessTokenConverter.convert(jwtDecoder.decode(first.accessToken())))
                 .isInstanceOf(RuntimeException.class);
     }
@@ -326,8 +307,6 @@ class RefreshSessionRotationServiceTest {
             assertThat(deviceSessionRepository.findByFamilyIdAndRevokedAtIsNull(fixture.sessionId()))
                     .isEmpty();
             var winning = firstResult.orElseThrow();
-            assertThatThrownBy(() -> refreshAuthenticationService.authenticate(winning.refreshToken()))
-                    .isInstanceOf(AppException.class);
             assertThatThrownBy(() -> accessTokenConverter.convert(jwtDecoder.decode(winning.accessToken())))
                     .isInstanceOf(RuntimeException.class);
         } finally {
@@ -425,33 +404,6 @@ class RefreshSessionRotationServiceTest {
         @Primary
         RecordingIdGenerator recordingIdGenerator() {
             return new RecordingIdGenerator();
-        }
-    }
-
-    static final class RecordingIdGenerator implements IdGenerator {
-
-        private final Deque<UUID> nextIds = new ArrayDeque<>();
-        private final Deque<UUID> consumedIds = new ArrayDeque<>();
-
-        void setNextIds(UUID... ids) {
-            nextIds.clear();
-            nextIds.addAll(Arrays.asList(ids));
-        }
-
-        void reset() {
-            setNextIds();
-            consumedIds.clear();
-        }
-
-        synchronized Deque<UUID> consumedIds() {
-            return new ArrayDeque<>(consumedIds);
-        }
-
-        @Override
-        public synchronized UUID next() {
-            var id = nextIds.isEmpty() ? UUID.randomUUID() : nextIds.removeFirst();
-            consumedIds.addLast(id);
-            return id;
         }
     }
 

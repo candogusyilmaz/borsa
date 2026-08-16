@@ -10,7 +10,7 @@ import dev.canverse.stocks.identity.infrastructure.AuthIdentityRepository;
 import dev.canverse.stocks.identity.infrastructure.DeviceSessionRepository;
 import dev.canverse.stocks.identity.infrastructure.UserAccountRepository;
 import dev.canverse.stocks.platform.error.AppException;
-import dev.canverse.stocks.platform.id.IdGenerator;
+import dev.canverse.stocks.testing.RecordingIdGenerator;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -18,10 +18,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
-import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.Base64;
-import java.util.Deque;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -231,21 +228,6 @@ class RefreshSessionIssuanceServiceTest {
         @Primary
         RecordingIdGenerator recordingIdGenerator() {
             return new RecordingIdGenerator();
-        }
-    }
-
-    static final class RecordingIdGenerator implements IdGenerator {
-
-        private final Deque<UUID> nextIds = new ArrayDeque<>();
-
-        void setNextIds(UUID... ids) {
-            nextIds.clear();
-            nextIds.addAll(Arrays.asList(ids));
-        }
-
-        @Override
-        public UUID next() {
-            return nextIds.removeFirst();
         }
     }
 }

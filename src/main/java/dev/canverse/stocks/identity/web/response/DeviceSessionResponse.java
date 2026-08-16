@@ -18,14 +18,6 @@ public record DeviceSessionResponse(
         @NotNull DeviceSessionStatus status,
         boolean current) {
 
-    public DeviceSessionResponse {
-        Objects.requireNonNull(familyId, "familyId");
-        Objects.requireNonNull(latestGenerationId, "latestGenerationId");
-        Objects.requireNonNull(createdAt, "createdAt");
-        Objects.requireNonNull(expiresAt, "expiresAt");
-        Objects.requireNonNull(status, "status");
-    }
-
     public static DeviceSessionResponse from(DeviceSessionFamilyRecord record, Instant observedAt) {
         if (!Objects.equals(record.minExpiresAt(), record.maxExpiresAt())) {
             throw new IllegalStateException("Inconsistent family expiry detected for family " + record.familyId());

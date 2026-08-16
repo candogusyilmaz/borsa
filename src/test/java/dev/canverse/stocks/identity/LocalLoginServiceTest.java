@@ -9,7 +9,7 @@ import dev.canverse.stocks.identity.application.LocalLoginService;
 import dev.canverse.stocks.identity.error.IdentityErrorCode;
 import dev.canverse.stocks.identity.infrastructure.DeviceSessionRepository;
 import dev.canverse.stocks.platform.error.AppException;
-import dev.canverse.stocks.platform.id.IdGenerator;
+import dev.canverse.stocks.testing.RecordingIdGenerator;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -18,10 +18,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.Base64;
-import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -301,32 +298,6 @@ class LocalLoginServiceTest {
         @Primary
         ControllableJwtEncoder controllableJwtEncoder(JdbcTemplate jdbcTemplate) {
             return new ControllableJwtEncoder(jdbcTemplate);
-        }
-    }
-
-    static final class RecordingIdGenerator implements IdGenerator {
-
-        private final Deque<UUID> nextIds = new ArrayDeque<>();
-        private int invocations;
-
-        void setNextIds(UUID... ids) {
-            nextIds.clear();
-            nextIds.addAll(Arrays.asList(ids));
-            invocations = 0;
-        }
-
-        int invocations() {
-            return invocations;
-        }
-
-        int remainingIds() {
-            return nextIds.size();
-        }
-
-        @Override
-        public UUID next() {
-            invocations++;
-            return nextIds.isEmpty() ? UUID.randomUUID() : nextIds.removeFirst();
         }
     }
 

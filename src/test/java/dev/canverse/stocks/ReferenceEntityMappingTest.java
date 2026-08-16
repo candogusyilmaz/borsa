@@ -78,8 +78,8 @@ class ReferenceEntityMappingTest {
         assertThat(country.getCode()).isEqualTo("TR");
         assertThat(currency.getMinorUnit()).isEqualTo((short) 2);
         assertThat(xist.getCountry().getCode()).isEqualTo("TR");
-        assertThat(marketCurrency.getId().getMarketId()).isEqualTo(XIST);
-        assertThat(marketCurrency.getId().getCurrencyCode()).isEqualTo("TRY");
+        assertThat(marketCurrency.getId().marketId()).isEqualTo(XIST);
+        assertThat(marketCurrency.getId().currencyCode()).isEqualTo("TRY");
         assertThat(marketCurrency.isPrimaryQuote()).isTrue();
     }
 
@@ -147,7 +147,7 @@ class ReferenceEntityMappingTest {
         assertThat(instrument.getVersion()).isZero();
         assertThat(alias.getInstrument().getId()).isEqualTo(instrumentId);
         assertThat(alias.getAliasType()).isEqualTo(AliasType.USER);
-        assertThat(calendar.getId().getCalendarDate()).isEqualTo(date);
+        assertThat(calendar.getId().calendarDate()).isEqualTo(date);
         assertThat(calendar.getSessionStatus()).isEqualTo(MarketSessionStatus.OPEN);
         assertThat(calendar.getOpensAt()).isEqualTo(LocalTime.of(9, 0));
         assertThat(calendar.getClosesAt()).isEqualTo(LocalTime.of(17, 0));

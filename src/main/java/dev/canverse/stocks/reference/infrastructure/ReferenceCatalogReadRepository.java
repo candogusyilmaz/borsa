@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -35,64 +36,32 @@ public class ReferenceCatalogReadRepository {
     public List<CountryRow> findActiveCountries() {
         return jdbcClient
                 .sql("SELECT code, name, active FROM reference.country WHERE active ORDER BY code")
-                .query((rs, rowNum) ->
-                        new CountryRow(rs.getString("code"), rs.getString("name"), rs.getBoolean("active")))
+                .query(CountryRow.class)
                 .list();
     }
 
     public List<CurrencyRow> findActiveCurrencies() {
         return jdbcClient
                 .sql("SELECT code, name, symbol, minor_unit, active FROM reference.currency WHERE active ORDER BY code")
-                .query((rs, rowNum) -> new CurrencyRow(
-                        rs.getString("code"),
-                        rs.getString("name"),
-                        rs.getString("symbol"),
-                        rs.getShort("minor_unit"),
-                        rs.getBoolean("active")))
+                .query(CurrencyRow.class)
                 .list();
     }
 
     public List<MarketRow> findActiveMarkets() {
-        var rows = jdbcClient.sql("""
+        return jdbcClient.sql("""
                         SELECT m.id, m.code, m.name, m.market_type, m.country_code, m.time_zone,
-                               m.active, m.source_kind, mc.currency_code, mc.primary_quote
+                               m.active, m.source_kind,
+                               array_remove(array_agg(mc.currency_code ORDER BY mc.currency_code), NULL)
+                                   AS quotation_currencies,
+                               max(CASE WHEN mc.primary_quote THEN mc.currency_code END)
+                                   AS primary_quotation_currency
                         FROM reference.market m
                         LEFT JOIN reference.market_currency mc ON mc.market_id = m.id
                         WHERE m.active
-                        ORDER BY m.code_normalized, mc.currency_code
+                        GROUP BY m.id, m.code, m.name, m.market_type, m.country_code, m.time_zone,
+                                 m.active, m.source_kind, m.code_normalized
+                        ORDER BY m.code_normalized
                         """).query(this::mapMarketRow).list();
-
-        var rowsByMarket =
-                rows.stream().collect(Collectors.groupingBy(MarketRow::id, LinkedHashMap::new, Collectors.toList()));
-        var quotationCurrenciesByMarket = rows.stream()
-                .filter(row -> row.currencyCode() != null)
-                .collect(Collectors.groupingBy(
-                        MarketRow::id,
-                        LinkedHashMap::new,
-                        Collectors.mapping(MarketRow::currencyCode, Collectors.toList())));
-        var primaryQuotationCurrencyByMarket = rows.stream()
-                .filter(row -> row.primaryQuote() && row.currencyCode() != null)
-                .collect(Collectors.toMap(
-                        MarketRow::id, MarketRow::currencyCode, (first, ignored) -> first, LinkedHashMap::new));
-
-        return rowsByMarket.values().stream()
-                .map(marketRows -> {
-                    var first = marketRows.getFirst();
-                    return new MarketRow(
-                            first.id(),
-                            first.code(),
-                            first.name(),
-                            first.marketType(),
-                            first.countryCode(),
-                            first.timeZone(),
-                            first.active(),
-                            first.sourceKind(),
-                            null,
-                            false,
-                            quotationCurrenciesByMarket.getOrDefault(first.id(), List.of()),
-                            primaryQuotationCurrencyByMarket.get(first.id()));
-                })
-                .toList();
     }
 
     public Optional<MarketCalendarHeader> findActiveMarket(UUID marketId) {
@@ -168,10 +137,8 @@ public class ReferenceCatalogReadRepository {
             predicates.add("i.instrument_type = :instrumentType");
         }
         if (cursor != null) {
-            predicates.add("(i.symbol_normalized > :cursorSymbol"
-                    + " OR (i.symbol_normalized = :cursorSymbol AND m.code_normalized > :cursorMarketCode)"
-                    + " OR (i.symbol_normalized = :cursorSymbol AND m.code_normalized = :cursorMarketCode"
-                    + " AND i.id > :cursorInstrumentId))");
+            predicates.add("(i.symbol_normalized, m.code_normalized, i.id)"
+                    + " > (:cursorSymbol, :cursorMarketCode, :cursorInstrumentId)");
         }
 
         var sql = """
@@ -267,8 +234,21 @@ public class ReferenceCatalogReadRepository {
                 rs.getString("time_zone"),
                 rs.getBoolean("active"),
                 rs.getString("source_kind"),
-                rs.getString("currency_code"),
-                rs.getBoolean("primary_quote"));
+                arrayValues(rs.getArray("quotation_currencies")),
+                rs.getString("primary_quotation_currency"));
+    }
+
+    private static List<String> arrayValues(java.sql.Array sqlArray) throws SQLException {
+        if (sqlArray == null) {
+            return List.of();
+        }
+        try {
+            return Arrays.stream((Object[]) sqlArray.getArray())
+                    .map(String.class::cast)
+                    .toList();
+        } finally {
+            sqlArray.free();
+        }
     }
 
     private InstrumentRow mapInstrumentRow(ResultSet rs, int rowNum) throws SQLException {
@@ -318,62 +298,11 @@ public class ReferenceCatalogReadRepository {
             String timeZone,
             boolean active,
             String sourceKind,
-            String currencyCode,
-            boolean primaryQuote,
             List<String> quotationCurrencies,
             String primaryQuotationCurrency) {
 
-        public MarketRow(
-                UUID id,
-                String code,
-                String name,
-                String marketType,
-                String countryCode,
-                String timeZone,
-                boolean active,
-                String sourceKind,
-                String currencyCode,
-                boolean primaryQuote,
-                List<String> quotationCurrencies,
-                String primaryQuotationCurrency) {
-            this.id = id;
-            this.code = code;
-            this.name = name;
-            this.marketType = marketType;
-            this.countryCode = countryCode;
-            this.timeZone = timeZone;
-            this.active = active;
-            this.sourceKind = sourceKind;
-            this.currencyCode = currencyCode;
-            this.primaryQuote = primaryQuote;
-            this.quotationCurrencies = quotationCurrencies == null ? null : List.copyOf(quotationCurrencies);
-            this.primaryQuotationCurrency = primaryQuotationCurrency;
-        }
-
-        public MarketRow(
-                UUID id,
-                String code,
-                String name,
-                String marketType,
-                String countryCode,
-                String timeZone,
-                boolean active,
-                String sourceKind,
-                String currencyCode,
-                boolean primaryQuote) {
-            this(
-                    id,
-                    code,
-                    name,
-                    marketType,
-                    countryCode,
-                    timeZone,
-                    active,
-                    sourceKind,
-                    currencyCode,
-                    primaryQuote,
-                    null,
-                    null);
+        public MarketRow {
+            quotationCurrencies = List.copyOf(quotationCurrencies);
         }
     }
 

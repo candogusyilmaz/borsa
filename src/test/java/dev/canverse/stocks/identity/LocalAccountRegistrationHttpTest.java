@@ -9,14 +9,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import dev.canverse.stocks.identity.infrastructure.AuthIdentityRepository;
 import dev.canverse.stocks.identity.infrastructure.UserAccountRepository;
-import dev.canverse.stocks.platform.id.IdGenerator;
 import dev.canverse.stocks.platform.web.trace.RequestTraceFilter;
+import dev.canverse.stocks.testing.RecordingIdGenerator;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -338,33 +335,6 @@ class LocalAccountRegistrationHttpTest {
         @Primary
         RecordingIdGenerator recordingIdGenerator() {
             return new RecordingIdGenerator();
-        }
-    }
-
-    static final class RecordingIdGenerator implements IdGenerator {
-
-        private final Deque<UUID> nextIds = new ArrayDeque<>();
-        private final Deque<UUID> consumedIds = new ArrayDeque<>();
-
-        void setNextIds(UUID... ids) {
-            nextIds.clear();
-            consumedIds.clear();
-            nextIds.addAll(Arrays.asList(ids));
-        }
-
-        void reset() {
-            setNextIds();
-        }
-
-        @Override
-        public UUID next() {
-            var nextId = nextIds.isEmpty() ? UUID.randomUUID() : nextIds.removeFirst();
-            consumedIds.addLast(nextId);
-            return nextId;
-        }
-
-        Deque<UUID> consumedIds() {
-            return new ArrayDeque<>(consumedIds);
         }
     }
 }

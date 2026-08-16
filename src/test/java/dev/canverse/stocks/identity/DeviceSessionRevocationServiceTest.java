@@ -7,7 +7,6 @@ import dev.canverse.stocks.identity.application.AccessTokenIssuanceService;
 import dev.canverse.stocks.identity.application.DeviceSessionRevocationService;
 import dev.canverse.stocks.identity.application.LocalAccessTokenAuthenticationConverter;
 import dev.canverse.stocks.identity.application.LocalAccountRegistrationService;
-import dev.canverse.stocks.identity.application.RefreshSessionAuthenticationService;
 import dev.canverse.stocks.identity.application.RefreshSessionIssuanceService;
 import dev.canverse.stocks.identity.application.RefreshSessionRotationService;
 import dev.canverse.stocks.identity.domain.DeviceSession;
@@ -67,9 +66,6 @@ class DeviceSessionRevocationServiceTest {
     DeviceSessionRevocationService revocationService;
 
     @Autowired
-    RefreshSessionAuthenticationService refreshAuthService;
-
-    @Autowired
     LocalAccessTokenAuthenticationConverter tokenConverter;
 
     @Autowired
@@ -105,12 +101,6 @@ class DeviceSessionRevocationServiceTest {
         var terminalGen = sessionRepository.findById(rotated.sessionId()).orElseThrow();
         assertThat(terminalGen.getRevokeReason()).isEqualTo(DeviceSession.USER_LOGOUT_REVOKE_REASON);
         assertThat(terminalGen.getRevokedAt()).isEqualTo(T0);
-
-        // Verify refresh token fails authentication
-        assertThatThrownBy(() -> refreshAuthService.authenticate(rotated.refreshToken()))
-                .isInstanceOf(AppException.class)
-                .satisfies(e ->
-                        assertThat(((AppException) e).getErrorCode()).isEqualTo(IdentityErrorCode.INVALID_CREDENTIALS));
 
         // Verify access token fails bearer conversion
         var jwt = jwtDecoder.decode(accessToken);

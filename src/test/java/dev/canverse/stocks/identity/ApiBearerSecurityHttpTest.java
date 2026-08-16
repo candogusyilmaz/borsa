@@ -11,15 +11,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import dev.canverse.stocks.identity.application.LocalAccountRegistrationService;
 import dev.canverse.stocks.identity.application.LocalLoginService;
-import dev.canverse.stocks.platform.id.IdGenerator;
 import dev.canverse.stocks.platform.web.trace.RequestTraceFilter;
+import dev.canverse.stocks.testing.RecordingIdGenerator;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -385,25 +382,6 @@ class ApiBearerSecurityHttpTest {
 
         JwtAuthenticationToken lastAuthentication() {
             return lastAuthentication.get();
-        }
-    }
-
-    static final class RecordingIdGenerator implements IdGenerator {
-
-        private final Deque<UUID> nextIds = new ArrayDeque<>();
-
-        void setNextIds(UUID... ids) {
-            nextIds.clear();
-            nextIds.addAll(Arrays.asList(ids));
-        }
-
-        void reset() {
-            setNextIds();
-        }
-
-        @Override
-        public UUID next() {
-            return nextIds.isEmpty() ? UUID.randomUUID() : nextIds.removeFirst();
         }
     }
 

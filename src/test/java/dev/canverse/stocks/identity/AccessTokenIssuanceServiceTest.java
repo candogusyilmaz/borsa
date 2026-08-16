@@ -11,7 +11,7 @@ import dev.canverse.stocks.identity.application.RefreshSessionIssuanceService;
 import dev.canverse.stocks.identity.error.IdentityErrorCode;
 import dev.canverse.stocks.identity.infrastructure.DeviceSessionRepository;
 import dev.canverse.stocks.platform.error.AppException;
-import dev.canverse.stocks.platform.id.IdGenerator;
+import dev.canverse.stocks.testing.RecordingIdGenerator;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
@@ -23,10 +23,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.Base64;
-import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -383,29 +380,6 @@ class AccessTokenIssuanceServiceTest {
         @Primary
         RecordingIdGenerator recordingIdGenerator() {
             return new RecordingIdGenerator();
-        }
-    }
-
-    static final class RecordingIdGenerator implements IdGenerator {
-
-        private final Deque<UUID> nextIds = new ArrayDeque<>();
-
-        void setNextIds(UUID... ids) {
-            nextIds.clear();
-            nextIds.addAll(Arrays.asList(ids));
-        }
-
-        int remainingIds() {
-            return nextIds.size();
-        }
-
-        UUID peekNextId() {
-            return nextIds.getFirst();
-        }
-
-        @Override
-        public UUID next() {
-            return nextIds.removeFirst();
         }
     }
 

@@ -16,10 +16,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import dev.canverse.stocks.identity.application.LocalAccessTokenAuthenticationConverter;
 import dev.canverse.stocks.identity.application.LocalAccountRegistrationService;
-import dev.canverse.stocks.identity.application.RefreshSessionAuthenticationService;
 import dev.canverse.stocks.identity.infrastructure.DeviceSessionRepository;
-import dev.canverse.stocks.platform.id.IdGenerator;
 import dev.canverse.stocks.platform.web.trace.RequestTraceFilter;
+import dev.canverse.stocks.testing.RecordingIdGenerator;
 import jakarta.servlet.http.Cookie;
 import java.net.HttpCookie;
 import java.nio.charset.StandardCharsets;
@@ -30,9 +29,6 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -90,9 +86,6 @@ class LocalRefreshHttpTest {
 
     @Autowired
     DeviceSessionRepository deviceSessionRepository;
-
-    @Autowired
-    RefreshSessionAuthenticationService refreshAuthenticationService;
 
     @Autowired
     LocalAccessTokenAuthenticationConverter accessTokenConverter;
@@ -327,8 +320,6 @@ class LocalRefreshHttpTest {
         assertThat(reused.getResponse().getContentAsString()).doesNotContain(login.refreshToken());
         assertThat(persistedState().get(1).get("revoke_reason")).isEqualTo("REUSE_DETECTED");
         assertThat(firstBody.get("accessToken")).isNotNull();
-        assertThatThrownBy(() -> refreshAuthenticationService.authenticate((String) firstBody.get("refreshToken")))
-                .isInstanceOf(RuntimeException.class);
         assertThatThrownBy(() -> accessTokenConverter.convert(jwtDecoder.decode((String) firstBody.get("accessToken"))))
                 .isInstanceOf(RuntimeException.class);
     }
@@ -484,33 +475,6 @@ class LocalRefreshHttpTest {
         @Override
         public Instant instant() {
             return instant.get();
-        }
-    }
-
-    static final class RecordingIdGenerator implements IdGenerator {
-
-        private final Deque<UUID> nextIds = new ArrayDeque<>();
-        private final Deque<UUID> consumedIds = new ArrayDeque<>();
-
-        synchronized void setNextIds(UUID... ids) {
-            nextIds.clear();
-            consumedIds.clear();
-            nextIds.addAll(Arrays.asList(ids));
-        }
-
-        synchronized void reset() {
-            setNextIds();
-        }
-
-        synchronized Deque<UUID> consumedIds() {
-            return new ArrayDeque<>(consumedIds);
-        }
-
-        @Override
-        public synchronized UUID next() {
-            var id = nextIds.isEmpty() ? UUID.randomUUID() : nextIds.removeFirst();
-            consumedIds.addLast(id);
-            return id;
         }
     }
 
