@@ -1,8 +1,8 @@
 package dev.canverse.stocks.identity.web;
 
 import dev.canverse.stocks.identity.application.LocalRegistrationAttemptService;
-import dev.canverse.stocks.identity.input.RegistrationRequest;
-import dev.canverse.stocks.identity.output.RegistrationResponse;
+import dev.canverse.stocks.identity.web.request.RegistrationRequest;
+import dev.canverse.stocks.identity.web.response.RegistrationResponse;
 import dev.canverse.stocks.platform.web.trace.RequestTraceFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;

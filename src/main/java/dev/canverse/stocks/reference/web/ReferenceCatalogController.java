@@ -2,10 +2,10 @@ package dev.canverse.stocks.reference.web;
 
 import dev.canverse.stocks.platform.web.CacheHeaders;
 import dev.canverse.stocks.reference.application.ReferenceCatalogQueryService;
-import dev.canverse.stocks.reference.output.CountryResponse;
-import dev.canverse.stocks.reference.output.CurrencyResponse;
-import dev.canverse.stocks.reference.output.MarketCalendarResponse;
-import dev.canverse.stocks.reference.output.MarketResponse;
+import dev.canverse.stocks.reference.web.response.CountryResponse;
+import dev.canverse.stocks.reference.web.response.CurrencyResponse;
+import dev.canverse.stocks.reference.web.response.MarketCalendarResponse;
+import dev.canverse.stocks.reference.web.response.MarketResponse;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;

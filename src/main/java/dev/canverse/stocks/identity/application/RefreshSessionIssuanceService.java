@@ -1,5 +1,6 @@
 package dev.canverse.stocks.identity.application;
 
+import dev.canverse.stocks.identity.application.model.IssuedRefreshSession;
 import dev.canverse.stocks.identity.configuration.RefreshSessionProperties;
 import dev.canverse.stocks.identity.domain.DeviceSession;
 import dev.canverse.stocks.identity.error.IdentityErrorCode;

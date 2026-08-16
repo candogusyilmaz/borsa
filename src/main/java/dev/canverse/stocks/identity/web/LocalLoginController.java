@@ -1,9 +1,9 @@
 package dev.canverse.stocks.identity.web;
 
 import dev.canverse.stocks.identity.application.LocalLoginAttemptService;
-import dev.canverse.stocks.identity.input.LocalLoginRequest;
-import dev.canverse.stocks.identity.input.RefreshTokenDelivery;
-import dev.canverse.stocks.identity.output.LocalLoginResponse;
+import dev.canverse.stocks.identity.web.request.LocalLoginRequest;
+import dev.canverse.stocks.identity.web.request.RefreshTokenDelivery;
+import dev.canverse.stocks.identity.web.response.LocalLoginResponse;
 import dev.canverse.stocks.platform.web.CacheHeaders;
 import dev.canverse.stocks.platform.web.trace.RequestTraceFilter;
 import jakarta.servlet.http.HttpServletRequest;

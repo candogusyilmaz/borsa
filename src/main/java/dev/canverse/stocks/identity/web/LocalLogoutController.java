@@ -2,8 +2,8 @@ package dev.canverse.stocks.identity.web;
 
 import dev.canverse.stocks.identity.application.AuthenticatedIdentityResolver;
 import dev.canverse.stocks.identity.application.DeviceSessionRevocationService;
-import dev.canverse.stocks.identity.input.LogoutRequest;
-import dev.canverse.stocks.identity.input.LogoutScope;
+import dev.canverse.stocks.identity.web.request.LogoutRequest;
+import dev.canverse.stocks.identity.web.request.LogoutScope;
 import dev.canverse.stocks.platform.web.CacheHeaders;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

@@ -8,7 +8,7 @@ import dev.canverse.stocks.identity.domain.DeviceSession;
 import dev.canverse.stocks.identity.domain.UserAccount;
 import dev.canverse.stocks.identity.infrastructure.DeviceSessionFamilyRecord;
 import dev.canverse.stocks.identity.infrastructure.DeviceSessionReadRepository;
-import dev.canverse.stocks.identity.output.DeviceSessionStatus;
+import dev.canverse.stocks.identity.web.response.DeviceSessionStatus;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;

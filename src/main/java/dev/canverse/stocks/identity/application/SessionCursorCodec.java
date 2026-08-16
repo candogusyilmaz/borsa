@@ -1,5 +1,6 @@
 package dev.canverse.stocks.identity.application;
 
+import dev.canverse.stocks.identity.application.model.SessionCursor;
 import dev.canverse.stocks.identity.error.IdentityErrorCode;
 import dev.canverse.stocks.platform.error.AppException;
 import java.nio.charset.StandardCharsets;

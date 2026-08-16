@@ -1,5 +1,6 @@
 package dev.canverse.stocks.identity.application;
 
+import dev.canverse.stocks.identity.application.model.IssuedAccessToken;
 import dev.canverse.stocks.identity.configuration.AccessTokenProperties;
 import dev.canverse.stocks.identity.error.IdentityErrorCode;
 import dev.canverse.stocks.identity.infrastructure.DeviceSessionRepository;

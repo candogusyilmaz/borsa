@@ -6,11 +6,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import dev.canverse.stocks.identity.application.AccessTokenIssuanceService;
-import dev.canverse.stocks.identity.application.IssuedAccessToken;
-import dev.canverse.stocks.identity.application.IssuedRefreshSession;
 import dev.canverse.stocks.identity.application.LocalLoginService;
 import dev.canverse.stocks.identity.application.LocalPasswordAuthenticationService;
 import dev.canverse.stocks.identity.application.RefreshSessionIssuanceService;
+import dev.canverse.stocks.identity.application.model.IssuedAccessToken;
+import dev.canverse.stocks.identity.application.model.IssuedRefreshSession;
 import dev.canverse.stocks.platform.application.SecurityEventRecorder;
 import java.time.Instant;
 import java.util.Map;

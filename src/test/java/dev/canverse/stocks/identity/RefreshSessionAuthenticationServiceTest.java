@@ -3,10 +3,10 @@ package dev.canverse.stocks.identity;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
-import dev.canverse.stocks.identity.application.IssuedRefreshSession;
 import dev.canverse.stocks.identity.application.LocalAccountRegistrationService;
 import dev.canverse.stocks.identity.application.RefreshSessionAuthenticationService;
 import dev.canverse.stocks.identity.application.RefreshSessionIssuanceService;
+import dev.canverse.stocks.identity.application.model.IssuedRefreshSession;
 import dev.canverse.stocks.identity.error.IdentityErrorCode;
 import dev.canverse.stocks.identity.infrastructure.DeviceSessionRepository;
 import dev.canverse.stocks.identity.infrastructure.SecureRefreshTokenGenerator;

@@ -1,5 +1,6 @@
 package dev.canverse.stocks.identity.application;
 
+import dev.canverse.stocks.identity.application.model.LocalRefreshResult;
 import dev.canverse.stocks.identity.domain.DeviceSession;
 import dev.canverse.stocks.identity.domain.UserAccount;
 import dev.canverse.stocks.identity.infrastructure.DeviceSessionRepository;

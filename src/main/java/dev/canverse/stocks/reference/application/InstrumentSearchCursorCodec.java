@@ -1,6 +1,7 @@
 package dev.canverse.stocks.reference.application;
 
 import dev.canverse.stocks.platform.error.AppException;
+import dev.canverse.stocks.reference.application.model.InstrumentSearchCursor;
 import dev.canverse.stocks.reference.domain.InstrumentType;
 import dev.canverse.stocks.reference.error.ReferenceErrorCode;
 import java.nio.ByteBuffer;

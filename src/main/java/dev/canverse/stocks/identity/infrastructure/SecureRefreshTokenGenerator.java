@@ -1,6 +1,6 @@
 package dev.canverse.stocks.identity.infrastructure;
 
-import dev.canverse.stocks.identity.application.GeneratedRefreshToken;
+import dev.canverse.stocks.identity.application.model.GeneratedRefreshToken;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

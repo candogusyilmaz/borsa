@@ -1,5 +1,6 @@
 package dev.canverse.stocks.identity.application;
 
+import dev.canverse.stocks.identity.application.model.LocalLoginResult;
 import dev.canverse.stocks.platform.application.SecurityEventRecorder;
 import java.util.Map;
 import java.util.Objects;

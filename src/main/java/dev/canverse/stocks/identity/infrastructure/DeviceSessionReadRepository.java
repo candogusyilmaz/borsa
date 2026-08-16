@@ -1,6 +1,6 @@
 package dev.canverse.stocks.identity.infrastructure;
 
-import dev.canverse.stocks.identity.application.SessionCursor;
+import dev.canverse.stocks.identity.application.model.SessionCursor;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;

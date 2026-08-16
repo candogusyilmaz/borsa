@@ -2,7 +2,7 @@ package dev.canverse.stocks.identity.web;
 
 import dev.canverse.stocks.identity.application.AuthenticatedIdentityResolver;
 import dev.canverse.stocks.identity.application.CurrentUserQueryService;
-import dev.canverse.stocks.identity.output.CurrentUserResponse;
+import dev.canverse.stocks.identity.web.response.CurrentUserResponse;
 import dev.canverse.stocks.platform.web.CacheHeaders;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

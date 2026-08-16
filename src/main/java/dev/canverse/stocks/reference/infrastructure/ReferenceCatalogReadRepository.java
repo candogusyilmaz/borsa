@@ -1,6 +1,6 @@
 package dev.canverse.stocks.reference.infrastructure;
 
-import dev.canverse.stocks.reference.application.InstrumentSearchCursor;
+import dev.canverse.stocks.reference.application.model.InstrumentSearchCursor;
 import dev.canverse.stocks.reference.domain.AliasType;
 import dev.canverse.stocks.reference.domain.InstrumentType;
 import dev.canverse.stocks.reference.domain.MarketSessionStatus;

@@ -6,8 +6,8 @@ import static org.mockito.Mockito.mock;
 
 import dev.canverse.stocks.identity.domain.UserAccount;
 import dev.canverse.stocks.platform.error.AppException;
-import dev.canverse.stocks.reference.application.InstrumentSearchCursor;
 import dev.canverse.stocks.reference.application.InstrumentSearchCursorCodec;
+import dev.canverse.stocks.reference.application.model.InstrumentSearchCursor;
 import dev.canverse.stocks.reference.domain.AliasType;
 import dev.canverse.stocks.reference.domain.CalendarCoverageStatus;
 import dev.canverse.stocks.reference.domain.CountryCode;

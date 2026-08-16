@@ -10,7 +10,7 @@ import dev.canverse.stocks.reference.domain.CalendarCoverageStatus;
 import dev.canverse.stocks.reference.domain.InstrumentType;
 import dev.canverse.stocks.reference.domain.MarketSessionStatus;
 import dev.canverse.stocks.reference.error.ReferenceErrorCode;
-import dev.canverse.stocks.reference.output.InstrumentSummaryResponse;
+import dev.canverse.stocks.reference.web.response.InstrumentSummaryResponse;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;

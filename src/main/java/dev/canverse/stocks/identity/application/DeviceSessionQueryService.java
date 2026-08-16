@@ -1,9 +1,10 @@
 package dev.canverse.stocks.identity.application;
 
+import dev.canverse.stocks.identity.application.model.SessionCursor;
 import dev.canverse.stocks.identity.error.IdentityErrorCode;
 import dev.canverse.stocks.identity.infrastructure.DeviceSessionReadRepository;
-import dev.canverse.stocks.identity.output.DeviceSessionPageResponse;
-import dev.canverse.stocks.identity.output.DeviceSessionResponse;
+import dev.canverse.stocks.identity.web.response.DeviceSessionPageResponse;
+import dev.canverse.stocks.identity.web.response.DeviceSessionResponse;
 import dev.canverse.stocks.platform.error.AppException;
 import java.time.Clock;
 import java.util.Objects;

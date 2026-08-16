@@ -1,10 +1,11 @@
 package dev.canverse.stocks.reference.application;
 
 import dev.canverse.stocks.platform.error.ValidationErrors;
+import dev.canverse.stocks.reference.application.model.InstrumentSearchCursor;
 import dev.canverse.stocks.reference.domain.InstrumentType;
 import dev.canverse.stocks.reference.infrastructure.ReferenceCatalogReadRepository;
-import dev.canverse.stocks.reference.output.InstrumentPageResponse;
-import dev.canverse.stocks.reference.output.InstrumentSummaryResponse;
+import dev.canverse.stocks.reference.web.response.InstrumentPageResponse;
+import dev.canverse.stocks.reference.web.response.InstrumentSummaryResponse;
 import java.util.Locale;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

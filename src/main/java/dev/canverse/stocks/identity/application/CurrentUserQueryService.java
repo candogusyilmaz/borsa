@@ -2,7 +2,7 @@ package dev.canverse.stocks.identity.application;
 
 import dev.canverse.stocks.identity.error.IdentityErrorCode;
 import dev.canverse.stocks.identity.infrastructure.UserAccountRepository;
-import dev.canverse.stocks.identity.output.CurrentUserResponse;
+import dev.canverse.stocks.identity.web.response.CurrentUserResponse;
 import dev.canverse.stocks.platform.error.AppException;
 import java.util.Objects;
 import java.util.UUID;

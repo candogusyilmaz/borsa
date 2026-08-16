@@ -1,5 +1,6 @@
 package dev.canverse.stocks.identity.application;
 
+import dev.canverse.stocks.identity.application.model.AuthenticatedIdentity;
 import dev.canverse.stocks.identity.error.IdentityErrorCode;
 import dev.canverse.stocks.platform.error.AppException;
 import java.util.Objects;

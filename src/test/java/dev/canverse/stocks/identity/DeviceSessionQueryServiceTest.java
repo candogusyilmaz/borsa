@@ -8,7 +8,7 @@ import dev.canverse.stocks.identity.application.LocalAccountRegistrationService;
 import dev.canverse.stocks.identity.application.RefreshSessionIssuanceService;
 import dev.canverse.stocks.identity.application.RefreshSessionRotationService;
 import dev.canverse.stocks.identity.error.IdentityErrorCode;
-import dev.canverse.stocks.identity.output.DeviceSessionStatus;
+import dev.canverse.stocks.identity.web.response.DeviceSessionStatus;
 import dev.canverse.stocks.platform.error.AppException;
 import java.time.Clock;
 import java.time.Instant;
