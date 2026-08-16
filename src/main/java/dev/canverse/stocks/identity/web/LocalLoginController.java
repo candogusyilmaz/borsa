@@ -1,15 +1,14 @@
 package dev.canverse.stocks.identity.web;
 
 import dev.canverse.stocks.identity.application.LocalLoginAttemptService;
-import dev.canverse.stocks.identity.application.LocalLoginResult;
 import dev.canverse.stocks.identity.input.LocalLoginRequest;
 import dev.canverse.stocks.identity.input.RefreshTokenDelivery;
 import dev.canverse.stocks.identity.output.LocalLoginResponse;
+import dev.canverse.stocks.platform.web.CacheHeaders;
 import dev.canverse.stocks.platform.web.trace.RequestTraceFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.time.Clock;
-import java.time.Instant;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,11 +44,9 @@ public class LocalLoginController {
         var refreshToken = request.refreshTokenDelivery() == RefreshTokenDelivery.RESPONSE_BODY
                 ? loginResult.refreshToken()
                 : null;
-        var response = toResponse(loginResult, serverTime, refreshToken);
+        var response = LocalLoginResponse.from(loginResult, serverTime, refreshToken);
 
-        var headers = new HttpHeaders();
-        headers.setCacheControl("no-store");
-        headers.setPragma("no-cache");
+        var headers = CacheHeaders.noStore();
         if (request.refreshTokenDelivery() == RefreshTokenDelivery.HTTP_ONLY_COOKIE) {
             headers.add(
                     HttpHeaders.SET_COOKIE,
@@ -57,15 +54,5 @@ public class LocalLoginController {
                             loginResult.refreshToken(), loginResult.refreshTokenExpiresAt(), serverTime));
         }
         return new ResponseEntity<>(response, headers, HttpStatus.OK);
-    }
-
-    private LocalLoginResponse toResponse(LocalLoginResult loginResult, Instant serverTime, String refreshToken) {
-        return new LocalLoginResponse(
-                loginResult.sessionId(),
-                loginResult.accessToken(),
-                loginResult.accessTokenExpiresAt(),
-                loginResult.refreshTokenExpiresAt(),
-                serverTime,
-                refreshToken);
     }
 }

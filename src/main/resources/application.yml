@@ -26,6 +26,10 @@ spring:
     problemdetails:
       enabled: true
 
+logging:
+  pattern:
+    correlation: "[traceId=%X{traceId:-}] "
+
 management:
   endpoints:
     web:

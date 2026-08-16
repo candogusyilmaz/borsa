@@ -6,6 +6,8 @@ import dev.canverse.stocks.identity.error.IdentityErrorCode;
 import dev.canverse.stocks.identity.infrastructure.AuthIdentityRepository;
 import dev.canverse.stocks.identity.infrastructure.UserAccountRepository;
 import dev.canverse.stocks.platform.error.AppException;
+import dev.canverse.stocks.platform.error.DatabaseConstraintTranslator;
+import dev.canverse.stocks.platform.error.ErrorCode;
 import dev.canverse.stocks.platform.id.IdGenerator;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -13,8 +15,8 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.time.Clock;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
-import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,10 @@ import org.springframework.validation.annotation.Validated;
 @Service
 @Validated
 public class LocalAccountRegistrationService {
+
+    private static final Map<String, ErrorCode> CONSTRAINT_ERROR_CODES = Map.of(
+            "uq_user_account_email_normalized", IdentityErrorCode.EMAIL_ALREADY_REGISTERED,
+            "uq_auth_identity_provider_subject", IdentityErrorCode.EMAIL_ALREADY_REGISTERED);
 
     private final UserAccountRepository userAccountRepository;
     private final AuthIdentityRepository authIdentityRepository;
@@ -66,27 +72,9 @@ public class LocalAccountRegistrationService {
             authIdentityRepository.saveAndFlush(AuthIdentity.local(
                     authIdentityId, savedUserAccount, emailNormalized, encodedPasswordHash, registrationTime));
         } catch (DataIntegrityViolationException exception) {
-            if (isDuplicateLocalEmailConstraint(exception)) {
-                throw new AppException(IdentityErrorCode.EMAIL_ALREADY_REGISTERED, exception);
-            }
-            throw exception;
+            throw DatabaseConstraintTranslator.translate(exception, CONSTRAINT_ERROR_CODES);
         }
 
         return savedUserAccount.getId();
-    }
-
-    private boolean isDuplicateLocalEmailConstraint(DataIntegrityViolationException exception) {
-        for (Throwable cause = exception; cause != null; cause = cause.getCause()) {
-            if (cause instanceof ConstraintViolationException constraintViolation
-                    && isDuplicateLocalEmailConstraint(constraintViolation.getConstraintName())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean isDuplicateLocalEmailConstraint(String constraintName) {
-        return "uq_user_account_email_normalized".equals(constraintName)
-                || "uq_auth_identity_provider_subject".equals(constraintName);
     }
 }

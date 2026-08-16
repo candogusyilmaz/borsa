@@ -1,5 +1,7 @@
 package dev.canverse.stocks.identity.output;
 
+import dev.canverse.stocks.identity.domain.DeviceSession;
+import dev.canverse.stocks.identity.infrastructure.DeviceSessionFamilyRecord;
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.Objects;
@@ -22,5 +24,39 @@ public record DeviceSessionResponse(
         Objects.requireNonNull(createdAt, "createdAt");
         Objects.requireNonNull(expiresAt, "expiresAt");
         Objects.requireNonNull(status, "status");
+    }
+
+    public static DeviceSessionResponse from(DeviceSessionFamilyRecord record, Instant observedAt) {
+        if (!Objects.equals(record.minExpiresAt(), record.maxExpiresAt())) {
+            throw new IllegalStateException("Inconsistent family expiry detected for family " + record.familyId());
+        }
+
+        var expiresAt = record.minExpiresAt();
+        DeviceSessionStatus status;
+        Instant endedAt;
+
+        if (record.terminalRevokedAt() != null) {
+            status = DeviceSession.REUSE_DETECTED_REVOKE_REASON.equals(record.terminalRevokeReason())
+                    ? DeviceSessionStatus.COMPROMISED
+                    : DeviceSessionStatus.REVOKED;
+            endedAt = record.terminalRevokedAt();
+        } else if (expiresAt.isAfter(observedAt)) {
+            status = DeviceSessionStatus.ACTIVE;
+            endedAt = null;
+        } else {
+            status = DeviceSessionStatus.EXPIRED;
+            endedAt = expiresAt;
+        }
+
+        return new DeviceSessionResponse(
+                record.familyId(),
+                record.latestGenerationId(),
+                record.deviceLabel(),
+                record.createdAt(),
+                record.lastUsedAt(),
+                expiresAt,
+                endedAt,
+                status,
+                record.current());
     }
 }

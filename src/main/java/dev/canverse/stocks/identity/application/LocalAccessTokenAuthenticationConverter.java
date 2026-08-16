@@ -1,9 +1,7 @@
 package dev.canverse.stocks.identity.application;
 
-import dev.canverse.stocks.identity.domain.DeviceSession;
 import dev.canverse.stocks.identity.infrastructure.DeviceSessionRepository;
 import java.time.Clock;
-import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -34,8 +32,8 @@ public class LocalAccessTokenAuthenticationConverter implements Converter<Jwt, A
         var sessionId = parseCanonicalUuid(jwt.getClaims().get("sid"));
         var observedAt = clock.instant();
         deviceSessionRepository
-                .findByIdAndUserAccount_Id(sessionId, userAccountId)
-                .filter(session -> isEligible(session, observedAt))
+                .findOwnedById(sessionId, userAccountId)
+                .filter(session -> session.isActiveAndUserEnabled(observedAt))
                 .orElseThrow(this::invalidBearerToken);
 
         return new JwtAuthenticationToken(jwt, List.of(), userAccountId.toString());
@@ -54,12 +52,6 @@ public class LocalAccessTokenAuthenticationConverter implements Converter<Jwt, A
             // The safe bearer failure below intentionally hides malformed claim detail.
         }
         throw invalidBearerToken();
-    }
-
-    private boolean isEligible(DeviceSession session, Instant observedAt) {
-        return session.getRevokedAt() == null
-                && session.getExpiresAt().isAfter(observedAt)
-                && session.getUserAccount().getDisabledAt() == null;
     }
 
     private InvalidBearerTokenException invalidBearerToken() {

@@ -1,7 +1,6 @@
 package dev.canverse.stocks.identity.web;
 
 import dev.canverse.stocks.identity.application.AuthenticationAbuseProtection;
-import dev.canverse.stocks.identity.application.LocalRefreshResult;
 import dev.canverse.stocks.identity.application.RefreshSessionRotationService;
 import dev.canverse.stocks.identity.error.IdentityErrorCode;
 import dev.canverse.stocks.identity.input.LocalRefreshRequest;
@@ -9,12 +8,12 @@ import dev.canverse.stocks.identity.input.RefreshTokenDelivery;
 import dev.canverse.stocks.identity.output.LocalRefreshResponse;
 import dev.canverse.stocks.platform.application.SecurityEventRecorder;
 import dev.canverse.stocks.platform.error.AppException;
+import dev.canverse.stocks.platform.web.CacheHeaders;
 import dev.canverse.stocks.platform.web.trace.RequestTraceFilter;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.time.Clock;
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -54,10 +53,8 @@ public class LocalRefreshController {
     public ResponseEntity<LocalRefreshResponse> refresh(
             @Valid @RequestBody LocalRefreshRequest request, HttpServletRequest servletRequest) {
         var remoteAddr = servletRequest.getRemoteAddr();
-        var traceId = (String) servletRequest.getAttribute(RequestTraceFilter.TRACE_ID_ATTRIBUTE);
-        if (traceId == null) {
-            traceId = "unknown";
-        }
+        var traceIdAttribute = (String) servletRequest.getAttribute(RequestTraceFilter.TRACE_ID_ATTRIBUTE);
+        var traceId = traceIdAttribute == null ? "unknown" : traceIdAttribute;
 
         if (abuseProtection.checkRefreshAllowed(remoteAddr) == AuthenticationAbuseProtection.CheckResult.BLOCKED) {
             throw new AppException(IdentityErrorCode.AUTHENTICATION_THROTTLED);
@@ -71,22 +68,18 @@ public class LocalRefreshController {
             throw exception;
         }
 
-        var resultOpt = rotationService.rotate(rawRefreshToken);
-        if (resultOpt.isEmpty()) {
+        var result = rotationService.rotate(rawRefreshToken).orElseThrow(() -> {
             handleRefreshFailure(remoteAddr, traceId);
-            throw new AppException(IdentityErrorCode.INVALID_CREDENTIALS);
-        }
+            return new AppException(IdentityErrorCode.INVALID_CREDENTIALS);
+        });
 
         abuseProtection.recordRefreshSuccess(remoteAddr);
-        var result = resultOpt.get();
         var serverTime = clock.instant();
         var responseRefreshToken =
                 request.refreshTokenDelivery() == RefreshTokenDelivery.RESPONSE_BODY ? result.refreshToken() : null;
-        var response = toResponse(result, serverTime, responseRefreshToken);
+        var response = LocalRefreshResponse.from(result, serverTime, responseRefreshToken);
 
-        var headers = new HttpHeaders();
-        headers.setCacheControl("no-store");
-        headers.setPragma("no-cache");
+        var headers = CacheHeaders.noStore();
         if (request.refreshTokenDelivery() == RefreshTokenDelivery.HTTP_ONLY_COOKIE) {
             headers.add(
                     HttpHeaders.SET_COOKIE,
@@ -96,9 +89,7 @@ public class LocalRefreshController {
     }
 
     private void handleRefreshFailure(String remoteAddr, String traceId) {
-        var transitionOpt = abuseProtection.recordRefreshFailure(remoteAddr);
-        if (transitionOpt.isPresent()) {
-            var transition = transitionOpt.get();
+        abuseProtection.recordRefreshFailure(remoteAddr).ifPresent(transition -> {
             try {
                 securityEventRecorder.recordAnonymousRequiresNew(
                         SecurityEventRecorder.REFRESH_THROTTLED, Map.of("traceId", traceId, "operation", "REFRESH"));
@@ -106,7 +97,7 @@ public class LocalRefreshController {
                 abuseProtection.rollbackThrottle(transition);
                 throw exception;
             }
-        }
+        });
     }
 
     private String selectCredential(LocalRefreshRequest request, HttpServletRequest servletRequest) {
@@ -143,15 +134,5 @@ public class LocalRefreshController {
 
     private AppException invalidCredentials() {
         return new AppException(IdentityErrorCode.INVALID_CREDENTIALS);
-    }
-
-    private LocalRefreshResponse toResponse(LocalRefreshResult result, Instant serverTime, String refreshToken) {
-        return new LocalRefreshResponse(
-                result.sessionId(),
-                result.accessToken(),
-                result.accessTokenExpiresAt(),
-                result.refreshTokenExpiresAt(),
-                serverTime,
-                refreshToken);
     }
 }

@@ -36,6 +36,23 @@ class DeviceSessionLifecycleTest {
     }
 
     @Test
+    void activeAndUserEnabledPredicateRejectsRevokedOrExpiredSessions() {
+        var user = UserAccount.register(UUID.randomUUID(), "test@example.com", "test@example.com", createdAt);
+        var session =
+                DeviceSession.initialGeneration(UUID.randomUUID(), user, "hash1", "desktop", createdAt, expiresAt);
+        var observedAt = Instant.parse("2026-08-15T12:00:00Z");
+
+        assertThat(session.isActiveAndUserEnabled(observedAt)).isTrue();
+
+        session.revokeForReuse(observedAt);
+        assertThat(session.isActiveAndUserEnabled(observedAt)).isFalse();
+
+        var expiredSession =
+                DeviceSession.initialGeneration(UUID.randomUUID(), user, "hash2", "desktop", createdAt, observedAt);
+        assertThat(expiredSession.isActiveAndUserEnabled(observedAt)).isFalse();
+    }
+
+    @Test
     void revokeTerminalIsIdempotentAndDoesNotOverwriteEarlierRevocation() {
         var user = UserAccount.register(UUID.randomUUID(), "test@example.com", "test@example.com", createdAt);
         var session =

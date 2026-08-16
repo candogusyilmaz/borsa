@@ -81,6 +81,11 @@ public class DeviceSession {
         return deviceSession;
     }
 
+    public boolean isActiveAndUserEnabled(Instant observedAt) {
+        Objects.requireNonNull(observedAt, "observedAt");
+        return revokedAt == null && expiresAt.isAfter(observedAt) && userAccount.getDisabledAt() == null;
+    }
+
     public DeviceSession rotate(UUID replacementId, String replacementRefreshTokenHash, Instant observedAt) {
         var replacement = createReplacement(replacementId, replacementRefreshTokenHash, observedAt);
         consumeForRotation(observedAt);

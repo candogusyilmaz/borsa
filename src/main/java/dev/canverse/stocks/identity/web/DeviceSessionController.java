@@ -5,6 +5,7 @@ import dev.canverse.stocks.identity.application.DeviceSessionQueryService;
 import dev.canverse.stocks.identity.application.DeviceSessionRevocationService;
 import dev.canverse.stocks.identity.output.DeviceSessionPageResponse;
 import dev.canverse.stocks.identity.output.DeviceSessionResponse;
+import dev.canverse.stocks.platform.web.CacheHeaders;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.util.UUID;
@@ -39,10 +40,7 @@ public class DeviceSessionController {
         var identity = identityResolver.resolve(authentication);
         var response = queryService.listSessions(identity.userAccountId(), identity.sessionId(), limit, cursor);
 
-        var headers = new HttpHeaders();
-        headers.setCacheControl("no-store");
-        headers.setPragma("no-cache");
-        return new ResponseEntity<>(response, headers, HttpStatus.OK);
+        return new ResponseEntity<>(response, CacheHeaders.noStore(), HttpStatus.OK);
     }
 
     @GetMapping("{familyId}")
@@ -51,9 +49,7 @@ public class DeviceSessionController {
         var identity = identityResolver.resolve(authentication);
         var response = queryService.getSessionDetail(identity.userAccountId(), identity.sessionId(), familyId);
 
-        var headers = new HttpHeaders();
-        headers.setCacheControl("no-store");
-        headers.setPragma("no-cache");
+        var headers = CacheHeaders.noStore();
         return new ResponseEntity<>(response, headers, HttpStatus.OK);
     }
 
@@ -63,9 +59,7 @@ public class DeviceSessionController {
         var isCurrentFamily =
                 revocationService.revokeSelectedFamily(identity.userAccountId(), identity.sessionId(), familyId);
 
-        var headers = new HttpHeaders();
-        headers.setCacheControl("no-store");
-        headers.setPragma("no-cache");
+        var headers = CacheHeaders.noStore();
         if (isCurrentFamily) {
             headers.add(HttpHeaders.SET_COOKIE, RefreshTokenCookieHeader.clear());
         }

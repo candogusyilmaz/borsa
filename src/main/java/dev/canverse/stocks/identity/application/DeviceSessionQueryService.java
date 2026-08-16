@@ -1,16 +1,11 @@
 package dev.canverse.stocks.identity.application;
 
-import dev.canverse.stocks.identity.domain.DeviceSession;
 import dev.canverse.stocks.identity.error.IdentityErrorCode;
-import dev.canverse.stocks.identity.infrastructure.DeviceSessionFamilyRecord;
 import dev.canverse.stocks.identity.infrastructure.DeviceSessionReadRepository;
 import dev.canverse.stocks.identity.output.DeviceSessionPageResponse;
 import dev.canverse.stocks.identity.output.DeviceSessionResponse;
-import dev.canverse.stocks.identity.output.DeviceSessionStatus;
 import dev.canverse.stocks.platform.error.AppException;
 import java.time.Clock;
-import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -50,10 +45,9 @@ public class DeviceSessionQueryService {
         var hasNext = records.size() > effectiveLimit;
         var pageRecords = hasNext ? records.subList(0, effectiveLimit) : records;
 
-        var responses = new ArrayList<DeviceSessionResponse>(pageRecords.size());
-        for (var record : pageRecords) {
-            responses.add(toResponse(record, observedAt));
-        }
+        var responses = pageRecords.stream()
+                .map(record -> DeviceSessionResponse.from(record, observedAt))
+                .toList();
 
         String nextCursor = null;
         if (hasNext && !responses.isEmpty()) {
@@ -75,44 +69,6 @@ public class DeviceSessionQueryService {
                 .findFamilyDetail(userAccountId, currentSessionId, familyId)
                 .orElseThrow(() -> new AppException(IdentityErrorCode.SESSION_NOT_FOUND));
 
-        return toResponse(record, observedAt);
-    }
-
-    private DeviceSessionResponse toResponse(DeviceSessionFamilyRecord record, Instant observedAt) {
-        if (!Objects.equals(record.minExpiresAt(), record.maxExpiresAt())) {
-            throw new IllegalStateException("Inconsistent family expiry detected for family " + record.familyId());
-        }
-
-        var expiresAt = record.minExpiresAt();
-        DeviceSessionStatus status;
-        Instant endedAt;
-
-        if (record.terminalRevokedAt() != null) {
-            if (DeviceSession.REUSE_DETECTED_REVOKE_REASON.equals(record.terminalRevokeReason())) {
-                status = DeviceSessionStatus.COMPROMISED;
-            } else {
-                status = DeviceSessionStatus.REVOKED;
-            }
-            endedAt = record.terminalRevokedAt();
-        } else {
-            if (expiresAt.isAfter(observedAt)) {
-                status = DeviceSessionStatus.ACTIVE;
-                endedAt = null;
-            } else {
-                status = DeviceSessionStatus.EXPIRED;
-                endedAt = expiresAt;
-            }
-        }
-
-        return new DeviceSessionResponse(
-                record.familyId(),
-                record.latestGenerationId(),
-                record.deviceLabel(),
-                record.createdAt(),
-                record.lastUsedAt(),
-                expiresAt,
-                endedAt,
-                status,
-                record.current());
+        return DeviceSessionResponse.from(record, observedAt);
     }
 }

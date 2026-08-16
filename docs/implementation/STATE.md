@@ -1,6 +1,6 @@
 # Backend rewrite implementation state
 
-Last updated: 2026-08-15
+Last updated: 2026-08-16
 
 ## Current technology
 
@@ -302,44 +302,7 @@ Established:
 
 Spotless, the 45-test focused suite, the full 124-test suite, and Maven `verify` passed with no failures, errors, or skipped tests. The accepting commit is `d1eea9a`.
 
-## Current database
-
-Migration version: `V1`
-
-Schemas:
-
-- `identity`
-- `reference`
-- `ledger`
-- `data`
-- `money`
-- `analysis`
-- `asset`
-- `platform`
-
-Tables:
-
-### identity
-
-- `user_account`
-- `auth_identity`
-- `device_session`
-
-### platform
-
-- `security_event`
-- `job`
-
-### currently empty schemas
-
-- `reference`
-- `ledger`
-- `data`
-- `money`
-- `analysis`
-- `asset`
-
-## Current application state
+## Application state inherited from the foundation
 
 Implemented production foundation and V1 mappings in the authoritative capability sub-packages:
 
@@ -419,7 +382,7 @@ PR-017 additionally adds `identity.input.LocalLoginRequest`, `identity.input.Ref
 
 ### PR-019 — Authenticated identity and session security lifecycle
 
-Status: **IMPLEMENTATION COMPLETE (AWAITING REVIEW)**
+Status: **COMPLETE IN ACCEPTED WORKING-TREE COMMIT `0c6657e`**
 
 Specification:
 
@@ -447,20 +410,93 @@ Established:
   - Raw source, email, password, token, and forwarded-IP data are not logged or persisted; state is deliberately process-local and resets on restart.
 - Full unit, integration, concurrency, and HTTP coverage includes 164 identity-package tests and 211 tests repository-wide, with no failures, errors, or skips in the final clean verification.
 
+### PR-020 — Canonical reference catalog and owner-scoped manual instruments
+
+Status: **IMPLEMENTATION COMPLETE — AWAITING USER COMMIT DECISION**
+
+Starting commit: `0c6657e`
+
+Established:
+
+- Flyway V2 creates exactly seven `reference` tables: `country`, `currency`, `market`, `market_currency`, `instrument`, `instrument_alias`, and `market_calendar`.
+- Deterministic offline seeds cover TR/GB/US countries, TRY/USD/EUR/GBP currencies, XIST and MANUAL markets, and the specified explicit quotation-currency relationships; no rates, prices, observations, providers, or financial facts are seeded.
+- Minimal JPA mappings, repositories, canonical country/currency/market/instrument value objects, instrument/valuation/alias/calendar enums, and migration-owned constraints/indexes are implemented with Hibernate schema validation.
+- Authenticated read APIs expose stable countries, currencies, markets, and explicit market-calendar rows. Calendar responses distinguish `NONE`, `PARTIAL`, and `COMPLETE`, list missing dates, preserve local session times, enforce a maximum 366-date range, and never infer schedules.
+- Owner-derived manual instrument create/detail/update APIs validate active market/currency support, persist `USER_ENTERED` ownership and aliases atomically, preserve immutable identity fields, expose timestamps/version, enforce owner-only mutation/visibility, and translate the named reference errors.
+- SQL search combines active global rows with current-owner rows only, supports prefix/market/type/inactive filters and aliases, returns deterministic bounded cursor pages, binds cursors to canonical filter digests, and avoids N+1 alias loading.
+- HTTP/security tests prove exact response contracts, no-store/no-cache behavior, cross-owner non-leakage, malformed/duplicate/inactive/version/cursor failures, no servlet sessions, and the unchanged single bearer chain.
+- Standards alignment now places non-annotation request invariants in public DTO `validate()` barriers, co-locates response factories on response records, uses immutable collection boundaries and named limits, expresses bounded market grouping with standard collectors, centralizes cache headers and validation-error construction, and scopes trace IDs in MDC.
+- Repository query names avoid nested-property underscores through explicit `@Query` methods without `@Param`; owned-alias bulk deletion flushes and clears the persistence context, then the service obtains a managed instrument reference before reinsertion.
+- Known unique-collision translation is centralized in the platform error utility. Unknown integrity failures are logged by the global handler and exposed only as the generic safe server error. PR-019's established pipe session cursor remains a compatibility exception while PR-020 uses its specified canonical JSON instrument cursor.
+- FK-only owner assignment uses `EntityManager.getReference`; `Instrument` stores application enums with textual `EnumType.STRING`; response construction is co-located on response records; and redundant reference persistence work is removed.
+- Alias-only manual-instrument updates use an immediate owner/version compare-and-swap before child replacement; ordinary metadata updates use JPA `@Version`. Both paths reject stale concurrent writers without pessimistic locking or lost updates.
+- The supervising user explicitly authorized the mixed identity/session/abuse-protection standards alignment. It remains behavior-compatible with PR-019, is covered by the expanded focused gate, and is excluded from PR-020's reference-only sizing proof.
+- Verification: the expanded 77-test PR-020/reference/security gate, all 266 repository tests, Spotless, and Maven `verify` pass with no failures, errors, or skips.
+
+Production surface: 49 new reference/platform production files contain 2,190 nonblank lines. This reference-only count excludes tests, documentation, generated output, formatting churn, and the separately authorized cross-cutting identity/session alignment; it independently exceeds the fixed 1,905-line PR-sizing comparison floor.
+
+## Current database
+
+Migration version: `V2`
+
+Schemas:
+
+- `identity`
+- `reference`
+- `ledger`
+- `data`
+- `money`
+- `analysis`
+- `asset`
+- `platform`
+
+Tables:
+
+### identity
+
+- `user_account`
+- `auth_identity`
+- `device_session`
+
+### platform
+
+- `security_event`
+- `job`
+
+### reference
+
+- `country`
+- `currency`
+- `market`
+- `market_currency`
+- `instrument`
+- `instrument_alias`
+- `market_calendar`
+
+### currently empty schemas
+
+- `ledger`
+- `data`
+- `money`
+- `analysis`
+- `asset`
+
 ## Active implementation unit
 
-PR-019 authenticated identity and session security lifecycle is implemented in the working tree and ready for user review.
+PR-020 canonical reference catalog and owner-scoped manual instruments is implemented in the working tree and ready for user review.
 
-See `CURRENT.md` and `PR-019-authenticated-identity-and-session-security-lifecycle.md`.
+See `CURRENT.md` and `PR-020-canonical-reference-catalog-and-manual-instruments.md`.
 
 ## Next likely implementation areas
 
-These are planning hints for work after PR-019, not active specifications.
+These are planning hints for work after PR-020, not active specifications.
 
-Likely sequence after PR-019:
+Draft specification: [PR-021 — Durable platform job execution](PR-021-durable-platform-job-execution.md). It remains inactive while `CURRENT.md` points to PR-020.
+
+Likely sequence after PR-020:
 
 1. durable platform job claim/heartbeat/retry/recovery behavior using the existing V1 table;
-2. the coherent V2 reference migration, mappings, manual administration/search API, deterministic seeds, and tests;
+2. reference administration/calendar/import workflows and explicit observations/providers only as separately reviewed capabilities;
 3. persistent signing-key/OIDC/recovery work only when a separately reviewed security boundary requires it.
 
 The exact next behavioral implementation unit must be designed just-in-time from the reconciled committed state.
@@ -469,10 +505,10 @@ Do not treat this list as a promise of PR numbering or exact scope.
 
 ## Known issues / deferred work
 
-- PR-019 is fully implemented in the working tree and passes all 211 tests including Testcontainers PostgreSQL integration tests and Spotless validation.
+- PR-020 passes the expanded 77-test focused gate and the full 266-test suite, including Testcontainers PostgreSQL integration tests, real-filter HTTP/security checks, abuse/concurrency coverage, Spotless, and Maven `verify`; no unresolved implementation review blocker remains before the user's commit decision.
 - Keyset pagination in `DeviceSessionReadRepository` casts `s.id` to `text` inside the PostgreSQL `MAX` aggregate function to support UUID types across PostgreSQL versions.
 - Maven explicitly registers Lombok on the annotation-processor path so Lombok-generated entity accessors and constructors compile on Java 25.
-- No reference data yet.
+- Reference catalog identities, deterministic seeds, explicit calendar storage, and owner-scoped manual instruments now exist; global administration, calendar/import workflows, observations, and provider adapters remain deferred.
 - No ledger yet.
 - No financial-account model yet.
 - The frontend still targets legacy APIs.

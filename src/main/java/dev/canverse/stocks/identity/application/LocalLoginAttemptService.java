@@ -43,9 +43,7 @@ public class LocalLoginAttemptService {
         securityEventRecorder.recordAnonymousRequiresNew(
                 SecurityEventRecorder.LOCAL_LOGIN_FAILED, Map.of("traceId", traceId, "operation", "LOGIN"));
 
-        var transitionOpt = abuseProtection.recordLoginFailure(email, remoteAddr);
-        if (transitionOpt.isPresent()) {
-            var transition = transitionOpt.get();
+        abuseProtection.recordLoginFailure(email, remoteAddr).ifPresent(transition -> {
             try {
                 securityEventRecorder.recordAnonymousRequiresNew(
                         SecurityEventRecorder.LOCAL_LOGIN_THROTTLED, Map.of("traceId", traceId, "operation", "LOGIN"));
@@ -53,6 +51,6 @@ public class LocalLoginAttemptService {
                 abuseProtection.rollbackThrottle(transition);
                 throw exception;
             }
-        }
+        });
     }
 }

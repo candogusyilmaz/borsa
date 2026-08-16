@@ -11,6 +11,9 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 
 class AuthenticationAbuseProtectionTest {
@@ -239,9 +242,12 @@ class AuthenticationAbuseProtectionTest {
     @Test
     void concurrentLoginAttemptsAreThreadSafe() throws Exception {
         var clock = new MutableClock(T0);
+        var threads = 8;
+        var iterationsPerThread = 20;
+        var totalAttempts = threads * iterationsPerThread;
         var props = new AuthenticationAbuseProtectionProperties(
                 new AuthenticationAbuseProtectionProperties.LoginProperties(
-                        100, 100, Duration.ofMinutes(15), Duration.ofMinutes(15)),
+                        totalAttempts, 10_000, Duration.ofMinutes(15), Duration.ofMinutes(15)),
                 null,
                 null,
                 1000);
@@ -250,10 +256,9 @@ class AuthenticationAbuseProtectionTest {
         var email = "concurrent@example.com";
         var source = "10.0.0.99";
 
-        var threads = 8;
-        var iterationsPerThread = 20;
         var startLatch = new CountDownLatch(1);
         var doneLatch = new CountDownLatch(threads);
+        var transitions = new AtomicInteger();
         var executor = Executors.newFixedThreadPool(threads);
 
         for (int i = 0; i < threads; i++) {
@@ -261,7 +266,9 @@ class AuthenticationAbuseProtectionTest {
                 try {
                     startLatch.await();
                     for (int j = 0; j < iterationsPerThread; j++) {
-                        limiter.recordLoginFailure(email, source);
+                        if (limiter.recordLoginFailure(email, source).isPresent()) {
+                            transitions.incrementAndGet();
+                        }
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -272,12 +279,53 @@ class AuthenticationAbuseProtectionTest {
         }
 
         startLatch.countDown();
-        doneLatch.await();
+        assertThat(doneLatch.await(10, TimeUnit.SECONDS)).isTrue();
         executor.shutdown();
 
-        // 8 * 20 = 160 total attempts > 100 max failures -> must be BLOCKED
+        assertThat(transitions).hasValue(1);
         assertThat(limiter.checkLoginAllowed(email, source))
                 .isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
+    }
+
+    @Test
+    void concurrentAdmissionNeverExceedsTheConfiguredCapacity() throws Exception {
+        var clock = new MutableClock(T0);
+        var props = new AuthenticationAbuseProtectionProperties(
+                null,
+                null,
+                new AuthenticationAbuseProtectionProperties.RefreshProperties(
+                        100, Duration.ofMinutes(15), Duration.ofMinutes(15)),
+                1);
+        var limiter = new AuthenticationAbuseProtection(props, clock);
+        var sources =
+                IntStream.range(0, 16).mapToObj(index -> "source-" + index).toList();
+        var start = new CountDownLatch(1);
+        var done = new CountDownLatch(sources.size());
+        var executor = Executors.newFixedThreadPool(sources.size());
+        try {
+            for (var source : sources) {
+                executor.submit(() -> {
+                    try {
+                        start.await();
+                        limiter.recordRefreshFailure(source);
+                    } catch (InterruptedException exception) {
+                        Thread.currentThread().interrupt();
+                    } finally {
+                        done.countDown();
+                    }
+                });
+            }
+
+            start.countDown();
+            assertThat(done.await(10, TimeUnit.SECONDS)).isTrue();
+            assertThat(sources.stream()
+                            .filter(source -> limiter.checkRefreshAllowed(source)
+                                    == AuthenticationAbuseProtection.CheckResult.ALLOWED)
+                            .count())
+                    .isEqualTo(1);
+        } finally {
+            executor.shutdownNow();
+        }
     }
 
     @Test

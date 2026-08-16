@@ -4,6 +4,7 @@ import dev.canverse.stocks.identity.application.AuthenticatedIdentityResolver;
 import dev.canverse.stocks.identity.application.DeviceSessionRevocationService;
 import dev.canverse.stocks.identity.input.LogoutRequest;
 import dev.canverse.stocks.identity.input.LogoutScope;
+import dev.canverse.stocks.platform.web.CacheHeaders;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -33,9 +34,7 @@ public class LocalLogoutController {
             revocationService.logoutAllSessions(identity.userAccountId());
         }
 
-        var headers = new HttpHeaders();
-        headers.setCacheControl("no-store");
-        headers.setPragma("no-cache");
+        var headers = CacheHeaders.noStore();
         headers.add(HttpHeaders.SET_COOKIE, RefreshTokenCookieHeader.clear());
         return new ResponseEntity<>(headers, HttpStatus.NO_CONTENT);
     }

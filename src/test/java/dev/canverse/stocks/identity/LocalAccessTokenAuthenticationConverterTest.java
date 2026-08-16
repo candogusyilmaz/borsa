@@ -240,9 +240,8 @@ class LocalAccessTokenAuthenticationConverterTest {
                 "repository-other@example.com");
         var beforeLookup = snapshot();
 
-        var exactMatch = deviceSessionRepository.findByIdAndUserAccount_Id(owner.sessionId(), owner.userAccountId());
-        var crossUserMatch =
-                deviceSessionRepository.findByIdAndUserAccount_Id(owner.sessionId(), other.userAccountId());
+        var exactMatch = deviceSessionRepository.findOwnedById(owner.sessionId(), owner.userAccountId());
+        var crossUserMatch = deviceSessionRepository.findOwnedById(owner.sessionId(), other.userAccountId());
 
         assertThat(exactMatch).get().extracting(session -> session.getId()).isEqualTo(owner.sessionId());
         assertThat(crossUserMatch).isEmpty();

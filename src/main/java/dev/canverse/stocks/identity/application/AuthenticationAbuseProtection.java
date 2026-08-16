@@ -14,7 +14,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -30,6 +33,7 @@ public class AuthenticationAbuseProtection {
     private final Clock clock;
     private final ConcurrentHashMap<String, BucketState> trackedKeys = new ConcurrentHashMap<>();
     private final AtomicLong versionSequence = new AtomicLong(0);
+    private final ReentrantLock admissionLock = new ReentrantLock();
 
     public AuthenticationAbuseProtection(AuthenticationAbuseProtectionProperties properties, Clock clock) {
         this.properties = Objects.requireNonNull(properties, "properties");
@@ -59,7 +63,7 @@ public class AuthenticationAbuseProtection {
         }
     }
 
-    public synchronized CheckResult checkLoginAllowed(String email, String source) {
+    public CheckResult checkLoginAllowed(String email, String source) {
         var observedAt = clock.instant();
         var principalKey = computeLoginPrincipalKey(email, source);
         var sourceKey = computeSourceKey(LOGIN_SOURCE_PREFIX, source);
@@ -73,7 +77,7 @@ public class AuthenticationAbuseProtection {
         return CheckResult.ALLOWED;
     }
 
-    public synchronized Optional<ThrottleTransition> recordLoginFailure(String email, String source) {
+    public Optional<ThrottleTransition> recordLoginFailure(String email, String source) {
         var observedAt = clock.instant();
         var principalKey = computeLoginPrincipalKey(email, source);
         var sourceKey = computeSourceKey(LOGIN_SOURCE_PREFIX, source);
@@ -102,12 +106,12 @@ public class AuthenticationAbuseProtection {
         return Optional.of(new ThrottleTransition(expectedVersions));
     }
 
-    public synchronized void recordLoginSuccess(String email, String source) {
+    public void recordLoginSuccess(String email, String source) {
         var principalKey = computeLoginPrincipalKey(email, source);
         trackedKeys.remove(principalKey);
     }
 
-    public synchronized RegistrationAttemptResult consumeRegistrationAttempt(String source) {
+    public RegistrationAttemptResult consumeRegistrationAttempt(String source) {
         var observedAt = clock.instant();
         var sourceKey = computeSourceKey(REGISTER_SOURCE_PREFIX, source);
         var regProps = properties.registration();
@@ -116,36 +120,24 @@ public class AuthenticationAbuseProtection {
             return new RegistrationAttemptResult(AttemptStatus.BLOCKED, null);
         }
 
-        var bucket = trackedKeys.compute(sourceKey, (key, existing) -> {
-            if (existing == null || isExpired(existing, observedAt)) {
-                return new BucketState(observedAt, 1, null, regProps.window(), 0L);
-            }
-            return new BucketState(
-                    existing.windowStart(),
-                    existing.count() + 1,
-                    existing.blockedUntil(),
-                    regProps.window(),
-                    existing.blockVersion());
-        });
-
-        if (bucket.count() > regProps.sourceMaxAttempts()) {
-            if (bucket.blockedUntil() == null) {
-                var blockedUntil = observedAt.plus(regProps.blockDuration());
-                var version = versionSequence.incrementAndGet();
-                trackedKeys.put(
-                        sourceKey,
-                        new BucketState(
-                                bucket.windowStart(), bucket.count(), blockedUntil, regProps.window(), version));
-                return new RegistrationAttemptResult(
-                        AttemptStatus.JUST_BLOCKED, new ThrottleTransition(Map.of(sourceKey, version)));
-            }
-            return new RegistrationAttemptResult(AttemptStatus.BLOCKED, null);
+        var result = tryConsumeRegistrationAttempt(sourceKey, observedAt, regProps);
+        if (result != null) {
+            return result;
         }
 
-        return new RegistrationAttemptResult(AttemptStatus.ALLOWED, null);
+        admissionLock.lock();
+        try {
+            pruneStale(observedAt);
+            if (!trackedKeys.containsKey(sourceKey) && trackedKeys.size() >= properties.maxTrackedKeys()) {
+                return new RegistrationAttemptResult(AttemptStatus.BLOCKED, null);
+            }
+            return consumeRegistrationAttemptUnderAdmission(sourceKey, observedAt, regProps);
+        } finally {
+            admissionLock.unlock();
+        }
     }
 
-    public synchronized CheckResult checkRefreshAllowed(String source) {
+    public CheckResult checkRefreshAllowed(String source) {
         var observedAt = clock.instant();
         var sourceKey = computeSourceKey(REFRESH_SOURCE_PREFIX, source);
 
@@ -155,7 +147,7 @@ public class AuthenticationAbuseProtection {
         return CheckResult.ALLOWED;
     }
 
-    public synchronized Optional<ThrottleTransition> recordRefreshFailure(String source) {
+    public Optional<ThrottleTransition> recordRefreshFailure(String source) {
         var observedAt = clock.instant();
         var sourceKey = computeSourceKey(REFRESH_SOURCE_PREFIX, source);
         var refreshProps = properties.refresh();
@@ -173,23 +165,23 @@ public class AuthenticationAbuseProtection {
         return Optional.of(new ThrottleTransition(Map.of(sourceKey, version)));
     }
 
-    public synchronized void recordRefreshSuccess(String source) {
+    public void recordRefreshSuccess(String source) {
         var sourceKey = computeSourceKey(REFRESH_SOURCE_PREFIX, source);
         trackedKeys.remove(sourceKey);
     }
 
-    public synchronized void rollbackThrottle(ThrottleTransition transition) {
+    public void rollbackThrottle(ThrottleTransition transition) {
         if (transition == null) {
             return;
         }
         for (var entry : transition.expectedVersions().entrySet()) {
             var key = entry.getKey();
             var expectedVersion = entry.getValue();
-            var current = trackedKeys.get(key);
-            if (current != null && current.blockVersion() == expectedVersion) {
-                trackedKeys.put(
-                        key, new BucketState(current.windowStart(), current.count(), null, current.window(), 0L));
-            }
+            trackedKeys.computeIfPresent(
+                    key,
+                    (ignored, current) -> current.blockVersion() == expectedVersion
+                            ? new BucketState(current.windowStart(), current.count(), null, current.window(), 0L)
+                            : current);
         }
     }
 
@@ -215,40 +207,144 @@ public class AuthenticationAbuseProtection {
 
     private Long recordFailure(
             String key, Instant observedAt, int maxFailures, Duration window, Duration blockDuration) {
-        if (isCapacityExhausted(key, observedAt)) {
-            return null;
-        }
-
         var existing = trackedKeys.get(key);
-        if (existing == null || isExpired(existing, observedAt)) {
-            var count = 1;
-            Instant blockedUntil = null;
-            long blockVersion = 0L;
-            Long newlyBlockedVersion = null;
-            if (count >= maxFailures) {
-                blockedUntil = observedAt.plus(blockDuration);
-                blockVersion = versionSequence.incrementAndGet();
-                newlyBlockedVersion = blockVersion;
+        if (existing != null && !isExpired(existing, observedAt)) {
+            var retryAdmission = new AtomicBoolean();
+            var newlyBlockedVersion = new AtomicReference<Long>();
+            trackedKeys.compute(key, (ignored, current) -> {
+                if (current == null || isExpired(current, observedAt)) {
+                    retryAdmission.set(true);
+                    return current;
+                }
+                return applyFailure(current, observedAt, maxFailures, window, blockDuration, newlyBlockedVersion);
+            });
+            if (!retryAdmission.get()) {
+                return newlyBlockedVersion.get();
             }
-            trackedKeys.put(key, new BucketState(observedAt, count, blockedUntil, window, blockVersion));
-            return newlyBlockedVersion;
         }
 
+        admissionLock.lock();
+        try {
+            pruneStale(observedAt);
+            var newlyBlockedVersion = new AtomicReference<Long>();
+            var rejected = new AtomicBoolean();
+            trackedKeys.compute(key, (ignored, current) -> {
+                if (current == null) {
+                    if (trackedKeys.size() >= properties.maxTrackedKeys()) {
+                        rejected.set(true);
+                        return null;
+                    }
+                    return initialFailure(observedAt, maxFailures, window, blockDuration, newlyBlockedVersion);
+                }
+                if (isExpired(current, observedAt)) {
+                    return initialFailure(observedAt, maxFailures, window, blockDuration, newlyBlockedVersion);
+                }
+                return applyFailure(current, observedAt, maxFailures, window, blockDuration, newlyBlockedVersion);
+            });
+            return rejected.get() ? null : newlyBlockedVersion.get();
+        } finally {
+            admissionLock.unlock();
+        }
+    }
+
+    private BucketState initialFailure(
+            Instant observedAt,
+            int maxFailures,
+            Duration window,
+            Duration blockDuration,
+            AtomicReference<Long> newlyBlockedVersion) {
+        Instant blockedUntil = null;
+        long blockVersion = 0L;
+        if (maxFailures <= 1) {
+            blockedUntil = observedAt.plus(blockDuration);
+            blockVersion = versionSequence.incrementAndGet();
+            newlyBlockedVersion.set(blockVersion);
+        }
+        return new BucketState(observedAt, 1, blockedUntil, window, blockVersion);
+    }
+
+    private BucketState applyFailure(
+            BucketState existing,
+            Instant observedAt,
+            int maxFailures,
+            Duration window,
+            Duration blockDuration,
+            AtomicReference<Long> newlyBlockedVersion) {
         if (existing.blockedUntil() != null && observedAt.isBefore(existing.blockedUntil())) {
-            return null;
+            return existing;
         }
 
         var newCount = existing.count() + 1;
         var blockedUntil = existing.blockedUntil();
         var blockVersion = existing.blockVersion();
-        Long newlyBlockedVersion = null;
         if (newCount >= maxFailures && blockedUntil == null) {
             blockedUntil = observedAt.plus(blockDuration);
             blockVersion = versionSequence.incrementAndGet();
-            newlyBlockedVersion = blockVersion;
+            newlyBlockedVersion.set(blockVersion);
         }
-        trackedKeys.put(key, new BucketState(existing.windowStart(), newCount, blockedUntil, window, blockVersion));
-        return newlyBlockedVersion;
+        return new BucketState(existing.windowStart(), newCount, blockedUntil, window, blockVersion);
+    }
+
+    private RegistrationAttemptResult tryConsumeRegistrationAttempt(
+            String key, Instant observedAt, AuthenticationAbuseProtectionProperties.RegistrationProperties properties) {
+        var existing = trackedKeys.get(key);
+        if (existing == null || isExpired(existing, observedAt)) {
+            return null;
+        }
+
+        var retryAdmission = new AtomicBoolean();
+        var status = new AtomicReference<AttemptStatus>();
+        var transition = new AtomicReference<ThrottleTransition>();
+        trackedKeys.compute(key, (ignored, current) -> {
+            if (current == null || isExpired(current, observedAt)) {
+                retryAdmission.set(true);
+                return current;
+            }
+            return applyRegistrationAttempt(key, current, observedAt, properties, status, transition);
+        });
+        return retryAdmission.get() ? null : new RegistrationAttemptResult(status.get(), transition.get());
+    }
+
+    private RegistrationAttemptResult consumeRegistrationAttemptUnderAdmission(
+            String key, Instant observedAt, AuthenticationAbuseProtectionProperties.RegistrationProperties properties) {
+        var status = new AtomicReference<AttemptStatus>();
+        var transition = new AtomicReference<ThrottleTransition>();
+        trackedKeys.compute(key, (ignored, current) -> {
+            if (current == null || isExpired(current, observedAt)) {
+                status.set(AttemptStatus.ALLOWED);
+                return new BucketState(observedAt, 1, null, properties.window(), 0L);
+            }
+            return applyRegistrationAttempt(key, current, observedAt, properties, status, transition);
+        });
+        return new RegistrationAttemptResult(status.get(), transition.get());
+    }
+
+    private BucketState applyRegistrationAttempt(
+            String key,
+            BucketState current,
+            Instant observedAt,
+            AuthenticationAbuseProtectionProperties.RegistrationProperties properties,
+            AtomicReference<AttemptStatus> status,
+            AtomicReference<ThrottleTransition> transition) {
+        if (current.blockedUntil() != null && observedAt.isBefore(current.blockedUntil())) {
+            status.set(AttemptStatus.BLOCKED);
+            return current;
+        }
+        var bucket = new BucketState(
+                current.windowStart(),
+                current.count() + 1,
+                current.blockedUntil(),
+                properties.window(),
+                current.blockVersion());
+        if (bucket.count() > properties.sourceMaxAttempts()) {
+            var blockedUntil = observedAt.plus(properties.blockDuration());
+            var version = versionSequence.incrementAndGet();
+            status.set(AttemptStatus.JUST_BLOCKED);
+            transition.set(new ThrottleTransition(Map.of(key, version)));
+            return new BucketState(bucket.windowStart(), bucket.count(), blockedUntil, bucket.window(), version);
+        }
+        status.set(AttemptStatus.ALLOWED);
+        return bucket;
     }
 
     private boolean isExpired(BucketState state, Instant observedAt) {
@@ -263,8 +359,16 @@ public class AuthenticationAbuseProtection {
             return false;
         }
         if (trackedKeys.size() >= properties.maxTrackedKeys()) {
-            pruneStale(observedAt);
-            return trackedKeys.size() >= properties.maxTrackedKeys() && !trackedKeys.containsKey(key);
+            admissionLock.lock();
+            try {
+                if (trackedKeys.containsKey(key)) {
+                    return false;
+                }
+                pruneStale(observedAt);
+                return trackedKeys.size() >= properties.maxTrackedKeys();
+            } finally {
+                admissionLock.unlock();
+            }
         }
         return false;
     }

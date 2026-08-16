@@ -1,6 +1,6 @@
 # Backend transformation progress report
 
-Report date: 2026-08-15
+Report date: 2026-08-16
 
 Scope: Spring Boot backend, PostgreSQL dump, database migration strategy, modular-monolith design, offline/fake data approach, and implementation readiness. React was not reviewed or changed in this update.
 
@@ -35,12 +35,28 @@ Scope: Spring Boot backend, PostgreSQL dump, database migration strategy, modula
 | PR-016 — HTTP bearer authentication boundary          | **Complete in local commit `9fcbb69`**                         | One servlet-only stateless `/api/v1/**` chain keeps registration public, reuses the accepted decoder/converter, and maps expected bearer failures into the existing trace-correlated RFC 9457 contract                                                   |
 | PR-017 — HTTP local login and explicit token delivery | **Complete in user-owned commit `7f55288`**                  | One public login POST exposes the accepted atomic workflow through explicit response-body or hardened same-site cookie delivery; correction review and all required gates pass |
 | PR-018 — Refresh rotation/reuse and HTTP refresh       | **Complete in accepted commit `d1eea9a`**                       | Owner-locked append-oriented rotation, committed family reuse response, successor access issuance, native/cookie HTTP delivery, and PostgreSQL/concurrency/security proof passed the focused 45-test gate, full 124-test suite, Spotless, and Maven `verify` |
-| PR-019 — Authenticated identity/session security       | **Implementation complete (awaiting review)**                   | Typed authenticated identity, `/me`, owner-scoped session reads, current/all/selected revocation, logout cookie clearing, durable security events, bounded process-local authentication abuse protection; required focused gate passes, full 211-test suite green, Spotless and Maven `verify` clean |
-| Automated backend coverage                         | 211 tests green; PR-019 adds full lifecycle & security events | The suite covers response/cookie delivery, exact session/token binding, credential failures, validation/parsing, rotation invalid states, rollback, reuse, PostgreSQL locking, route scope, abuse throttling, security events, keyset pagination, and statelessness; full execution passes |
+| PR-019 — Authenticated identity/session security       | **Complete in accepted working-tree commit `0c6657e`**                   | Typed authenticated identity, `/me`, owner-scoped session reads, current/all/selected revocation, logout cookie clearing, durable security events, bounded process-local authentication abuse protection; focused gate, full 211-test suite, Spotless and Maven `verify` passed |
+| PR-020 — Canonical reference catalog/manual instruments | **Implementation complete; awaiting user commit decision** | V2 seven-table reference catalog, deterministic seeds, explicit calendar coverage, owner-scoped manual instrument lifecycle, SQL search/cursor pagination, optimistic alias-replacement concurrency, and real-filter ownership/security proof are implemented; the mixed identity/session standards alignment is explicitly user-authorized and covered |
+| Automated backend coverage                         | 266 tests green in the current working tree | The suite covers response/cookie delivery, exact session/token binding, credential failures, validation/parsing, rotation invalid states, rollback, reuse, PostgreSQL locking, abuse-control concurrency, route scope, reference migration/mapping, explicit calendar coverage, owner isolation, bounded cursor search, and statelessness; the current execution has 0 failures, 0 errors, and 0 skips |
 
-Overall status: **PR-019 implementation is complete in the working tree and ready for user review. 211 tests pass across unit, Testcontainers PostgreSQL, and MockMvc integration test suites. Spotless and Maven verify pass cleanly.**
+Overall status: **PR-020 is implementation- and review-ready for the user's commit decision; no unresolved `MUST FIX` or `SHOULD FIX` finding remains.**
 
-## Active implementation specification — PR-019
+## Active implementation specification — PR-020
+
+- Date: 2026-08-16.
+- Starting commit: `0c6657e`, the accepted PR-019 working-tree commit.
+- Implemented database capability: Flyway V2 creates exactly `reference.country`, `currency`, `market`, `market_currency`, `instrument`, `instrument_alias`, and `market_calendar`, with deterministic TR/GB/US, TRY/USD/EUR/GBP, XIST, MANUAL, and explicit market-currency seeds. V1 remains unchanged and no rates, prices, observations, providers, financial facts, PostgreSQL enums, extensions, functions, or triggers were introduced.
+- Implemented application capability: canonical reference value objects/enums, minimal Hibernate mappings, authenticated offline country/currency/market reads, explicit calendar `NONE`/`PARTIAL`/`COMPLETE` responses with missing dates and local times, owner-derived manual create/detail/update, atomic alias replacement, optimistic version conflict handling, owner/global SQL visibility, alias-prefix search, stable bounded cursor pages, and the exact named reference error contract.
+- Security/no-network evidence: all new controllers use the existing single bearer chain; cross-owner/missing targets return safe 404s, no new route is public, no servlet session is created, and tests use Testcontainers PostgreSQL plus in-process fixtures without provider/network collaborators. Manual facts are labeled `USER_ENTERED`/`REFERENCE_SEED` rather than live, official, or synthetic data.
+- Standards-alignment follow-up: DTO `validate()` barriers own dependency-free cross-field invariants; response records own read-model factories; repository queries use descriptive explicit JPQL without `@Param`; owned-child bulk deletion flushes/clears before a managed-reference reinsert; and bounded SQL row grouping uses standard collectors.
+- Error-boundary follow-up: known unique constraints are translated through the shared platform utility, while unknown database failures are logged server-side and return the generic safe 500 response. The PR-019 pipe cursor remains a documented compatibility exception; new PR-020 cursors retain the exact canonical JSON contract.
+- Additional standards alignment: MDC trace correlation is scoped and cleaned by `RequestTraceFilter`; cache headers are centralized; DTO validation no longer duplicates annotation constraints; FK-only owner assignment uses `EntityManager.getReference`; enum fields use textual `EnumType.STRING`; and response mapping is co-located on response records.
+- Required proof: the expanded reference/security/concurrency gate covers 77 tests with no failures, errors, or skips; the full current-working-tree suite and Maven `verify` pass 266 tests, with Spotless also passing. The supervising user explicitly authorized retention of the mixed identity/session/abuse-protection standards alignment.
+- Review status: review fixes added the omitted value-object, enum-wire, database-constraint, validation, inactive-reference, zero-query range, exact-boundary, malformed-enum, alias-cap/sorting/immutability, abuse-capacity, and optimistic-concurrency proof. Alias-only replacement now uses an immediate version compare-and-swap, optional control flow no longer uses `orElse(null)`, and over-specific standards text was generalized. No commit, branch, history, or remote operation was performed; all changes remain unstaged.
+- Non-goals: global reference administration, calendar/import workflows, observations/providers/live rates/prices, ledger/financial behavior, durable jobs, persistent signing keys, further authentication/authorization, cross-site deployment infrastructure, and frontend work remain deferred.
+- Next planning artifact: `PR-021-durable-platform-job-execution.md` is drafted around the existing V1 job table, V2.1 lifecycle hardening, idempotent submission, `SKIP LOCKED` claim/fencing, heartbeat/retry/recovery, bounded execution, and safe observability. It is not active while `CURRENT.md` remains on PR-020.
+
+## Latest implementation checkpoint — PR-019
 
 - Date: 2026-08-15.
 - Starting commit: `d1eea9a`, the accepted PR-018 commit.
@@ -341,7 +357,7 @@ The 2026-08-07 document harmonization establishes these implementation rules:
 | --------: | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
 |        R0 | Preserve evidence and replace backend skeleton               | Not started                                                                                                      |
 |        R1 | Foundation, identity, auth, sessions and jobs                | In progress — PR-018 refresh rotation/reuse/HTTP is accepted in `d1eea9a`; PR-019 local identity/session security is active; durable jobs and later persistent-key/OIDC/recovery work remain deferred |
-|        R2 | Canonical references and deterministic seeds                 | Not started                                                                                                      |
+|        R2 | Canonical references and deterministic seeds                 | In progress - PR-020 implementation complete in the working tree; awaiting user review and acceptance             |
 |        R3 | Accounts/ledger/funding/balances — FT-31                     | Not started                                                                                                      |
 |        R4 | Investing parity, funded trades and imports                  | Not started                                                                                                      |
 |        R5 | Observation platform and synthetic universe                  | Not started                                                                                                      |

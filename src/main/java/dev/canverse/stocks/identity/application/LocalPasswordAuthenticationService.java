@@ -35,11 +35,13 @@ public class LocalPasswordAuthenticationService {
         var hashForMatch = storedHash == null ? dummyEncodedHash : storedHash;
         var passwordMatches = passwordEncoder.matches(rawPassword, hashForMatch);
 
-        if (localIdentity.isEmpty() || storedHash == null || !passwordMatches) {
+        if (storedHash == null || !passwordMatches) {
             throw new AppException(IdentityErrorCode.INVALID_CREDENTIALS);
         }
 
-        var userAccount = localIdentity.get().getUserAccount();
+        var userAccount = localIdentity
+                .orElseThrow(() -> new AppException(IdentityErrorCode.INVALID_CREDENTIALS))
+                .getUserAccount();
         if (userAccount.getDisabledAt() != null) {
             throw new AppException(IdentityErrorCode.INVALID_CREDENTIALS);
         }

@@ -6,7 +6,6 @@ import dev.canverse.stocks.identity.infrastructure.DeviceSessionRepository;
 import dev.canverse.stocks.identity.infrastructure.SecureRefreshTokenGenerator;
 import dev.canverse.stocks.platform.error.AppException;
 import java.time.Clock;
-import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -29,14 +28,8 @@ public class RefreshSessionAuthenticationService {
         var refreshTokenHash = refreshTokenGenerator.hash(rawRefreshToken);
         return deviceSessionRepository
                 .findByRefreshTokenHash(refreshTokenHash)
-                .filter(session -> isEligible(session, observedAt))
+                .filter(session -> session.isActiveAndUserEnabled(observedAt))
                 .map(DeviceSession::getId)
                 .orElseThrow(() -> new AppException(IdentityErrorCode.INVALID_CREDENTIALS));
-    }
-
-    private boolean isEligible(DeviceSession deviceSession, Instant observedAt) {
-        return deviceSession.getRevokedAt() == null
-                && deviceSession.getExpiresAt().isAfter(observedAt)
-                && deviceSession.getUserAccount().getDisabledAt() == null;
     }
 }

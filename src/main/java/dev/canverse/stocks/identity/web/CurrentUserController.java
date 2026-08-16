@@ -3,8 +3,8 @@ package dev.canverse.stocks.identity.web;
 import dev.canverse.stocks.identity.application.AuthenticatedIdentityResolver;
 import dev.canverse.stocks.identity.application.CurrentUserQueryService;
 import dev.canverse.stocks.identity.output.CurrentUserResponse;
+import dev.canverse.stocks.platform.web.CacheHeaders;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -25,9 +25,6 @@ public class CurrentUserController {
         var identity = identityResolver.resolve(authentication);
         var response = currentUserQueryService.getCurrentUser(identity.userAccountId());
 
-        var headers = new HttpHeaders();
-        headers.setCacheControl("no-store");
-        headers.setPragma("no-cache");
-        return new ResponseEntity<>(response, headers, HttpStatus.OK);
+        return new ResponseEntity<>(response, CacheHeaders.noStore(), HttpStatus.OK);
     }
 }

@@ -1,7 +1,6 @@
 package dev.canverse.stocks.identity.application;
 
 import dev.canverse.stocks.identity.configuration.AccessTokenProperties;
-import dev.canverse.stocks.identity.domain.DeviceSession;
 import dev.canverse.stocks.identity.error.IdentityErrorCode;
 import dev.canverse.stocks.identity.infrastructure.DeviceSessionRepository;
 import dev.canverse.stocks.platform.error.AppException;
@@ -39,7 +38,7 @@ public class AccessTokenIssuanceService {
         var issuedAt = observedAt.truncatedTo(ChronoUnit.SECONDS);
         var deviceSession = deviceSessionRepository
                 .findById(sessionId)
-                .filter(session -> isEligible(session, observedAt))
+                .filter(session -> session.isActiveAndUserEnabled(observedAt))
                 .orElseThrow(() -> new AppException(IdentityErrorCode.INVALID_CREDENTIALS));
 
         var configuredExpiresAt = observedAt.plus(accessTokenProperties.lifetime());
@@ -67,12 +66,6 @@ public class AccessTokenIssuanceService {
         var encodedToken = jwtEncoder.encode(JwtEncoderParameters.from(headers, claims));
 
         return new IssuedAccessToken(encodedToken.getTokenValue(), expiresAt);
-    }
-
-    private boolean isEligible(DeviceSession deviceSession, Instant observedAt) {
-        return deviceSession.getRevokedAt() == null
-                && deviceSession.getExpiresAt().isAfter(observedAt)
-                && deviceSession.getUserAccount().getDisabledAt() == null;
     }
 
     private Instant earlier(Instant first, Instant second) {

@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -188,8 +189,7 @@ class DeviceSessionQueryServiceTest {
         assertThat(statementsAfterDetail - statementsBeforeDetail).isEqualTo(1L);
     }
 
-    private static final java.util.concurrent.atomic.AtomicLong executedStatements =
-            new java.util.concurrent.atomic.AtomicLong();
+    private static final AtomicLong executedStatements = new AtomicLong();
 
     @TestConfiguration(proxyBeanMethods = false)
     static class TestOverrides {

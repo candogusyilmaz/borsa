@@ -44,6 +44,6 @@ public class RefreshSessionIssuanceService {
 
         deviceSessionRepository.saveAndFlush(deviceSession);
 
-        return new IssuedRefreshSession(sessionId, generatedToken.rawToken(), expiresAt);
+        return new IssuedRefreshSession(sessionId, deviceSession.getFamilyId(), generatedToken.rawToken(), expiresAt);
     }
 }

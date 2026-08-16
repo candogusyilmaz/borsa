@@ -148,10 +148,10 @@ class GlobalExceptionHandlerIntegrationTest {
     }
 
     @Test
-    void persistenceConflictDoesNotExposeDatabaseDetails() throws Exception {
+    void unexpectedPersistenceExceptionUsesGenericServerError() throws Exception {
         var response = mockMvc.perform(get("/test/errors/conflict"))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.code").value("STATE_CONFLICT"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.code").value("INTERNAL_ERROR"))
                 .andExpect(jsonPath("$.params").doesNotExist())
                 .andReturn()
                 .getResponse()

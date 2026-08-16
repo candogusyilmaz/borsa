@@ -73,7 +73,7 @@ class LocalAccessTokenAuthenticationConverterControlFlowTest {
         var userAccountId = UUID.fromString(USER_ID);
         var sessionId = UUID.fromString(SESSION_ID);
         when(clock.instant()).thenReturn(observedAt);
-        when(repository.findByIdAndUserAccount_Id(sessionId, userAccountId)).thenReturn(Optional.empty());
+        when(repository.findOwnedById(sessionId, userAccountId)).thenReturn(Optional.empty());
         var converter = new LocalAccessTokenAuthenticationConverter(repository, clock);
 
         var thrown = catchThrowable(() -> converter.convert(jwt(claims("sub", USER_ID, "sid", SESSION_ID))));
@@ -81,7 +81,7 @@ class LocalAccessTokenAuthenticationConverterControlFlowTest {
         assertSafeBearerFailure(thrown, "unknown exact pair");
         var ordered = inOrder(clock, repository);
         ordered.verify(clock).instant();
-        ordered.verify(repository).findByIdAndUserAccount_Id(sessionId, userAccountId);
+        ordered.verify(repository).findOwnedById(sessionId, userAccountId);
         verifyNoMoreInteractions(clock, repository);
     }
 

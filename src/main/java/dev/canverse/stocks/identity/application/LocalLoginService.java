@@ -30,7 +30,7 @@ public class LocalLoginService {
                 SecurityEventRecorder.LOCAL_LOGIN_SUCCEEDED,
                 Map.of(
                         "sessionId", refreshSession.sessionId().toString(),
-                        "familyId", refreshSession.sessionId().toString()));
+                        "familyId", refreshSession.familyId().toString()));
 
         return new LocalLoginResult(
                 refreshSession.sessionId(),

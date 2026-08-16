@@ -1,11 +1,15 @@
 package dev.canverse.stocks.identity.application;
 
+import dev.canverse.stocks.identity.domain.DeviceSession;
+import dev.canverse.stocks.identity.domain.UserAccount;
 import dev.canverse.stocks.identity.infrastructure.DeviceSessionRepository;
+import dev.canverse.stocks.identity.infrastructure.RefreshSessionOwnerProjection;
 import dev.canverse.stocks.identity.infrastructure.SecureRefreshTokenGenerator;
 import dev.canverse.stocks.identity.infrastructure.UserAccountRepository;
 import dev.canverse.stocks.platform.application.SecurityEventRecorder;
 import dev.canverse.stocks.platform.id.IdGenerator;
 import java.time.Clock;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -30,22 +34,25 @@ public class RefreshSessionRotationService {
         Objects.requireNonNull(rawRefreshToken, "rawRefreshToken");
 
         var refreshTokenHash = refreshTokenGenerator.hash(rawRefreshToken);
-        var ownerProjection = deviceSessionRepository.findRefreshSessionOwnerByRefreshTokenHash(refreshTokenHash);
-        if (ownerProjection.isEmpty()) {
-            return Optional.empty();
-        }
+        return deviceSessionRepository
+                .findRefreshSessionOwnerByRefreshTokenHash(refreshTokenHash)
+                .flatMap(this::rotateKnownSession);
+    }
 
-        var owner =
-                userAccountRepository.findByIdForUpdate(ownerProjection.get().userAccountId());
-        var deviceSession =
-                deviceSessionRepository.findById(ownerProjection.get().sessionId());
+    private Optional<LocalRefreshResult> rotateKnownSession(RefreshSessionOwnerProjection ownerProjection) {
+        var owner = userAccountRepository.findByIdForUpdate(ownerProjection.userAccountId());
+        var session = deviceSessionRepository.findById(ownerProjection.sessionId());
         var observedAt = clock.instant();
-        if (owner.isEmpty() || deviceSession.isEmpty()) {
-            return Optional.empty();
-        }
+        return owner.flatMap(user ->
+                session.flatMap(deviceSession -> rotateLocked(ownerProjection, user, deviceSession, observedAt)));
+    }
 
-        var session = deviceSession.get();
-        if (owner.get().getDisabledAt() != null || session.getUserAccount().getDisabledAt() != null) {
+    private Optional<LocalRefreshResult> rotateLocked(
+            RefreshSessionOwnerProjection ownerProjection,
+            UserAccount owner,
+            DeviceSession session,
+            Instant observedAt) {
+        if (owner.getDisabledAt() != null || session.getUserAccount().getDisabledAt() != null) {
             return Optional.empty();
         }
         if (session.getReplacedBySessionId() != null) {
@@ -55,13 +62,12 @@ public class RefreshSessionRotationService {
                         activeSession.revokeForReuse(observedAt);
                         deviceSessionRepository.saveAndFlush(activeSession);
                         securityEventRecorder.recordAt(
-                                ownerProjection.get().userAccountId(),
+                                ownerProjection.userAccountId(),
                                 SecurityEventRecorder.REFRESH_REUSE_DETECTED,
                                 Map.of(
                                         "familyId", session.getFamilyId().toString(),
                                         "sessionId", session.getId().toString()),
                                 observedAt);
-                        deviceSessionRepository.flush();
                     });
             return Optional.empty();
         }

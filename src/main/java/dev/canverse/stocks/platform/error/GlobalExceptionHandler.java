@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.ConversionNotSupportedException;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.context.MessageSourceResolvable;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -99,9 +98,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return validationResponse(errors, HttpHeaders.EMPTY, request);
     }
 
-    @ExceptionHandler({DataIntegrityViolationException.class, ObjectOptimisticLockingFailureException.class})
-    public ResponseEntity<Object> handlePersistenceConflict(Exception exception, WebRequest request) {
-        log.warn("Persistence conflict traceId={}", traceId(request), exception);
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<Object> handleOptimisticLockConflict(
+            ObjectOptimisticLockingFailureException exception, WebRequest request) {
+        log.warn("Optimistic locking conflict traceId={}", traceId(request), exception);
         return problemResponse(CommonErrorCode.STATE_CONFLICT, Map.of(), HttpHeaders.EMPTY, request);
     }
 

@@ -16,14 +16,32 @@ public interface DeviceSessionRepository extends JpaRepository<DeviceSession, UU
 
     Optional<DeviceSession> findByRefreshTokenHash(String refreshTokenHash);
 
-    Optional<DeviceSession> findByIdAndUserAccount_Id(UUID sessionId, UUID userAccountId);
+    @Query("select s from DeviceSession s where s.id = :sessionId and s.userAccount.id = :userAccountId")
+    Optional<DeviceSession> findOwnedById(UUID sessionId, UUID userAccountId);
 
     Optional<DeviceSession> findByFamilyIdAndRevokedAtIsNull(UUID familyId);
 
-    Optional<DeviceSession> findByUserAccount_IdAndFamilyIdAndReplacedBySessionIdIsNull(
-            UUID userAccountId, UUID familyId);
+    @Query("""
+            select s from DeviceSession s
+            where s.userAccount.id = :userAccountId
+              and s.familyId = :familyId
+              and s.replacedBySessionId is null
+            """)
+    Optional<DeviceSession> findTerminalByUserAccountIdAndFamilyId(UUID userAccountId, UUID familyId);
 
-    List<DeviceSession> findByUserAccount_IdAndReplacedBySessionIdIsNullOrderByFamilyIdAsc(UUID userAccountId);
+    @Query("""
+            select s from DeviceSession s
+            where s.userAccount.id = :userAccountId
+              and s.replacedBySessionId is null
+            order by s.familyId asc
+            """)
+    List<DeviceSession> findTerminalSessionsByUserAccountId(UUID userAccountId);
 
-    boolean existsByUserAccount_IdAndFamilyId(UUID userAccountId, UUID familyId);
+    @Query("""
+            select case when count(s) > 0 then true else false end
+            from DeviceSession s
+            where s.userAccount.id = :userAccountId
+              and s.familyId = :familyId
+            """)
+    boolean existsByUserAccountIdAndFamilyId(UUID userAccountId, UUID familyId);
 }

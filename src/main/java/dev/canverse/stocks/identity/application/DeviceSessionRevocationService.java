@@ -36,13 +36,13 @@ public class DeviceSessionRevocationService {
         }
 
         var currentSession = deviceSessionRepository
-                .findByIdAndUserAccount_Id(currentSessionId, userAccountId)
+                .findOwnedById(currentSessionId, userAccountId)
                 .orElseThrow(() -> new AppException(IdentityErrorCode.INVALID_CREDENTIALS));
 
         var familyId = currentSession.getFamilyId();
         var observedAt = clock.instant();
         var terminalSession = deviceSessionRepository
-                .findByUserAccount_IdAndFamilyIdAndReplacedBySessionIdIsNull(userAccountId, familyId)
+                .findTerminalByUserAccountIdAndFamilyId(userAccountId, familyId)
                 .orElseThrow(() -> new IllegalStateException("Missing terminal generation for family " + familyId));
 
         if (terminalSession.getRevokedAt() == null) {
@@ -53,7 +53,6 @@ public class DeviceSessionRevocationService {
                     SecurityEventRecorder.CURRENT_SESSION_LOGGED_OUT,
                     Map.of("familyId", familyId.toString()),
                     observedAt);
-            deviceSessionRepository.flush();
         }
     }
 
@@ -69,9 +68,7 @@ public class DeviceSessionRevocationService {
         }
 
         var observedAt = clock.instant();
-        var terminalSessions =
-                deviceSessionRepository.findByUserAccount_IdAndReplacedBySessionIdIsNullOrderByFamilyIdAsc(
-                        userAccountId);
+        var terminalSessions = deviceSessionRepository.findTerminalSessionsByUserAccountId(userAccountId);
 
         var revokedCount = 0;
         for (var session : terminalSessions) {
@@ -89,7 +86,6 @@ public class DeviceSessionRevocationService {
                     SecurityEventRecorder.ALL_SESSIONS_LOGGED_OUT,
                     Map.of("revokedFamilyCount", revokedCount),
                     observedAt);
-            deviceSessionRepository.flush();
         }
     }
 
@@ -107,23 +103,20 @@ public class DeviceSessionRevocationService {
         }
 
         var currentSession = deviceSessionRepository
-                .findByIdAndUserAccount_Id(currentSessionId, userAccountId)
+                .findOwnedById(currentSessionId, userAccountId)
                 .orElseThrow(() -> new AppException(IdentityErrorCode.INVALID_CREDENTIALS));
 
         var isCurrentFamily = targetFamilyId.equals(currentSession.getFamilyId());
         var observedAt = clock.instant();
 
-        var terminalSessionOpt = deviceSessionRepository.findByUserAccount_IdAndFamilyIdAndReplacedBySessionIdIsNull(
-                userAccountId, targetFamilyId);
-
-        if (terminalSessionOpt.isEmpty()) {
-            if (!deviceSessionRepository.existsByUserAccount_IdAndFamilyId(userAccountId, targetFamilyId)) {
-                throw new AppException(IdentityErrorCode.SESSION_NOT_FOUND);
-            }
-            throw new IllegalStateException("Missing terminal generation for family " + targetFamilyId);
-        }
-
-        var terminalSession = terminalSessionOpt.get();
+        var terminalSession = deviceSessionRepository
+                .findTerminalByUserAccountIdAndFamilyId(userAccountId, targetFamilyId)
+                .orElseThrow(() -> {
+                    if (!deviceSessionRepository.existsByUserAccountIdAndFamilyId(userAccountId, targetFamilyId)) {
+                        return new AppException(IdentityErrorCode.SESSION_NOT_FOUND);
+                    }
+                    return new IllegalStateException("Missing terminal generation for family " + targetFamilyId);
+                });
         if (terminalSession.getRevokedAt() == null) {
             terminalSession.revokeTerminal(DeviceSession.USER_REVOKED_REVOKE_REASON, observedAt);
             deviceSessionRepository.saveAndFlush(terminalSession);
@@ -132,7 +125,6 @@ public class DeviceSessionRevocationService {
                     SecurityEventRecorder.DEVICE_SESSION_REVOKED,
                     Map.of("familyId", targetFamilyId.toString()),
                     observedAt);
-            deviceSessionRepository.flush();
         }
 
         return isCurrentFamily;

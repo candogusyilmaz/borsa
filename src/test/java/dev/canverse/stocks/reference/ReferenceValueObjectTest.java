@@ -1,0 +1,212 @@
+package dev.canverse.stocks.reference;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+
+import dev.canverse.stocks.identity.domain.UserAccount;
+import dev.canverse.stocks.platform.error.AppException;
+import dev.canverse.stocks.reference.application.InstrumentSearchCursor;
+import dev.canverse.stocks.reference.application.InstrumentSearchCursorCodec;
+import dev.canverse.stocks.reference.domain.AliasType;
+import dev.canverse.stocks.reference.domain.CalendarCoverageStatus;
+import dev.canverse.stocks.reference.domain.CountryCode;
+import dev.canverse.stocks.reference.domain.CurrencyCode;
+import dev.canverse.stocks.reference.domain.Instrument;
+import dev.canverse.stocks.reference.domain.InstrumentSymbol;
+import dev.canverse.stocks.reference.domain.InstrumentType;
+import dev.canverse.stocks.reference.domain.Market;
+import dev.canverse.stocks.reference.domain.MarketCode;
+import dev.canverse.stocks.reference.domain.MarketSessionStatus;
+import dev.canverse.stocks.reference.domain.ValuationMethod;
+import dev.canverse.stocks.reference.error.ReferenceErrorCode;
+import java.nio.charset.StandardCharsets;
+import java.time.DateTimeException;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.Base64;
+import java.util.Locale;
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
+import tools.jackson.databind.json.JsonMapper;
+
+class ReferenceValueObjectTest {
+
+    private final InstrumentSearchCursorCodec cursorCodec = new InstrumentSearchCursorCodec();
+
+    @Test
+    void stableCodesRequireAlreadyCanonicalUppercaseForms() {
+        assertThat(CountryCode.of("TR").value()).isEqualTo("TR");
+        assertThat(CurrencyCode.of("TRY").code()).isEqualTo("TRY");
+        assertThat(MarketCode.of("XIST").code()).isEqualTo("XIST");
+
+        assertThatThrownBy(() -> CountryCode.of(" tr ")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> CountryCode.of("TR ")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> CountryCode.of("tr")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> CountryCode.of(" ")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> CurrencyCode.of("usd")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> CurrencyCode.of("USD ")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> CurrencyCode.of("US")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> MarketCode.of("manual ")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> MarketCode.of("manual")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> MarketCode.of("M".repeat(33))).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> CountryCode.of("TUR")).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void instrumentSymbolTrimsDisplayAndUsesLocaleRootNormalization() {
+        var previousLocale = Locale.getDefault();
+        try {
+            Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+            var symbol = InstrumentSymbol.of(" i.test ");
+
+            assertThat(symbol.value()).isEqualTo("i.test");
+            assertThat(symbol.normalized()).isEqualTo("I.TEST");
+            assertThat(InstrumentSymbol.of("S".repeat(32)).value()).hasSize(32);
+            assertThatThrownBy(() -> InstrumentSymbol.of("S".repeat(33))).isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> InstrumentSymbol.of("bad symbol")).isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> InstrumentSymbol.of(" ")).isInstanceOf(IllegalArgumentException.class);
+        } finally {
+            Locale.setDefault(previousLocale);
+        }
+    }
+
+    @Test
+    void applicationEnumsSerializeAndParseOnlyExactAcceptedCodes() throws Exception {
+        var mapper = JsonMapper.builder().build();
+
+        assertEnumJson(mapper, AliasType.USER, AliasType.class, "USER");
+        assertEnumJson(mapper, CalendarCoverageStatus.PARTIAL, CalendarCoverageStatus.class, "PARTIAL");
+        assertEnumJson(mapper, InstrumentType.CASH_EQUIVALENT, InstrumentType.class, "CASH_EQUIVALENT");
+        assertEnumJson(mapper, MarketSessionStatus.OPEN, MarketSessionStatus.class, "OPEN");
+        assertEnumJson(mapper, ValuationMethod.MANUAL_VALUE, ValuationMethod.class, "MANUAL_VALUE");
+
+        assertThatThrownBy(() -> mapper.readValue("\"equity\"", InstrumentType.class))
+                .isInstanceOf(Exception.class);
+        assertThatThrownBy(() -> mapper.readValue("\"UNKNOWN\"", AliasType.class))
+                .isInstanceOf(Exception.class);
+    }
+
+    @Test
+    void instrumentConstructionAndUpdatePreserveImmutableIdentity() {
+        var id = UUID.randomUUID();
+        var owner = mock(UserAccount.class);
+        var market = mock(Market.class);
+        var createdAt = Instant.parse("2026-08-16T09:00:00Z");
+        var instrument = Instrument.manual(
+                id,
+                owner,
+                market,
+                InstrumentSymbol.of("owner-fund"),
+                "Owner fund",
+                InstrumentType.FUND,
+                CurrencyCode.of("GBP"),
+                ValuationMethod.MANUAL_VALUE,
+                createdAt);
+
+        assertThat(instrument.getId()).isEqualTo(id);
+        assertThat(instrument.getOwnerUserAccount()).isSameAs(owner);
+        assertThat(instrument.getMarket()).isSameAs(market);
+        assertThat(instrument.getSymbol()).isEqualTo("owner-fund");
+        assertThat(instrument.getSymbolNormalized()).isEqualTo("OWNER-FUND");
+        assertThat(instrument.getInstrumentType()).isEqualTo(InstrumentType.FUND);
+        assertThat(instrument.getQuotationCurrencyCode()).isEqualTo("GBP");
+        assertThat(instrument.getSourceKind()).isEqualTo("USER_ENTERED");
+        assertThat(instrument.isActive()).isTrue();
+        assertThat(instrument.getVersion()).isZero();
+        assertThat(instrument.getCreatedAt()).isEqualTo(createdAt);
+
+        instrument.updateMetadata("Renamed fund", ValuationMethod.NOT_VALUED, false, createdAt.plusSeconds(1));
+
+        assertThat(instrument.getName()).isEqualTo("Renamed fund");
+        assertThat(instrument.getNameNormalized()).isEqualTo("RENAMED FUND");
+        assertThat(instrument.getValuationMethod()).isEqualTo(ValuationMethod.NOT_VALUED);
+        assertThat(instrument.isActive()).isFalse();
+        assertThat(instrument.getId()).isEqualTo(id);
+        assertThat(instrument.getOwnerUserAccount()).isSameAs(owner);
+        assertThat(instrument.getMarket()).isSameAs(market);
+        assertThat(instrument.getSymbol()).isEqualTo("owner-fund");
+        assertThat(instrument.getInstrumentType()).isEqualTo(InstrumentType.FUND);
+        assertThat(instrument.getQuotationCurrencyCode()).isEqualTo("GBP");
+        assertThat(instrument.getSourceKind()).isEqualTo("USER_ENTERED");
+        assertThat(instrument.getCreatedAt()).isEqualTo(createdAt);
+
+        assertThatThrownBy(() -> Instrument.manual(
+                        id,
+                        null,
+                        market,
+                        InstrumentSymbol.of("fund"),
+                        "Fund",
+                        InstrumentType.FUND,
+                        CurrencyCode.of("GBP"),
+                        ValuationMethod.MANUAL_VALUE,
+                        createdAt))
+                .isInstanceOf(NullPointerException.class);
+    }
+
+    @Test
+    void timezoneValidationIsExplicitAndIndependentOfTheMachineDefault() {
+        assertThat(ZoneId.of("UTC")).isEqualTo(ZoneId.of("UTC"));
+        assertThat(ZoneId.of("Europe/Istanbul")).isEqualTo(ZoneId.of("Europe/Istanbul"));
+        assertThatThrownBy(() -> ZoneId.of("not/a-zone")).isInstanceOf(DateTimeException.class);
+    }
+
+    @Test
+    void cursorRoundTripIsCanonicalAndFilterBound() {
+        var digest = cursorCodec.filterDigest(
+                "MY", UUID.fromString("10000000-0000-0000-0000-000000000002"), InstrumentType.FUND, false);
+        var cursor = new InstrumentSearchCursor(
+                digest, "MY-FUND", "MANUAL", UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"));
+
+        var encoded = cursorCodec.encode(cursor);
+
+        assertThat(cursorCodec.decode(encoded, digest)).isEqualTo(cursor);
+        assertThatThrownBy(() -> cursorCodec.decode(encoded, cursorCodec.filterDigest("OTHER", null, null, false)))
+                .isInstanceOf(AppException.class)
+                .satisfies(exception -> assertThat(((AppException) exception).getErrorCode())
+                        .isEqualTo(ReferenceErrorCode.INVALID_INSTRUMENT_CURSOR));
+    }
+
+    @Test
+    void cursorRejectsNonCanonicalPayloadsAndTrailingData() {
+        var digest = cursorCodec.filterDigest(null, null, null, false);
+        var payload =
+                "{\"v\":1,\"f\":\"%s\",\"s\":\"ABC\",\"m\":\"MANUAL\",\"i\":\"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa\"}"
+                        .formatted(digest);
+        var canonical =
+                Base64.getUrlEncoder().withoutPadding().encodeToString(payload.getBytes(StandardCharsets.UTF_8));
+        var padded = canonical + "=";
+        var trailing = Base64.getUrlEncoder()
+                .withoutPadding()
+                .encodeToString((payload + " ").getBytes(StandardCharsets.UTF_8));
+        var unknownVersion = encodedPayload(payload.replace("\"v\":1", "\"v\":2"));
+        var wrongFields = encodedPayload(payload.replace(",\"m\":\"MANUAL\"", ""));
+        var extraField = encodedPayload(payload.substring(0, payload.length() - 1) + ",\"x\":1}");
+        var invalidUuid = encodedPayload(payload.replace("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", "not-a-uuid"));
+
+        assertThatThrownBy(() -> cursorCodec.decode(padded, digest)).isInstanceOf(AppException.class);
+        assertThatThrownBy(() -> cursorCodec.decode(trailing, digest)).isInstanceOf(AppException.class);
+        assertInvalidCursor(unknownVersion, digest);
+        assertInvalidCursor(wrongFields, digest);
+        assertInvalidCursor(extraField, digest);
+        assertInvalidCursor(invalidUuid, digest);
+        assertThatThrownBy(() -> cursorCodec.decode("not-a-cursor", digest)).isInstanceOf(AppException.class);
+    }
+
+    private static <E extends Enum<E>> void assertEnumJson(JsonMapper mapper, E value, Class<E> enumType, String code)
+            throws Exception {
+        assertThat(mapper.writeValueAsString(value)).isEqualTo("\"" + code + "\"");
+        assertThat(mapper.readValue("\"" + code + "\"", enumType)).isEqualTo(value);
+    }
+
+    private void assertInvalidCursor(String encoded, String digest) {
+        assertThatThrownBy(() -> cursorCodec.decode(encoded, digest))
+                .isInstanceOf(AppException.class)
+                .satisfies(exception -> assertThat(((AppException) exception).getErrorCode())
+                        .isEqualTo(ReferenceErrorCode.INVALID_INSTRUMENT_CURSOR));
+    }
+
+    private static String encodedPayload(String payload) {
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(payload.getBytes(StandardCharsets.UTF_8));
+    }
+}

@@ -1,6 +1,6 @@
 # PR-020 — Canonical reference catalogue and owner-scoped manual instruments
 
-Status: **DRAFT — DO NOT IMPLEMENT UNTIL PR-019 IS ACCEPTED AND `CURRENT.md` POINTS HERE**
+Status: **IMPLEMENTATION COMPLETE — awaiting user commit decision**
 
 ## Goal
 
@@ -29,14 +29,14 @@ This PR intentionally moves feature development beyond authentication. It uses o
 
 ## Starting state
 
-This is deliberately drafted while PR-019 is active. Do not fill an accepted starting commit or begin implementation yet.
+This specification is activated after PR-019 acceptance. The accepted PR-019 starting commit is recorded in the Completion Record below.
 
 Activation prerequisites:
 
 1. PR-019 implementation and review are complete with no unresolved `MUST FIX` findings.
 2. The user has accepted PR-019 in a commit and that exact commit is recorded below and in `STATE.md`.
 3. The typed authenticated identity boundary is available for protected controllers to obtain the current `userAccountId` without accepting one from the client.
-4. `CURRENT.md` is explicitly moved from PR-019 to this specification by a later planning/transition action.
+4. `CURRENT.md` has been explicitly moved from PR-019 to this specification by the supervising transition action.
 5. The implementation agent re-inspects the accepted PR-019 production names and updates only stale class-name references in this draft before changing production code.
 
 Expected accepted starting behavior:
@@ -47,9 +47,15 @@ Expected accepted starting behavior:
 - no role, permission, administrator, household, global-reference mutation, reference entity, provider, observation, price, or FX-rate behavior exists;
 - core tests require no network.
 
-Accepted starting commit: **TBD after PR-019 acceptance**.
+Accepted starting commit: **`0c6657e`**, the accepted PR-019 working-tree commit.
 
 ## Scope
+
+### User-authorized cross-cutting standards alignment
+
+On 2026-08-16 the supervising user explicitly authorized retaining the standards-alignment work already mixed into this review unit. That authority includes behavior-preserving identity/session refactors, per-key atomic abuse-protection concurrency, correct refresh-family event provenance, response factories, repository-query cleanup, shared cache/error helpers, and MDC trace correlation. These changes are part of PR-020's reviewed diff and must not be removed merely because the reference capability is the primary product slice.
+
+This exception does not authorize a new authentication endpoint, credential flow, throttle limit, session wire contract, schema change, role/permission model, or public route. Existing PR-019 behavior remains contract-compatible and is covered by the full identity/security suite. The reference capability alone still has to satisfy the fixed sizing floor so cross-cutting cleanup cannot be used as padding.
 
 ### 1. Add the coherent V2 reference schema
 
@@ -541,8 +547,7 @@ Every endpoint:
 
 ## Explicit non-goals
 
-- No change to PR-019 while it is active and no change to `CURRENT.md` during this drafting invocation.
-- No durable job claim/retry worker, security-event expansion, auth throttling change, logout/session change, key management, OIDC, password recovery, role, permission, authority, or admin framework.
+- No new authentication/session product capability beyond the explicitly authorized behavior-preserving standards alignment above; no durable job worker, key management, OIDC, password recovery, role, permission, authority, or admin framework.
 - No global/shared market or instrument mutation API; no country/currency/market mutation endpoint.
 - No official market-hours/holiday seed, inferred weekday calendar, calendar import, or calendar mutation API.
 - No price, FX, rate, CPI, corporate-action, fundamental, latest snapshot, observation, dataset, source-selection, provider, HTTP adapter, cache, or licence workflow.
@@ -789,8 +794,8 @@ Cover at least:
 
 ## Acceptance criteria
 
-1. PR-020 remains DRAFT and `CURRENT.md` remains on PR-019 until PR-019 is accepted.
-2. Before activation, the exact accepted PR-019 commit is recorded and stale typed-identity names are reconciled without broadening scope.
+1. PR-020 is activated only after PR-019 acceptance; `CURRENT.md` points to PR-020 throughout implementation and review.
+2. The exact accepted PR-019 commit (`0c6657e`) is recorded and stale typed-identity names are reconciled without broadening scope.
 3. One `V2__reference_catalog.sql` creates exactly the seven specified tables and deterministic seeds; V1 is unchanged.
 4. Country/currency stable codes, market UUIDs, FKs, checks, partial uniqueness, indexes, source/owner rules, and calendar time-shape constraints are migration-owned and green.
 5. No mutable exchange rate, snapshot, price, quantity, balance, provider payload, PostgreSQL enum, extension, function, or trigger is introduced.
@@ -805,7 +810,7 @@ Cover at least:
 14. Cursor pagination is canonical, filter-bound, stable, bounded, and proven without gaps/duplicates or ownership leakage.
 15. Named duplicate/inactive/unsupported-currency/version/cursor failures map to exact stable reference error codes; unknown persistence/runtime failures remain safe.
 16. Core behavior and tests require no internet/provider, and manual data is never labeled provider/live/official/synthetic.
-17. Existing auth/login/refresh/session behavior remains unchanged; no role/admin/job/auth extension is quietly added.
+17. Existing auth/login/refresh/session external behavior remains contract-compatible; the explicitly authorized internal standards alignment is reviewed in this unit, and no role/admin/job/auth capability is quietly added.
 18. Delivered substantive production surface meets the fixed five-times PR-018 floor without tests/docs, formatting churn, unrelated work, or padding.
 19. Focused pure, migration/mapping, PostgreSQL ownership/search/concurrency, real-filter HTTP/security, full-suite, Spotless, and Maven verify gates pass with no skipped/disabled container/security tests.
 20. Completion Record, `STATE.md`, and `progress-report.md` accurately record V2/reference capabilities and defer global administration, calendars/imports, observations/providers, ledger, jobs, and further auth.
@@ -815,11 +820,11 @@ Cover at least:
 
 Before this implementation unit is considered complete:
 
-- replace the TBD starting commit only after PR-019 acceptance and activation;
+- retain the accepted starting commit `0c6657e` in this specification's Completion Record and `STATE.md`;
 - fill in this specification's Completion Record, including actual production-file/line surface compared with PR-018;
 - update `docs/implementation/STATE.md` with migration V2, tables/seeds, visible APIs, ownership/search/cursor decisions, and deferred reference/provider work;
 - update `docs/review/progress-report.md` with implementation, verification, review, no-network, and sizing evidence;
-- keep `CURRENT.md` pointing to PR-020 throughout its later implementation/review, but do not change that pointer during this drafting invocation.
+- keep `CURRENT.md` pointing to PR-020 throughout implementation/review and do not advance it during this unit.
 
 ## Verification commands
 
@@ -849,31 +854,55 @@ Fill this before marking PR-020 complete.
 
 ### Starting commit
 
-- TBD after PR-019 acceptance.
+- `0c6657e` — accepted PR-019 working-tree commit.
 
 ### Implemented
 
-- ...
+- `V2__reference_catalog.sql` creates the seven reference tables, deterministic TR/GB/US and TRY/USD/EUR/GBP seeds, XIST/MANUAL markets, explicit market-currency support, integrity constraints, indexes, and no provider/observation/financial structures.
+- Country, currency, market, instrument, calendar, alias, and valuation value objects/enums plus minimal Hibernate mappings and repositories are implemented with Flyway-owned DDL and schema validation.
+- Authenticated offline country, currency, market, and explicit calendar reads return stable bounded responses with `NONE`/`PARTIAL`/`COMPLETE` coverage, missing dates, local session times, range validation, and no schedule inference.
+- Owner-derived manual instrument create/detail/update supports active reference validation, atomic aliases, immutable identity fields, `USER_ENTERED` provenance, timestamps, JPA optimistic versioning, owner-only visibility/mutation, and the named reference error contract.
+- Owner/global SQL search supports query, market, type, inactive, alias-prefix, deterministic `(symbol_normalized, market.code_normalized, id)` keyset pagination, canonical filter-bound cursors, bounded two-query alias loading, SQL visibility filtering, and wildcard-safe literal prefixes.
+- Required pure, PostgreSQL migration/mapping/service/query, concurrency, real-filter HTTP, cursor/ownership, malformed-input, bearer-security, and authorized abuse-concurrency coverage was added.
+- The requested standards alignment adds DTO `validate()` barriers for non-annotation request invariants, named manual-instrument limits, response-record factories, immutable collection boundaries, collector-based market grouping, explicit repository queries without `@Param`, and bulk-alias flush/clear semantics.
+- Known unique collisions use the shared platform constraint translator; unknown integrity failures reach the generic logged server-error boundary without database details in the response.
 
 ### Sizing evidence
 
+- The requested standards-alignment pass adds three focused production helpers/constants (70 lines by current working-tree count) and refactors existing paths; it does not broaden the PR beyond the standards findings listed above.
+
 - Fixed PR-018 baseline: 381 production additions / 30 deletions / 12 production files.
-- Accepted PR-019 starting commit used for the actual PR-020 diff: ...
-- PR-020 actual substantive production surface: ...
-- Five-times floor satisfied without tests, documentation, generated output, padding, or unrelated work: ...
+- Accepted PR-019 starting commit used for the actual PR-020 diff: `0c6657e`.
+- The standards-alignment pass includes shared validation/cache/constraint helpers, MDC correlation, domain predicates, enum mappings, response factories, and the authorized identity/session internal refactors.
+- The reference-only production surface contains 49 new production files with 2,190 nonblank lines: 45 reference Java files, the V2 migration, and three platform helpers. This count excludes tests, documentation, generated output, formatting churn, and authorized cross-cutting refactors so the sizing proof cannot rely on cleanup.
+- Five-times floor satisfied by the reference capability alone: 2,190 nonblank production lines exceed the 1,905-addition comparison floor (5 × 381), independently of the authorized cross-cutting refactors.
 
 ### Deviations from specification
 
-- None / ...
+- The requested standards-alignment pass intentionally retains PR-019's established v1 session-cursor pipe format as a compatibility exception; the new PR-020 instrument cursor remains the exact canonical JSON format specified here. A future explicit cursor-wire migration can standardize the legacy session endpoint without silently invalidating clients.
+- Explicit test fixtures commit setup rows before HTTP calls so each real request observes the same PostgreSQL state as production, and the SQL prefix predicate escapes `%`, `_`, and `\\` so those accepted query characters remain literal prefixes.
+- Identity/session `@Version` columns remain deferred because they require a V1 migration and a defined conflict contract outside this PR's reference slice. The manual-instrument client version precondition is intentionally retained because it is the API's compare-and-swap contract, not a duplicate of Hibernate's row-version check.
+- Existing PR-019 session cursors retain their pipe format as a public compatibility exception; only the new PR-020 instrument cursor uses the canonical JSON format. No entity-owned child collection exists in the active mappings, so no artificial collection mapping was added.
+- The supervising user explicitly authorized the identity/session/standards refactor already mixed into PR-020. It is retained and reviewed as cross-cutting internal alignment, but excluded from the reference-only sizing proof and does not authorize new authentication behavior.
 
 ### New decisions
 
-- None / ...
+- The read model uses `JdbcClient` with one bounded instrument query plus one bounded alias query per page/detail, while JPA remains the minimal write/mapping model.
+- Cursor payloads are canonical JSON encoded as unpadded Base64url and include a SHA-256 filter digest; decoded cursors are rejected when their payload or bound filters are not exact.
+- Manual updates replace aliases inside the same optimistic transaction; ordinary metadata changes use JPA `@Version`, while alias-only updates with no dirty scalar use an immediate version-column compare-and-swap before child replacement. Both paths preserve one-winner concurrency and stable conflicts without a pessimistic lock.
+- Explicit calendar coverage is computed only from stored rows; `LocalDate` iteration stops at the requested end date to avoid boundary overflow without inferring missing sessions.
+- New request validation is deterministic and dependency-free at the DTO boundary; application services trust the validated fields and retain only domain-constructor invariant checks.
+- Database constraint cause-chain inspection is centralized in `DatabaseConstraintTranslator`; capability services provide only known constraint mappings, while unknown integrity failures use the generic logged 500 path.
+- Trace IDs are scoped in SLF4J MDC and rendered by the application logging correlation pattern; repeated no-store headers use the shared platform helper, and response factories own response construction.
 
 ### Tests executed
 
-- ...
+- `./mvnw "-Dtest=ReferenceValueObjectTest,ReferenceCatalogMigrationTest,ReferenceEntityMappingTest,ManualInstrumentServiceTest,ReferenceCatalogQueryTest,ReferenceCatalogHttpTest,ManualInstrumentHttpTest,ApiBearerSecurityHttpTest,AuthenticationAbuseProtectionTest,RefreshSessionRotationServiceTest,RefreshSessionRotationControlFlowTest" test` — 77 tests passed, 0 failures, 0 errors, 0 skipped.
+- `./mvnw test` — 266 tests passed, 0 failures, 0 errors, 0 skipped in the current working tree, including the user-authorized identity/session/abuse-protection alignment.
+- `./mvnw verify` — passed after applying the configured formatter, including the full 266-test suite and Spotless, with 0 failures, 0 errors, and 0 skipped.
+- `git status --short` and `git diff --check` — passed; no commit, branch, history, or remote operation performed, and all changes remain unstaged for review.
+
 
 ### Follow-up work
 
-- ...
+- Global reference administration, calendar/import workflows, observations and provider adapters, live prices/rates, ledger/financial behavior, durable jobs, persistent signing keys, further authentication, authorization/roles, cross-site deployment infrastructure, and frontend work remain explicitly deferred.
