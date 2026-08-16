@@ -153,6 +153,11 @@ class DeviceSessionQueryServiceTest {
                 .isInstanceOf(AppException.class)
                 .satisfies(e -> assertThat(((AppException) e).getErrorCode())
                         .isEqualTo(IdentityErrorCode.INVALID_SESSION_CURSOR));
+
+        assertThatThrownBy(() -> queryService.listSessions(userId, session.sessionId(), 25, ""))
+                .isInstanceOf(AppException.class)
+                .satisfies(e -> assertThat(((AppException) e).getErrorCode())
+                        .isEqualTo(IdentityErrorCode.INVALID_SESSION_CURSOR));
     }
 
     @Test

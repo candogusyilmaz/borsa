@@ -273,6 +273,18 @@ class IdentitySecurityEventIntegrationTest {
                         SecurityEventRecorder.LOCAL_LOGIN_FAILED, Map.of("traceId", 12345, "operation", "LOGIN")))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("must be a non-blank string");
+
+        // UUID details must be canonical application identifiers, not arbitrary strings
+        assertThatThrownBy(() -> securityEventRecorder.record(
+                        userId, SecurityEventRecorder.CURRENT_SESSION_LOGGED_OUT, Map.of("familyId", "not-a-uuid")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("canonical UUID");
+
+        // Counts are JSON integers; fractional numbers are not accepted as family counts
+        assertThatThrownBy(() -> securityEventRecorder.record(
+                        userId, SecurityEventRecorder.ALL_SESSIONS_LOGGED_OUT, Map.of("revokedFamilyCount", 0.5d)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("non-negative number");
     }
 
     @Test

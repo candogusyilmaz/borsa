@@ -129,6 +129,9 @@ public class DeviceSession {
     public void revokeTerminal(String reason, Instant observedAt) {
         Objects.requireNonNull(reason, "reason");
         Objects.requireNonNull(observedAt, "observedAt");
+        if (!isUserRevocationReason(reason)) {
+            throw new IllegalArgumentException("Unsupported terminal revocation reason: " + reason);
+        }
         if (replacedBySessionId != null) {
             throw new IllegalStateException("A historical replaced generation cannot be terminally revoked");
         }
@@ -136,6 +139,12 @@ public class DeviceSession {
             revokedAt = observedAt;
             revokeReason = reason;
         }
+    }
+
+    private boolean isUserRevocationReason(String reason) {
+        return USER_LOGOUT_REVOKE_REASON.equals(reason)
+                || USER_LOGOUT_ALL_REVOKE_REASON.equals(reason)
+                || USER_REVOKED_REVOKE_REASON.equals(reason);
     }
 
     private DeviceSession replacementGeneration(

@@ -21,9 +21,9 @@ import org.springframework.stereotype.Component;
 public class AuthenticationAbuseProtection {
 
     private static final String LOGIN_PRINCIPAL_PREFIX = "LOGIN_PRINCIPAL\0";
-    private static final String LOGIN_SOURCE_PREFIX = "LOGIN_SOURCE\0";
-    private static final String REGISTER_SOURCE_PREFIX = "REGISTER_SOURCE\0";
-    private static final String REFRESH_SOURCE_PREFIX = "REFRESH_SOURCE\0";
+    private static final String LOGIN_SOURCE_PREFIX = "LOGIN\0";
+    private static final String REGISTER_SOURCE_PREFIX = "REGISTER\0";
+    private static final String REFRESH_SOURCE_PREFIX = "REFRESH\0";
     private static final String UNKNOWN_SOURCE = "unknown";
 
     private final AuthenticationAbuseProtectionProperties properties;

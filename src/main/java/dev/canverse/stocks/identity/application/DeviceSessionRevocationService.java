@@ -40,18 +40,19 @@ public class DeviceSessionRevocationService {
                 .orElseThrow(() -> new AppException(IdentityErrorCode.INVALID_CREDENTIALS));
 
         var familyId = currentSession.getFamilyId();
+        var observedAt = clock.instant();
         var terminalSession = deviceSessionRepository
                 .findByUserAccount_IdAndFamilyIdAndReplacedBySessionIdIsNull(userAccountId, familyId)
                 .orElseThrow(() -> new IllegalStateException("Missing terminal generation for family " + familyId));
 
-        var observedAt = clock.instant();
         if (terminalSession.getRevokedAt() == null) {
             terminalSession.revokeTerminal(DeviceSession.USER_LOGOUT_REVOKE_REASON, observedAt);
             deviceSessionRepository.saveAndFlush(terminalSession);
-            securityEventRecorder.record(
+            securityEventRecorder.recordAt(
                     userAccountId,
                     SecurityEventRecorder.CURRENT_SESSION_LOGGED_OUT,
-                    Map.of("familyId", familyId.toString()));
+                    Map.of("familyId", familyId.toString()),
+                    observedAt);
             deviceSessionRepository.flush();
         }
     }
@@ -67,11 +68,11 @@ public class DeviceSessionRevocationService {
             throw new AppException(IdentityErrorCode.INVALID_CREDENTIALS);
         }
 
+        var observedAt = clock.instant();
         var terminalSessions =
                 deviceSessionRepository.findByUserAccount_IdAndReplacedBySessionIdIsNullOrderByFamilyIdAsc(
                         userAccountId);
 
-        var observedAt = clock.instant();
         var revokedCount = 0;
         for (var session : terminalSessions) {
             if (session.getRevokedAt() == null) {
@@ -83,10 +84,11 @@ public class DeviceSessionRevocationService {
         deviceSessionRepository.flush();
 
         if (revokedCount > 0) {
-            securityEventRecorder.record(
+            securityEventRecorder.recordAt(
                     userAccountId,
                     SecurityEventRecorder.ALL_SESSIONS_LOGGED_OUT,
-                    Map.of("revokedFamilyCount", revokedCount));
+                    Map.of("revokedFamilyCount", revokedCount),
+                    observedAt);
             deviceSessionRepository.flush();
         }
     }
@@ -109,6 +111,7 @@ public class DeviceSessionRevocationService {
                 .orElseThrow(() -> new AppException(IdentityErrorCode.INVALID_CREDENTIALS));
 
         var isCurrentFamily = targetFamilyId.equals(currentSession.getFamilyId());
+        var observedAt = clock.instant();
 
         var terminalSessionOpt = deviceSessionRepository.findByUserAccount_IdAndFamilyIdAndReplacedBySessionIdIsNull(
                 userAccountId, targetFamilyId);
@@ -121,14 +124,14 @@ public class DeviceSessionRevocationService {
         }
 
         var terminalSession = terminalSessionOpt.get();
-        var observedAt = clock.instant();
         if (terminalSession.getRevokedAt() == null) {
             terminalSession.revokeTerminal(DeviceSession.USER_REVOKED_REVOKE_REASON, observedAt);
             deviceSessionRepository.saveAndFlush(terminalSession);
-            securityEventRecorder.record(
+            securityEventRecorder.recordAt(
                     userAccountId,
                     SecurityEventRecorder.DEVICE_SESSION_REVOKED,
-                    Map.of("familyId", targetFamilyId.toString()));
+                    Map.of("familyId", targetFamilyId.toString()),
+                    observedAt);
             deviceSessionRepository.flush();
         }
 

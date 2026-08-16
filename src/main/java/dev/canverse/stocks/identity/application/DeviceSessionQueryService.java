@@ -40,7 +40,7 @@ public class DeviceSessionQueryService {
         }
 
         SessionCursor cursor = null;
-        if (cursorString != null && !cursorString.isBlank()) {
+        if (cursorString != null) {
             cursor = SessionCursorCodec.decode(cursorString);
         }
 

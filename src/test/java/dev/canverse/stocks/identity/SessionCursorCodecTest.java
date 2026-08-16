@@ -84,6 +84,14 @@ class SessionCursorCodecTest {
     }
 
     @Test
+    void rejectsEpochOutsideInstantRange() {
+        var raw = "v1|9223372036854775807|0|12345678-1234-4234-8234-123456789abc";
+        var encoded = Base64.getUrlEncoder().withoutPadding().encodeToString(raw.getBytes(StandardCharsets.UTF_8));
+
+        assertInvalidCursor(encoded);
+    }
+
+    @Test
     void rejectsUppercaseUuid() {
         var rawUpperUuid = "v1|1786797296|789123456|12345678-1234-4234-8234-123456789ABC";
         var encoded =

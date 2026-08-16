@@ -3,6 +3,7 @@ package dev.canverse.stocks.identity.application;
 import dev.canverse.stocks.identity.error.IdentityErrorCode;
 import dev.canverse.stocks.platform.error.AppException;
 import java.nio.charset.StandardCharsets;
+import java.time.DateTimeException;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Locale;
@@ -70,14 +71,17 @@ public final class SessionCursorCodec {
             throw invalidCursor();
         }
 
-        var createdAt = Instant.ofEpochSecond(epochSecond, nano);
-        // Canonical check: re-encoding must produce the identical input cursor string
-        var reEncoded = encode(createdAt, familyId);
-        if (!reEncoded.equals(cursor)) {
+        try {
+            var createdAt = Instant.ofEpochSecond(epochSecond, nano);
+            // Canonical check: re-encoding must produce the identical input cursor string
+            var reEncoded = encode(createdAt, familyId);
+            if (!reEncoded.equals(cursor)) {
+                throw invalidCursor();
+            }
+            return new SessionCursor(createdAt, familyId);
+        } catch (IllegalArgumentException | DateTimeException exception) {
             throw invalidCursor();
         }
-
-        return new SessionCursor(createdAt, familyId);
     }
 
     private static AppException invalidCursor() {

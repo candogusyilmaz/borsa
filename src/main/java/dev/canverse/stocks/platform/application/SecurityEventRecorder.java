@@ -6,6 +6,7 @@ import dev.canverse.stocks.platform.id.IdGenerator;
 import dev.canverse.stocks.platform.infrastructure.SecurityEventRepository;
 import jakarta.persistence.EntityManager;
 import java.time.Clock;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -49,14 +50,25 @@ public class SecurityEventRecorder {
 
     @Transactional(propagation = Propagation.REQUIRED)
     public void record(UUID userAccountId, String eventType, Map<String, Object> details) {
+        recordInternal(userAccountId, eventType, details, clock.instant());
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void recordAt(UUID userAccountId, String eventType, Map<String, Object> details, Instant occurredAt) {
+        recordInternal(userAccountId, eventType, details, occurredAt);
+    }
+
+    private void recordInternal(UUID userAccountId, String eventType, Map<String, Object> details, Instant occurredAt) {
         Objects.requireNonNull(userAccountId, "userAccountId");
         Objects.requireNonNull(eventType, "eventType");
         Objects.requireNonNull(details, "details");
-        validateDetailShape(eventType, details, false);
+        Objects.requireNonNull(occurredAt, "occurredAt");
+        var immutableDetails = immutableDetails(details);
+        validateDetailShape(eventType, immutableDetails, false);
 
         var userAccountProxy = entityManager.getReference(UserAccount.class, userAccountId);
-        var jsonDetails = serializeDetails(details);
-        var event = SecurityEvent.create(idGenerator.next(), userAccountProxy, eventType, clock.instant(), jsonDetails);
+        var jsonDetails = serializeDetails(immutableDetails);
+        var event = SecurityEvent.create(idGenerator.next(), userAccountProxy, eventType, occurredAt, jsonDetails);
         securityEventRepository.save(event);
     }
 
@@ -64,9 +76,10 @@ public class SecurityEventRecorder {
     public void recordAnonymousRequiresNew(String eventType, Map<String, Object> details) {
         Objects.requireNonNull(eventType, "eventType");
         Objects.requireNonNull(details, "details");
-        validateDetailShape(eventType, details, true);
+        var immutableDetails = immutableDetails(details);
+        validateDetailShape(eventType, immutableDetails, true);
 
-        var jsonDetails = serializeDetails(details);
+        var jsonDetails = serializeDetails(immutableDetails);
         var event = SecurityEvent.create(idGenerator.next(), null, eventType, clock.instant(), jsonDetails);
         securityEventRepository.saveAndFlush(event);
     }
@@ -82,8 +95,8 @@ public class SecurityEventRecorder {
         Set<String> requiredKeys =
                 switch (eventType) {
                     case LOCAL_LOGIN_SUCCEEDED -> {
-                        validateNonBlankString(details, "sessionId");
-                        validateNonBlankString(details, "familyId");
+                        validateCanonicalUuidString(details, "sessionId");
+                        validateCanonicalUuidString(details, "familyId");
                         yield Set.of("sessionId", "familyId");
                     }
                     case LOCAL_LOGIN_FAILED, LOCAL_LOGIN_THROTTLED -> {
@@ -101,8 +114,8 @@ public class SecurityEventRecorder {
                         yield Set.of("traceId", "operation");
                     }
                     case REFRESH_REUSE_DETECTED -> {
-                        validateNonBlankString(details, "familyId");
-                        validateNonBlankString(details, "sessionId");
+                        validateCanonicalUuidString(details, "familyId");
+                        validateCanonicalUuidString(details, "sessionId");
                         yield Set.of("familyId", "sessionId");
                     }
                     case REFRESH_THROTTLED -> {
@@ -113,11 +126,15 @@ public class SecurityEventRecorder {
                         yield Set.of("traceId", "operation");
                     }
                     case CURRENT_SESSION_LOGGED_OUT, DEVICE_SESSION_REVOKED -> {
-                        validateNonBlankString(details, "familyId");
+                        validateCanonicalUuidString(details, "familyId");
                         yield Set.of("familyId");
                     }
                     case ALL_SESSIONS_LOGGED_OUT -> {
-                        if (!(details.get("revokedFamilyCount") instanceof Number n) || n.longValue() < 0) {
+                        if (!(details.get("revokedFamilyCount") instanceof Byte
+                                        || details.get("revokedFamilyCount") instanceof Short
+                                        || details.get("revokedFamilyCount") instanceof Integer
+                                        || details.get("revokedFamilyCount") instanceof Long)
+                                || ((Number) details.get("revokedFamilyCount")).longValue() < 0) {
                             throw new IllegalArgumentException("revokedFamilyCount must be a non-negative number");
                         }
                         yield Set.of("revokedFamilyCount");
@@ -138,9 +155,25 @@ public class SecurityEventRecorder {
         }
     }
 
+    private void validateCanonicalUuidString(Map<String, Object> details, String key) {
+        validateNonBlankString(details, key);
+        var value = (String) details.get(key);
+        try {
+            if (!UUID.fromString(value).toString().equals(value)) {
+                throw new IllegalArgumentException("Detail value for key " + key + " must be a canonical UUID");
+            }
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalArgumentException("Detail value for key " + key + " must be a canonical UUID", exception);
+        }
+    }
+
+    private Map<String, Object> immutableDetails(Map<String, Object> details) {
+        return Map.copyOf(details);
+    }
+
     private String serializeDetails(Map<String, Object> details) {
         try {
-            return objectMapper.writeValueAsString(Map.copyOf(details));
+            return objectMapper.writeValueAsString(details);
         } catch (JacksonException exception) {
             throw new IllegalStateException("Failed to serialize security event details to JSON", exception);
         }

@@ -655,11 +655,11 @@ Do not count `src/test`, `docs`, generated files, formatting-only churn, or unre
 
 ### Implemented
 
-- `AuthenticatedIdentity` and `AuthenticatedIdentityResolver` for typed extraction of authenticated `userAccountId` and `sessionId` from `SecurityContextHolder`.
+- `AuthenticatedIdentity` and `AuthenticatedIdentityResolver` for typed extraction of authenticated `userAccountId` and `sessionId` from the already validated `Authentication` supplied by the HTTP security boundary.
 - Owner-scoped query endpoints and read repository:
   - `GET /api/v1/me` returning authenticated user ID, email, and registration timestamp.
   - `GET /api/v1/auth/sessions` with keyset pagination (`limit` up to 100, `cursor` codec with Base64url encoding of timestamp + family ID).
-  - `GET /api/v1/auth/sessions/{familyId}` returning single family details with accurate status (`CURRENT`, `ACTIVE`, `REVOKED`, `EXPIRED`).
+  - `GET /api/v1/auth/sessions/{familyId}` returning single family details with accurate status (`ACTIVE`, `EXPIRED`, `REVOKED`, `COMPROMISED`).
 - Owner-locked device session revocation and logout:
   - `POST /api/v1/auth/logout` supporting `CURRENT_SESSION` and `ALL_SESSIONS`.
   - `DELETE /api/v1/auth/sessions/{familyId}` for user-selected family termination.
@@ -669,23 +669,26 @@ Do not count `src/test`, `docs`, generated files, formatting-only churn, or unre
   - Transactional propagation: `REQUIRED` for session mutations and `REQUIRES_NEW` for anonymous failure / throttle events.
 - In-memory process-local authentication abuse protection:
   - `AuthenticationAbuseProtection` using SHA-256 Base64url domain-separated fingerprints, per-bucket window tracking, fail-closed capacity bounding, transition-specific compare-and-set rollback, and deterministic pruning for login, registration, and refresh endpoints.
-- Full unit, integration, and HTTP test coverage across 104 tests in the identity module (210 tests total repository-wide).
+- Full unit, integration, and HTTP test coverage across 164 identity-package tests (211 tests total repository-wide).
 
 ### Sizing evidence
 
 - PR-018 fixed baseline: 381 production additions / 30 deletions / 12 production files.
-- PR-019 actual substantive production surface: approximately 1,644 gross production additions across 36 production files (~4.31× PR-018 baseline), delivering the full vertical slice across typed identity extraction, owner-scoped read repository, session query and revocation services, security event recorder, configurable abuse protection, HTTP controllers, and input/output contracts.
-- Sizing deviation explicitly recorded below under Deviations from specification as an accepted coherent-scope capability boundary.
+- PR-019 actual production surface: 1,769 additions / 49 deletions across 36 production files (4.64× PR-018 additions), delivering the full vertical slice across typed identity extraction, owner-scoped read repository, session query and revocation services, security event recorder, configurable abuse protection, HTTP controllers, and input/output contracts.
+- The fixed five-times planning floor is not met; the deviation is recorded below without adding unrelated or speculative work.
 
 ### Deviations from specification
 
-- Sizing floor exception: PR-019 delivers the complete, self-contained vertical slice across all 6 specified capability sections (typed identity resolution, owner-scoped read repository, keyset session pagination, session detail, single/all/selected session revocation, audit event recording, abuse throttling, and HTTP controllers) adding approximately 1,644 gross production Java additions across 36 production files (~4.31× PR-018 baseline). The implementation was kept clean and tightly focused on the specified capability without padding or speculative abstractions, and the coherent-scope boundary is accepted as a sizing exception rather than artificially expanding scope.
+- Sizing deviation: PR-019 delivers the complete, self-contained specified vertical slice (typed identity resolution, owner-scoped reads, keyset pagination, session detail, single/all/selected revocation, audit events, abuse throttling, and HTTP controllers) with 1,769 production additions across 36 files (4.64× PR-018 additions), below the fixed five-times floor. The implementation remains strictly scoped; no unrelated padding or speculative infrastructure was added. This remains visible for the user's review and planning reconciliation.
 
 ### New decisions
 
 - Keyset pagination SQL handles PostgreSQL `MAX(uuid)` limitation by casting `s.id` to `text` inside the aggregate and mapping back to `UUID` in Java.
 - Abuse protection configuration properties support graceful defaulting for omitted properties during record binding while strictly rejecting non-positive values.
 - Throttle rollback returns a transition-specific handle (`ThrottleTransition`) with unique monotonic block version tracking stored in `BucketState`, using compare-and-set semantics on version ID to eliminate ABA races and prevent stale rollbacks from clearing recreated or newer blocks.
+- All three session mutation operations acquire the accepted pessimistic owner lock before generation lookups, observe one injected clock value, mutate terminal generations in deterministic order, and pass that same timestamp to the required user-scoped security event.
+- Security event details are snapshotted immutably before validation/serialization, use canonical application UUID strings and integral non-negative counts, and expose only the nine specified event types with their required transaction propagation.
+- Login, registration, and refresh source fingerprints use the exact `OPERATION + NUL + source` domains (`LOGIN`, `REGISTER`, and `REFRESH`); raw sources, email, credentials, and tokens remain outside limiter state.
 
 ### Tests executed
 
@@ -708,7 +711,7 @@ Do not count `src/test`, `docs`, generated files, formatting-only churn, or unre
 - `ApiBearerSecurityHttpTest` (MockMvc)
 - `LocalLoginServiceTest` (Testcontainers PostgreSQL)
 - `RefreshSessionRotationServiceTest` (Testcontainers PostgreSQL)
-- Full `./mvnw test` and `./mvnw verify` passing cleanly (210 tests, 0 failures, Spotless clean).
+- `./mvnw spotless:check`, the required focused test command, `./mvnw test`, and `./mvnw verify` all pass cleanly; the full suite reports 211 tests, 0 failures, 0 errors, and 0 skipped tests.
 
 ### Follow-up work
 

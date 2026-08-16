@@ -427,21 +427,25 @@ Specification:
 
 Established:
 
-- `AuthenticatedIdentity` and `AuthenticatedIdentityResolver` for typed extraction of authenticated `userAccountId` and `sessionId` from `SecurityContextHolder`.
+- `AuthenticatedIdentity` and `AuthenticatedIdentityResolver` extract only canonical authenticated `userAccountId` and `sessionId` values from the already validated `Authentication`; no request parameter or `SecurityContextHolder` lookup is used by the resolver.
 - Owner-scoped query endpoints and read repository:
-  - `GET /api/v1/me` returning authenticated user ID, email, and registration timestamp.
-  - `GET /api/v1/auth/sessions` with keyset pagination (`limit` up to 100, `cursor` codec with Base64url encoding of timestamp + family ID).
-  - `GET /api/v1/auth/sessions/{familyId}` returning single family details with accurate status (`CURRENT`, `ACTIVE`, `REVOKED`, `EXPIRED`).
+  - `GET /api/v1/me` returns only authenticated user ID, email, and registration timestamp.
+  - `GET /api/v1/auth/sessions` provides one-statement keyset pagination with `limit` 1-100 and a canonical unpadded Base64url cursor containing timestamp and family ID.
+  - `GET /api/v1/auth/sessions/{familyId}` returns one owner-scoped family with status `ACTIVE`, `EXPIRED`, `REVOKED`, or `COMPROMISED`.
 - Owner-locked device session revocation and logout:
-  - `POST /api/v1/auth/logout` supporting `CURRENT_SESSION` and `ALL_SESSIONS`.
-  - `DELETE /api/v1/auth/sessions/{familyId}` for user-selected family termination.
-  - `RefreshTokenCookieHeader.clear()` generating exact expired Set-Cookie header.
+  - `POST /api/v1/auth/logout` supports `CURRENT_SESSION` and `ALL_SESSIONS`.
+  - `DELETE /api/v1/auth/sessions/{familyId}` supports idempotent owned-family termination and clears the refresh cookie only when the current family is terminated.
+  - Each mutation locks the owner row before generation lookup, observes one injected clock value, retains all generations and replacement links, mutates terminal rows in deterministic family order, and flushes the session/event mutation in one transaction shared with refresh rotation.
+  - `RefreshTokenCookieHeader.clear()` generates the exact host-only expired `Set-Cookie` header.
 - Safe audit security event recording:
-  - `SecurityEventRecorder` persisting safe, sanitized JSON events to `platform.security_event`.
-  - Transactional propagation: `REQUIRED` for session mutations and `REQUIRES_NEW` for anonymous failure / throttle events.
+  - `SecurityEventRecorder` persists immutable, canonical, sanitized JSON objects to `platform.security_event` using exactly the nine PR-019 event types and required detail keys.
+  - User-scoped session/reuse events use `REQUIRED` propagation and receive the mutation observation timestamp; invalid-login and throttle events use `REQUIRES_NEW` and contain only server-owned trace/operation details.
+  - Event persistence failures roll back shared session mutations; independent failure/throttle event failures fail safely and roll back the process-local throttle transition.
 - In-memory process-local authentication abuse protection:
-  - `AuthenticationAbuseProtection` using SHA-256 Base64url domain-separated fingerprints, per-bucket window tracking, fail-closed capacity bounding, transition-specific compare-and-set rollback, and deterministic pruning for login, registration, and refresh endpoints.
-- Full unit, integration, and HTTP test coverage across 104 tests in the identity module (210 tests total repository-wide).
+  - `AuthenticationAbuseProtection` uses SHA-256 unpadded Base64url fingerprints, exact `LOGIN`/`REGISTER`/`REFRESH` source domains, per-bucket fixed windows, fail-closed capacity bounding, transition-specific compare-and-set rollback, and deterministic pruning.
+  - Defaults are login principal/source `5/25` per 15 minutes with 15-minute blocks, registration `10` per hour with one-hour blocks, refresh `30` per 15 minutes with 15-minute blocks, and a maximum of `10,000` tracked keys; all configured values are positive.
+  - Raw source, email, password, token, and forwarded-IP data are not logged or persisted; state is deliberately process-local and resets on restart.
+- Full unit, integration, concurrency, and HTTP coverage includes 164 identity-package tests and 211 tests repository-wide, with no failures, errors, or skips in the final clean verification.
 
 ## Active implementation unit
 
@@ -465,7 +469,7 @@ Do not treat this list as a promise of PR numbering or exact scope.
 
 ## Known issues / deferred work
 
-- PR-019 is fully implemented in the working tree and passes all 210 tests including Testcontainers PostgreSQL integration tests and Spotless validation.
+- PR-019 is fully implemented in the working tree and passes all 211 tests including Testcontainers PostgreSQL integration tests and Spotless validation.
 - Keyset pagination in `DeviceSessionReadRepository` casts `s.id` to `text` inside the PostgreSQL `MAX` aggregate function to support UUID types across PostgreSQL versions.
 - Maven explicitly registers Lombok on the annotation-processor path so Lombok-generated entity accessors and constructors compile on Java 25.
 - No reference data yet.

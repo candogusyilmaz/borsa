@@ -54,12 +54,13 @@ public class RefreshSessionRotationService {
                     .ifPresent(activeSession -> {
                         activeSession.revokeForReuse(observedAt);
                         deviceSessionRepository.saveAndFlush(activeSession);
-                        securityEventRecorder.record(
+                        securityEventRecorder.recordAt(
                                 ownerProjection.get().userAccountId(),
                                 SecurityEventRecorder.REFRESH_REUSE_DETECTED,
                                 Map.of(
                                         "familyId", session.getFamilyId().toString(),
-                                        "sessionId", session.getId().toString()));
+                                        "sessionId", session.getId().toString()),
+                                observedAt);
                         deviceSessionRepository.flush();
                     });
             return Optional.empty();
