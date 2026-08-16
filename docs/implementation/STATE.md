@@ -412,7 +412,7 @@ Established:
 
 ### PR-020 — Canonical reference catalog and owner-scoped manual instruments
 
-Status: **IMPLEMENTATION COMPLETE — AWAITING USER COMMIT DECISION**
+Status: **COMPLETE IN ACCEPTED COMMIT `3f45a8c`**
 
 Starting commit: `0c6657e`
 
@@ -483,34 +483,31 @@ Tables:
 
 ## Active implementation unit
 
-PR-020 canonical reference catalog and owner-scoped manual instruments is implemented in the working tree and ready for user review.
+[PR-021 — Financial-account onboarding and immutable cash ledger](PR-021-financial-account-onboarding-and-cash-ledger.md) is active from accepted commit `3f45a8c`.
 
-See `CURRENT.md` and `PR-020-canonical-reference-catalog-and-manual-instruments.md`.
+It is the first financial-truth vertical slice: V3 owner-scoped account onboarding, explicit opening-state coverage, immutable cash activities/postings, native balance projection/read behavior, deposits, withdrawals, same-currency owned transfers, reversals/opening correction, policy enforcement, idempotency, locking, and HTTP/security proof.
 
-## Next likely implementation areas
+The former custom durable-platform-job draft is retired. PR-021 must not implement a generic scheduler, worker, retry, batch, queue, or workflow abstraction. Select asynchronous infrastructure only with its first concrete workload after a recorded build-versus-buy evaluation.
 
-These are planning hints for work after PR-020, not active specifications.
+See `CURRENT.md` and `PR-021-financial-account-onboarding-and-cash-ledger.md`.
 
-Draft specification: [PR-021 — Durable platform job execution](PR-021-durable-platform-job-execution.md). It remains inactive while `CURRENT.md` points to PR-020.
+## Build-versus-buy audit
 
-Likely sequence after PR-020:
+The 2026-08-16 repository audit found no reason to outsource financial domain semantics, but identified these infrastructure boundaries:
 
-1. durable platform job claim/heartbeat/retry/recovery behavior using the existing V1 table;
-2. reference administration/calendar/import workflows and explicit observations/providers only as separately reviewed capabilities;
-3. persistent signing-key/OIDC/recovery work only when a separately reviewed security boundary requires it.
-
-The exact next behavioral implementation unit must be designed just-in-time from the reconciled committed state.
-
-Do not treat this list as a promise of PR numbering or exact scope.
+- `AuthenticationAbuseProtection` is an accepted, process-local fixed-window implementation with repository-specific rollback behavior. Before multi-instance deployment or further limiter expansion, compare it with a maintained limiter such as Bucket4j and retain custom behavior only where the required semantics cannot be composed safely.
+- The unused `platform.job` table/entity/repository are speculative storage scaffolding, not authority to build a worker. Decide whether to adopt maintained scheduling/batch infrastructure and migrate or remove the scaffold only when a concrete asynchronous workload establishes the required semantics.
+- The legacy frontend duplicates JWT parsing, browser token storage, and refresh scheduling. It must not be extended; replace it with the backend's current hardened refresh-cookie/bearer contract or a maintained standards-based client before frontend reactivation.
+- The accepted identity/session implementation delegates password and JWT cryptography to Spring Security/Nimbus and owns product-specific device-session rotation/reuse behavior. Before adding OIDC, recovery, MFA, federation, or authorization-server duties, evaluate Spring Security's authorization-server support or an external identity provider.
+- Small cursor codecs, owner-scoped SQL read models, Problem Detail mapping, trace filtering, constraint translation, cache headers, secure token generation, and ID/clock adapters remain justified repository-specific boundary code. Reassess them only when duplication or a concrete interoperability requirement appears.
 
 ## Known issues / deferred work
 
-- PR-020 passes the expanded 77-test focused gate and the full 266-test suite, including Testcontainers PostgreSQL integration tests, real-filter HTTP/security checks, abuse/concurrency coverage, Spotless, and Maven `verify`; no unresolved implementation review blocker remains before the user's commit decision.
+- PR-020 passed the expanded 77-test focused gate and the full 266-test suite, including Testcontainers PostgreSQL integration tests, real-filter HTTP/security checks, abuse/concurrency coverage, Spotless, and Maven `verify`, and is accepted in commit `3f45a8c`.
 - Keyset pagination in `DeviceSessionReadRepository` casts `s.id` to `text` inside the PostgreSQL `MAX` aggregate function to support UUID types across PostgreSQL versions.
 - Maven explicitly registers Lombok on the annotation-processor path so Lombok-generated entity accessors and constructors compile on Java 25.
 - Reference catalog identities, deterministic seeds, explicit calendar storage, and owner-scoped manual instruments now exist; global administration, calendar/import workflows, observations, and provider adapters remain deferred.
-- No ledger yet.
-- No financial-account model yet.
+- No ledger or financial-account model exists at the accepted PR-020 baseline; PR-021 is the active specification that introduces them.
 - The frontend still targets legacy APIs.
 - Bank/broker connectivity remains explicitly deferred.
 - JPA write semantics for database-defaulted fields are not established yet.
@@ -518,7 +515,7 @@ Do not treat this list as a promise of PR numbering or exact scope.
 
 ## Resume instructions
 
-To continue planning implementation:
+To continue implementation or review:
 
 1. read `AGENTS.md`;
 2. read this file;
@@ -527,6 +524,6 @@ To continue planning implementation:
 5. read `docs/review/backend-master-plan.md`;
 6. read `docs/review/accounting-contract.md` when financial behavior is involved;
 7. inspect the actual repository state and relevant latest diff;
-8. design only the next human-reviewable implementation unit.
+8. perform only the explicitly requested role against the active PR; do not design or activate a later unit while PR-021 remains active.
 
 Do not require historical chat context to continue the rewrite.

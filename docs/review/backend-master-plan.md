@@ -98,7 +98,7 @@ Every numbered rewrite increment follows the same order. Implementation work is 
 - Direct Java service calls, JPA relationships across packages, shared transactions, SQL joins, and database foreign keys across schemas are allowed.
 - A module owns writes to its tables, but other modules may read through a service, repository projection, or deliberate query. This is a maintainability convention, not a distributed-systems boundary.
 - Do not add Kafka, a message broker, service discovery, an API gateway, distributed transactions, or separate deployments.
-- Use a small durable job table plus a scheduled worker for imports/rebuilds. Do not retain Spring Batch unless a real batch job needs its restart/chunk semantics.
+- Do not prebuild a generic background-job runtime. Select maintained infrastructure with the first concrete asynchronous workload: use Spring Batch when restart/chunk semantics are material, consider a focused database scheduler for durable one-time/scheduled tasks, and keep work synchronous when it safely fits the request transaction. A custom worker requires a documented unmet semantic requirement.
 - Introduce an interface only when there are multiple implementations, an external provider boundary, or a difficult-to-test side effect. Do not create `Service` + `ServiceImpl` + `UseCase` + `Port` + `Adapter` for one code path.
 
 ### API invariants from the first endpoint
@@ -259,7 +259,7 @@ The package names below are coarse. They deliberately do not create one module p
 | `money`      | Spending/income/categories, contracts/bills/cards/debt, people/claims, purchases/recoveries, documents/projects              | FT-03/15–30 except planning-heavy parts                      |
 | `analysis`   | Valuation, daily NAV, performance/decomposition, calculation runs, scenarios, Decision Replay, goals/resilience/briefs       | FND-03/04/05, FT-02/04–12/14                                 |
 | `assets`     | Physical-asset lifecycle, meters, consumption, cost links, service/warranty, valuations, TCO/disposal                        | FT-32                                                        |
-| `platform`   | Security configuration, file storage abstraction, durable jobs, clock/ID support, demo-data loader, API errors               | Cross-cutting infrastructure only                            |
+| `platform`   | Security configuration, file storage abstraction, background-execution integration, clock/ID support, demo-data loader, API errors | Cross-cutting infrastructure only                            |
 
 ### Sub-package structure within each capability
 
@@ -311,7 +311,7 @@ Do not automatically add a domain interface, implementation, mapper, factory, co
 
 ### Synchronous and asynchronous work
 
-Use direct calls in one `@Transactional` boundary for user commands. Use a simple durable `platform_job` record for work that can outlive the request:
+Use direct calls in one `@Transactional` boundary for user commands. Work that can outlive the request may include:
 
 - statement/document imports;
 - projection rebuilds after backdated facts;
@@ -319,7 +319,7 @@ Use direct calls in one `@Transactional` boundary for user commands. Use a simpl
 - scenario/TCO calculation batches;
 - notification delivery.
 
-The worker claims jobs with `FOR UPDATE SKIP LOCKED`, records attempts/error/heartbeat, and is safe to retry. Domain writes still require idempotency. An outbox can be added to the same table pattern if an external message destination ever exists.
+Do not implement a queue/worker before one of those workloads is in the active PR. With that first workload, document the restart/chunk/scheduling/transaction/cluster requirements and evaluate maintained Spring or focused database-backed libraries before custom code. Regardless of the selected runner, domain writes still require idempotency. Add an outbox only with a real external destination and delivery contract.
 
 ## Target PostgreSQL organization
 
@@ -334,7 +334,7 @@ Database schemas are coarse ownership aids and do not need to match every Java p
 | `money`     | Categories/rules, obligations/contracts/bills, debt/card terms, income, claims, purchases/receipts, documents, projects                                              |
 | `analysis`  | Valuations/NAV, calculation runs, scenarios, plans/goals, decision journal and insights                                                                              |
 | `asset`     | Physical assets, lifecycle/interest, meters/readings, consumption/cost links, service/warranty, valuations/disposal                                                  |
-| `platform`  | Durable jobs, audit/security events and storage-object metadata; business document metadata remains in `money`                                                       |
+| `platform`  | Reserved job metadata, selected scheduler/batch integration, audit/security events and storage-object metadata; business document metadata remains in `money`                           |
 
 `public` should contain only Flyway/extension metadata that cannot be placed elsewhere. Cross-schema foreign keys are expected.
 
@@ -397,7 +397,7 @@ Projection-backed API responses expose at least `projectionStatus`, `asOf`, `inp
 2. Stop the application and use the already-created empty `extreme_accounting` database as the rewrite target; drop/recreate it explicitly whenever a pre-release reset is needed.
 3. Remove legacy `V2`–`V14` from the active migration path; rely on Git history instead of an `old/` folder.
 4. Remove `schema.sql`, legacy Spring Batch initialization/config, and unneeded batch tables.
-5. Add a reviewed `V1__foundation.sql` for schemas, identity/auth/session and the minimal platform job/audit foundation.
+5. Add a reviewed `V1__foundation.sql` for schemas, identity/auth/session, audit events, and reserved platform job storage without a custom execution runtime.
 6. Add `V2__reference.sql` with canonical reference tables and stable-code seeds.
 7. Refactor JPA mappings and services in the same branch so `ddl-auto: validate` succeeds against the new schema.
 8. Enable Flyway by default; set `baseline-on-migrate: false`, `validate-on-migrate: true`, and keep clean disabled in normal application startup.
@@ -410,7 +410,7 @@ Do not pre-create hundreds of speculative columns/tables. The target table descr
 
 | Migration slice            | Creates/changes                                                                                                                |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `V1__foundation`           | Schemas, users/auth identities/device sessions, audit/security events and durable platform jobs                                |
+| `V1__foundation`           | Schemas, users/auth identities/device sessions, audit/security events and reserved platform job storage                        |
 | `V2__reference`            | Countries, currencies, markets, instruments/aliases/calendars and stable-code reference seeds                                  |
 | `V3__ledger_investing`     | Financial accounts/cash pockets, immutable activities/postings/idempotency/reconciliation, portfolio groupings and projections |
 | `V4__observations`         | Datasets/providers/series/immutable price, FX, rate, CPI and manual-value observations plus latest projections                 |
@@ -632,7 +632,7 @@ The increments below are the implementation order. Complete each numbered item i
 
 Exit gate: the reduced application compiles on Java 25; the deliberately added empty-database startup test fails solely because `V1` is not yet present; no legacy entity or mapper is being scanned.
 
-### R1 — Foundation, identity, authentication, sessions, and jobs (`V1`)
+### R1 — Foundation, identity, authentication, sessions, and reserved job storage (`V1`)
 
 1. Create schemas `identity`, `reference`, `ledger`, `data`, `money`, `analysis`, `asset`, and `platform` in Flyway.
 2. Create migration-owned `identity.user_account`, `identity.auth_identity`, `identity.device_session`, `platform.security_event`, and `platform.job` tables.
@@ -641,8 +641,8 @@ Exit gate: the reduced application compiles on Java 25; the deliberately added e
 5. Implement local email/password registration/login for development, password hashing, refresh-session rotation, logout and session revocation.
 6. Model Google as an external auth identity but keep it disabled until issuer/audience/email verification tests pass.
 7. Implement principal/owner helpers and stable RFC 9457-style problem codes.
-8. Implement the durable job claim/retry state machine without Spring Batch.
-9. Add authorization, duplicate-email/identity, refresh-reuse, revoked-session, cross-user, and job-lock integration tests.
+8. Reserve durable job storage only; do not implement a runner until a concrete workload performs the repository build-versus-buy evaluation.
+9. Add authorization, duplicate-email/identity, refresh-reuse, revoked-session, and cross-user integration tests; job execution tests belong with the first selected asynchronous workload.
 10. Add minimal authentication abuse protection: login/register throttling, authentication-failure security events, configurable progressive delay or temporary lock behavior, and tests proving disabled/revoked users are rejected on token conversion/refresh.
 
 Initial endpoints:

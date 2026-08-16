@@ -273,7 +273,7 @@ Rules:
 
 - immutable source facts remain authoritative even if projections fail;
 - backdated facts/reversals/observation revisions mark the earliest affected point stale;
-- small rebuilds may run synchronously; larger work may use the durable job system;
+- small rebuilds may run synchronously; larger work may use a maintained batch/scheduling library selected with its first concrete workload after a build-versus-buy review;
 - stale previous output may be shown only with an explicit stale/rebuilding/failed indication;
 - deterministic replay of identical facts/observations/policies/version must produce identical projection output.
 

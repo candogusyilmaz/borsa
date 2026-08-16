@@ -4,20 +4,18 @@ Status: **ACTIVE**
 
 Specification:
 
-[PR-020 — Canonical reference catalogue and owner-scoped manual instruments](PR-020-canonical-reference-catalog-and-manual-instruments.md)
+[PR-021 — Financial-account onboarding and immutable cash ledger](PR-021-financial-account-onboarding-and-cash-ledger.md)
 
 Implementation agents must read the complete specification and implement only that scope.
 
-PR-018's owner-locked refresh rotation, committed reuse response, successor access-token issuance, and JSON/cookie refresh delivery were accepted in commit `d1eea9a` after its focused 45-test gate, full 124-test suite, Spotless, Maven `verify`, and completion record passed.
+PR-020 is complete in accepted commit `3f45a8c`: the V2 canonical offline reference catalogue, deterministic seeds, explicit market-calendar coverage, owner-scoped manual-instrument lifecycle, SQL search/cursor behavior, user-authorized cross-cutting standards alignment, and all required review fixes passed the expanded 77-test focused gate, full 266-test suite, Spotless, and Maven `verify`.
 
-PR-019 is complete in the accepted working-tree commit `0c6657e`: typed authenticated identity, `/me`, owner-scoped logical session reads, current/all/selected-family revocation, exact logout cookie clearing, durable security events, and bounded process-local login/register/refresh abuse protection with transaction/concurrency/security coverage.
+PR-021 is the first financial-truth vertical slice. It adds V3 owner-scoped financial-account onboarding, explicit opening-state coverage, immutable cash activities/postings, native balance projections/reads, manual deposits/withdrawals/same-currency owned transfers, policy enforcement, idempotency, reversal/opening correction, locking, HTTP/security boundaries, and required pure/PostgreSQL/integration proof.
 
-PR-020 is the canonical offline reference catalogue and owner-scoped manual-instrument vertical slice. Implement only its seven-table V2 migration, deterministic reference seeds, minimal mappings/value objects, read-only catalogue/calendar APIs, owner-scoped manual instrument lifecycle, deterministic SQL search/cursor behavior, and required tests. Do not add jobs, persistent signing keys, Google/OIDC/recovery, roles/permissions/households, account export/deletion, cross-site cookie/CORS/trusted-proxy/general CSRF infrastructure, observations/providers, ledger/financial behavior, or frontend work.
+Do not add reconciliation/imports, pending settlement, investments/trades, multi-currency/FX, spending/income/bills/debt workflows, households, providers, frontend work, or later ledger features.
 
-On 2026-08-16 the supervising user explicitly authorized retaining the already-mixed behavior-preserving identity/session/abuse-protection and coding-standards alignment described in PR-020's completion record. That authorization resolves the review-scope objection but does not authorize new authentication product behavior or any other deferred capability.
+Do not implement the retired custom durable-job design. No generic scheduler, batch, workflow, rules, retry, or queue infrastructure is justified by PR-021. Future commodity infrastructure must follow the repository build-versus-buy rule and be selected with its first concrete production consumer.
 
-The user-owned `AGENTS.md` and command-playbook changes remain outside production scope and must not be reverted. Agents perform no Git operations.
+The user owns Git history. Agents perform no commit, branch, merge, rebase, reset, push, or remote operation unless explicitly requested.
 
-Keep this pointer on PR-020 throughout implementation and review. Do not advance it to another PR during this unit.
-
-PR-021 has been drafted as a planning artifact only. It is not active until the user accepts/commits PR-020 and explicitly advances this pointer.
+Keep this pointer on PR-021 throughout implementation and review. Do not draft or activate PR-022 during this unit.

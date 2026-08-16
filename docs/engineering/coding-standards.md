@@ -15,6 +15,9 @@ These standards define **how code is written**. Product scope and sequencing liv
 - Do not enable Java preview/incubator/experimental features by default.
 - Do not use Jakarta Persistence 4, Hibernate ORM 8, snapshots, milestones or release candidates in normal feature work.
 - New dependencies require a concrete feature need in the current PR. Prefer JDK/Spring/Boot capabilities already on the classpath.
+- Before implementing commodity infrastructure such as scheduling, batch execution, retries, rate limiting, protocol/authentication servers, tracing, caching, serialization, file parsing, or workflow orchestration, perform and record a build-versus-buy check. Evaluate, in order, the JDK, the pinned Spring Boot/Spring ecosystem, and focused actively maintained libraries against the concrete requirement. Custom implementation requires a documented semantic gap, operational constraint, or unacceptable dependency cost; an already-created table or partial implementation is not sufficient justification.
+- Do not build a generic infrastructure subsystem without a production consumer in the same PR. Select infrastructure with the first concrete workload so required restart, transaction, throughput, deployment, observability, and data-retention semantics drive the choice.
+- Build-versus-buy does not outsource product meaning. Accounting signs, opening-state coverage, correction, ownership, source quality, and other repository domain contracts remain application responsibilities even when technical plumbing comes from a library.
 
 ## 2. Java style
 

@@ -2,7 +2,7 @@
 
 Report date: 2026-08-16
 
-Scope: Spring Boot backend, PostgreSQL dump, database migration strategy, modular-monolith design, offline/fake data approach, and implementation readiness. React was not reviewed or changed in this update.
+Scope: Spring Boot backend, PostgreSQL dump, database migration strategy, modular-monolith design, offline/fake data approach, and implementation readiness. React production remains unchanged; this update performed only a bounded audit of its legacy authentication/token handling for the build-versus-buy review.
 
 ## At a glance
 
@@ -36,12 +36,23 @@ Scope: Spring Boot backend, PostgreSQL dump, database migration strategy, modula
 | PR-017 — HTTP local login and explicit token delivery | **Complete in user-owned commit `7f55288`**                  | One public login POST exposes the accepted atomic workflow through explicit response-body or hardened same-site cookie delivery; correction review and all required gates pass |
 | PR-018 — Refresh rotation/reuse and HTTP refresh       | **Complete in accepted commit `d1eea9a`**                       | Owner-locked append-oriented rotation, committed family reuse response, successor access issuance, native/cookie HTTP delivery, and PostgreSQL/concurrency/security proof passed the focused 45-test gate, full 124-test suite, Spotless, and Maven `verify` |
 | PR-019 — Authenticated identity/session security       | **Complete in accepted working-tree commit `0c6657e`**                   | Typed authenticated identity, `/me`, owner-scoped session reads, current/all/selected revocation, logout cookie clearing, durable security events, bounded process-local authentication abuse protection; focused gate, full 211-test suite, Spotless and Maven `verify` passed |
-| PR-020 — Canonical reference catalog/manual instruments | **Implementation complete; awaiting user commit decision** | V2 seven-table reference catalog, deterministic seeds, explicit calendar coverage, owner-scoped manual instrument lifecycle, SQL search/cursor pagination, optimistic alias-replacement concurrency, and real-filter ownership/security proof are implemented; the mixed identity/session standards alignment is explicitly user-authorized and covered |
+| PR-020 — Canonical reference catalog/manual instruments | **Complete in accepted commit `3f45a8c`** | V2 seven-table reference catalog, deterministic seeds, explicit calendar coverage, owner-scoped manual instrument lifecycle, SQL search/cursor pagination, optimistic alias-replacement concurrency, and real-filter ownership/security proof are implemented; the mixed identity/session standards alignment is explicitly user-authorized and covered |
+| PR-021 — Financial-account onboarding/immutable cash ledger | **Active specification; not implemented** | Planned V3 owner-scoped accounts, explicit opening coverage, immutable cash activities/postings, deposits, withdrawals, same-currency owned transfers, reversal/opening correction, native balance projection/read behavior, policy enforcement, idempotency, locking, and HTTP/security proof |
 | Automated backend coverage                         | 266 tests green in the current working tree | The suite covers response/cookie delivery, exact session/token binding, credential failures, validation/parsing, rotation invalid states, rollback, reuse, PostgreSQL locking, abuse-control concurrency, route scope, reference migration/mapping, explicit calendar coverage, owner isolation, bounded cursor search, and statelessness; the current execution has 0 failures, 0 errors, and 0 skips |
 
-Overall status: **PR-020 is implementation- and review-ready for the user's commit decision; no unresolved `MUST FIX` or `SHOULD FIX` finding remains.**
+Overall status: **PR-020 is accepted in `3f45a8c`; PR-021 is the active specification and has not been implemented.**
 
-## Active implementation specification — PR-020
+## Active implementation specification — PR-021
+
+- Date: 2026-08-16.
+- Starting commit: `3f45a8c`, the accepted PR-020 commit.
+- Planned database capability: Flyway V3 creates the bounded six-table financial truth model for owner-scoped accounts, account currency pockets, immutable activities/postings, idempotency records, and native balance projections. It does not add background-job, investing, spending, reconciliation, import, pending-settlement, household, provider, or observation tables.
+- Planned application capability: account onboarding with explicit opening state and historical coverage; manual deposits/withdrawals; same-currency transfers between owned accounts; append-only reversal and opening correction; negative-balance policy enforcement; stable balance semantics; deterministic idempotency; sorted account locking and optimistic version checks.
+- Planned boundary proof: pure domain tests, PostgreSQL migration/constraint/transaction/concurrency tests, and real-filter HTTP/security tests must prove owner isolation, exact balance semantics, idempotent replay/conflict, deadlock-resistant transfers, append-only correction, and stateless authenticated delivery.
+- Infrastructure decision: the former custom durable-job PR-021 draft is retired. PR-021 remains synchronous and introduces no scheduler, worker, retry, batch, queue, or workflow abstraction. Commodity infrastructure must be selected with its first concrete consumer after a build-versus-buy evaluation.
+- Specification: [PR-021-financial-account-onboarding-and-cash-ledger.md](../implementation/PR-021-financial-account-onboarding-and-cash-ledger.md).
+
+## Latest implementation checkpoint — PR-020
 
 - Date: 2026-08-16.
 - Starting commit: `0c6657e`, the accepted PR-019 working-tree commit.
@@ -52,9 +63,9 @@ Overall status: **PR-020 is implementation- and review-ready for the user's comm
 - Error-boundary follow-up: known unique constraints are translated through the shared platform utility, while unknown database failures are logged server-side and return the generic safe 500 response. The PR-019 pipe cursor remains a documented compatibility exception; new PR-020 cursors retain the exact canonical JSON contract.
 - Additional standards alignment: MDC trace correlation is scoped and cleaned by `RequestTraceFilter`; cache headers are centralized; DTO validation no longer duplicates annotation constraints; FK-only owner assignment uses `EntityManager.getReference`; enum fields use textual `EnumType.STRING`; and response mapping is co-located on response records.
 - Required proof: the expanded reference/security/concurrency gate covers 77 tests with no failures, errors, or skips; the full current-working-tree suite and Maven `verify` pass 266 tests, with Spotless also passing. The supervising user explicitly authorized retention of the mixed identity/session/abuse-protection standards alignment.
-- Review status: review fixes added the omitted value-object, enum-wire, database-constraint, validation, inactive-reference, zero-query range, exact-boundary, malformed-enum, alias-cap/sorting/immutability, abuse-capacity, and optimistic-concurrency proof. Alias-only replacement now uses an immediate version compare-and-swap, optional control flow no longer uses `orElse(null)`, and over-specific standards text was generalized. No commit, branch, history, or remote operation was performed; all changes remain unstaged.
-- Non-goals: global reference administration, calendar/import workflows, observations/providers/live rates/prices, ledger/financial behavior, durable jobs, persistent signing keys, further authentication/authorization, cross-site deployment infrastructure, and frontend work remain deferred.
-- Next planning artifact: `PR-021-durable-platform-job-execution.md` is drafted around the existing V1 job table, V2.1 lifecycle hardening, idempotent submission, `SKIP LOCKED` claim/fencing, heartbeat/retry/recovery, bounded execution, and safe observability. It is not active while `CURRENT.md` remains on PR-020.
+- Review status: review fixes added the omitted value-object, enum-wire, database-constraint, validation, inactive-reference, zero-query range, exact-boundary, malformed-enum, alias-cap/sorting/immutability, abuse-capacity, and optimistic-concurrency proof. Alias-only replacement now uses an immediate version compare-and-swap, optional control flow no longer uses `orElse(null)`, and over-specific standards text was generalized. The user accepted the completed implementation in commit `3f45a8c`.
+- Non-goals at acceptance: global reference administration, calendar/import workflows, observations/providers/live rates/prices, ledger/financial behavior, persistent signing keys, further authentication/authorization, cross-site deployment infrastructure, and frontend work remained deferred.
+- Transition: PR-021 now activates the financial-account/cash-ledger slice. The former custom durable-job design is retired; asynchronous infrastructure remains deferred until a concrete workload drives a build-versus-buy decision.
 
 ## Latest implementation checkpoint — PR-019
 
@@ -356,9 +367,9 @@ The 2026-08-07 document harmonization establishes these implementation rules:
 | Increment | Implementation result                                        | Status                                                                                                           |
 | --------: | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
 |        R0 | Preserve evidence and replace backend skeleton               | Not started                                                                                                      |
-|        R1 | Foundation, identity, auth, sessions and jobs                | In progress — PR-018 refresh rotation/reuse/HTTP is accepted in `d1eea9a`; PR-019 local identity/session security is active; durable jobs and later persistent-key/OIDC/recovery work remain deferred |
-|        R2 | Canonical references and deterministic seeds                 | In progress - PR-020 implementation complete in the working tree; awaiting user review and acceptance             |
-|        R3 | Accounts/ledger/funding/balances — FT-31                     | Not started                                                                                                      |
+|        R1 | Foundation, identity, auth, sessions and jobs                | Partially complete — PR-019 identity/session security is accepted in `0c6657e`; unused job storage remains only as a reservation, while execution infrastructure and persistent-key/OIDC/recovery work remain deferred |
+|        R2 | Canonical references and deterministic seeds                 | Complete for the accepted PR-020 boundary in `3f45a8c`; administration, imports, observations, and providers remain later capabilities |
+|        R3 | Accounts/ledger/funding/balances — FT-31                     | In progress — PR-021 financial-account onboarding and immutable cash ledger is the active specification; no implementation yet |
 |        R4 | Investing parity, funded trades and imports                  | Not started                                                                                                      |
 |        R5 | Observation platform and synthetic universe                  | Not started                                                                                                      |
 |        R6 | Timeline/net worth/investment truth — FT-01/02/11            | Not started                                                                                                      |

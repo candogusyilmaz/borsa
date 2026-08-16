@@ -1,6 +1,6 @@
 # PR-020 — Canonical reference catalogue and owner-scoped manual instruments
 
-Status: **IMPLEMENTATION COMPLETE — awaiting user commit decision**
+Status: **COMPLETE IN ACCEPTED COMMIT `3f45a8c`**
 
 ## Goal
 
@@ -900,9 +900,9 @@ Fill this before marking PR-020 complete.
 - `./mvnw "-Dtest=ReferenceValueObjectTest,ReferenceCatalogMigrationTest,ReferenceEntityMappingTest,ManualInstrumentServiceTest,ReferenceCatalogQueryTest,ReferenceCatalogHttpTest,ManualInstrumentHttpTest,ApiBearerSecurityHttpTest,AuthenticationAbuseProtectionTest,RefreshSessionRotationServiceTest,RefreshSessionRotationControlFlowTest" test` — 77 tests passed, 0 failures, 0 errors, 0 skipped.
 - `./mvnw test` — 266 tests passed, 0 failures, 0 errors, 0 skipped in the current working tree, including the user-authorized identity/session/abuse-protection alignment.
 - `./mvnw verify` — passed after applying the configured formatter, including the full 266-test suite and Spotless, with 0 failures, 0 errors, and 0 skipped.
-- `git status --short` and `git diff --check` — passed; no commit, branch, history, or remote operation performed, and all changes remain unstaged for review.
+- `git diff --check` — passed before acceptance. The user accepted the completed implementation in commit `3f45a8c`.
 
 
 ### Follow-up work
 
-- Global reference administration, calendar/import workflows, observations and provider adapters, live prices/rates, ledger/financial behavior, durable jobs, persistent signing keys, further authentication, authorization/roles, cross-site deployment infrastructure, and frontend work remain explicitly deferred.
+- Global reference administration, calendar/import workflows, observations and provider adapters, live prices/rates, ledger/financial behavior, persistent signing keys, further authentication, authorization/roles, cross-site deployment infrastructure, and frontend work remain explicitly deferred. Asynchronous infrastructure must be selected with its first concrete workload after the repository build-versus-buy evaluation; the retired custom durable-job design is not a follow-up commitment.
