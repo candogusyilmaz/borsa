@@ -15,6 +15,8 @@ import dev.canverse.stocks.reference.error.ReferenceErrorCode;
 import dev.canverse.stocks.reference.web.request.InstrumentAliasInput;
 import dev.canverse.stocks.reference.web.request.ManualInstrumentCreateRequest;
 import dev.canverse.stocks.reference.web.request.ManualInstrumentUpdateRequest;
+import jakarta.persistence.OptimisticLockException;
+import jakarta.validation.Validator;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -35,7 +37,9 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -71,6 +75,9 @@ class ManualInstrumentServiceTest {
 
     @Autowired
     CoordinatingClock clock;
+
+    @Autowired
+    Validator validator;
 
     @BeforeEach
     void cleanDatabase() {
@@ -140,11 +147,10 @@ class ManualInstrumentServiceTest {
         var tooManyAliases = IntStream.range(0, ManualInstrumentConstraints.MAX_ALIASES_PER_INSTRUMENT + 1)
                 .mapToObj(index -> new InstrumentAliasInput(AliasType.USER, "too-many-%02d".formatted(index)))
                 .toList();
-        assertThatThrownBy(() -> instrumentService.create(
-                        ownerId, createRequest("TOO-MANY-ALIASES", "Too many aliases", tooManyAliases)))
-                .isInstanceOfAny(
-                        jakarta.validation.ConstraintViolationException.class,
-                        org.springframework.validation.method.MethodValidationException.class);
+        var tooManyAliasesRequest = createRequest("TOO-MANY-ALIASES", "Too many aliases", tooManyAliases);
+        assertThat(validator.validate(tooManyAliasesRequest))
+                .extracting(violation -> violation.getPropertyPath().toString())
+                .contains("aliases");
         assertThat(jdbcTemplate.queryForObject(
                         "SELECT COUNT(*) FROM reference.instrument WHERE owner_user_account_id = ? AND symbol = ?",
                         Integer.class,
@@ -247,19 +253,15 @@ class ManualInstrumentServiceTest {
         var expandingName = "ß".repeat(81);
         var expandingAlias = "ß".repeat(65);
 
-        assertThatThrownBy(() -> instrumentService.create(
-                        ownerId,
-                        createRequest(
-                                "EXPANDING", expandingName, List.of(new InstrumentAliasInput(AliasType.USER, "safe")))))
+        var expandingNameRequest =
+                createRequest("EXPANDING", expandingName, List.of(new InstrumentAliasInput(AliasType.USER, "safe")));
+        assertThatThrownBy(expandingNameRequest::validate)
                 .isInstanceOf(AppException.class)
                 .satisfies(exception ->
                         assertThat(((AppException) exception).getCode()).isEqualTo("VALIDATION_FAILED"));
-        assertThatThrownBy(() -> instrumentService.create(
-                        ownerId,
-                        createRequest(
-                                "EXPANDING-ALIAS",
-                                "Safe name",
-                                List.of(new InstrumentAliasInput(AliasType.USER, expandingAlias)))))
+        var expandingAliasRequest = createRequest(
+                "EXPANDING-ALIAS", "Safe name", List.of(new InstrumentAliasInput(AliasType.USER, expandingAlias)));
+        assertThatThrownBy(expandingAliasRequest::validate)
                 .isInstanceOf(AppException.class)
                 .satisfies(exception ->
                         assertThat(((AppException) exception).getCode()).isEqualTo("VALIDATION_FAILED"));
@@ -270,23 +272,19 @@ class ManualInstrumentServiceTest {
                 .isZero();
 
         var created = instrumentService.create(ownerId, createRequest("EXPANSION-UPDATE", "Stable name", List.of()));
-        assertThatThrownBy(() -> instrumentService.update(
-                        ownerId,
-                        created.id(),
-                        new ManualInstrumentUpdateRequest(
-                                0, expandingName, ValuationMethod.MANUAL_VALUE, true, List.of())))
+        var expandingUpdateNameRequest =
+                new ManualInstrumentUpdateRequest(0, expandingName, ValuationMethod.MANUAL_VALUE, true, List.of());
+        assertThatThrownBy(expandingUpdateNameRequest::validate)
                 .isInstanceOf(AppException.class)
                 .satisfies(exception ->
                         assertThat(((AppException) exception).getCode()).isEqualTo("VALIDATION_FAILED"));
-        assertThatThrownBy(() -> instrumentService.update(
-                        ownerId,
-                        created.id(),
-                        new ManualInstrumentUpdateRequest(
-                                0,
-                                "Stable name",
-                                ValuationMethod.MANUAL_VALUE,
-                                true,
-                                List.of(new InstrumentAliasInput(AliasType.USER, expandingAlias)))))
+        var expandingUpdateAliasRequest = new ManualInstrumentUpdateRequest(
+                0,
+                "Stable name",
+                ValuationMethod.MANUAL_VALUE,
+                true,
+                List.of(new InstrumentAliasInput(AliasType.USER, expandingAlias)));
+        assertThatThrownBy(expandingUpdateAliasRequest::validate)
                 .isInstanceOf(AppException.class)
                 .satisfies(exception ->
                         assertThat(((AppException) exception).getCode()).isEqualTo("VALIDATION_FAILED"));
@@ -334,9 +332,7 @@ class ManualInstrumentServiceTest {
         instrumentService.create(ownerId, createRequest("SAME", "Same one", List.of()));
 
         assertThatThrownBy(() -> instrumentService.create(ownerId, createRequest("same", "Same two", List.of())))
-                .isInstanceOf(AppException.class)
-                .satisfies(exception -> assertThat(((AppException) exception).getErrorCode())
-                        .isEqualTo(ReferenceErrorCode.DUPLICATE_INSTRUMENT));
+                .isInstanceOf(DataIntegrityViolationException.class);
         assertThatThrownBy(() -> instrumentService.create(
                         ownerId,
                         new ManualInstrumentCreateRequest(
@@ -525,6 +521,8 @@ class ManualInstrumentServiceTest {
             return new UpdateOutcome(response.name(), null);
         } catch (AppException exception) {
             return new UpdateOutcome(null, exception.getErrorCode());
+        } catch (OptimisticLockException | ObjectOptimisticLockingFailureException exception) {
+            return new UpdateOutcome(null, ReferenceErrorCode.INSTRUMENT_VERSION_CONFLICT);
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("Concurrent update test interrupted", exception);

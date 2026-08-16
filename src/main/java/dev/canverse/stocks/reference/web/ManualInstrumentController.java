@@ -4,6 +4,7 @@ import dev.canverse.stocks.identity.application.model.AuthenticatedIdentity;
 import dev.canverse.stocks.platform.web.CacheHeaders;
 import dev.canverse.stocks.reference.application.InstrumentSearchService;
 import dev.canverse.stocks.reference.application.ManualInstrumentService;
+import dev.canverse.stocks.reference.application.model.InstrumentSearchCriteria;
 import dev.canverse.stocks.reference.domain.InstrumentType;
 import dev.canverse.stocks.reference.web.request.ManualInstrumentCreateRequest;
 import dev.canverse.stocks.reference.web.request.ManualInstrumentUpdateRequest;
@@ -40,6 +41,7 @@ public class ManualInstrumentController {
     public ResponseEntity<InstrumentResponse> create(
             @AuthenticationPrincipal AuthenticatedIdentity identity,
             @Valid @RequestBody ManualInstrumentCreateRequest request) {
+        request.validate();
         var response = manualInstrumentService.create(identity.userAccountId(), request);
         return new ResponseEntity<>(response, CacheHeaders.noStore(), HttpStatus.CREATED);
     }
@@ -49,6 +51,7 @@ public class ManualInstrumentController {
             @AuthenticationPrincipal AuthenticatedIdentity identity,
             @PathVariable UUID instrumentId,
             @Valid @RequestBody ManualInstrumentUpdateRequest request) {
+        request.validate();
         var response = manualInstrumentService.update(identity.userAccountId(), instrumentId, request);
         return new ResponseEntity<>(response, CacheHeaders.noStore(), HttpStatus.OK);
     }
@@ -74,8 +77,8 @@ public class ManualInstrumentController {
                     @Max(InstrumentSearchService.MAX_LIMIT)
                     int limit,
             @RequestParam(required = false) String cursor) {
-        var response =
-                searchService.search(identity.userAccountId(), query, marketId, type, includeInactive, limit, cursor);
+        var criteria = new InstrumentSearchCriteria(query, marketId, type, includeInactive, limit, cursor);
+        var response = searchService.search(identity.userAccountId(), criteria);
         return new ResponseEntity<>(response, CacheHeaders.noStore(), HttpStatus.OK);
     }
 }

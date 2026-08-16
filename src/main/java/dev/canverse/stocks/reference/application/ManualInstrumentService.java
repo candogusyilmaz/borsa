@@ -2,8 +2,6 @@ package dev.canverse.stocks.reference.application;
 
 import dev.canverse.stocks.identity.domain.UserAccount;
 import dev.canverse.stocks.platform.error.AppException;
-import dev.canverse.stocks.platform.error.DatabaseConstraintTranslator;
-import dev.canverse.stocks.platform.error.ErrorCode;
 import dev.canverse.stocks.platform.id.IdGenerator;
 import dev.canverse.stocks.reference.domain.CurrencyCode;
 import dev.canverse.stocks.reference.domain.Instrument;
@@ -22,31 +20,19 @@ import dev.canverse.stocks.reference.web.request.ManualInstrumentCreateRequest;
 import dev.canverse.stocks.reference.web.request.ManualInstrumentUpdateRequest;
 import dev.canverse.stocks.reference.web.response.InstrumentResponse;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.OptimisticLockException;
-import jakarta.validation.Valid;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
 
 @Service
-@Validated
 @RequiredArgsConstructor
 public class ManualInstrumentService {
-
-    private static final Map<String, ErrorCode> CONSTRAINT_ERROR_CODES = Map.of(
-            "uix_reference_instrument_global_symbol", ReferenceErrorCode.DUPLICATE_INSTRUMENT,
-            "uix_reference_instrument_owner_symbol", ReferenceErrorCode.DUPLICATE_INSTRUMENT,
-            "uix_reference_instrument_alias_identity", ReferenceErrorCode.DUPLICATE_INSTRUMENT_ALIAS);
 
     private final EntityManager entityManager;
     private final MarketRepository marketRepository;
@@ -59,10 +45,9 @@ public class ManualInstrumentService {
     private final IdGenerator idGenerator;
 
     @Transactional
-    public InstrumentResponse create(UUID ownerUserAccountId, @Valid ManualInstrumentCreateRequest request) {
+    public InstrumentResponse create(UUID ownerUserAccountId, ManualInstrumentCreateRequest request) {
         Objects.requireNonNull(ownerUserAccountId, "ownerUserAccountId");
         Objects.requireNonNull(request, "request");
-        request.validate();
         var symbol = InstrumentSymbol.of(request.symbol());
         var name = request.name().trim();
         var quotationCurrency = CurrencyCode.of(request.quotationCurrency());
@@ -94,14 +79,11 @@ public class ManualInstrumentService {
                 quotationCurrency,
                 request.valuationMethod(),
                 observedAt);
-        try {
-            var savedInstrument = instrumentRepository.save(instrument);
-            instrumentAliasRepository.saveAll(createAliases(savedInstrument, request.aliases(), observedAt));
-            instrumentRepository.flush();
-            instrumentAliasRepository.flush();
-        } catch (DataIntegrityViolationException exception) {
-            throw DatabaseConstraintTranslator.translate(exception, CONSTRAINT_ERROR_CODES);
-        }
+        var savedInstrument = instrumentRepository.save(instrument);
+        instrumentAliasRepository.saveAll(createAliases(savedInstrument, request.aliases(), observedAt));
+        // The JDBC read model below uses a separate connection and must see the aggregate before returning.
+        instrumentRepository.flush();
+        instrumentAliasRepository.flush();
         return readRepository
                 .findVisibleInstrument(ownerUserAccountId, instrument.getId())
                 .map(InstrumentResponse::from)
@@ -110,11 +92,10 @@ public class ManualInstrumentService {
 
     @Transactional
     public InstrumentResponse update(
-            UUID ownerUserAccountId, UUID instrumentId, @Valid ManualInstrumentUpdateRequest request) {
+            UUID ownerUserAccountId, UUID instrumentId, ManualInstrumentUpdateRequest request) {
         Objects.requireNonNull(ownerUserAccountId, "ownerUserAccountId");
         Objects.requireNonNull(instrumentId, "instrumentId");
         Objects.requireNonNull(request, "request");
-        request.validate();
         var instrument = instrumentRepository
                 .findOwnedById(instrumentId, ownerUserAccountId)
                 .orElseThrow(() -> new AppException(ReferenceErrorCode.INSTRUMENT_NOT_FOUND));
@@ -127,22 +108,17 @@ public class ManualInstrumentService {
                 || instrument.getValuationMethod() != request.valuationMethod()
                 || instrument.isActive() != request.active()
                 || !Objects.equals(instrument.getUpdatedAt(), observedAt);
-        try {
-            if (metadataChanged) {
-                instrument.updateMetadata(name, request.valuationMethod(), request.active(), observedAt);
-                entityManager.flush();
-            } else {
-                forceAliasAggregateVersion(instrumentId, ownerUserAccountId, request.version());
-            }
-            instrumentAliasRepository.deleteByInstrumentId(instrumentId);
-            var managedInstrument = instrumentRepository.getReferenceById(instrumentId);
-            instrumentAliasRepository.saveAll(createAliases(managedInstrument, request.aliases(), observedAt));
-            instrumentAliasRepository.flush();
-        } catch (ObjectOptimisticLockingFailureException | OptimisticLockException exception) {
-            throw new AppException(ReferenceErrorCode.INSTRUMENT_VERSION_CONFLICT, exception);
-        } catch (DataIntegrityViolationException exception) {
-            throw DatabaseConstraintTranslator.translate(exception, CONSTRAINT_ERROR_CODES);
+        if (metadataChanged) {
+            instrument.updateMetadata(name, request.valuationMethod(), request.active(), observedAt);
+            entityManager.flush();
+        } else {
+            forceAliasAggregateVersion(instrumentId, ownerUserAccountId, request.version());
         }
+        instrumentAliasRepository.deleteByInstrumentId(instrumentId);
+        var managedInstrument = instrumentRepository.getReferenceById(instrumentId);
+        instrumentAliasRepository.saveAll(createAliases(managedInstrument, request.aliases(), observedAt));
+        // The replacement must be visible to the explicit response projection in this transaction.
+        instrumentAliasRepository.flush();
         return readRepository
                 .findVisibleInstrument(ownerUserAccountId, instrumentId)
                 .map(InstrumentResponse::from)

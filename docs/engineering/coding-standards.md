@@ -22,7 +22,7 @@ These standards define **how code is written**. Product scope and sequencing liv
 ## 2. Java style
 
 - Prefer small cohesive classes with one reason to change.
-- Prefer records for immutable API DTOs, commands, query results and small value objects when identity/mutability are unnecessary.
+- Prefer records for immutable HTTP contracts, application-owned use-case models, read models and small value objects when identity/mutability are unnecessary.
 - Jakarta Persistence 3.2 record embeddables are allowed when a true persisted value object benefits from them; do not force every pair of columns into an embeddable.
 - Prefer sealed hierarchies and exhaustive pattern matching only when the domain is genuinely closed and the result is clearer than conventional polymorphism.
 - Prefer `switch` expressions/patterns when they improve exhaustiveness and readability.
@@ -43,6 +43,7 @@ These standards define **how code is written**. Product scope and sequencing liv
 - Omit `@Autowired` on a single constructor.
 - Put transaction boundaries on cohesive application/domain services, not controllers.
 - Keep controllers thin: HTTP parsing/validation/auth context → application service → response mapping.
+- Authenticated controllers receive the existing typed identity through `@AuthenticationPrincipal`; do not accept raw `Authentication`, extract repeated claims, or resolve the same identity again in each controller.
 - Prefer composed HTTP method mappings with a direct path string such as `@PostMapping("register")`; omit `value`/`path` when only one path is mapped.
 - Do not add `consumes` or `produces` attributes to ordinary JSON request mappings. Let Spring's message converters and content negotiation infer the media types; add explicit media-type constraints only when a mapping ambiguity or a concrete non-default media-type contract requires them.
 - For a fixed HTTP status, prefer `@ResponseStatus` and return the response body directly. Use `ResponseEntity` only when the handler needs a dynamic status, response-specific headers, or other response-level control.
@@ -61,23 +62,26 @@ dev.canverse.stocks
     application/     ← transactional services, use cases
     infrastructure/  ← Spring Data repositories, external adapters
     configuration/   ← Spring @Configuration classes
-    input/            ← inbound HTTP/API request records
-    output/           ← outbound HTTP/API response records
+    web/
+      request/        ← inbound HTTP/API request records
+      response/       ← outbound HTTP/API response records
     web/              ← controllers
   reference/
     domain/
     application/
     infrastructure/
     configuration/
-    input/
-    output/
+    web/request/
+    web/response/
     web/
   ... (same structure for every capability)
 ```
 
 Do not create these as global top-level layers at the root package level. Omit a sub-package entirely when a capability has no code in that layer yet. Within a crowded capability sub-package, a further feature-group split (e.g. `money/application/spending/`) is acceptable.
 
-API DTO placement is directional: request records belong in the owning capability's `input` package and response records belong in its `output` package, even when used by only one controller. Keep application commands and query results in `application`; do not move every Java method input/output into the API DTO packages. Do not add a parallel `dto` package.
+HTTP contract placement is directional: request records belong in the owning capability's `web/request` package and response records belong in its `web/response` package, even when used by only one controller. Keep meaningful application models and query results in `application/model`; do not move every Java method input/output into the HTTP contract packages. Do not add a parallel `dto`, `mapper` or generic model package.
+
+Group parameters only when they form a meaningful use-case concept. For example, a reference search owns a record such as `reference/application/model/InstrumentSearchCriteria`; do not wrap every three- or four-argument method in a generic `Command`, `Query`, `Request` or `Parameters` type. Keep security identity and transaction context separate from business criteria.
 
 Avoid `FooService` + `FooServiceImpl`, `FooUseCase`, `FooPort`, `FooAdapter`, mapper interfaces and command-handler classes when one cohesive class is enough. Introduce interfaces for:
 
@@ -88,7 +92,7 @@ Avoid `FooService` + `FooServiceImpl`, `FooUseCase`, `FooPort`, `FooAdapter`, ma
 ## 5. JPA/Hibernate entity standards
 
 - Flyway SQL owns DDL. Entity annotations describe runtime mapping only.
-- Entities are not API DTOs and must never be serialized directly to clients.
+- Entities are not HTTP contract records and must never be serialized directly to clients.
 - Prefer field access and a protected no-arg constructor where Hibernate requires one.
 - Do not expose blanket public setters. Mutating methods should express domain intent (`rename`, `archive`, `changePolicy`) and enforce relevant invariants.
 - Use `@Getter` on JPA entities and value objects instead of writing public getters manually.
@@ -112,6 +116,8 @@ Avoid `FooService` + `FooServiceImpl`, `FooUseCase`, `FooPort`, `FooAdapter`, ma
 
 - JPA is the default for aggregate writes and straightforward reads.
 - Use Spring `JdbcClient` with explicit SQL for complex/reporting read models where SQL is clearer or more predictable than an ORM query.
+- For inclusive `LocalDate` ranges, use `from.datesUntil(to.plusDays(1))` after checking the maximum range; preserve missing-date and empty-range semantics without using stream side effects such as `peek`.
+- For complex PostgreSQL reference reads, prefer explicit `array_agg`/`array_remove` aggregation for ordered one-to-many values and row-value tuple comparisons for compound keyset cursors when the SQL and indexes align. Do not introduce Spring Data scrolling APIs merely to replace a clear `JdbcClient` cursor contract.
 - Do not maintain parallel JPA/MyBatis/QueryDSL implementations of the same query path. MyBatis and QueryDSL are not part of the initial rewrite.
 - Avoid N+1 queries. Fetch exactly what a use case needs using explicit query shape, projections, entity graphs/fetch joins where justified, or `JdbcClient`.
 - Repository methods should represent meaningful queries, not become generic persistence utility layers.
@@ -135,12 +141,11 @@ Avoid `FooService` + `FooServiceImpl`, `FooUseCase`, `FooPort`, `FooAdapter`, ma
 
 - New public endpoints live under `/api/v1`.
 - API request/response models are records unless mutability is specifically required.
-- Annotate response DTO components with `@NotNull` when the API contract guarantees they are present, so future OpenAPI/Swagger generation can express required response fields accurately; omit it for conditionally absent fields.
+- Annotate response-record components with `@NotNull` when the API contract guarantees they are present, so future OpenAPI/Swagger generation can express required response fields accurately; omit it for conditionally absent fields.
 - External IDs are opaque strings/UUIDs; do not expose database implementation details.
 - Financial decimals are canonical decimal strings according to the accounting contract/OpenAPI schema; do not send JavaScript-sensitive floating numbers.
-- Use Bean Validation at the HTTP boundary and domain/application validation for invariants that cannot be expressed structurally.
-- When request-record invariants cannot be expressed with Bean Validation and require no external dependency, put them in a public `void validate()` method on the corresponding request DTO. Keep the method deterministic and call it at the application-service boundary as a barrier for non-HTTP callers as well.
-- After a request has crossed its `@Valid`/`validate()` barrier, do not repeat `Objects.requireNonNull(request.field(), ...)` checks in the application service. Domain constructors and methods may still enforce their own invariants at their boundary.
+- Controllers are the only Bean Validation entry points. Use `@Valid @RequestBody` for request records and Jakarta constraints on request parameters/path variables where needed. Request records may retain constraint metadata and nested `@Valid` type-use annotations for cascading; a deterministic request-record `validate()` method for non-structural rules is called by the controller after binding.
+- Do not put `@Validated` on application services, repositories, domain, infrastructure or configuration classes, and do not put service-method `@Valid` parameters there. Application services receive the already-validated HTTP contract and must not repeat request validation. Keep `Objects.requireNonNull` and runtime checks when they protect security, parsing, configuration, persistence or genuine domain integrity.
 - Response records own transformations from their exact read-model shape through named factories such as `Response.from(view)`. Services orchestrate and select data; they do not accumulate private response-mapping boilerplate.
 - Use RFC 9457-compatible problem details with stable application problem codes and safe messages.
 - Never expose stack traces, SQL errors, raw provider bodies, secrets or internal exception messages to clients.
@@ -153,7 +158,7 @@ Avoid `FooService` + `FooServiceImpl`, `FooUseCase`, `FooPort`, `FooAdapter`, ma
 
 ### 9.1 Application error contract
 
-- Expected application failures use the shared `AppException` / `ErrorCode` mechanism. Do not introduce parallel base exceptions, ad-hoc error DTOs, or `ResponseStatusException` for expected domain/application outcomes.
+- Expected application failures use the shared `AppException` / `ErrorCode` mechanism. Do not introduce parallel base exceptions, ad-hoc error records, or `ResponseStatusException` for expected domain/application outcomes.
 - Cross-cutting codes belong in `CommonErrorCode`. Capability-specific enums belong in that capability's `error` package, for example `identity/error/IdentityErrorCode`.
 - Error-code constants describe the condition without repeating their capability: use `IdentityErrorCode.INVALID_CREDENTIALS`, not `IDENTITY_INVALID_CREDENTIALS`.
 - Each error code defines:
@@ -175,24 +180,23 @@ Avoid `FooService` + `FooServiceImpl`, `FooUseCase`, `FooPort`, `FooAdapter`, ma
 - Use the project problem-type base `https://canverse.dev/problems/` followed by the lower-kebab error code.
 - Include non-empty, safe params for 4xx application errors only. Omit `params` from every 5xx response, even when the server-side exception carries them.
 - Never serialize exception messages, causes, stack traces, Java class names, SQL, constraint names, provider bodies, secrets, or developer descriptions as internal-error details.
-- Unknown database/persistence failures are not translated in application services: rethrow them so the global boundary logs the server-side exception and returns the generic safe 500 code. Catch `DataIntegrityViolationException` only for a high-concurrency unique collision that the capability can identify by a named constraint.
-- Constraint-name inspection and known-constraint translation are centralized in the platform error utility. A capability supplies only its immutable constraint-to-error-code map; it must not walk Hibernate cause chains in each service.
+- Application services never catch `DataIntegrityViolationException`, `ObjectOptimisticLockingFailureException` or `OptimisticLockException`. They retain only flushes required for ordering, read visibility, optimistic-lock semantics, generated state or aggregate consistency; the global boundary maps optimistic failures to the existing state-conflict contract.
+- Constraint-name inspection and known-constraint translation are centralized in the static platform `DatabaseConstraintRegistry`, which owns the small explicit mapping table for the existing identity/reference error codes. It never exposes SQL, constraint names or database messages. Unknown persistence failures return the generic safe 500 response and are logged server-side.
 - Do not catch `Exception` merely to log and rethrow. The final global catch-all owns unexpected 500 logging and safe response conversion.
 - Expected validation, conflict, and not-found outcomes are not error-level log spam. Unexpected and internal 5xx failures are logged with their server-side exception for diagnosis.
 
 ### 9.3 Validation errors
 
-- Bean Validation, MVC method validation, and application method validation use `CommonErrorCode.VALIDATION_FAILED` with HTTP 422 and one `params.errors[]` structure.
+- Bean Validation and MVC controller method validation use `CommonErrorCode.VALIDATION_FAILED` with HTTP 422 and one `params.errors[]` structure.
 - Each validation entry contains `field`, validated application `key`, and safe `detail`; it may include safe constraint attributes such as `min`, `max`, or `value` under nested `params`.
 - Built-in Jakarta constraints map to stable `error.fields.common.*` keys. Explicit custom templates use validated application keys such as `{error.fields.identity.password_too_short}`.
 - Never send Jakarta/Hibernate bundle keys, malformed placeholders, arbitrary validation messages, rejected values, or class names as validation keys. Unknown constraints use the safe `error.fields.common.unmapped_constraint` fallback and are logged as implementation/configuration defects.
 
-### 9.4 Request correlation
+### 9.4 Request correlation and tracing
 
-- `RequestTraceFilter` owns request correlation for the current application. It generates a server-owned trace ID through `IdGenerator`, stores it on the request, and returns it in `X-Trace-Id`.
-- Every globally handled `ProblemDetail.traceId` equals the response `X-Trace-Id` value.
-- Do not trust an inbound `X-Trace-Id` as authoritative and do not create controller-specific trace-ID mechanisms.
-- Distributed tracing/OpenTelemetry is introduced only when a concrete later requirement approves it; it must integrate with, not silently replace, the public error-correlation contract.
+- Use one Spring Boot-managed Micrometer Tracing bridge (currently OpenTelemetry) with W3C propagation. The current span/trace context owns native `traceId`/`spanId` logging and context cleanup; do not manually recreate native MDC management or add exporters/network infrastructure without a concrete requirement.
+- `RequestTraceFilter` remains a compatibility boundary: it generates a server-owned UUID through `IdGenerator`, stores it on the request, returns it in `X-Trace-Id`, and supplies the public `ProblemDetail.traceId`. The UUID is intentionally related to, but distinct from, the native W3C trace ID when the formats differ.
+- Do not trust an inbound `X-Trace-Id` as authoritative and do not create controller-specific trace-ID mechanisms. Inbound `traceparent` is handled by Micrometer; native and compatibility contexts must be isolated and cleaned after every request.
 
 ## 10. Security and ownership
 
@@ -244,9 +248,11 @@ Additional rules:
 - Enforce entity-local mutation prerequisites such as source kind or lifecycle state in domain methods as well as owner authorization in application services. An entity cannot infer the caller's identity, but it can reject mutation of an incompatible persisted state.
 - Persist application enums with `@Enumerated(EnumType.STRING)` when the database contract is textual and enum names are the stable values. Keep the Flyway column textual unless a separate migration explicitly changes that contract.
 - Flush only when it changes a subsequent read/write/constraint outcome. Do not issue a second flush after an already-flushed aggregate merely because an unrelated security/audit event was recorded.
-- A DTO `validate()` method contains only invariants annotations cannot express, such as normalization-sensitive limits, cross-field rules or duplicate-item rules. It must not repeat `@NotNull`, `@NotBlank`, `@Size`, `@Min`, `@Max`, `@Pattern` or nested-object checks. Put type-use constraints on collection elements and provide a `@Valid`/method-validation barrier for non-HTTP entry points.
-- Servlet request correlation places the server-owned trace ID in SLF4J MDC for the request lifetime and removes it in `finally`. The logging correlation pattern renders that MDC value; thread-local correlation must not leak between pooled request threads.
-- The global handler omits exception parameters and internal details from 5xx responses, but logs safe diagnostic parameters with the trace ID and cause. Never include secrets, tokens, passwords or raw provider/database payloads in those parameters.
+- A request-record `validate()` method contains only invariants annotations cannot express, such as normalization-sensitive limits, cross-field rules or duplicate-item rules. It must not repeat `@NotNull`, `@NotBlank`, `@Size`, `@Min`, `@Max`, `@Pattern` or nested-object checks. The controller invokes it after the `@Valid` barrier; application services do not invoke it again.
+- Local access-token validation composes Spring Security's issuer, audience and zero-skew timestamp validators with a small application validator for required headers, algorithm/key ID/token type, canonical UUID claims, exact lexical timestamp precision, `iat == nbf`, strict existing timestamp boundaries and maximum lifetime. Raw-token inspection remains when it is required to preserve lexical contracts such as fractional NumericDate rejection.
+- Micrometer Tracing owns native W3C trace context and native `traceId`/`spanId` MDC values. The compatibility UUID is the only value placed in the compatibility MDC key by `RequestTraceFilter`, and it is removed in `finally`; tests must prove inbound propagation, header/Problem Detail correlation, request isolation and cleanup.
+- The global handler omits exception parameters and internal details from 5xx responses, logs server-side diagnostics with both compatibility and native trace context, maps known registered constraints to existing capability errors, and maps unknown persistence failures safely. Never include secrets, tokens, passwords or raw provider/database payloads in those parameters.
+- Application models belong to the owning use case, HTTP records remain in `web/request` and `web/response`, repository projections remain infrastructure-owned, and response records keep their factories. Avoid generic DTO/mapper/data/view packages and do not introduce MapStruct.
 - Reusable HTTP cache policy belongs in a small platform helper such as `CacheHeaders.noStore()`. Do not duplicate `Cache-Control`/`Pragma` construction in each controller or add a global interceptor unless the policy is truly universal.
 - Repeated lifecycle predicates belong on the domain entity that owns the state. Services and converters call a named domain predicate rather than copy the same revoked/expiry/owner-enabled expression.
 - Bounded in-memory keyed state uses per-key atomic map transitions and a narrow lock only around capacity admission/pruning. Preserve fail-closed capacity behavior and version-guarded rollback without serializing every independent key.

@@ -7,13 +7,18 @@ import java.text.ParseException;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.UUID;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.OAuth2ErrorCodes;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtClaimValidator;
+import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
+import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 
 final class LocalAccessTokenValidator implements OAuth2TokenValidator<Jwt> {
 
@@ -24,16 +29,24 @@ final class LocalAccessTokenValidator implements OAuth2TokenValidator<Jwt> {
 
     private final AccessTokenProperties properties;
     private final Clock clock;
+    private final OAuth2TokenValidator<Jwt> issuerValidator;
+    private final OAuth2TokenValidator<Jwt> audienceValidator;
 
     LocalAccessTokenValidator(AccessTokenProperties properties, Clock clock) {
         this.properties = Objects.requireNonNull(properties, "properties");
         this.clock = Objects.requireNonNull(clock, "clock");
+        this.issuerValidator = new JwtIssuerValidator(properties.issuer().toString());
+        this.audienceValidator = new JwtClaimValidator<>("aud", this::hasExpectedAudience);
     }
 
     @Override
     public OAuth2TokenValidatorResult validate(Jwt token) {
         var observedAt = clock.instant();
-        if (hasValidEnvelope(token, observedAt)) {
+        var timestampValidator = new JwtTimestampValidator(Duration.ZERO);
+        timestampValidator.setClock(Clock.fixed(observedAt, clock.getZone()));
+        var standardValidators =
+                new DelegatingOAuth2TokenValidator<>(issuerValidator, audienceValidator, timestampValidator);
+        if (!standardValidators.validate(token).hasErrors() && hasValidEnvelope(token, observedAt)) {
             return OAuth2TokenValidatorResult.success();
         }
         return OAuth2TokenValidatorResult.failure(INVALID_TOKEN);
@@ -44,7 +57,6 @@ final class LocalAccessTokenValidator implements OAuth2TokenValidator<Jwt> {
         var notBefore = token.getNotBefore();
         var expiresAt = token.getExpiresAt();
         return hasExpectedHeaders(token)
-                && hasExpectedIssuerAndAudience(token)
                 && hasCanonicalUuidClaim(token, "sub")
                 && hasCanonicalUuidClaim(token, "jti")
                 && hasCanonicalUuidClaim(token, "sid")
@@ -52,7 +64,8 @@ final class LocalAccessTokenValidator implements OAuth2TokenValidator<Jwt> {
                 && isWholeSecond(issuedAt)
                 && isWholeSecond(notBefore)
                 && isWholeSecond(expiresAt)
-                && issuedAt.equals(notBefore)
+                && Objects.equals(issuedAt, notBefore)
+                // Preserve the existing strict boundary contract; standard timestamp validators allow equality.
                 && !notBefore.isAfter(observedAt)
                 && expiresAt.isAfter(observedAt)
                 && expiresAt.isAfter(issuedAt)
@@ -65,14 +78,11 @@ final class LocalAccessTokenValidator implements OAuth2TokenValidator<Jwt> {
                 && "access".equals(token.getHeaders().get("typ"));
     }
 
-    private boolean hasExpectedIssuerAndAudience(Jwt token) {
-        var issuer = token.getIssuer();
-        var audience = token.getAudience();
-        return issuer != null
-                && properties.issuer().toString().equals(issuer.toString())
-                && audience != null
-                && audience.size() == 1
-                && properties.audience().equals(audience.getFirst());
+    private boolean hasExpectedAudience(Object claim) {
+        if (!(claim instanceof Collection<?> audience) || audience.size() != 1) {
+            return false;
+        }
+        return properties.audience().equals(audience.iterator().next());
     }
 
     private boolean hasCanonicalUuidClaim(Jwt token, String claimName) {

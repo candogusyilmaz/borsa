@@ -1,7 +1,6 @@
 package dev.canverse.stocks.identity;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 import dev.canverse.stocks.identity.application.LocalAccountRegistrationService;
@@ -10,7 +9,6 @@ import dev.canverse.stocks.identity.infrastructure.AuthIdentityRepository;
 import dev.canverse.stocks.identity.infrastructure.UserAccountRepository;
 import dev.canverse.stocks.platform.error.AppException;
 import dev.canverse.stocks.testing.RecordingIdGenerator;
-import jakarta.validation.ConstraintViolationException;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -24,6 +22,7 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -174,8 +173,7 @@ class LocalAccountRegistrationServiceTest {
 
         var thrown = catchThrowable(() -> registrationService.register("Collision@example.com", RAW_PASSWORD));
 
-        assertThat(thrown).isExactlyInstanceOf(AppException.class);
-        assertThat(((AppException) thrown).getErrorCode()).isEqualTo(IdentityErrorCode.EMAIL_ALREADY_REGISTERED);
+        assertThat(thrown).isExactlyInstanceOf(DataIntegrityViolationException.class);
         assertThat(userAccountRepository.count()).isOne();
         assertThat(authIdentityRepository.count()).isOne();
         assertThat(userAccountRepository.findById(fixtureUserId).orElseThrow().getEmail())
@@ -187,27 +185,6 @@ class LocalAccountRegistrationServiceTest {
                 .isEqualTo("collision@example.com");
         assertThat(userAccountRepository.existsByEmailNormalized("collision@example.com"))
                 .isFalse();
-    }
-
-    @Test
-    void invalidRegistrationInputWritesNothing() {
-        assertValidationFailure("not-an-email", RAW_PASSWORD);
-        assertValidationFailure(" alice@example.com", RAW_PASSWORD);
-        assertValidationFailure("alice@example.com ", RAW_PASSWORD);
-        assertValidationFailure("alice@example.com", " ");
-        assertValidationFailure("alice@example.com", "short");
-        assertValidationFailure("alice@example.com", "p".repeat(129));
-        assertValidationFailure("a".repeat(310) + "@example.com", RAW_PASSWORD);
-
-        assertThat(userAccountRepository.count()).isZero();
-        assertThat(authIdentityRepository.count()).isZero();
-    }
-
-    private void assertValidationFailure(String email, String rawPassword) {
-        assertThatThrownBy(() -> registrationService.register(email, rawPassword))
-                .isInstanceOf(ConstraintViolationException.class);
-        assertThat(userAccountRepository.count()).isZero();
-        assertThat(authIdentityRepository.count()).isZero();
     }
 
     private void runInTransaction(Runnable action) {

@@ -12,6 +12,20 @@ Last updated: 2026-08-16
 - Testcontainers for PostgreSQL integration tests
 - One Maven project / modular monolith
 
+## Current backend standardization checkpoint
+
+Date: 2026-08-16.
+
+The active PR pointer remains PR-021; no financial-account or ledger implementation is part of this checkpoint. The current working tree standardizes the accepted identity/reference/platform backend while preserving the `/api/v1/**` routes and existing HTTP contracts:
+
+- Bean Validation is an HTTP-controller concern. Request records retain structural and nested constraint metadata; controllers invoke any non-structural request-record validation; application services no longer use `@Validated`, service-method `@Valid`, or repeated request validation.
+- Local JWT decoding composes Spring Security issuer, audience and zero-skew timestamp validators with the application-specific header, canonical-claim, lexical NumericDate, strict-boundary and lifetime checks.
+- Micrometer Tracing uses the Boot-managed OpenTelemetry bridge and W3C propagation. Native trace context drives logging and MDC; the server-owned UUID `X-Trace-Id` and Problem Detail `traceId` remain the public compatibility correlation values.
+- Persistence error mapping is global: the static platform `DatabaseConstraintRegistry` owns the small explicit identity/reference constraint table, while services let integrity and optimistic-lock exceptions cross the transaction boundary unchanged. Unknown persistence failures remain safe 500 responses.
+- Meaningful application criteria use capability-owned records under `application/model`; HTTP records use `web/request` and `web/response`; immutable collections, inclusive `datesUntil` ranges, and existing PostgreSQL aggregation/tuple-cursor SQL conventions remain in force.
+
+Focused and complete suites are green: 262 tests, 0 failures, 0 errors and 0 skipped; Maven `verify` and `spotless:check` pass.
+
 ## Git workflow
 
 - Working branch: `rewrite-agent-batch`
@@ -348,7 +362,9 @@ dev.canverse.stocks
             └── RequestTraceFilter
 ```
 
-PR-017 additionally adds `identity.input.LocalLoginRequest`, `identity.input.RefreshTokenDelivery`, `identity.output.LocalLoginResponse`, and `identity.web.LocalLoginController`. PR-018 adds refresh rotation application/result contracts, explicit refresh request/response records, repository projection and owner-lock queries, `DeviceSession` rotation/reuse behavior, the shared `RefreshTokenCookieHeader`, and `LocalRefreshController`.
+PR-017 additionally adds request/response records under `identity.web.request` and `identity.web.response`, plus `identity.web.LocalLoginController`. PR-018 adds refresh rotation application/result contracts, explicit refresh request/response records, repository projection and owner-lock queries, `DeviceSession` rotation/reuse behavior, the shared `RefreshTokenCookieHeader`, and `LocalRefreshController`.
+
+The inherited package tree above predates the current naming cleanup. The authoritative current layout is `web/request` and `web/response` for HTTP records, with meaningful application-owned criteria/read models under `application/model`; no new top-level `input`, `output`, `dto` or generic mapper package is introduced.
 
 ## Important decisions discovered during implementation
 
@@ -359,12 +375,13 @@ PR-017 additionally adds `identity.input.LocalLoginRequest`, `identity.input.Ref
 - PR-003 is read/mapping-oriented. It does not establish entity mutation APIs or JPA write semantics.
 - JSON fields are initially mapped as opaque JSON strings with Hibernate JSON JDBC typing; final write-side representation is deferred until a real write use case requires it.
 - Lombok is an accepted project dependency. Touched JPA entities use `@Getter` and `@NoArgsConstructor(access = AccessLevel.PROTECTED)`; Spring components use `@RequiredArgsConstructor` where appropriate.
-- Capability code uses the fixed `domain`, `application`, `infrastructure`, `configuration`, `input`, `output`, and `web` sub-packages from `coding-standards.md`, omitting unused sub-packages. Directional `input`/`output` packages contain HTTP/API request and response records only.
+- Capability code uses the fixed `domain`, `application`, `infrastructure`, `configuration`, and `web` sub-packages from `coding-standards.md`, with HTTP records in `web/request` and `web/response`, and meaningful use-case models in `application/model`; unused sub-packages are omitted.
 - `LocalAccountRegistrationService` is the first identity write workflow: one transaction creates a `user_account` and its `LOCAL` `auth_identity`, and an identity flush failure rolls both rows back.
 - Duplicate-email registration failures use `IdentityErrorCode.EMAIL_ALREADY_REGISTERED` directly with the shared `AppException` contract; no identity-specific exception wrapper is retained.
 - HTTP errors use one RFC 9457 `ProblemDetail` contract with stable application fields; internal 5xx details, causes, SQL, and exception messages are not serialized.
-- Request correlation IDs are generated by the application `IdGenerator`, stored on the request, and returned in `X-Trace-Id` and `traceId`; inbound headers are not authoritative.
-- Bean Validation, method validation, and framework validation failures use `VALIDATION_FAILED` with safe, shape-validated validation keys.
+- Request correlation UUIDs are generated by the application `IdGenerator`, stored on the request, and returned in `X-Trace-Id` and Problem Detail `traceId`; inbound headers are not authoritative. Micrometer owns the native W3C trace/span context and native MDC entries.
+- Bean Validation starts at controllers; request records own structural/nested metadata and controller-invoked non-structural checks, while application services do not use service-level `@Validated` or `@Valid`.
+- The global error boundary owns database constraint mapping and optimistic-lock translation. Capability mappings are registered as platform records without importing capability enums into the registry; unknown persistence failures remain safe 500 responses.
 - The versioned local-registration endpoint remains intentionally public under the PR-016 security chain: it delegates once to the PR-005 transactional workflow and returns only the new user ID. PR-017 adds the separate initial-login boundary, and PR-018 adds refresh rotation and lifecycle behavior; logout/session management remains deferred.
 - HTTP registration validation occurs before the service workflow, while duplicate and malformed-request failures retain the shared PR-006 ProblemDetail and trace-correlation behavior.
 - Local credential verification is application-only and read-only: it normalizes the lookup email with `Locale.ROOT`, performs one password match with a constructed dummy-hash fallback when needed, rejects disabled accounts uniformly, and returns only the associated user UUID. Structural validation is deferred to the future HTTP login boundary; the service has no validation annotations.

@@ -364,19 +364,23 @@ Fill this before marking the PR complete.
 
 ### Implemented
 
-- Not implemented; active specification only.
+- PR-021 financial-account and ledger capability: not implemented; this specification remains active.
+- Separate current-worktree backend standardization cleanup: implemented against the accepted PR-020 identity/reference/platform baseline. It does not add V3 tables, ledger behavior, routes, or financial semantics, and it does not satisfy any PR-021 acceptance criterion.
+- The cleanup records controller-only validation, standard Spring Security JWT validators plus lexical compatibility checks, Boot-managed Micrometer W3C tracing with the existing UUID correlation contract, centralized database-constraint/optimistic-lock handling, application-owned search criteria, and current model/SQL ownership conventions in the authoritative standards/state/progress documents.
 
 ### Deviations from specification
 
-- None.
+- None for PR-021; the active financial specification remains unchanged. The requested cross-cutting cleanup is explicitly tracked as out-of-scope working-tree work rather than folded into the financial capability.
 
 ### New decisions
 
-- None.
+- No new financial decisions. The cleanup uses one Boot-managed Micrometer OpenTelemetry bridge without exporters, keeps W3C native trace IDs separate from the UUID `X-Trace-Id` compatibility value, and keeps the small known constraint map in one static registry.
 
 ### Tests executed
 
-- Not executed for PR-021; specification only.
+- PR-021 verification: not executed; specification only.
+- Standardization focused gate: `./mvnw -q "-Dtest=LocalAccessTokenDecoderTest,GlobalExceptionHandlerIntegrationTest,RequestTraceFilterTest,ReferenceCatalogQueryTest,LocalAccountRegistrationServiceTest,ManualInstrumentServiceTest,MicrometerTracingHttpTest" test` (passed).
+- Standardization complete suite: `./mvnw -q "-Dlogging.level.root=ERROR" test` (262 tests, 0 failures, 0 errors, 0 skipped); `./mvnw -q "-Dlogging.level.root=ERROR" verify` (passed); `./mvnw -q spotless:check` (passed).
 
 ### Follow-up work
 

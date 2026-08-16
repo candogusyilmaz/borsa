@@ -4,7 +4,7 @@ Plan date: 2026-08-06
 
 Clarified: 2026-08-07
 
-Technology baseline refreshed: 2026-08-07
+Technology baseline refreshed: 2026-08-16
 
 Status: implementation-ready and authoritative plan for a development-only reset. Backend scope only. This document consolidates the database dump review, modular-monolith direction, data-unavailability strategy, the 32-feature catalogue, and the existing correctness/security roadmap.
 
@@ -29,10 +29,22 @@ The scratch rewrite starts directly on the modern stable Java/Spring stack rathe
 - Jakarta Persistence: **3.2** stable specification. Modern stable features such as record embeddables, `Instant` support and `getSingleResultOrNull()` may be used where they make the model simpler.
 - Hibernate ORM: Boot-managed **7.4.1.Final** with Spring Boot 4.1.0. Hibernate-specific stable features are allowed when they solve a real requirement, but Hibernate remains a runtime mapper/query implementation rather than the DDL authority.
 - PostgreSQL, Flyway and Testcontainers remain the database/migration/test foundation.
+- Micrometer Tracing uses one Spring Boot-managed OpenTelemetry bridge with W3C propagation. Native trace context is used for logging/correlation without exporters or network infrastructure; the existing UUID `X-Trace-Id`/Problem Detail compatibility contract remains separate and documented.
 - Do not adopt Jakarta Persistence 4, Hibernate ORM 8, framework snapshots/milestones/RCs, or Java preview/incubator APIs in ordinary feature PRs.
 - Do not pin transitive Spring/Hibernate/Jackson versions individually just to obtain a newer number; Spring Boot's tested dependency set is the default compatibility contract.
 
 Repository-wide implementation style is governed by [../engineering/coding-standards.md](../engineering/coding-standards.md). Pull-request execution is governed by [../implementation/README.md](../implementation/README.md) and the active specification referenced from `docs/implementation/CURRENT.md`. These rules are intentionally discoverable through root `AGENTS.md` so normal coding prompts do not need to repeat them.
+
+## Current backend standardization conventions
+
+These conventions describe the current implementation state and supersede older generic guidance retained in historical PR records:
+
+- Bean Validation starts at controllers. Controllers use `@Valid @RequestBody` and Jakarta constraints for HTTP parameters; request records retain constraint metadata and nested `@Valid` cascading. Non-structural request-record `validate()` methods are invoked by controllers, not repeated in application services. No application service, repository, domain, infrastructure or configuration class uses `@Validated` or service-method `@Valid`.
+- Authenticated controllers receive the existing typed identity with `@AuthenticationPrincipal`; owner/session scoping remains in the existing application and repository queries without repeated raw-claim extraction.
+- Local JWT validation composes Spring Security issuer, audience and zero-skew timestamp validators with a small application validator for required headers, algorithm/key ID/token type, canonical UUID claims, exact lexical timestamp precision, `iat == nbf`, strict existing boundaries and maximum lifetime. Raw-token inspection remains where the lexical contract requires it.
+- Persistence failures cross the service boundary unchanged. The global error handler maps `DataIntegrityViolationException` through the static platform `DatabaseConstraintRegistry`, whose small explicit table maps known identity/reference constraints to existing error codes. Optimistic-lock failures map to the existing state-conflict error; unknown persistence failures remain safe 500 responses.
+- Immutable API/application/read models use records and immutable collections where appropriate. Meaningful use-case criteria belong in the owning `application/model` package; HTTP contracts belong in `web/request` and `web/response`; repository projections remain infrastructure-owned. Do not add generic DTO/mapper/data/view packages or MapStruct.
+- Inclusive date ranges use `LocalDate.datesUntil(end.plusDays(1))` after range-limit validation. Complex PostgreSQL reference reads may use ordered `array_agg`/`array_remove` aggregation and aligned row-value tuple comparisons for compound keyset pagination. A clear `JdbcClient` cursor contract is not replaced by a scrolling abstraction merely for modernization.
 
 ## Intended outcome
 
@@ -141,7 +153,7 @@ All newly implemented APIs use these rules from their first release; R16 audits/
 ### File economy
 
 - Prefer one cohesive service per aggregate/workflow, not one class per operation.
-- Keep API request/response records in the owning capability's directional `input`/`output` packages; keep application commands and query results with the application workflow that owns them.
+- Keep HTTP request/response records in the owning capability's `web/request` and `web/response` packages; keep meaningful application models, commands and query results with the application workflow that owns them.
 - Do not create a repository interface and wrapper repository for the same table.
 - Use JPA for aggregate writes/simple reads and Spring `JdbcClient`/explicit SQL for complex read models. Do not restore MyBatis/QueryDSL in the scratch rewrite unless a concrete query proves they add value.
 - Add one Flyway migration per coherent release slice, not one migration file per table.
@@ -272,8 +284,9 @@ dev.canverse.stocks
     application/     ← transactional services, use cases
     infrastructure/  ← Spring Data repositories, external adapters
     configuration/   ← Spring @Configuration classes
-    input/            ← inbound HTTP/API request records
-    output/           ← outbound HTTP/API response records
+    web/
+      request/        ← inbound HTTP/API request records
+      response/       ← outbound HTTP/API response records
     web/              ← controllers
 ```
 
@@ -304,7 +317,8 @@ For a normal workflow, start with:
 - one Spring Data repository where CRUD is needed;
 - one service containing transaction and invariant logic;
 - one controller for related endpoints;
-- API request records in the capability `input` package and response records in `output`;
+- API request records in the capability `web/request` package and response records in `web/response`;
+- application-owned criteria/read models in the relevant capability's `application/model` package when they represent a meaningful use-case concept;
 - one query/read-model class only when the screen/report justifies it.
 
 Do not automatically add a domain interface, implementation, mapper, factory, command handler, query handler, and event class for every operation.

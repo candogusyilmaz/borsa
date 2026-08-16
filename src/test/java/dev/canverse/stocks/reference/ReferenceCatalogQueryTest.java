@@ -6,10 +6,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import dev.canverse.stocks.platform.error.AppException;
 import dev.canverse.stocks.reference.application.InstrumentSearchService;
 import dev.canverse.stocks.reference.application.ReferenceCatalogQueryService;
+import dev.canverse.stocks.reference.application.model.InstrumentSearchCriteria;
 import dev.canverse.stocks.reference.domain.CalendarCoverageStatus;
 import dev.canverse.stocks.reference.domain.InstrumentType;
 import dev.canverse.stocks.reference.domain.MarketSessionStatus;
 import dev.canverse.stocks.reference.error.ReferenceErrorCode;
+import dev.canverse.stocks.reference.web.response.InstrumentPageResponse;
 import dev.canverse.stocks.reference.web.response.InstrumentSummaryResponse;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -181,7 +183,7 @@ class ReferenceCatalogQueryTest {
         insertInstrument(
                 OTHER_OWNER, USER_TWO, MANUAL, "OTHER-OWNER", "Other owner fund", "FUND", true, "SHARED_ALIAS");
 
-        var same = searchService.search(USER_ONE, "same", null, null, false, 20, null);
+        var same = search(USER_ONE, "same", null, null, false, 20, null);
         assertThat(same.instruments())
                 .extracting(InstrumentSummaryResponse::id)
                 .containsExactly(GLOBAL_MANUAL, OWNER_SAME, GLOBAL_XIST);
@@ -191,48 +193,31 @@ class ReferenceCatalogQueryTest {
         assertThat(same.instruments())
                 .allSatisfy(summary -> assertThat(summary.aliases()).hasSize(1));
 
-        assertThat(searchService
-                        .search(USER_ONE, "shared_alias", null, null, false, 20, null)
-                        .instruments())
+        assertThat(search(USER_ONE, "shared_alias", null, null, false, 20, null).instruments())
                 .extracting(InstrumentSummaryResponse::id)
                 .containsExactly(GLOBAL_MANUAL, OWNER_SAME, GLOBAL_XIST);
-        assertThat(searchService
-                        .search(USER_ONE, "literal%", null, null, false, 20, null)
-                        .instruments())
+        assertThat(search(USER_ONE, "literal%", null, null, false, 20, null).instruments())
                 .extracting(InstrumentSummaryResponse::id)
                 .containsExactly(PERCENT);
-        assertThat(searchService
-                        .search(USER_ONE, "literal_", null, null, false, 20, null)
-                        .instruments())
+        assertThat(search(USER_ONE, "literal_", null, null, false, 20, null).instruments())
                 .extracting(InstrumentSummaryResponse::id)
                 .containsExactly(UNDERSCORE);
-        assertThat(searchService
-                        .search(USER_ONE, "literal\\", null, null, false, 20, null)
-                        .instruments())
+        assertThat(search(USER_ONE, "literal\\", null, null, false, 20, null).instruments())
                 .extracting(InstrumentSummaryResponse::id)
                 .containsExactly(BACKSLASH);
-        assertThat(searchService
-                        .search(USER_ONE, null, XIST, null, false, 20, null)
-                        .instruments())
+        assertThat(search(USER_ONE, null, XIST, null, false, 20, null).instruments())
                 .extracting(InstrumentSummaryResponse::id)
                 .containsExactly(GLOBAL_XIST);
-        assertThat(searchService
-                        .search(USER_ONE, null, MANUAL, InstrumentType.ETF, false, 20, null)
+        assertThat(search(USER_ONE, null, MANUAL, InstrumentType.ETF, false, 20, null)
                         .instruments())
                 .extracting(InstrumentSummaryResponse::id)
                 .containsExactly(UNDERSCORE);
-        assertThat(searchService
-                        .search(USER_ONE, "hidden", null, null, false, 20, null)
-                        .instruments())
+        assertThat(search(USER_ONE, "hidden", null, null, false, 20, null).instruments())
                 .isEmpty();
-        assertThat(searchService
-                        .search(USER_ONE, "hidden", null, null, true, 20, null)
-                        .instruments())
+        assertThat(search(USER_ONE, "hidden", null, null, true, 20, null).instruments())
                 .extracting(InstrumentSummaryResponse::id)
                 .containsExactly(OWNER_INACTIVE);
-        assertThat(searchService
-                        .search(USER_ONE, null, null, null, false, 20, null)
-                        .instruments())
+        assertThat(search(USER_ONE, null, null, null, false, 20, null).instruments())
                 .extracting(InstrumentSummaryResponse::id)
                 .doesNotContain(OTHER_OWNER, OWNER_INACTIVE, GLOBAL_INACTIVE);
     }
@@ -262,7 +247,7 @@ class ReferenceCatalogQueryTest {
         var collected = new ArrayList<UUID>();
         String cursor = null;
         do {
-            var page = searchService.search(USER_ONE, "cursor-", null, null, false, 7, cursor);
+            var page = search(USER_ONE, "cursor-", null, null, false, 7, cursor);
             collected.addAll(page.instruments().stream()
                     .map(InstrumentSummaryResponse::id)
                     .toList());
@@ -272,16 +257,29 @@ class ReferenceCatalogQueryTest {
         assertThat(collected).containsExactlyElementsOf(expected);
         assertThat(collected).doesNotHaveDuplicates();
 
-        var firstPage = searchService.search(USER_ONE, "cursor-", null, null, false, 7, null);
-        var otherOwnerPage = searchService.search(USER_TWO, "cursor-", null, null, false, 100, firstPage.nextCursor());
+        var firstPage = search(USER_ONE, "cursor-", null, null, false, 7, null);
+        var otherOwnerPage = search(USER_TWO, "cursor-", null, null, false, 100, firstPage.nextCursor());
         assertThat(otherOwnerPage.instruments())
                 .extracting(InstrumentSummaryResponse::id)
                 .containsExactly(otherOwnerId);
 
         executedStatements.set(0);
-        var countedPage = searchService.search(USER_ONE, "cursor-", null, null, false, 20, null);
+        var countedPage = search(USER_ONE, "cursor-", null, null, false, 20, null);
         assertThat(countedPage.instruments()).hasSize(20);
         assertThat(executedStatements).hasValue(2);
+    }
+
+    private InstrumentPageResponse search(
+            UUID ownerUserAccountId,
+            String query,
+            UUID marketId,
+            InstrumentType type,
+            boolean includeInactive,
+            int limit,
+            String cursor) {
+        return searchService.search(
+                ownerUserAccountId,
+                new InstrumentSearchCriteria(query, marketId, type, includeInactive, limit, cursor));
     }
 
     private void insertUser(UUID id, String email) {

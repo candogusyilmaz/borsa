@@ -1,9 +1,12 @@
 package dev.canverse.stocks.platform.error;
 
+import jakarta.persistence.OptimisticLockException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import java.sql.SQLException;
 import java.util.Map;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -46,6 +49,18 @@ class ErrorHandlingTestController {
     @GetMapping("/conflict")
     void persistenceConflict() {
         throw new DataIntegrityViolationException("constraint=secret_database_constraint");
+    }
+
+    @GetMapping("/known-conflict")
+    void knownPersistenceConflict() {
+        var cause = new ConstraintViolationException(
+                "duplicate key detail=secret", new SQLException("secret sql"), "uq_user_account_email_normalized");
+        throw new DataIntegrityViolationException("database failure", cause);
+    }
+
+    @GetMapping("/optimistic")
+    void optimisticConflict() {
+        throw new OptimisticLockException("secret optimistic detail");
     }
 
     @GetMapping("/parameter-validation")

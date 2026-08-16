@@ -46,10 +46,9 @@ public class ReferenceCatalogQueryService {
 
     @Transactional(readOnly = true)
     public List<MarketResponse> markets() {
-        return readRepository.findActiveMarkets().stream()
-                .peek(row -> validateTimeZone(row.timeZone()))
-                .map(MarketResponse::from)
-                .toList();
+        var marketRows = readRepository.findActiveMarkets();
+        marketRows.forEach(row -> validateTimeZone(row.timeZone()));
+        return marketRows.stream().map(MarketResponse::from).toList();
     }
 
     @Transactional(readOnly = true)

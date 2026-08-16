@@ -38,9 +38,22 @@ Scope: Spring Boot backend, PostgreSQL dump, database migration strategy, modula
 | PR-019 — Authenticated identity/session security       | **Complete in accepted working-tree commit `0c6657e`**                   | Typed authenticated identity, `/me`, owner-scoped session reads, current/all/selected revocation, logout cookie clearing, durable security events, bounded process-local authentication abuse protection; focused gate, full 211-test suite, Spotless and Maven `verify` passed |
 | PR-020 — Canonical reference catalog/manual instruments | **Complete in accepted commit `3f45a8c`** | V2 seven-table reference catalog, deterministic seeds, explicit calendar coverage, owner-scoped manual instrument lifecycle, SQL search/cursor pagination, optimistic alias-replacement concurrency, and real-filter ownership/security proof are implemented; the mixed identity/session standards alignment is explicitly user-authorized and covered |
 | PR-021 — Financial-account onboarding/immutable cash ledger | **Active specification; not implemented** | Planned V3 owner-scoped accounts, explicit opening coverage, immutable cash activities/postings, deposits, withdrawals, same-currency owned transfers, reversal/opening correction, native balance projection/read behavior, policy enforcement, idempotency, locking, and HTTP/security proof |
-| Automated backend coverage                         | 266 tests green in the current working tree | The suite covers response/cookie delivery, exact session/token binding, credential failures, validation/parsing, rotation invalid states, rollback, reuse, PostgreSQL locking, abuse-control concurrency, route scope, reference migration/mapping, explicit calendar coverage, owner isolation, bounded cursor search, and statelessness; the current execution has 0 failures, 0 errors, and 0 skips |
+| Backend standardization cleanup                    | **Complete in current working tree** | Controller-only validation, standard JWT validators with lexical compatibility checks, Boot-managed Micrometer W3C tracing, centralized persistence error mapping, typed authenticated principals, application-owned search criteria, and current package/SQL conventions; no public route or response contract changed |
+| Automated backend coverage                         | 262 tests green in the current working tree | The suite covers response/cookie delivery, exact session/token binding, credential failures, validation/parsing, rotation invalid states, rollback, reuse, PostgreSQL locking, abuse-control concurrency, route scope, reference migration/mapping, explicit calendar coverage, owner isolation, bounded cursor search, statelessness, centralized persistence handling, and W3C trace compatibility; the current execution has 0 failures, 0 errors, and 0 skips |
 
 Overall status: **PR-020 is accepted in `3f45a8c`; PR-021 is the active specification and has not been implemented.**
+
+## Current backend standardization checkpoint
+
+Date: 2026-08-16. This is a cross-cutting cleanup of the accepted identity/reference/platform backend and does not implement or broaden active PR-021 financial scope.
+
+- Controller-only validation is now the HTTP barrier: request records keep structural and nested constraints, controllers invoke non-structural request validation, and application services no longer use service-level `@Validated` or `@Valid` method parameters.
+- Local access-token validation composes Spring Security issuer, audience and zero-skew timestamp validators with the existing application-specific lexical/header/claim/lifetime rules, including fractional NumericDate rejection and strict expiry compatibility.
+- Micrometer Tracing uses one Boot-managed OpenTelemetry bridge with W3C propagation. Native trace/span context is used for logging and MDC, while the existing server-owned UUID `X-Trace-Id` and Problem Detail `traceId` contract remains unchanged.
+- Database constraint mapping is centralized in one static platform registry with a small explicit identity/reference table; services no longer catch integrity or optimistic-lock exceptions, and the global handler preserves safe domain, conflict and unknown-persistence responses.
+- Instrument search criteria now have a meaningful `reference/application/model` record; existing immutable collections, inclusive date iteration, PostgreSQL aggregation and tuple-cursor ordering remain explicit conventions.
+
+Focused JWT, service, global-error, reference-query and tracing checks are green. Final verification is complete: `./mvnw -q "-Dlogging.level.root=ERROR" test` and `verify` pass with 262 tests, 0 failures, 0 errors and 0 skips; `./mvnw -q spotless:check` also passes.
 
 ## Active implementation specification — PR-021
 

@@ -28,9 +28,15 @@ spring:
 
 logging:
   pattern:
-    correlation: "[traceId=%X{traceId:-}] "
+    correlation: "[traceId=%X{traceId:-} spanId=%X{spanId:-} compatibilityTraceId=%X{compatibilityTraceId:-}] "
 
 management:
+  tracing:
+    sampling:
+      probability: 1.0
+    propagation:
+      type:
+        - W3C
   endpoints:
     web:
       exposure:

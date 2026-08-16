@@ -1,12 +1,13 @@
 package dev.canverse.stocks.reference.application;
 
 import dev.canverse.stocks.platform.error.ValidationErrors;
+import dev.canverse.stocks.reference.application.model.InstrumentSearchCriteria;
 import dev.canverse.stocks.reference.application.model.InstrumentSearchCursor;
-import dev.canverse.stocks.reference.domain.InstrumentType;
 import dev.canverse.stocks.reference.infrastructure.ReferenceCatalogReadRepository;
 import dev.canverse.stocks.reference.web.response.InstrumentPageResponse;
 import dev.canverse.stocks.reference.web.response.InstrumentSummaryResponse;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,14 +26,15 @@ public class InstrumentSearchService {
     private final InstrumentSearchCursorCodec cursorCodec;
 
     @Transactional(readOnly = true)
-    public InstrumentPageResponse search(
-            UUID ownerUserAccountId,
-            String query,
-            UUID marketId,
-            InstrumentType type,
-            boolean includeInactive,
-            int limit,
-            String cursor) {
+    public InstrumentPageResponse search(UUID ownerUserAccountId, InstrumentSearchCriteria criteria) {
+        Objects.requireNonNull(ownerUserAccountId, "ownerUserAccountId");
+        Objects.requireNonNull(criteria, "criteria");
+        var query = criteria.query();
+        var marketId = criteria.marketId();
+        var type = criteria.type();
+        var includeInactive = criteria.includeInactive();
+        var limit = criteria.limit();
+        var cursor = criteria.cursor();
         if (limit < MIN_LIMIT || limit > MAX_LIMIT) {
             throw ValidationErrors.invalidField(
                     "limit",

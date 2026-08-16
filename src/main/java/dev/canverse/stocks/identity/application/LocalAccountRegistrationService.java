@@ -6,30 +6,16 @@ import dev.canverse.stocks.identity.error.IdentityErrorCode;
 import dev.canverse.stocks.identity.infrastructure.AuthIdentityRepository;
 import dev.canverse.stocks.identity.infrastructure.UserAccountRepository;
 import dev.canverse.stocks.platform.error.AppException;
-import dev.canverse.stocks.platform.error.DatabaseConstraintTranslator;
-import dev.canverse.stocks.platform.error.ErrorCode;
 import dev.canverse.stocks.platform.id.IdGenerator;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import java.time.Clock;
 import java.util.Locale;
-import java.util.Map;
 import java.util.UUID;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
 
 @Service
-@Validated
 public class LocalAccountRegistrationService {
-
-    private static final Map<String, ErrorCode> CONSTRAINT_ERROR_CODES = Map.of(
-            "uq_user_account_email_normalized", IdentityErrorCode.EMAIL_ALREADY_REGISTERED,
-            "uq_auth_identity_provider_subject", IdentityErrorCode.EMAIL_ALREADY_REGISTERED);
 
     private final UserAccountRepository userAccountRepository;
     private final AuthIdentityRepository authIdentityRepository;
@@ -51,9 +37,7 @@ public class LocalAccountRegistrationService {
     }
 
     @Transactional
-    public UUID register(
-            @NotBlank @Email @Size(max = 320) @Pattern(regexp = "\\S(?:.*\\S)?") String email,
-            @NotBlank @Size(min = 12, max = 128) String rawPassword) {
+    public UUID register(String email, String rawPassword) {
         var emailNormalized = email.toLowerCase(Locale.ROOT);
         var encodedPasswordHash = passwordEncoder.encode(rawPassword);
 
@@ -68,12 +52,8 @@ public class LocalAccountRegistrationService {
         var savedUserAccount = userAccountRepository.save(
                 UserAccount.register(userAccountId, email, emailNormalized, registrationTime));
 
-        try {
-            authIdentityRepository.saveAndFlush(AuthIdentity.local(
-                    authIdentityId, savedUserAccount, emailNormalized, encodedPasswordHash, registrationTime));
-        } catch (DataIntegrityViolationException exception) {
-            throw DatabaseConstraintTranslator.translate(exception, CONSTRAINT_ERROR_CODES);
-        }
+        authIdentityRepository.save(AuthIdentity.local(
+                authIdentityId, savedUserAccount, emailNormalized, encodedPasswordHash, registrationTime));
 
         return savedUserAccount.getId();
     }

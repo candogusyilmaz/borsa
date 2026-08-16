@@ -1,6 +1,9 @@
 package dev.canverse.stocks.platform.error;
 
 import dev.canverse.stocks.platform.web.trace.RequestTraceFilter;
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
+import jakarta.persistence.OptimisticLockException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import java.net.URI;
@@ -12,12 +15,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.ConversionNotSupportedException;
 import org.springframework.beans.TypeMismatchException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSourceResolvable;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -61,13 +65,24 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @RestControllerAdvice
-@RequiredArgsConstructor
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
     private static final String PROBLEM_TYPE_BASE = "https://canverse.dev/problems/";
 
     private final Clock clock;
+    private final Tracer tracer;
+
+    @Autowired
+    public GlobalExceptionHandler(Clock clock, Tracer tracer) {
+        this.clock = clock;
+        this.tracer = tracer;
+    }
+
+    /** Test-only compatibility constructor for callers that do not need native tracing. */
+    public GlobalExceptionHandler(Clock clock) {
+        this(clock, Tracer.NOOP);
+    }
 
     @ExceptionHandler(AppException.class)
     public ResponseEntity<Object> handleAppException(AppException exception, WebRequest request) {
@@ -89,6 +104,25 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return problemResponse(errorCode, exception.getParams(), HttpHeaders.EMPTY, request);
     }
 
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Object> handleDataIntegrityViolation(
+            DataIntegrityViolationException exception, WebRequest request) {
+        var mappedErrorCode = DatabaseConstraintRegistry.resolve(exception);
+        if (mappedErrorCode.isPresent()) {
+            return handleAppException(new AppException(mappedErrorCode.get(), exception), request);
+        }
+        log.error(
+                "Unknown persistence failure traceId={} nativeTraceId={}",
+                traceId(request),
+                nativeTraceId(),
+                exception);
+        return problemResponse(
+                CommonErrorCode.INTERNAL_ERROR,
+                Map.of("detail", "Unhandled persistence failure"),
+                HttpHeaders.EMPTY,
+                request);
+    }
+
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Object> handleConstraintViolation(
             ConstraintViolationException exception, WebRequest request) {
@@ -98,16 +132,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return validationResponse(errors, HttpHeaders.EMPTY, request);
     }
 
-    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
-    public ResponseEntity<Object> handleOptimisticLockConflict(
-            ObjectOptimisticLockingFailureException exception, WebRequest request) {
-        log.warn("Optimistic locking conflict traceId={}", traceId(request), exception);
+    @ExceptionHandler({ObjectOptimisticLockingFailureException.class, OptimisticLockException.class})
+    public ResponseEntity<Object> handleOptimisticLockConflict(Exception exception, WebRequest request) {
+        log.warn(
+                "Optimistic locking conflict traceId={} nativeTraceId={}",
+                traceId(request),
+                nativeTraceId(),
+                exception);
         return problemResponse(CommonErrorCode.STATE_CONFLICT, Map.of(), HttpHeaders.EMPTY, request);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleUnexpected(Exception exception, WebRequest request) {
-        log.error("Unhandled exception traceId={}", traceId(request), exception);
+        log.error("Unhandled exception traceId={} nativeTraceId={}", traceId(request), nativeTraceId(), exception);
         return problemResponse(
                 CommonErrorCode.INTERNAL_ERROR,
                 Map.of("detail", "Unhandled server exception"),
@@ -279,7 +316,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                         "key", ValidationKeySupport.FALLBACK_KEY,
                         "detail", "Validation failed."))
                 : List.copyOf(errors);
-        log.warn("Request validation failed traceId={} errorCount={}", traceId(request), safeErrors.size());
+        log.warn(
+                "Request validation failed traceId={} nativeTraceId={} errorCount={}",
+                traceId(request),
+                nativeTraceId(),
+                safeErrors.size());
         return problemResponse(CommonErrorCode.VALIDATION_FAILED, Map.of("errors", safeErrors), headers, request);
     }
 
@@ -355,14 +396,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private ResponseEntity<Object> frameworkResponse(
             ErrorCode errorCode, HttpHeaders headers, WebRequest request, Exception exception) {
         if (errorCode.getStatus().is5xxServerError()) {
-            log.error("Framework error mapped to {} traceId={}", errorCode.getCode(), traceId(request), exception);
+            log.error(
+                    "Framework error mapped to {} traceId={} nativeTraceId={}",
+                    errorCode.getCode(),
+                    traceId(request),
+                    nativeTraceId(),
+                    exception);
         }
         return problemResponse(errorCode, Map.of(), headers, request);
     }
 
     private ResponseEntity<Object> internalFrameworkResponse(
             HttpHeaders headers, WebRequest request, Exception exception) {
-        log.error("Internal framework error traceId={}", traceId(request), exception);
+        log.error("Internal framework error traceId={} nativeTraceId={}", traceId(request), nativeTraceId(), exception);
         return problemResponse(
                 CommonErrorCode.INTERNAL_ERROR, Map.of("detail", "Internal framework failure"), headers, request);
     }
@@ -505,5 +551,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private static String traceId(WebRequest request) {
         var traceId = request.getAttribute(RequestTraceFilter.TRACE_ID_ATTRIBUTE, WebRequest.SCOPE_REQUEST);
         return traceId == null ? "unknown" : traceId.toString();
+    }
+
+    private String nativeTraceId() {
+        Span currentSpan = tracer.currentSpan();
+        return currentSpan == null ? "none" : currentSpan.context().traceId();
     }
 }

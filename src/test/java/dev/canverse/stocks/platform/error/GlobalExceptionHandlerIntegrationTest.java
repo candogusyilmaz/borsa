@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import dev.canverse.stocks.platform.web.trace.RequestTraceFilter;
+import io.micrometer.tracing.Tracer;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -29,7 +30,7 @@ class GlobalExceptionHandlerIntegrationTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(new ErrorHandlingTestController())
-                .setControllerAdvice(new GlobalExceptionHandler(Clock.fixed(TEST_TIME, ZoneOffset.UTC)))
+                .setControllerAdvice(new GlobalExceptionHandler(Clock.fixed(TEST_TIME, ZoneOffset.UTC), Tracer.NOOP))
                 .addFilters(new RequestTraceFilter(() -> UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")))
                 .build();
     }
@@ -158,5 +159,27 @@ class GlobalExceptionHandlerIntegrationTest {
                 .getContentAsString();
 
         assertThat(response).doesNotContain("secret_database_constraint", "constraint=");
+    }
+
+    @Test
+    void knownPersistenceConstraintUsesTheCapabilityErrorCodeWithoutLeakingDatabaseDetails() throws Exception {
+        var response = mockMvc.perform(get("/test/errors/known-conflict"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("EMAIL_ALREADY_REGISTERED"))
+                .andExpect(jsonPath("$.key").value("error.identity.email_already_registered"))
+                .andExpect(jsonPath("$.params").doesNotExist())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        assertThat(response).doesNotContain("uq_user_account_email_normalized", "secret sql", "duplicate key");
+    }
+
+    @Test
+    void optimisticLockFailureUsesTheExistingStateConflictContract() throws Exception {
+        mockMvc.perform(get("/test/errors/optimistic"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("STATE_CONFLICT"))
+                .andExpect(jsonPath("$.key").value("error.common.state_conflict"));
     }
 }

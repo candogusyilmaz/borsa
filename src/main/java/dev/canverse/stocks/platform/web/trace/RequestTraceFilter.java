@@ -21,7 +21,8 @@ public class RequestTraceFilter extends OncePerRequestFilter {
 
     public static final String TRACE_ID_HEADER = "X-Trace-Id";
     public static final String TRACE_ID_ATTRIBUTE = RequestTraceFilter.class.getName() + ".traceId";
-    public static final String TRACE_ID_MDC_KEY = "traceId";
+    /** Compatibility-only correlation value; Micrometer owns the native traceId/spanId MDC entries. */
+    public static final String TRACE_ID_MDC_KEY = "compatibilityTraceId";
 
     private final IdGenerator idGenerator;
 
