@@ -1,94 +1,144 @@
 package dev.canverse.stocks.reference.application;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import dev.canverse.stocks.platform.application.CanonicalFingerprint;
+import dev.canverse.stocks.platform.application.CursorTokenCodec;
 import dev.canverse.stocks.platform.error.AppException;
 import dev.canverse.stocks.reference.application.model.InstrumentSearchCursor;
 import dev.canverse.stocks.reference.domain.InstrumentType;
 import dev.canverse.stocks.reference.error.ReferenceErrorCode;
-import java.nio.ByteBuffer;
-import java.nio.charset.CharacterCodingException;
-import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.HexFormat;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 @Component
+@RequiredArgsConstructor
 public class InstrumentSearchCursorCodec {
 
-    private static final Pattern PAYLOAD =
-            Pattern.compile("\\{\"v\":1,\"f\":\"([0-9a-f]{64})\",\"s\":\"([A-Z0-9][A-Z0-9._:/+\\-]{0,31})\","
-                    + "\"m\":\"([A-Z0-9][A-Z0-9._-]{0,31})\","
-                    + "\"i\":\"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\"}");
+    private static final int VERSION = 1;
+
+    private record InstrumentCursorPayload(
+            @JsonProperty("v") int version,
+            @JsonProperty("f") String filterDigest,
+            @JsonProperty("s") String symbol,
+            @JsonProperty("m") String marketCode,
+            @JsonProperty("i") String instrumentId) {}
+
+    private final CursorTokenCodec tokenCodec;
+    private final CanonicalFingerprint fingerprint;
+    private final ObjectMapper objectMapper;
 
     public String encode(InstrumentSearchCursor cursor) {
-        var payload = "{\"v\":1,\"f\":\"%s\",\"s\":\"%s\",\"m\":\"%s\",\"i\":\"%s\"}"
-                .formatted(
-                        cursor.filterDigest(),
-                        cursor.symbolNormalized(),
-                        cursor.marketCodeNormalized(),
-                        cursor.instrumentId().toString());
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(payload.getBytes(StandardCharsets.UTF_8));
+        return encodePayload(new InstrumentCursorPayload(
+                VERSION,
+                cursor.filterDigest(),
+                cursor.symbolNormalized(),
+                cursor.marketCodeNormalized(),
+                cursor.instrumentId().toString()));
     }
 
     public InstrumentSearchCursor decode(String encoded, String expectedFilterDigest) {
-        try {
-            if (encoded == null || encoded.isBlank() || !encoded.matches("[A-Za-z0-9_-]+")) {
-                throw invalidCursor();
-            }
-            var bytes = Base64.getUrlDecoder().decode(encoded);
-            var json = StandardCharsets.UTF_8
-                    .newDecoder()
-                    .onMalformedInput(CodingErrorAction.REPORT)
-                    .onUnmappableCharacter(CodingErrorAction.REPORT)
-                    .decode(ByteBuffer.wrap(bytes))
-                    .toString();
-            Matcher matcher = PAYLOAD.matcher(json);
-            if (!matcher.matches()) {
-                throw invalidCursor();
-            }
-            var canonical = matcher.group(0);
-            if (!canonical.equals(json)
-                    || !encoded.equals(Base64.getUrlEncoder().withoutPadding().encodeToString(bytes))) {
-                throw invalidCursor();
-            }
-            var suppliedDigest = matcher.group(1);
-            if (!MessageDigest.isEqual(
-                    expectedFilterDigest.getBytes(StandardCharsets.US_ASCII),
-                    suppliedDigest.getBytes(StandardCharsets.US_ASCII))) {
-                throw invalidCursor();
-            }
-            return new InstrumentSearchCursor(
-                    suppliedDigest, matcher.group(2), matcher.group(3), UUID.fromString(matcher.group(4)));
-        } catch (AppException exception) {
-            throw exception;
-        } catch (RuntimeException exception) {
-            throw invalidCursor();
-        } catch (CharacterCodingException exception) {
+        var payload = decodePayload(encoded);
+        validatePayload(payload);
+        if (expectedFilterDigest == null
+                || !MessageDigest.isEqual(
+                        expectedFilterDigest.getBytes(StandardCharsets.US_ASCII),
+                        payload.filterDigest().getBytes(StandardCharsets.US_ASCII))) {
             throw invalidCursor();
         }
+        return new InstrumentSearchCursor(
+                payload.filterDigest(), payload.symbol(), payload.marketCode(), canonicalUuid(payload.instrumentId()));
     }
 
     public String filterDigest(String queryNormalized, UUID marketId, InstrumentType type, boolean includeInactive) {
         var filter = "%s\n%s\n%s\n%s"
                 .formatted(
                         queryNormalized == null ? "" : queryNormalized,
-                        marketId == null ? "" : marketId.toString(),
+                        marketId == null ? "" : marketId,
                         type == null ? "" : type.name(),
                         includeInactive);
+        return fingerprint.hashText(filter);
+    }
+
+    private InstrumentCursorPayload decodePayload(String encoded) {
+        final String json;
+        final InstrumentCursorPayload payload;
         try {
-            var digest = MessageDigest.getInstance("SHA-256").digest(filter.getBytes(StandardCharsets.UTF_8));
-            return HexFormat.of().formatHex(digest);
-        } catch (NoSuchAlgorithmException exception) {
-            throw new IllegalStateException("SHA-256 is required by the JDK", exception);
+            json = tokenCodec.decode(encoded);
+            payload = objectMapper.readValue(json, InstrumentCursorPayload.class);
+        } catch (IllegalArgumentException | JacksonException exception) {
+            throw invalidCursor();
+        }
+        if (payload == null || !encoded.equals(encodePayload(payload))) {
+            throw invalidCursor();
+        }
+        return payload;
+    }
+
+    private String encodePayload(InstrumentCursorPayload payload) {
+        try {
+            return tokenCodec.encode(objectMapper.writeValueAsString(payload));
+        } catch (JacksonException exception) {
+            throw new IllegalStateException("Failed to serialize instrument cursor payload", exception);
         }
     }
 
-    private AppException invalidCursor() {
+    private static void validatePayload(InstrumentCursorPayload payload) {
+        if (payload.version() != VERSION
+                || !isCanonicalDigest(payload.filterDigest())
+                || !isCanonicalCode(payload.symbol(), true)
+                || !isCanonicalCode(payload.marketCode(), false)) {
+            throw invalidCursor();
+        }
+    }
+
+    private static boolean isCanonicalDigest(String value) {
+        return value != null
+                && value.length() == 64
+                && value.chars()
+                        .allMatch(character ->
+                                character >= '0' && character <= '9' || character >= 'a' && character <= 'f');
+    }
+
+    private static boolean isCanonicalCode(String value, boolean symbol) {
+        if (value == null || value.isEmpty() || value.length() > 32 || !isAlphaNumeric(value.charAt(0))) {
+            return false;
+        }
+        for (var index = 1; index < value.length(); index++) {
+            var character = value.charAt(index);
+            if (!isAlphaNumeric(character)
+                    && (symbol ? ".:/+-".indexOf(character) < 0 : ".-_".indexOf(character) < 0)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean isAlphaNumeric(char character) {
+        return character >= 'A' && character <= 'Z' || character >= '0' && character <= '9';
+    }
+
+    private static UUID canonicalUuid(String value) {
+        if (value == null) {
+            throw invalidCursor();
+        }
+        final UUID uuid;
+        try {
+            uuid = UUID.fromString(value);
+        } catch (IllegalArgumentException exception) {
+            throw invalidCursor();
+        }
+        if (!uuid.toString().equals(value)) {
+            throw invalidCursor();
+        }
+        return uuid;
+    }
+
+    private static AppException invalidCursor() {
         return new AppException(ReferenceErrorCode.INVALID_INSTRUMENT_CURSOR);
     }
 }

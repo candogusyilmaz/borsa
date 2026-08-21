@@ -152,7 +152,7 @@ Migration-owned rules:
 
 ## Application changes
 
-Use one coarse `dev.canverse.stocks.ledger` capability with only the needed `domain`, `application`, `infrastructure`, `input`, `output`, `error`, and `web` packages.
+Use one coarse `dev.canverse.stocks.ledger` capability with only the needed `domain`, `application`, `infrastructure`, `web/request`, `web/response`, `error`, and `web` packages. Meaningful use-case models belong under `application/model`; do not add a generic DTO or mapper package.
 
 ### Domain and value types
 
@@ -349,7 +349,7 @@ Before this implementation unit is considered complete:
 ## Verification commands
 
 ```bash
-./mvnw "-Dtest=LedgerValueObjectTest,FinancialAccountMigrationTest,FinancialAccountMappingTest,FinancialAccountServiceTest,CashActivityServiceTest,CashLedgerConcurrencyTest,FinancialAccountHttpTest,CashActivityHttpTest,ApiBearerSecurityHttpTest" test
+./mvnw "-Dtest=LedgerValueObjectTest,LedgerDomainInvariantTest,LedgerCursorCodecTest,FinancialAccountMigrationTest,FinancialAccountMappingTest,FinancialAccountServiceTest,CashActivityServiceTest,CashLedgerConcurrencyTest,FinancialAccountHttpTest,CashActivityHttpTest,ApiBearerSecurityHttpTest,LedgerTransactionRollbackTest" test
 ./mvnw test
 ./mvnw verify
 git status --short
@@ -364,25 +364,50 @@ Fill this before marking the PR complete.
 
 ### Implemented
 
-- PR-021 financial-account and ledger capability: not implemented; this specification remains active.
-- Separate current-worktree backend standardization cleanup: implemented against the accepted PR-020 identity/reference/platform baseline. It does not add V3 tables, ledger behavior, routes, or financial semantics, and it does not satisfy any PR-021 acceptance criterion.
-- The cleanup records controller-only validation, standard Spring Security JWT validators plus lexical compatibility checks, Boot-managed Micrometer W3C tracing with the existing UUID correlation contract, centralized database-constraint/optimistic-lock handling, application-owned search criteria, and current model/SQL ownership conventions in the authoritative standards/state/progress documents.
+- V3 creates exactly the six scoped `ledger` tables, including numeric(38,18) storage, deterministic indexes/checks/composite owner FKs, owner-scoped self-links, bounded JSONB idempotency snapshots, and the rebuildable balance projection.
+- The `ledger` capability implements exact financial amounts, account-kind/tracking/policy rules, explicit opening coverage, holdings-only untracked brokerage cash, immutable activities/postings, metadata/policy/archive versioning, deposits, withdrawals, same-currency transfers/previews, reversals, opening correction, current/historical balances, owner-scoped keyset reads, and idempotent transactional commands.
+- Account creation performs deterministic request parsing and locked idempotency replay before checking mutable currency activity, so an exact retry returns its original response even after the referenced currency is deactivated.
+- PostgreSQL advisory transaction locks and sorted account/projection locks serialize retries, withdrawal boundaries, transfers, reversals, and corrections. The global error boundary maps both Spring data-integrity wrappers and raw Hibernate constraint violations through the requested static `DatabaseConstraintRegistry`; unknown failures remain safe internal errors.
+- All specified account/activity/transfer HTTP routes use typed authenticated principals, controller-bound validation, no-store responses, stable ledger error codes, existing Problem Details, bearer security, UUID trace compatibility, and stateless request handling.
+- The application layer is split into cohesive onboarding, query, settings, lifecycle, activity-command, transfer, and activity-query services. Shared idempotency storage, aggregate access/locking, policy evaluation, canonical fingerprinting, and cursor-token transport remove repeated mechanics without adding a facade, mediator, dynamic SQL framework, or generic pagination repository; one-consumer fact-writing mechanics remain private to their owning services.
+- Required optimistic versions are validated at the HTTP boundary as non-null, non-negative values; opening and historical policy decisions preserve negative reality explicitly, and account/balance responses expose the resulting current policy breach warning.
+- Activity and posting factories enforce the accepted activity shapes and signed posting roles in the domain, while PostgreSQL repeats the policy-shape, signed-role, owner-FK and bounded-snapshot invariants at the persistence boundary. Activity history reads batch postings instead of issuing one query per activity.
+- Transfer activities persist a combined policy decision for both affected accounts, with historical breach taking precedence over confirmed breach and confirmed breach taking precedence over allowed.
+- Liability negative openings and over-limit authorized balances expose a current policy warning; available credit is clamped at zero while the breach remains visible.
+- The migration test inventory now proves all 70 named constraints and eight explicit indexes, and the constraint matrix covers policy/kind combinations, cross-owner references, reversals, idempotency uniqueness, numeric boundaries, and bounded JSONB shapes.
+- Real transactional rollback tests cover posting, projection, and idempotency persistence failures; concurrency and HTTP tests cover account-creation replay, authorized-limit contention, active/inactive/unknown currencies, future timestamps, malformed inputs, archived mutations, conflict codes, and authentication behavior.
+- The reconciled production completion surface is 75 files, 4,735 gross added lines, and 73 deleted lines; tests and documentation are excluded.
+- No later financial capability, asynchronous infrastructure, provider call, frontend route, or generic mapping framework was added.
 
 ### Deviations from specification
 
-- None for PR-021; the active financial specification remains unchanged. The requested cross-cutting cleanup is explicitly tracked as out-of-scope working-tree work rather than folded into the financial capability.
+- The user explicitly required `DatabaseConstraintRegistry` to remain a static class with its mappings defined in that class; the implementation follows that direction rather than introducing a registry bean or capability registration abstraction.
+- PostgreSQL advisory transaction locks are used for principal-scoped idempotency command serialization because this PR's concurrency contract is PostgreSQL-specific. No external lock service or asynchronous infrastructure was introduced.
+- Creation `Location` uses the existing absolute `ServletUriComponentsBuilder` behavior; activity and transfer locations remain the existing relative `/api/v1/activities/{id}` form.
 
 ### New decisions
 
-- No new financial decisions. The cleanup uses one Boot-managed Micrometer OpenTelemetry bridge without exporters, keeps W3C native trace IDs separate from the UUID `X-Trace-Id` compatibility value, and keeps the small known constraint map in one static registry.
+- Account/activity cursors contain a SHA-256 filter digest and are rejected when reused with a different filter; account cursors use `(name_normalized, id)` tuple pagination and activity cursors use `(recorded_at, id)` tuple pagination.
+- Platform `CanonicalFingerprint` now owns the shared normalized SHA-256 primitive used by idempotency and filter binding; `CursorTokenCodec` owns strict Base64url transport validation while capability codecs retain their typed positions, error codes, and SQL ordering contracts. The legacy session cursor remains unchanged.
+- Ledger cursor payloads use small Jackson record contracts for serialization/deserialization; canonical re-encoding preserves strict field, version, UUID, timestamp, and extra-field rejection without hand-written JSON escaping or regex parsing.
+- Cursor transport leaves invalid Base64/encoding argument failures for the capability codecs to translate, while cursor tests assert the exact `AppException` validation code, field, and key contract.
+- Transfer response postings have deterministic semantic ordering (`TRANSFER_SOURCE` before `TRANSFER_DESTINATION`) while reversals and other multi-posting responses retain deterministic account/ID tie-breaking.
+- Financial-account and cash-activity orchestration is intentionally split by cohesive use case; the five one-consumer fact writers were folded into private methods on their owning services so the repository does not grow pass-through classes.
+- A transfer has one immutable activity-level policy decision for the command; when both accounts are affected, the combined value preserves the strongest breach state without changing the response shape.
+- The existing cross-cutting standardization remains in the same working tree and is preserved: controller-only validation, standard JWT validators, Micrometer W3C tracing with UUID compatibility correlation, typed authenticated principals, and the static common constraint registry.
 
 ### Tests executed
 
-- PR-021 verification: not executed; specification only.
-- Standardization focused gate: `./mvnw -q "-Dtest=LocalAccessTokenDecoderTest,GlobalExceptionHandlerIntegrationTest,RequestTraceFilterTest,ReferenceCatalogQueryTest,LocalAccountRegistrationServiceTest,ManualInstrumentServiceTest,MicrometerTracingHttpTest" test` (passed).
-- Standardization complete suite: `./mvnw -q "-Dlogging.level.root=ERROR" test` (262 tests, 0 failures, 0 errors, 0 skipped); `./mvnw -q "-Dlogging.level.root=ERROR" verify` (passed); `./mvnw -q spotless:check` (passed).
+- Baseline PR-021 focused gate before the maintainability refactor: `./mvnw "-Dtest=LedgerValueObjectTest,FinancialAccountMigrationTest,FinancialAccountMappingTest,FinancialAccountServiceTest,CashActivityServiceTest,CashLedgerConcurrencyTest,FinancialAccountHttpTest,CashActivityHttpTest,ApiBearerSecurityHttpTest" test` (passed; 33 tests, 0 failures, 0 errors, 0 skipped).
+- Earlier standardization focused gate: `./mvnw -q "-Dtest=LocalAccessTokenDecoderTest,GlobalExceptionHandlerIntegrationTest,RequestTraceFilterTest,ReferenceCatalogQueryTest,LocalAccountRegistrationServiceTest,ManualInstrumentServiceTest,MicrometerTracingHttpTest" test` (passed).
+- Baseline full suite before the maintainability refactor: `./mvnw test` (passed; 293 tests, 0 failures, 0 errors, 0 skipped).
+- Refactor compile gate: `./mvnw -q -DskipTests compile` (passed). Pure post-refactor cursor/value/domain tests: 25 tests, 0 failures, 0 errors, 0 skipped.
+- Post-review focused gate: `./mvnw -q '-Dtest=LedgerValueObjectTest,LedgerDomainInvariantTest,LedgerCursorCodecTest,FinancialAccountMigrationTest,FinancialAccountMappingTest,FinancialAccountServiceTest,CashActivityServiceTest,CashLedgerConcurrencyTest,FinancialAccountHttpTest,CashActivityHttpTest,ApiBearerSecurityHttpTest,LedgerTransactionRollbackTest' test` (passed; 61 tests, 0 failures, 0 errors, 0 skipped). This includes V2-to-V3 upgrade, exact PostgreSQL constraint/index inventory, actual policy/FK/sign/numeric/JSONB/reversal/idempotency violations, owner deletion, real workflow rollback, warning/version HTTP behavior, and concurrent creation/authorized-limit/transfer/retry/reversal/opening-correction proof.
+- Final `./mvnw -q "-Dlogging.level.root=ERROR" test` and `./mvnw -q "-Dlogging.level.root=ERROR" verify` (passed; 319 tests, 0 failures, 0 errors, 0 skipped), `./mvnw -q spotless:check` (passed), `git diff --check` (passed), and `git status --short` (changes remain unstaged and uncommitted).
 
 ### Follow-up work
 
 - Statement reconciliation/adjustments, pending/settlement states, file import, multi-currency/FX, investing/funding integration, and richer account kinds remain separate capabilities.
 - Select a maintained async/batch library only alongside the first concrete workload; do not revive the retired custom-worker design.
+
+Last updated: 2026-08-19.

@@ -41,11 +41,12 @@ class ContextSmokeTest {
     }
 
     @Test
-    void foundationAndReferenceMigrationsApplied() {
+    void foundationReferenceAndLedgerMigrationsApplied() {
         var applied = flyway.info().applied();
-        assertThat(applied).hasSize(2);
+        assertThat(applied).hasSize(3);
         assertThat(applied[0].getVersion().toString()).isEqualTo("1");
         assertThat(applied[1].getVersion().toString()).isEqualTo("2");
+        assertThat(applied[2].getVersion().toString()).isEqualTo("3");
     }
 
     @Test

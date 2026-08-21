@@ -1,6 +1,6 @@
 # Backend transformation progress report
 
-Report date: 2026-08-16
+Report date: 2026-08-19
 
 Scope: Spring Boot backend, PostgreSQL dump, database migration strategy, modular-monolith design, offline/fake data approach, and implementation readiness. React production remains unchanged; this update performed only a bounded audit of its legacy authentication/token handling for the build-versus-buy review.
 
@@ -37,11 +37,11 @@ Scope: Spring Boot backend, PostgreSQL dump, database migration strategy, modula
 | PR-018 — Refresh rotation/reuse and HTTP refresh       | **Complete in accepted commit `d1eea9a`**                       | Owner-locked append-oriented rotation, committed family reuse response, successor access issuance, native/cookie HTTP delivery, and PostgreSQL/concurrency/security proof passed the focused 45-test gate, full 124-test suite, Spotless, and Maven `verify` |
 | PR-019 — Authenticated identity/session security       | **Complete in accepted working-tree commit `0c6657e`**                   | Typed authenticated identity, `/me`, owner-scoped session reads, current/all/selected revocation, logout cookie clearing, durable security events, bounded process-local authentication abuse protection; focused gate, full 211-test suite, Spotless and Maven `verify` passed |
 | PR-020 — Canonical reference catalog/manual instruments | **Complete in accepted commit `3f45a8c`** | V2 seven-table reference catalog, deterministic seeds, explicit calendar coverage, owner-scoped manual instrument lifecycle, SQL search/cursor pagination, optimistic alias-replacement concurrency, and real-filter ownership/security proof are implemented; the mixed identity/session standards alignment is explicitly user-authorized and covered |
-| PR-021 — Financial-account onboarding/immutable cash ledger | **Active specification; not implemented** | Planned V3 owner-scoped accounts, explicit opening coverage, immutable cash activities/postings, deposits, withdrawals, same-currency owned transfers, reversal/opening correction, native balance projection/read behavior, policy enforcement, idempotency, locking, and HTTP/security proof |
+| PR-021 — Financial-account onboarding/immutable cash ledger | **Implemented in the working tree; active through review** | V3 six-table owner-scoped ledger, explicit opening coverage, immutable activities/postings, deposits, withdrawals, same-currency owned transfers, reversal/opening correction, native balance projection/read behavior, policy enforcement, idempotency, locking, and HTTP/security proof |
 | Backend standardization cleanup                    | **Complete in current working tree** | Controller-only validation, standard JWT validators with lexical compatibility checks, Boot-managed Micrometer W3C tracing, centralized persistence error mapping, typed authenticated principals, application-owned search criteria, and current package/SQL conventions; no public route or response contract changed |
-| Automated backend coverage                         | 262 tests green in the current working tree | The suite covers response/cookie delivery, exact session/token binding, credential failures, validation/parsing, rotation invalid states, rollback, reuse, PostgreSQL locking, abuse-control concurrency, route scope, reference migration/mapping, explicit calendar coverage, owner isolation, bounded cursor search, statelessness, centralized persistence handling, and W3C trace compatibility; the current execution has 0 failures, 0 errors, and 0 skips |
+| Automated backend coverage                         | 319-test full suite and Maven `verify` green; focused PR-021 gate 61 tests green | The suite covers response/cookie delivery, exact session/token binding, credential failures, validation/parsing, rotation invalid states, rollback, reuse, PostgreSQL locking, abuse-control concurrency, route scope, reference and ledger migration/mapping, explicit calendar coverage, owner isolation, bounded cursor search, exact financial posting/projection semantics, idempotency/concurrency, statelessness, centralized persistence handling, and W3C trace compatibility |
 
-Overall status: **PR-020 is accepted in `3f45a8c`; PR-021 is the active specification and has not been implemented.**
+Overall status: **PR-020 is accepted in `3f45a8c`; PR-021 is implemented in the working tree and remains active through review.**
 
 ## Current backend standardization checkpoint
 
@@ -64,6 +64,22 @@ Focused JWT, service, global-error, reference-query and tracing checks are green
 - Planned boundary proof: pure domain tests, PostgreSQL migration/constraint/transaction/concurrency tests, and real-filter HTTP/security tests must prove owner isolation, exact balance semantics, idempotent replay/conflict, deadlock-resistant transfers, append-only correction, and stateless authenticated delivery.
 - Infrastructure decision: the former custom durable-job PR-021 draft is retired. PR-021 remains synchronous and introduces no scheduler, worker, retry, batch, queue, or workflow abstraction. Commodity infrastructure must be selected with its first concrete consumer after a build-versus-buy evaluation.
 - Specification: [PR-021-financial-account-onboarding-and-cash-ledger.md](../implementation/PR-021-financial-account-onboarding-and-cash-ledger.md).
+
+## Latest implementation checkpoint — PR-021
+
+Date: 2026-08-19. Starting commit: `cf895ac`, the user-owned commit containing the preceding backend standardization cleanup. PR-021 remains active through user review; no Git operation was performed by this implementation session.
+
+- V3 creates exactly six `ledger` tables: `financial_account`, `account_cash_pocket`, `activity`, `money_posting`, `idempotency_record`, and `account_balance_projection`. The migration keeps all schema-owned constraints, indexes, defaults, numeric(38,18) storage, and composite owner/account/pocket/currency integrity in Flyway.
+- The application slice owns exact financial amount parsing, account capability rules, explicit opening coverage, immutable signed facts, synchronous projections, historical as-of reads, policy boundaries, same-currency transfers, reversal/opening correction, idempotency snapshots, and owner-filtered keyset pagination.
+- HTTP controllers use `@AuthenticationPrincipal AuthenticatedIdentity`, request-record validation, the existing bearer chain, no-store headers, stable JSON strings/error codes, and unchanged RFC 9457 Problem Details. Account creation retains the existing absolute `Location` builder; activity/transfer creation uses the route-relative location contract.
+- The static `DatabaseConstraintRegistry` includes the four ledger mappings. The global handler resolves both Spring `DataIntegrityViolationException` and raw Hibernate constraint violations; unknown persistence failures remain safe 500 responses and optimistic failures retain `STATE_CONFLICT`.
+- The maintainability refactor replaces the oversized account/activity services with cohesive onboarding, query, settings, lifecycle, activity-command, transfer, and activity-query services. Shared idempotency storage, aggregate access/locking, policy evaluation, canonical fingerprinting, and cursor-token transport keep mechanics centralized without introducing a public facade or generic mediator; one-consumer fact-writing methods are private to the owning services. Ledger cursor payloads now use Jackson records with canonical re-encoding instead of hand-written JSON parsing/escaping.
+- Domain factories and PostgreSQL checks now enforce accepted activity/posting shapes and signed roles; required mutation versions are validated at the controller boundary; observed recording time is used for projection watermarks; current policy breach warnings are exposed on account and balance responses; and activity history loads postings in one batch.
+- Review fixes combine both transfer-account policy decisions, warn for negative liability openings, floor authorized-limit available credit at zero, prove all named V3 constraints/indexes and cross-owner/numeric/JSONB/reversal/idempotency violations, exercise real workflow rollback, and extend concurrency/HTTP coverage for account replay, authorized-limit contention, currencies, future timestamps, malformed inputs, archived mutations, and conflict/authentication behavior. The focused 61-test gate, full 319-test suite, Maven `verify`, Spotless, and diff checks are green.
+- Account creation checks the locked idempotency record before mutable currency activity, and PostgreSQL integration coverage proves exact replay after currency deactivation. Cursor tests now assert the exact `AppException` validation code and `cursor` field/key contract.
+- No asynchronous/job/provider/frontend infrastructure or later financial capability was added. Reconciliation/imports, pending settlement, investing, FX, spending/debt, households, and live providers remain deferred.
+
+Production surface: 75 files, 4,735 gross added lines, and 73 deleted lines including the V3 migration, ledger capability, global persistence-boundary additions, and preceding standardization changes. This includes no tests, generated output, or frontend changes.
 
 ## Latest implementation checkpoint — PR-020
 
@@ -363,7 +379,7 @@ The 2026-08-07 document harmonization establishes these implementation rules:
 | ----: | ----------------------------------------------------------------- | ----------- |
 |     0 | Risk containment and contract lock                                | Not started |
 |     1 | Fresh Flyway baseline and Testcontainers harness                  | Not started |
-|     2 | Financial accounts, immutable ledger and current trade cutover    | Not started |
+|     2 | Financial accounts, immutable ledger and current trade cutover    | In progress — PR-021 account/ledger slice implemented in the working tree; current trade cutover remains deferred |
 |     3 | Observation platform and deterministic synthetic dataset          | Not started |
 |     4 | Reconciled net worth and honest investment analytics              | Not started |
 |     5 | Decision Replay and localized comparison policies                 | Not started |
@@ -382,7 +398,7 @@ The 2026-08-07 document harmonization establishes these implementation rules:
 |        R0 | Preserve evidence and replace backend skeleton               | Not started                                                                                                      |
 |        R1 | Foundation, identity, auth, sessions and jobs                | Partially complete — PR-019 identity/session security is accepted in `0c6657e`; unused job storage remains only as a reservation, while execution infrastructure and persistent-key/OIDC/recovery work remain deferred |
 |        R2 | Canonical references and deterministic seeds                 | Complete for the accepted PR-020 boundary in `3f45a8c`; administration, imports, observations, and providers remain later capabilities |
-|        R3 | Accounts/ledger/funding/balances — FT-31                     | In progress — PR-021 financial-account onboarding and immutable cash ledger is the active specification; no implementation yet |
+|        R3 | Accounts/ledger/funding/balances — FT-31                     | In progress — PR-021 financial-account onboarding, cash ledger, and balance slice implemented in the working tree; broader funding remains deferred |
 |        R4 | Investing parity, funded trades and imports                  | Not started                                                                                                      |
 |        R5 | Observation platform and synthetic universe                  | Not started                                                                                                      |
 |        R6 | Timeline/net worth/investment truth — FT-01/02/11            | Not started                                                                                                      |

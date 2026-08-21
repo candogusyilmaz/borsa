@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 import dev.canverse.stocks.identity.domain.UserAccount;
+import dev.canverse.stocks.platform.application.CanonicalFingerprint;
+import dev.canverse.stocks.platform.application.CursorTokenCodec;
 import dev.canverse.stocks.platform.error.AppException;
 import dev.canverse.stocks.reference.application.InstrumentSearchCursorCodec;
 import dev.canverse.stocks.reference.application.model.InstrumentSearchCursor;
@@ -32,7 +34,10 @@ import tools.jackson.databind.json.JsonMapper;
 
 class ReferenceValueObjectTest {
 
-    private final InstrumentSearchCursorCodec cursorCodec = new InstrumentSearchCursorCodec();
+    private final InstrumentSearchCursorCodec cursorCodec = new InstrumentSearchCursorCodec(
+            new CursorTokenCodec(),
+            new CanonicalFingerprint(JsonMapper.builder().build()),
+            JsonMapper.builder().build());
 
     @Test
     void stableCodesRequireAlreadyCanonicalUppercaseForms() {

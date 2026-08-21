@@ -111,16 +111,17 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         if (mappedErrorCode.isPresent()) {
             return handleAppException(new AppException(mappedErrorCode.get(), exception), request);
         }
-        log.error(
-                "Unknown persistence failure traceId={} nativeTraceId={}",
-                traceId(request),
-                nativeTraceId(),
-                exception);
-        return problemResponse(
-                CommonErrorCode.INTERNAL_ERROR,
-                Map.of("detail", "Unhandled persistence failure"),
-                HttpHeaders.EMPTY,
-                request);
+        return unknownPersistenceFailure(exception, request);
+    }
+
+    @ExceptionHandler(org.hibernate.exception.ConstraintViolationException.class)
+    public ResponseEntity<Object> handleHibernateConstraintViolation(
+            org.hibernate.exception.ConstraintViolationException exception, WebRequest request) {
+        var mappedErrorCode = DatabaseConstraintRegistry.resolve(exception);
+        if (mappedErrorCode.isPresent()) {
+            return handleAppException(new AppException(mappedErrorCode.get(), exception), request);
+        }
+        return unknownPersistenceFailure(exception, request);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -140,6 +141,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 nativeTraceId(),
                 exception);
         return problemResponse(CommonErrorCode.STATE_CONFLICT, Map.of(), HttpHeaders.EMPTY, request);
+    }
+
+    private ResponseEntity<Object> unknownPersistenceFailure(Throwable exception, WebRequest request) {
+        log.error(
+                "Unknown persistence failure traceId={} nativeTraceId={}",
+                traceId(request),
+                nativeTraceId(),
+                exception);
+        return problemResponse(
+                CommonErrorCode.INTERNAL_ERROR,
+                Map.of("detail", "Unhandled persistence failure"),
+                HttpHeaders.EMPTY,
+                request);
     }
 
     @ExceptionHandler(Exception.class)

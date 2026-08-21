@@ -1,6 +1,6 @@
 # Backend rewrite implementation state
 
-Last updated: 2026-08-16
+Last updated: 2026-08-19
 
 ## Current technology
 
@@ -16,7 +16,7 @@ Last updated: 2026-08-16
 
 Date: 2026-08-16.
 
-The active PR pointer remains PR-021; no financial-account or ledger implementation is part of this checkpoint. The current working tree standardizes the accepted identity/reference/platform backend while preserving the `/api/v1/**` routes and existing HTTP contracts:
+The active PR pointer remained PR-021; no financial-account or ledger implementation was part of this prior checkpoint. The current working tree standardizes the accepted identity/reference/platform backend while preserving the `/api/v1/**` routes and existing HTTP contracts:
 
 - Bean Validation is an HTTP-controller concern. Request records retain structural and nested constraint metadata; controllers invoke any non-structural request-record validation; application services no longer use `@Validated`, service-method `@Valid`, or repeated request validation.
 - Local JWT decoding composes Spring Security issuer, audience and zero-skew timestamp validators with the application-specific header, canonical-claim, lexical NumericDate, strict-boundary and lifetime checks.
@@ -25,6 +25,19 @@ The active PR pointer remains PR-021; no financial-account or ledger implementat
 - Meaningful application criteria use capability-owned records under `application/model`; HTTP records use `web/request` and `web/response`; immutable collections, inclusive `datesUntil` ranges, and existing PostgreSQL aggregation/tuple-cursor SQL conventions remain in force.
 
 Focused and complete suites are green: 262 tests, 0 failures, 0 errors and 0 skipped; Maven `verify` and `spotless:check` pass.
+
+## Current PR-021 implementation checkpoint
+
+Date: 2026-08-19. PR-021 is implemented in the working tree and remains the active pointer through review; no commit or PR transition was performed.
+
+- V3 adds exactly `ledger.financial_account`, `account_cash_pocket`, `activity`, `money_posting`, `idempotency_record`, and `account_balance_projection`. Flyway remains the only DDL owner and Hibernate validates the mappings.
+- The owner-scoped ledger supports exact opening assertions, full-ledger cash, holdings-only brokerage cash coverage, liability opening/read semantics, immutable signed activities/postings, deposits, withdrawals, same-currency transfers/previews, policy enforcement, reversals, opening correction, current/historical balance reads, keyset cursors, and typed-principal HTTP routes.
+- Idempotency snapshots and all financial facts/projection changes commit atomically. PostgreSQL advisory transaction locks serialize principal-scoped retries; account/projection rows use deterministic sorted pessimistic locking. The global error boundary handles raw Hibernate and Spring data-integrity failures through the static `DatabaseConstraintRegistry`.
+- Activity/posting domain factories and matching PostgreSQL checks enforce signed fact shapes; required mutation versions are controller-validated; negative opening reality and resulting current policy breaches are explicit in activity decisions and account/balance responses; activity history uses one batched posting query.
+- Review-fix coverage now includes the combined transfer policy decision, liability/authorized-limit warning semantics, exact V3 constraint/index inventory, cross-owner and numeric/JSONB/reversal/idempotency database violations, real workflow rollback for posting/projection/idempotency failures, and account-creation/authorized-limit/currency/future-time HTTP and concurrency proof. The focused gate passed 61 tests; the full suite and `verify` each passed 319 tests, with Spotless and diff checks green.
+- Account-creation replay now checks the locked idempotency record before mutable currency activity, with PostgreSQL coverage proving exact replay after currency deactivation; cursor tests assert `AppException`/`VALIDATION_FAILED` and the `cursor` validation key instead of a broad runtime type.
+- Deferred work remains unchanged: reconciliation/imports, pending settlement, investments/trades, multi-currency/FX, spending/income/bills/debt, households/providers, frontend, and all asynchronous/job infrastructure.
+- The worktree contains uncommitted/untracked PR-021 production, migration, test, and documentation changes for user review. The reconciled production surface is 75 files with 4,736 gross added lines and 73 deleted lines, including the V3 migration and the preceding platform standardization changes; tests and documentation are excluded.
 
 ## Git workflow
 
@@ -454,7 +467,7 @@ Production surface: 49 new reference/platform production files contain 2,190 non
 
 ## Current database
 
-Migration version: `V2`
+Migration version: `V3`
 
 Schemas:
 
@@ -490,9 +503,17 @@ Tables:
 - `instrument_alias`
 - `market_calendar`
 
+### ledger
+
+- `financial_account`
+- `account_cash_pocket`
+- `activity`
+- `money_posting`
+- `idempotency_record`
+- `account_balance_projection`
+
 ### currently empty schemas
 
-- `ledger`
 - `data`
 - `money`
 - `analysis`
@@ -500,9 +521,9 @@ Tables:
 
 ## Active implementation unit
 
-[PR-021 — Financial-account onboarding and immutable cash ledger](PR-021-financial-account-onboarding-and-cash-ledger.md) is active from accepted commit `3f45a8c`.
+[PR-021 — Financial-account onboarding and immutable cash ledger](PR-021-financial-account-onboarding-and-cash-ledger.md) is implemented in the working tree and remains active through review from starting commit `cf895ac`.
 
-It is the first financial-truth vertical slice: V3 owner-scoped account onboarding, explicit opening-state coverage, immutable cash activities/postings, native balance projection/read behavior, deposits, withdrawals, same-currency owned transfers, reversals/opening correction, policy enforcement, idempotency, locking, and HTTP/security proof.
+It is the first financial-truth vertical slice: V3 owner-scoped account onboarding, explicit opening-state coverage, immutable cash activities/postings, native balance projection/read behavior, deposits, withdrawals, same-currency owned transfers, reversals/opening correction, policy enforcement, idempotency, locking, and HTTP/security proof. The focused gate passes 61 tests with no failures, errors, or skips; the full suite and `verify` each pass 319 tests, and Spotless passes.
 
 The former custom durable-platform-job draft is retired. PR-021 must not implement a generic scheduler, worker, retry, batch, queue, or workflow abstraction. Select asynchronous infrastructure only with its first concrete workload after a recorded build-versus-buy evaluation.
 
@@ -516,7 +537,7 @@ The 2026-08-16 repository audit found no reason to outsource financial domain se
 - The unused `platform.job` table/entity/repository are speculative storage scaffolding, not authority to build a worker. Decide whether to adopt maintained scheduling/batch infrastructure and migrate or remove the scaffold only when a concrete asynchronous workload establishes the required semantics.
 - The legacy frontend duplicates JWT parsing, browser token storage, and refresh scheduling. It must not be extended; replace it with the backend's current hardened refresh-cookie/bearer contract or a maintained standards-based client before frontend reactivation.
 - The accepted identity/session implementation delegates password and JWT cryptography to Spring Security/Nimbus and owns product-specific device-session rotation/reuse behavior. Before adding OIDC, recovery, MFA, federation, or authorization-server duties, evaluate Spring Security's authorization-server support or an external identity provider.
-- Small cursor codecs, owner-scoped SQL read models, Problem Detail mapping, trace filtering, constraint translation, cache headers, secure token generation, and ID/clock adapters remain justified repository-specific boundary code. Reassess them only when duplication or a concrete interoperability requirement appears.
+- Shared platform fingerprinting and cursor-token transport now remove duplicated SHA-256/Base64 mechanics; ledger cursor payloads use Jackson records with canonical re-encoding, while cursor positions, filter semantics, error codes, and owner-scoped SQL remain capability-owned. The legacy session cursor remains a compatibility exception.
 
 ## Known issues / deferred work
 
@@ -524,11 +545,10 @@ The 2026-08-16 repository audit found no reason to outsource financial domain se
 - Keyset pagination in `DeviceSessionReadRepository` casts `s.id` to `text` inside the PostgreSQL `MAX` aggregate function to support UUID types across PostgreSQL versions.
 - Maven explicitly registers Lombok on the annotation-processor path so Lombok-generated entity accessors and constructors compile on Java 25.
 - Reference catalog identities, deterministic seeds, explicit calendar storage, and owner-scoped manual instruments now exist; global administration, calendar/import workflows, observations, and provider adapters remain deferred.
-- No ledger or financial-account model exists at the accepted PR-020 baseline; PR-021 is the active specification that introduces them.
+- PR-021 now provides the first ledger/financial-account model; reconciliation/imports, pending settlement, investments, multi-currency/FX, spending/debt, households, providers, and future financial capabilities remain deferred.
 - The frontend still targets legacy APIs.
 - Bank/broker connectivity remains explicitly deferred.
-- JPA write semantics for database-defaulted fields are not established yet.
-- JPA JSON write semantics are not established yet.
+- PR-021 establishes the required JPA JSONB idempotency snapshot mapping and tests raw entity round trips against the V3 schema.
 
 ## Resume instructions
 

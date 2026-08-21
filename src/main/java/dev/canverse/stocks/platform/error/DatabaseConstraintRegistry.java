@@ -1,6 +1,7 @@
 package dev.canverse.stocks.platform.error;
 
 import dev.canverse.stocks.identity.error.IdentityErrorCode;
+import dev.canverse.stocks.ledger.error.LedgerErrorCode;
 import dev.canverse.stocks.reference.error.ReferenceErrorCode;
 import java.util.Map;
 import java.util.Optional;
@@ -14,7 +15,11 @@ public final class DatabaseConstraintRegistry {
             Map.entry("uq_auth_identity_provider_subject", IdentityErrorCode.EMAIL_ALREADY_REGISTERED),
             Map.entry("uix_reference_instrument_global_symbol", ReferenceErrorCode.DUPLICATE_INSTRUMENT),
             Map.entry("uix_reference_instrument_owner_symbol", ReferenceErrorCode.DUPLICATE_INSTRUMENT),
-            Map.entry("uix_reference_instrument_alias_identity", ReferenceErrorCode.DUPLICATE_INSTRUMENT_ALIAS));
+            Map.entry("uix_reference_instrument_alias_identity", ReferenceErrorCode.DUPLICATE_INSTRUMENT_ALIAS),
+            Map.entry("uix_ledger_financial_account_active_name", LedgerErrorCode.ACCOUNT_NAME_CONFLICT),
+            Map.entry("uq_ledger_idempotency_owner_scope_request", LedgerErrorCode.IDEMPOTENCY_CONFLICT),
+            Map.entry("uq_ledger_activity_operation", LedgerErrorCode.IDEMPOTENCY_CONFLICT),
+            Map.entry("uq_ledger_activity_reversal", LedgerErrorCode.ACTIVITY_ALREADY_REVERSED));
 
     private DatabaseConstraintRegistry() {}
 
