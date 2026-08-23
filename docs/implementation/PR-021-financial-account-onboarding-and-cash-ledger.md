@@ -6,12 +6,11 @@ Status: **ACTIVE**
 
 Deliver the first usable financial-truth vertical slice. An authenticated user can create owner-scoped cash, brokerage, card, or loan accounts with an explicit zero or non-zero opening state; record idempotent deposits, withdrawals, and same-currency owned-account transfers; correct facts without destructive edits; and read native-currency balances with explicit historical coverage. Every balance comes from immutable postings, and concurrent/retried commands cannot duplicate or silently overspend.
 
-## Sizing and boundary rationale
+## Capability and review boundary
 
-- Comparison baseline: accepted PR-018 (`d1eea9a`) added 381 production Java lines across 12 production files.
-- Expected production surface: approximately 40–55 production Java/migration files and 2,300–3,300 gross production lines across the V3 ledger schema, financial value types, account/activity/posting mappings, idempotent transactional workflows, locking/projection SQL, owner-scoped read models, HTTP contracts, and error handling. Tests and documentation do not count.
-- Combined behaviors: an account without an opening-state contract is financially ambiguous; an opening amount without immutable postings creates a second balance truth; postings without idempotency, reversals, locking, and balance reads are unsafe. These pieces therefore form one coherent capability rather than mechanical per-layer PRs.
+- Coherent capability: an account without an opening-state contract is financially ambiguous; an opening amount without immutable postings creates a second balance truth; postings without idempotency, reversals, locking, and balance reads are unsafe. These behaviors form one usable financial-truth slice rather than mechanical per-layer units.
 - Review boundary: this PR covers only owner-scoped, single-native-currency account onboarding and the minimal manual cash ledger. Reconciliation, imports, pending settlement, investments, categories/spending, household sharing, FX, providers, and background execution are independent capabilities.
+- The scope is judged by capability and review coherence, not a fixed line or file target. No unrelated cleanup or padding is justified.
 - This is domain implementation, not generic infrastructure. No scheduler, workflow engine, rules engine, money library, event bus, or abstraction framework is introduced. JDK, Spring Boot, Hibernate, Jackson, PostgreSQL, and Flyway cover the technical plumbing; repository code owns only the product-specific accounting semantics.
 
 ## Source documents
@@ -334,17 +333,19 @@ Validation errors continue to use `VALIDATION_FAILED`. Cross-owner IDs return th
 12. Owner scoping is enforced in SQL/services and real HTTP security tests; cross-owner and unknown identifiers are indistinguishable.
 13. No custom asynchronous infrastructure, library dependency, provider/network call, frontend change, later financial capability, or generic framework is added.
 14. The focused pure/PostgreSQL/HTTP/security gate, complete suite, Spotless, and Maven `verify` pass with no skipped required tests.
-15. Completion records report actual production sizing, deviations, database version, tests, and any build-versus-buy decision; no later PR is drafted or activated.
+15. Completion records report implemented scope, deviations, database version, tests, and any build-versus-buy decision; no later PR is drafted or activated.
 
 ## Documentation completion
 
 Before this implementation unit is considered complete:
 
-- fill in this specification's Completion Record;
-- update `docs/implementation/STATE.md` with V3 tables, implemented account/ledger behavior, financial decisions, test totals, and deferred work;
-- update `docs/review/progress-report.md` with PR-021 implementation/review status;
+- update `docs/implementation/STATE.md` with current V3 tables, implemented account/ledger behavior, verified decisions, latest useful test state, and deferred work;
+- replace superseded STATE statements instead of appending implementation history or old test totals;
 - update `docs/review/accounting-contract.md` first if implementation discovers a genuinely cross-cutting semantic change;
-- keep `CURRENT.md` pointing to PR-021 through implementation and review.
+- move reusable execution-environment lessons to `docs/engineering/codex-command-playbook.md`;
+- keep detailed implementation history in this Completion Record and Git history;
+- keep `CURRENT.md` pointing to PR-021 through implementation and review;
+- fill in this specification's Completion Record without preserving temporary hypotheses or completed checklist noise as durable state.
 
 ## Verification commands
 
@@ -394,7 +395,7 @@ Fill this before marking the PR complete.
 - Transfer response postings have deterministic semantic ordering (`TRANSFER_SOURCE` before `TRANSFER_DESTINATION`) while reversals and other multi-posting responses retain deterministic account/ID tie-breaking.
 - Financial-account and cash-activity orchestration is intentionally split by cohesive use case; the five one-consumer fact writers were folded into private methods on their owning services so the repository does not grow pass-through classes.
 - A transfer has one immutable activity-level policy decision for the command; when both accounts are affected, the combined value preserves the strongest breach state without changing the response shape.
-- The existing cross-cutting standardization remains in the same working tree and is preserved: controller-only validation, standard JWT validators, Micrometer W3C tracing with UUID compatibility correlation, typed authenticated principals, and the static common constraint registry.
+- The existing cross-cutting standardization remains in the same implementation baseline and is preserved: controller-only validation, standard JWT validators, Micrometer W3C tracing with UUID compatibility correlation, typed authenticated principals, and the static common constraint registry.
 
 ### Tests executed
 
@@ -403,11 +404,11 @@ Fill this before marking the PR complete.
 - Baseline full suite before the maintainability refactor: `./mvnw test` (passed; 293 tests, 0 failures, 0 errors, 0 skipped).
 - Refactor compile gate: `./mvnw -q -DskipTests compile` (passed). Pure post-refactor cursor/value/domain tests: 25 tests, 0 failures, 0 errors, 0 skipped.
 - Post-review focused gate: `./mvnw -q '-Dtest=LedgerValueObjectTest,LedgerDomainInvariantTest,LedgerCursorCodecTest,FinancialAccountMigrationTest,FinancialAccountMappingTest,FinancialAccountServiceTest,CashActivityServiceTest,CashLedgerConcurrencyTest,FinancialAccountHttpTest,CashActivityHttpTest,ApiBearerSecurityHttpTest,LedgerTransactionRollbackTest' test` (passed; 61 tests, 0 failures, 0 errors, 0 skipped). This includes V2-to-V3 upgrade, exact PostgreSQL constraint/index inventory, actual policy/FK/sign/numeric/JSONB/reversal/idempotency violations, owner deletion, real workflow rollback, warning/version HTTP behavior, and concurrent creation/authorized-limit/transfer/retry/reversal/opening-correction proof.
-- Final `./mvnw -q "-Dlogging.level.root=ERROR" test` and `./mvnw -q "-Dlogging.level.root=ERROR" verify` (passed; 319 tests, 0 failures, 0 errors, 0 skipped), `./mvnw -q spotless:check` (passed), `git diff --check` (passed), and `git status --short` (changes remain unstaged and uncommitted).
+- Final `./mvnw -q "-Dlogging.level.root=ERROR" test` and `./mvnw -q "-Dlogging.level.root=ERROR" verify` (passed; 319 tests, 0 failures, 0 errors, 0 skipped), `./mvnw -q spotless:check` (passed), and `git diff --check` (passed). The implementation is present in repository commit `e08f2c2`; this specification remains active through review.
 
 ### Follow-up work
 
 - Statement reconciliation/adjustments, pending/settlement states, file import, multi-currency/FX, investing/funding integration, and richer account kinds remain separate capabilities.
 - Select a maintained async/batch library only alongside the first concrete workload; do not revive the retired custom-worker design.
 
-Last updated: 2026-08-19.
+Last updated: 2026-08-21.

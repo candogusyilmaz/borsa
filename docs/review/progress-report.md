@@ -1,8 +1,10 @@
 # Backend transformation progress report
 
-Report date: 2026-08-19
+Report date: 2026-08-21
 
 Scope: Spring Boot backend, PostgreSQL dump, database migration strategy, modular-monolith design, offline/fake data approach, and implementation readiness. React production remains unchanged; this update performed only a bounded audit of its legacy authentication/token handling for the build-versus-buy review.
+
+Current-state handoff: use [docs/implementation/STATE.md](../implementation/STATE.md). This report retains dated project checkpoints and historical evidence; it is not normal implementation bootstrap context.
 
 ## At a glance
 
@@ -35,13 +37,13 @@ Scope: Spring Boot backend, PostgreSQL dump, database migration strategy, modula
 | PR-016 — HTTP bearer authentication boundary          | **Complete in local commit `9fcbb69`**                         | One servlet-only stateless `/api/v1/**` chain keeps registration public, reuses the accepted decoder/converter, and maps expected bearer failures into the existing trace-correlated RFC 9457 contract                                                   |
 | PR-017 — HTTP local login and explicit token delivery | **Complete in user-owned commit `7f55288`**                  | One public login POST exposes the accepted atomic workflow through explicit response-body or hardened same-site cookie delivery; correction review and all required gates pass |
 | PR-018 — Refresh rotation/reuse and HTTP refresh       | **Complete in accepted commit `d1eea9a`**                       | Owner-locked append-oriented rotation, committed family reuse response, successor access issuance, native/cookie HTTP delivery, and PostgreSQL/concurrency/security proof passed the focused 45-test gate, full 124-test suite, Spotless, and Maven `verify` |
-| PR-019 — Authenticated identity/session security       | **Complete in accepted working-tree commit `0c6657e`**                   | Typed authenticated identity, `/me`, owner-scoped session reads, current/all/selected revocation, logout cookie clearing, durable security events, bounded process-local authentication abuse protection; focused gate, full 211-test suite, Spotless and Maven `verify` passed |
+| PR-019 — Authenticated identity/session security       | **Complete in accepted commit `0c6657e`**                   | Typed authenticated identity, `/me`, owner-scoped session reads, current/all/selected revocation, logout cookie clearing, durable security events, bounded process-local authentication abuse protection; focused gate, full 211-test suite, Spotless and Maven `verify` passed |
 | PR-020 — Canonical reference catalog/manual instruments | **Complete in accepted commit `3f45a8c`** | V2 seven-table reference catalog, deterministic seeds, explicit calendar coverage, owner-scoped manual instrument lifecycle, SQL search/cursor pagination, optimistic alias-replacement concurrency, and real-filter ownership/security proof are implemented; the mixed identity/session standards alignment is explicitly user-authorized and covered |
-| PR-021 — Financial-account onboarding/immutable cash ledger | **Implemented in the working tree; active through review** | V3 six-table owner-scoped ledger, explicit opening coverage, immutable activities/postings, deposits, withdrawals, same-currency owned transfers, reversal/opening correction, native balance projection/read behavior, policy enforcement, idempotency, locking, and HTTP/security proof |
-| Backend standardization cleanup                    | **Complete in current working tree** | Controller-only validation, standard JWT validators with lexical compatibility checks, Boot-managed Micrometer W3C tracing, centralized persistence error mapping, typed authenticated principals, application-owned search criteria, and current package/SQL conventions; no public route or response contract changed |
+| PR-021 — Financial-account onboarding/immutable cash ledger | **Implemented in commit `e08f2c2`; active through review** | V3 six-table owner-scoped ledger, explicit opening coverage, immutable activities/postings, deposits, withdrawals, same-currency owned transfers, reversal/opening correction, native balance projection/read behavior, policy enforcement, idempotency, locking, and HTTP/security proof |
+| Backend standardization cleanup                    | **Complete in commit `cf895ac`; preserved through the current baseline** | Controller-only validation, standard JWT validators with lexical compatibility checks, Boot-managed Micrometer W3C tracing, centralized persistence error mapping, typed authenticated principals, application-owned search criteria, and current package/SQL conventions; no public route or response contract changed |
 | Automated backend coverage                         | 319-test full suite and Maven `verify` green; focused PR-021 gate 61 tests green | The suite covers response/cookie delivery, exact session/token binding, credential failures, validation/parsing, rotation invalid states, rollback, reuse, PostgreSQL locking, abuse-control concurrency, route scope, reference and ledger migration/mapping, explicit calendar coverage, owner isolation, bounded cursor search, exact financial posting/projection semantics, idempotency/concurrency, statelessness, centralized persistence handling, and W3C trace compatibility |
 
-Overall status: **PR-020 is accepted in `3f45a8c`; PR-021 is implemented in the working tree and remains active through review.**
+Overall status: **PR-020 is accepted in `3f45a8c`; PR-021 is implemented in `e08f2c2` and remains active through review.**
 
 ## Current backend standardization checkpoint
 
@@ -104,8 +106,8 @@ Production surface: 75 files, 4,735 gross added lines, and 73 deleted lines incl
 - Implemented security boundary: append-only safe authentication/session security events on `platform.security_event` via `SecurityEventRecorder` with `Propagation.REQUIRES_NEW` for anonymous failure/throttle events and standard `REQUIRED` propagation for session mutations, plus bounded process-local registration/login/refresh throttling (`AuthenticationAbuseProtection`) with per-bucket window tracking, throttle rollback on event failure, and parameterless trace-correlated 429 responses.
 - Required proof: owner-scoped JdbcClient pagination with bounded query count assertion, real PostgreSQL refresh/revocation concurrency and lock serialization, real event persistence failure rollback and throttle in-memory unblocking, deterministic fixed-clock/capacity abuse behavior, real-filter endpoint/ownership/cookie/statelessness tests, full suite (211 tests), Spotless, and Maven `verify`.
 - Concurrency/abuse evidence: PostgreSQL tests cover current/selected/all revocation against refresh in both lock acquisition orders; fixed-clock tests cover equality expiry, capacity fail-closed behavior, mixed windows, and compare-and-set rollback; event integration tests cover exact scopes, persistence rollback, and throttle unblocking.
-- Review result: implementation self-audit found and corrected extreme/blank cursor handling, exact source-key domains, one-clock mutation-event timestamping, strict immutable event details, and stable user-revocation reasons. Independent user review remains pending.
-- Sizing: fixed PR-018 comparison baseline of 381 production additions/30 deletions/12 files; PR-019 actual production surface is 1,769 additions/49 deletions across 36 production files (4.64× PR-018 additions), below the fixed five-times floor. The complete specified slice was kept scoped without padding or speculative infrastructure.
+- Review result: implementation self-audit found and corrected extreme/blank cursor handling, exact source-key domains, one-clock mutation-event timestamping, strict immutable event details, and stable user-revocation reasons. The implementation was accepted in `0c6657e`.
+- Historical completion evidence: PR-019 delivered 1,769 additions and 49 deletions across 36 production files for its complete specified slice. The recorded measurement is historical evidence, not a current planning quota; future units use capability and review boundaries.
 - Non-goals: jobs, persistent keys, OIDC/recovery, roles/permissions/households, account deletion/export, cross-site deployment/trusted-proxy/general CSRF infrastructure, schema/dependency/frontend/reference/financial work.
 
 ## Latest implementation checkpoint — PR-018
@@ -377,9 +379,9 @@ The 2026-08-07 document harmonization establishes these implementation rules:
 
 | Stage | Result                                                            | Status      |
 | ----: | ----------------------------------------------------------------- | ----------- |
-|     0 | Risk containment and contract lock                                | Not started |
-|     1 | Fresh Flyway baseline and Testcontainers harness                  | Not started |
-|     2 | Financial accounts, immutable ledger and current trade cutover    | In progress — PR-021 account/ledger slice implemented in the working tree; current trade cutover remains deferred |
+|     0 | Risk containment and contract lock                                | Complete |
+|     1 | Fresh Flyway baseline and Testcontainers harness                  | Complete |
+|     2 | Financial accounts, immutable ledger and current trade cutover    | In progress — PR-021 account/ledger slice implemented in `e08f2c2`; current trade cutover remains deferred |
 |     3 | Observation platform and deterministic synthetic dataset          | Not started |
 |     4 | Reconciled net worth and honest investment analytics              | Not started |
 |     5 | Decision Replay and localized comparison policies                 | Not started |
@@ -395,10 +397,10 @@ The 2026-08-07 document harmonization establishes these implementation rules:
 
 | Increment | Implementation result                                        | Status                                                                                                           |
 | --------: | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
-|        R0 | Preserve evidence and replace backend skeleton               | Not started                                                                                                      |
+|        R0 | Preserve evidence and replace backend skeleton               | Complete                                                                                                        |
 |        R1 | Foundation, identity, auth, sessions and jobs                | Partially complete — PR-019 identity/session security is accepted in `0c6657e`; unused job storage remains only as a reservation, while execution infrastructure and persistent-key/OIDC/recovery work remain deferred |
 |        R2 | Canonical references and deterministic seeds                 | Complete for the accepted PR-020 boundary in `3f45a8c`; administration, imports, observations, and providers remain later capabilities |
-|        R3 | Accounts/ledger/funding/balances — FT-31                     | In progress — PR-021 financial-account onboarding, cash ledger, and balance slice implemented in the working tree; broader funding remains deferred |
+|        R3 | Accounts/ledger/funding/balances — FT-31                     | In progress — PR-021 financial-account onboarding, cash ledger, and balance slice implemented in `e08f2c2`; broader funding remains deferred |
 |        R4 | Investing parity, funded trades and imports                  | Not started                                                                                                      |
 |        R5 | Observation platform and synthetic universe                  | Not started                                                                                                      |
 |        R6 | Timeline/net worth/investment truth — FT-01/02/11            | Not started                                                                                                      |

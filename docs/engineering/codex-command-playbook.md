@@ -1,43 +1,64 @@
 # Codex command playbook
 
-This is repository-specific operational guidance for coding-agent sessions on the Windows sandbox. It explains recurring environment failures and the command forms that work reliably. It does not change product scope, Git ownership, or the active PR workflow.
+This file stores verified, reusable execution-environment procedures for this Windows sandbox. It does not define product scope, Git ownership, or the planner/implementer/reviewer workflow.
+
+Record lessons in this form:
+
+**Problem / condition**
+
+What repeatable environment or tool condition occurs.
+
+**Resolved procedure**
+
+The command or procedure that has worked.
+
+**Known restriction**
+
+Any permission, network, Docker, output, or safety limitation that still matters.
+
+Do not record one-off compilation or assertion failures, temporary hypotheses, long command histories, or obsolete environment assumptions. Replace a contradicted procedure when direct current evidence establishes a better one.
 
 ## Workspace and shell
 
-- Work from `C:\Users\Vintage\Documents\stocks`.
-- Use `rg`/`rg --files` for searches and file discovery.
-- Quote paths and comma-separated Maven properties in PowerShell, for example:
+**Problem / condition:** Repository searches and edits run in the Windows workspace.
+
+**Resolved procedure:** Work from `C:\Users\Vintage\Documents\stocks`; use `rg`/`rg --files` for discovery; keep inspection commands focused; use `apply_patch` for file edits rather than redirection, `cat`, or inline write scripts.
+
+**Known restriction:** Quote paths and comma-separated Maven properties in PowerShell:
 
 ```powershell
 ./mvnw "-Dtest=FocusedTestA,FocusedTestB" test
 Get-Content -Raw "docs\implementation\CURRENT.md"
 ```
 
-- Keep commands focused. Separate inspection commands when output would otherwise be truncated or noisy.
-- Use `apply_patch` for file edits. Do not write files through `cat`, redirection, or inline scripting.
-
 ## Git safe-directory warning
 
-The sandbox identity differs from the Windows owner of this checkout. Git may report “detected dubious ownership.” For read-only inspection, use a one-command override:
+**Problem / condition:** The sandbox identity differs from the Windows owner of this checkout, so Git can report `detected dubious ownership`.
+
+**Resolved procedure:** For read-only inspection, pass a one-command safe-directory override and inspect unstaged, staged, and untracked state explicitly:
 
 ```powershell
-git -c safe.directory=C:/Users/Vintage/Documents/stocks status --short
-git -c safe.directory=C:/Users/Vintage/Documents/stocks diff --stat
+git -c safe.directory=C:/Users/Vintage/Documents/stocks status --short --untracked-files=all
+git -c safe.directory=C:/Users/Vintage/Documents/stocks diff
+git -c safe.directory=C:/Users/Vintage/Documents/stocks diff --cached
 ```
 
-Do not modify global Git configuration merely to silence this warning. Do not stage, commit, reset, clean, switch branches, or perform other Git mutations unless the user explicitly asks.
+When the active implementation has already been committed but remains under review, derive its starting commit from the active specification, `STATE.md`, and Git history, then inspect the complete range as well as later working-tree state:
 
-`git diff` does not include untracked files. Always pair it with `git status --short`, then inspect untracked files directly or with `rg --files`. `git diff --check` also cannot validate untracked files; run formatter/tests and inspect new files separately.
+```powershell
+git -c safe.directory=C:/Users/Vintage/Documents/stocks diff STARTING_COMMIT..HEAD --stat
+git -c safe.directory=C:/Users/Vintage/Documents/stocks diff STARTING_COMMIT..HEAD
+```
+
+Replace `STARTING_COMMIT` with the verified baseline; do not guess it from commit messages alone.
+
+**Known restriction:** Do not change global Git configuration merely to silence the warning. Do not stage, commit, reset, clean, switch branches, push, or otherwise mutate Git unless the user explicitly requests it. Plain `git diff` omits staged and untracked files; `git diff --cached` omits unstaged and untracked files; commit-range diffs omit later working-tree changes. Pair the relevant diff forms with `git status --short --untracked-files=all` and inspect untracked files directly.
 
 ## Maven and network permissions
 
-The default sandbox may block Maven Central even when dependencies are otherwise healthy. First try the normal wrapper command. If Maven fails while resolving a parent or dependency with a network/permission error, rerun the same command with an escalation request:
+**Problem / condition:** The default sandbox can block Maven Central while resolving a parent or dependency.
 
-- sandbox permission: `require_escalated`;
-- a short user-facing justification explaining that Maven Central is needed;
-- a narrow reusable prefix such as `./mvnw`.
-
-Typical verification commands are:
+**Resolved procedure:** First run the normal wrapper command, such as:
 
 ```powershell
 ./mvnw spotless:check
@@ -45,31 +66,62 @@ Typical verification commands are:
 ./mvnw verify
 ```
 
-Do not treat a dependency-resolution failure as a code failure. Record it separately from compilation or test results.
+If the failure is specifically a dependency-resolution network or permission error, rerun the same command with an escalation request and a narrow `./mvnw` prefix.
 
-## Testcontainers and Docker
+**Known restriction:** Separate dependency-resolution blockers from compilation or test failures. Do not alter dependencies or test configuration to work around the environment.
 
-PostgreSQL integration tests use Testcontainers and require the local Docker Desktop engine. Do not replace them with mocks when database semantics matter. If Docker is unavailable, report the environment blocker after checking the Docker connection through the test output; do not alter production test configuration or silently skip containers.
+When a failure matches a documented condition, identify the condition, apply its resolved procedure, and stop exploring equivalent Maven, dependency, repository, or build configurations first. Do not repeatedly request elevated permission for equivalent failed approaches. Add or revise a playbook procedure only after direct successful evidence establishes a reusable resolution.
+
+**Problem / condition:** Clean Java 25 compilation relies on the repository's explicit Lombok annotation-processor configuration.
+
+**Resolved procedure:** Keep the Lombok processor configuration in `pom.xml` when running clean compilation, formatting, or verification; validate changes with the normal Maven wrapper commands.
+
+**Known restriction:** Do not replace the configured processor with ad hoc compiler flags or dependency changes to address a one-off compilation failure.
+
+## PostgreSQL timestamp fixtures
+
+**Problem / condition:** A PostgreSQL/Testcontainers JDBC fixture binds a `timestamptz` parameter through `JdbcTemplate`.
+
+**Resolved procedure:** Bind an `OffsetDateTime` parameter in the JDBC fixture. JPA entity timestamp fields may continue to use `Instant`.
+
+**Known restriction:** This is a JDBC fixture-binding rule, not a reason to change the domain or entity timestamp type.
+
+## PostgreSQL and Testcontainers
+
+**Problem / condition:** PostgreSQL integration tests use Testcontainers.
+
+**Resolved procedure:** Run the required Testcontainers tests against the local Docker Desktop engine. Preserve real database tests where schema, constraint, transaction, locking, or query semantics matter.
+
+**Known restriction:** If Docker is unavailable, report the environment blocker after checking the test output. Do not replace containers with mocks, silently skip tests, or change production test configuration.
 
 ## Long-running commands
 
-When the command tool returns a running cell ID, use the matching wait operation to collect its output. Do not call wait after a command has already completed. Prefer waits of 10–30 seconds and report progress between long operations; do not block for more than 60 seconds in one wait.
+**Problem / condition:** A command may return a running cell identifier instead of completing in the initial call.
+
+**Resolved procedure:** Use the matching wait operation for that cell and collect output in 10-30 second intervals, reporting progress between long operations.
+
+**Known restriction:** Do not wait more than 60 seconds in one interval, and do not call wait after the command has completed.
 
 ## Output and inspection
 
-Tool output can be truncated. Prefer:
+**Problem / condition:** Tool output can be truncated or become noisy when large files and logs are dumped at once.
+
+**Resolved procedure:** Use targeted searches and line ranges:
 
 ```powershell
 rg -n "pattern" path
 $lines = Get-Content path
-for ($i = 100; $i -le 160; $i++) { "$i`: $($lines[$i-1])" }
+for ($i = 100; $i -le 160; $i++) { "{0}: {1}" -f $i,$lines[$i-1] }
 git -c safe.directory=C:/Users/Vintage/Documents/stocks diff -- path/to/file
+git -c safe.directory=C:/Users/Vintage/Documents/stocks diff --cached -- path/to/file
 ```
 
-Read large specifications in sections and inspect production files and tests separately. A successful command with truncated output is still usable, but its summary should come from a narrow follow-up command rather than assumptions.
+**Known restriction:** Treat truncated output as an indication to run a narrow follow-up command, not as evidence that unseen content is absent. Read large specifications in sections and inspect changed production files and tests separately.
 
-## Review and implementation checklist
+## Verification and scope
 
-For a review, inspect the active specification, actual tracked diff, untracked files, and changed-file behavior before trusting a completion summary. Run the specification’s focused tests, full tests, formatter, and `verify` when the environment permits. Preserve unrelated user changes.
+**Problem / condition:** A successful implementation or review requires evidence across the relevant test layers without broad context loading.
 
-For implementation, read `AGENTS.md`, `docs/implementation/CURRENT.md`, the active specification, and the required standards before editing. Keep changes in the working tree for the user. Documentation-only requests do not authorize production-code or Git-history changes.
+**Resolved procedure:** Follow the active specification's focused tests, full tests, formatter, and `verify` commands when the environment permits. Inspect the complete active-unit change surface, including relevant unstaged, staged, untracked, and already committed changes, before trusting a summary. Use the repository's role-routing documents for scope and documentation maintenance.
+
+**Known restriction:** Documentation-only work does not authorize production-code, test, migration, dependency, configuration, frontend, or Git-history changes. Preserve unrelated user changes.

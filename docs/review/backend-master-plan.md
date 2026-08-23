@@ -66,6 +66,7 @@ This is a **clean replacement**, not an in-place refactor or strangler migration
 
 1. Create a `backend-rewrite` branch/tag so the current implementation remains available in Git.
 2. Keep `src/main/web` untouched; temporary API incompatibility is acceptable because the application is not deployed.
+   The preserved frontend's legacy token parsing, browser-token storage, and refresh behavior are not an extension point; before frontend reactivation, migrate it to the backend's hardened bearer/refresh-cookie contract or a maintained standards-based client.
 3. Retain review documents and [db-dump.sql](db-dump.sql) as behavioral/schema evidence only.
 4. Remove the old backend entities, services, controllers, repositories, integrations, mapper XML, migrations, empty `schema.sql`, and unused dependencies once the minimal replacement application compiles in the same commit series.
 5. Keep the existing Java base package `dev.canverse.stocks` initially. Renaming packages/product identifiers does not improve business correctness and can be a separate mechanical change after the new backend is stable.
@@ -88,7 +89,7 @@ Remove QueryDSL, MyBatis/XML mappers, Google Gemini, authorization-server, Jacks
 
 ### Per-slice implementation loop
 
-Every numbered rewrite increment follows the same order. Implementation work is delivered through small human-reviewable PR specifications rather than handing an entire R-stage to an agent. Before editing code, the agent follows root `AGENTS.md`, [../engineering/coding-standards.md](../engineering/coding-standards.md), and the active PR specification referenced by `docs/implementation/CURRENT.md`.
+Every numbered rewrite increment follows the same order. Implementation work is delivered through small human-reviewable PR specifications rather than handing an entire R-stage to an agent. Before editing code, the agent follows root `AGENTS.md`, reads the active PR specification referenced by `docs/implementation/CURRENT.md`, and loads only the coding-standard sections that specification and the affected surfaces require.
 
 1. State the actual/obligation/plan/scenario boundary, check the affected rules in [accounting-contract.md](accounting-contract.md), and define only slice-specific invariants not already covered there.
 2. Write a failing pure calculation/domain test when business logic exists.
@@ -111,6 +112,7 @@ Every numbered rewrite increment follows the same order. Implementation work is 
 - A module owns writes to its tables, but other modules may read through a service, repository projection, or deliberate query. This is a maintainability convention, not a distributed-systems boundary.
 - Do not add Kafka, a message broker, service discovery, an API gateway, distributed transactions, or separate deployments.
 - Do not prebuild a generic background-job runtime. Select maintained infrastructure with the first concrete asynchronous workload: use Spring Batch when restart/chunk semantics are material, consider a focused database scheduler for durable one-time/scheduled tasks, and keep work synchronous when it safely fits the request transaction. A custom worker requires a documented unmet semantic requirement.
+- Before adding OIDC, recovery, MFA, federation, or authorization-server responsibilities, evaluate maintained Spring Security authorization-server support or an external identity provider. Do not grow another custom identity subsystem by default.
 - Introduce an interface only when there are multiple implementations, an external provider boundary, or a difficult-to-test side effect. Do not create `Service` + `ServiceImpl` + `UseCase` + `Port` + `Adapter` for one code path.
 
 ### API invariants from the first endpoint
@@ -625,7 +627,7 @@ Rules:
 5. If a PR becomes difficult to review, split it even if an agent could implement the larger change correctly. Human reviewability is a design constraint.
 6. If implementation discovers a cross-cutting rule change, update the authoritative contract first, then the PR spec, then code.
 7. At completion, record implemented scope, deviations, tests and follow-ups in the PR specification and update [progress-report.md](progress-report.md).
-8. For PR-019 and later, use accepted PR-018 (`d1eea9a`) as the fixed minimum-size baseline. Each planned unit targets at least five times PR-018's substantive production implementation surface; PR-018 added 381 and removed 30 production Java lines across 12 production files, so roughly 1,900 gross production-line additions is the comparison floor at similar density. Tests and documentation do not count, the multiplier does not compound from later enlarged PRs, and unrelated work or padding may not be added to hit it.
+8. Choose PR size by coherent capability and human-review boundaries. Combine tightly coupled database/domain/application/API/test behavior when it forms one meaningful vertical slice; split independent capabilities, invariants, migration risks, security boundaries, or scopes that no longer fit one focused review. Never add unrelated cleanup or speculative infrastructure to enlarge a unit.
 
 ## Exact scratch-rewrite execution checklist
 

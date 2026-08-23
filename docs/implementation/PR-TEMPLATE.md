@@ -1,4 +1,4 @@
-# PR-XXX — <title>
+# PR-XXX - <title>
 
 Status: DRAFT | ACTIVE | COMPLETE
 
@@ -6,17 +6,18 @@ Status: DRAFT | ACTIVE | COMPLETE
 
 One short paragraph describing the observable outcome of this PR.
 
-## Sizing and boundary rationale
+## Capability and review boundary
 
-- Comparison baseline: accepted PR-018 (`d1eea9a`) production surface.
-- Expected production surface: files/layers and approximate gross production implementation size; explain how it reaches at least five times the fixed PR-018 baseline without counting tests or documentation.
-- Combined steps: identify the tightly coupled behaviors carried together and why separating them would leave a mechanical or incomplete boundary.
-- Review boundary: explain why the scope remains one coherent focused review and name any independent neighboring capability deliberately excluded.
+- Coherent capability: explain why this is one independently meaningful implementation unit.
+- Combined behaviors: identify the tightly coupled database, domain, application, API, security, and test behaviors that belong together and why separating them would leave an incomplete or mechanical boundary.
+- Excluded neighbor: name the independent capability deliberately left for later.
+- Focused review: explain why one careful human can verify the scope, invariants, and tests as one review unit.
+- Judge size by capability and review coherence. Do not use a fixed line-count, file-count, or production-LOC target, and do not add padding to reach one.
 
 ## Source documents
 
-- `docs/review/backend-master-plan.md` — R?/relevant sections
-- `docs/review/accounting-contract.md` — relevant sections, if financial
+- `docs/review/backend-master-plan.md` - R?/relevant sections
+- `docs/review/accounting-contract.md` - relevant sections, if financial
 - `docs/engineering/coding-standards.md`
 - other feature-specific design documents, if needed
 
@@ -84,16 +85,15 @@ Do not restate cross-cutting rules already owned by `accounting-contract.md`; re
 
 Before this implementation unit is considered complete:
 
-- fill in this specification's Completion Record;
-- update `docs/implementation/STATE.md` with:
-  - newly implemented capabilities;
-  - database migration/version changes;
-  - new architectural/domain decisions;
-  - newly discovered deferred work;
-- update `progress-report.md` if project-level progress changed.
+1. Update `docs/implementation/STATE.md` with current repository reality only: implemented capabilities, migration/schema state, verified decisions, deferred work, and the latest useful verification state.
+2. Replace or remove obsolete STATE statements; do not append a history trail.
+3. Update authoritative architecture or domain documents only when verified behavior changes their ownership or contract.
+4. Move reusable Windows, sandbox, Maven, Docker/Testcontainers, or tool-output lessons to `docs/engineering/codex-command-playbook.md`.
+5. Do not copy detailed implementation history or old test totals into `STATE.md`.
+6. Leave detailed implementation history in this specification's Completion Record and Git history.
+7. Do not preserve temporary hypotheses, debugging notes, or completed checklist noise as durable documentation.
 
-Do not put detailed implementation history into STATE.md.
-Keep it as a concise handoff of the current repository state.
+Update `docs/review/progress-report.md` when project-level status or an architectural decision materially changes.
 
 ## Verification commands
 

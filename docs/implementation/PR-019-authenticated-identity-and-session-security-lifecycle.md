@@ -1,6 +1,6 @@
 # PR-019 — Authenticated identity and session security lifecycle
 
-Status: **ACTIVE**
+Status: **COMPLETE IN ACCEPTED COMMIT `0c6657e`**
 
 ## Goal
 
