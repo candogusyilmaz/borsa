@@ -169,6 +169,33 @@ public class Activity {
                 policyDecision);
     }
 
+    public static Activity reconciliationAdjustment(
+            UUID id,
+            UUID ownerUserAccountId,
+            UUID clientEventId,
+            String operationScope,
+            long commandSequence,
+            Instant effectiveAt,
+            Instant recordedAt,
+            PolicyDecision policyDecision,
+            String adjustmentReason) {
+        requireHistoricalDecision(policyDecision);
+        return create(
+                id,
+                ownerUserAccountId,
+                clientEventId,
+                operationScope,
+                commandSequence,
+                ActivityType.RECONCILIATION_ADJUSTMENT,
+                RecordingMode.HISTORICAL_FACT,
+                effectiveAt,
+                recordedAt,
+                policyDecision,
+                requireReason(adjustmentReason),
+                null,
+                null);
+    }
+
     public static Activity reversal(
             UUID id,
             UUID ownerUserAccountId,
@@ -281,7 +308,8 @@ public class Activity {
     }
 
     private static String requireReason(String correctionReason) {
-        var reason = Objects.requireNonNull(correctionReason, "correctionReason");
+        var reason =
+                Objects.requireNonNull(correctionReason, "correctionReason").trim();
         if (reason.isBlank() || reason.length() > 500) {
             throw new IllegalArgumentException("correctionReason must contain 1 to 500 characters");
         }

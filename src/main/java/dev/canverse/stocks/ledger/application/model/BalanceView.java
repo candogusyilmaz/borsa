@@ -22,4 +22,5 @@ public record BalanceView(
         String liabilityOutstanding,
         String overdraftUsed,
         String creditAvailable,
-        boolean policyBreach) {}
+        boolean policyBreach,
+        LastReconciliationSummaryView lastReconciliation) {}

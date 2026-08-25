@@ -8,6 +8,7 @@ import dev.canverse.stocks.ledger.domain.FinancialAmount;
 import dev.canverse.stocks.ledger.domain.NegativeBalancePolicy;
 import dev.canverse.stocks.ledger.domain.PolicyDecision;
 import dev.canverse.stocks.ledger.domain.PostingRole;
+import dev.canverse.stocks.ledger.domain.ReconciliationResolution;
 import dev.canverse.stocks.ledger.domain.RecordingMode;
 import dev.canverse.stocks.ledger.domain.TrackingMode;
 import dev.canverse.stocks.ledger.infrastructure.AccountBalanceProjectionRepository;
@@ -15,6 +16,7 @@ import dev.canverse.stocks.ledger.infrastructure.AccountCashPocketRepository;
 import dev.canverse.stocks.ledger.infrastructure.ActivityRepository;
 import dev.canverse.stocks.ledger.infrastructure.FinancialAccountRepository;
 import dev.canverse.stocks.ledger.infrastructure.MoneyPostingRepository;
+import dev.canverse.stocks.ledger.infrastructure.ReconciliationRepository;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -60,6 +62,9 @@ class FinancialAccountMappingTest {
 
     @Autowired
     AccountBalanceProjectionRepository projectionRepository;
+
+    @Autowired
+    ReconciliationRepository reconciliationRepository;
 
     @Test
     void financialAccountCashPocketActivityPostingAndProjectionMappingsRoundTrip() {
@@ -168,6 +173,31 @@ class FinancialAccountMappingTest {
         assertThat(projection.getCashPocket().getId()).isEqualTo(pocketId);
         assertThat(projection.balance().canonical()).isEqualTo("123.45");
         assertThat(projection.getVersion()).isZero();
+
+        var reconciliationId = UUID.randomUUID();
+        jdbcTemplate.update(
+                "INSERT INTO ledger.reconciliation"
+                        + " (id, owner_user_account_id, financial_account_id, cash_pocket_id, currency_code,"
+                        + " statement_reference, statement_opening_at, statement_closing_at, statement_opening_balance,"
+                        + " statement_closing_balance, ledger_opening_balance, ledger_closing_balance_before_adjustment,"
+                        + " period_net_posted_amount, closing_difference, period_posting_count,"
+                        + " total_posting_count_through_closing, resolution, source_kind, created_at)"
+                        + " VALUES (?, ?, ?, ?, 'USD', ?, ?, ?, 123.45, 123.45, 123.45, 123.45, 0, 0, 0, 1, 'BALANCED', 'USER_ENTERED', ?)",
+                reconciliationId,
+                ownerId,
+                accountId,
+                pocketId,
+                "Mapping statement",
+                timestamp,
+                timestamp.plusSeconds(60),
+                timestamp);
+        entityManager.clear();
+        var reconciliation =
+                reconciliationRepository.findOwned(ownerId, reconciliationId).orElseThrow();
+        assertThat(reconciliation.getResolution()).isEqualTo(ReconciliationResolution.BALANCED);
+        assertThat(reconciliation.getCurrencyCode()).isEqualTo("USD");
+        assertThat(reconciliation.getStatementOpeningBalance()).isEqualByComparingTo("123.45");
+        assertThat(reconciliation.getTotalPostingCountThroughClosing()).isEqualTo(1);
     }
 
     private void insertUser(UUID ownerId) {

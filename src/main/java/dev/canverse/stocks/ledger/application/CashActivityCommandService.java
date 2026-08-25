@@ -115,7 +115,8 @@ public class CashActivityCommandService {
                 .findOwnedForUpdate(activityId, ownerUserAccountId)
                 .orElseThrow(() -> new AppException(LedgerErrorCode.ACTIVITY_NOT_FOUND));
         if (original.getActivityType() == ActivityType.OPENING_BALANCE
-                || original.getActivityType() == ActivityType.REVERSAL) {
+                || original.getActivityType() == ActivityType.REVERSAL
+                || original.getActivityType() == ActivityType.RECONCILIATION_ADJUSTMENT) {
             throw new AppException(LedgerErrorCode.ACCOUNT_ACTION_NOT_SUPPORTED);
         }
         if (activityRepository.findReversal(activityId, ownerUserAccountId).isPresent()) {

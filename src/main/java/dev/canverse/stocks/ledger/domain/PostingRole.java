@@ -6,5 +6,6 @@ public enum PostingRole {
     WITHDRAWAL,
     TRANSFER_SOURCE,
     TRANSFER_DESTINATION,
-    REVERSAL
+    REVERSAL,
+    ADJUSTMENT
 }

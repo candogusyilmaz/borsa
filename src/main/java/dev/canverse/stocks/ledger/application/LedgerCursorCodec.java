@@ -3,6 +3,7 @@ package dev.canverse.stocks.ledger.application;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import dev.canverse.stocks.ledger.application.model.AccountCursor;
 import dev.canverse.stocks.ledger.application.model.ActivityCursor;
+import dev.canverse.stocks.ledger.application.model.ReconciliationCursor;
 import dev.canverse.stocks.platform.application.CanonicalFingerprint;
 import dev.canverse.stocks.platform.application.CursorTokenCodec;
 import dev.canverse.stocks.platform.error.AppException;
@@ -35,6 +36,12 @@ public class LedgerCursorCodec {
             @JsonProperty("f") String filterDigest,
             @JsonProperty("t") String recordedAt,
             @JsonProperty("i") String activityId) {}
+
+    private record ReconciliationCursorPayload(
+            @JsonProperty("v") int version,
+            @JsonProperty("f") String filterDigest,
+            @JsonProperty("t") String statementClosingAt,
+            @JsonProperty("i") String reconciliationId) {}
 
     private final CursorTokenCodec tokenCodec;
     private final CanonicalFingerprint fingerprint;
@@ -77,6 +84,32 @@ public class LedgerCursorCodec {
         verifyFilter(payload.filterDigest(), expectedFilterDigest);
         return new ActivityCursor(
                 payload.filterDigest(), canonicalInstant(payload.recordedAt()), canonicalUuid(payload.activityId()));
+    }
+
+    public String encodeReconciliation(ReconciliationCursor cursor) {
+        return encodePayload(new ReconciliationCursorPayload(
+                VERSION,
+                cursor.filterDigest(),
+                cursor.statementClosingAt().toString(),
+                cursor.reconciliationId().toString()));
+    }
+
+    public ReconciliationCursor decodeReconciliation(String encoded) {
+        return decodeReconciliation(encoded, null);
+    }
+
+    public ReconciliationCursor decodeReconciliation(String encoded, String expectedFilterDigest) {
+        var payload = decodePayload(encoded, ReconciliationCursorPayload.class);
+        validateVersionAndFilter(payload.version(), payload.filterDigest());
+        verifyFilter(payload.filterDigest(), expectedFilterDigest);
+        return new ReconciliationCursor(
+                payload.filterDigest(),
+                canonicalInstant(payload.statementClosingAt()),
+                canonicalUuid(payload.reconciliationId()));
+    }
+
+    public String reconciliationFilterDigest(UUID accountId) {
+        return digest("accountId\n" + accountId);
     }
 
     public String accountFilterDigest(boolean includeArchived) {

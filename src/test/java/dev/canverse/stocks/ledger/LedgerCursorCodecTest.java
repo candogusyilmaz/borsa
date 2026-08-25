@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import dev.canverse.stocks.ledger.application.LedgerCursorCodec;
 import dev.canverse.stocks.ledger.application.model.AccountCursor;
 import dev.canverse.stocks.ledger.application.model.ActivityCursor;
+import dev.canverse.stocks.ledger.application.model.ReconciliationCursor;
 import dev.canverse.stocks.platform.application.CanonicalFingerprint;
 import dev.canverse.stocks.platform.application.CursorTokenCodec;
 import dev.canverse.stocks.platform.error.AppException;
@@ -28,7 +29,7 @@ class LedgerCursorCodecTest {
             JsonMapper.builder().build());
 
     @Test
-    void accountAndActivityCursorsRoundTripAsCanonicalBase64UrlJson() {
+    void accountActivityAndReconciliationCursorsRoundTripAsCanonicalBase64UrlJson() {
         var filterDigest = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
         var account = new AccountCursor(
                 filterDigest, "ACCOUNT \"\\\n", UUID.fromString("10000000-0000-0000-0000-000000000001"));
@@ -36,22 +37,31 @@ class LedgerCursorCodecTest {
                 filterDigest,
                 Instant.parse("2026-08-16T09:00:00Z"),
                 UUID.fromString("20000000-0000-0000-0000-000000000001"));
+        var reconciliation = new ReconciliationCursor(
+                filterDigest,
+                Instant.parse("2026-08-16T10:00:00Z"),
+                UUID.fromString("30000000-0000-0000-0000-000000000001"));
 
         var encodedAccount = codec.encodeAccount(account);
         var encodedActivity = codec.encodeActivity(activity);
+        var encodedReconciliation = codec.encodeReconciliation(reconciliation);
 
         assertThat(codec.decodeAccount(encodedAccount)).isEqualTo(account);
         assertThat(codec.decodeActivity(encodedActivity)).isEqualTo(activity);
+        assertThat(codec.decodeReconciliation(encodedReconciliation)).isEqualTo(reconciliation);
         assertThat(encodedAccount).doesNotContain("=").matches("[A-Za-z0-9_-]+");
         assertThat(encodedActivity).doesNotContain("=").matches("[A-Za-z0-9_-]+");
+        assertThat(encodedReconciliation).doesNotContain("=").matches("[A-Za-z0-9_-]+");
         assertInvalidCursor(() -> codec.decodeAccount(encodedAccount, "f".repeat(64)));
         assertInvalidCursor(() -> codec.decodeActivity(encodedActivity, "f".repeat(64)));
+        assertInvalidCursor(() -> codec.decodeReconciliation(encodedReconciliation, "f".repeat(64)));
     }
 
     @Test
     void malformedCursorsAreRejected() {
         assertInvalidCursor(() -> codec.decodeAccount("not-a-cursor"));
         assertInvalidCursor(() -> codec.decodeActivity("not-a-cursor"));
+        assertInvalidCursor(() -> codec.decodeReconciliation("not-a-cursor"));
     }
 
     @Test

@@ -164,6 +164,30 @@ public class MoneyPosting {
                 createdAt);
     }
 
+    public static MoneyPosting adjustment(
+            UUID id,
+            UUID ownerUserAccountId,
+            UUID activityId,
+            UUID financialAccountId,
+            UUID cashPocketId,
+            String currencyCode,
+            FinancialAmount amount,
+            Instant createdAt) {
+        if (Objects.requireNonNull(amount, "amount").isZero()) {
+            throw new IllegalArgumentException("ADJUSTMENT posting amount must be non-zero");
+        }
+        return create(
+                id,
+                ownerUserAccountId,
+                activityId,
+                financialAccountId,
+                cashPocketId,
+                currencyCode,
+                amount,
+                PostingRole.ADJUSTMENT,
+                createdAt);
+    }
+
     private static MoneyPosting create(
             UUID id,
             UUID ownerUserAccountId,

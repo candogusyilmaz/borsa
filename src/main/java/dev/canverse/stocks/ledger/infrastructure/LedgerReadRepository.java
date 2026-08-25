@@ -5,6 +5,7 @@ import dev.canverse.stocks.ledger.application.model.ActivityCursor;
 import dev.canverse.stocks.ledger.application.model.ActivityView;
 import dev.canverse.stocks.ledger.application.model.BalanceView;
 import dev.canverse.stocks.ledger.application.model.FinancialAccountView;
+import dev.canverse.stocks.ledger.application.model.LastReconciliationSummaryView;
 import dev.canverse.stocks.ledger.application.model.PostingView;
 import dev.canverse.stocks.ledger.domain.AccountKind;
 import dev.canverse.stocks.ledger.domain.ActivityType;
@@ -39,6 +40,7 @@ import org.springframework.stereotype.Repository;
 public class LedgerReadRepository {
 
     private final JdbcClient jdbcClient;
+    private final ReconciliationReadRepository reconciliationReadRepository;
 
     public Optional<FinancialAccountView> findAccount(UUID ownerUserAccountId, UUID accountId) {
         return jdbcClient
@@ -90,7 +92,8 @@ public class LedgerReadRepository {
                     null,
                     null,
                     null,
-                    false));
+                    false,
+                    null));
         }
 
         var projection = jdbcClient
@@ -118,6 +121,9 @@ public class LedgerReadRepository {
         if (beforeCoverage) {
             balance = null;
         }
+        var lastReconciliation = reconciliationReadRepository
+                .findLatestSummary(ownerUserAccountId, accountId)
+                .orElse(null);
         return Optional.of(toBalance(
                 row,
                 requestedAsOf,
@@ -125,7 +131,8 @@ public class LedgerReadRepository {
                 balance,
                 projection.get().recordedAt(),
                 projection.get().activityId(),
-                current ? ProjectionStatus.CURRENT : ProjectionStatus.NOT_APPLICABLE));
+                current ? ProjectionStatus.CURRENT : ProjectionStatus.NOT_APPLICABLE,
+                lastReconciliation));
     }
 
     public List<ActivityView> findActivities(
@@ -311,7 +318,8 @@ public class LedgerReadRepository {
             BigDecimal balance,
             Instant watermarkRecordedAt,
             UUID watermarkActivityId,
-            ProjectionStatus projectionStatus) {
+            ProjectionStatus projectionStatus,
+            LastReconciliationSummaryView lastReconciliation) {
         var effectiveProjectionStatus = balance == null ? ProjectionStatus.NOT_APPLICABLE : projectionStatus;
         var effectiveWatermarkRecordedAt =
                 effectiveProjectionStatus == ProjectionStatus.CURRENT ? watermarkRecordedAt : null;
@@ -335,7 +343,8 @@ public class LedgerReadRepository {
                     null,
                     null,
                     null,
-                    false);
+                    false,
+                    lastReconciliation);
         }
         var exact = FinancialAmount.of(balance);
         var zero = FinancialAmount.zero();
@@ -371,7 +380,8 @@ public class LedgerReadRepository {
                         account.accountKind(),
                         account.negativeBalancePolicy(),
                         balance,
-                        authorizedLimit == null ? null : authorizedLimit.value()));
+                        authorizedLimit == null ? null : authorizedLimit.value()),
+                lastReconciliation);
     }
 
     private static boolean policyBreach(

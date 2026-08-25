@@ -1,6 +1,6 @@
 # PR-021 — Financial-account onboarding and immutable cash ledger
 
-Status: **ACTIVE**
+Status: **COMPLETE IN ACCEPTED COMMIT `e08f2c2`**
 
 ## Goal
 
@@ -404,11 +404,11 @@ Fill this before marking the PR complete.
 - Baseline full suite before the maintainability refactor: `./mvnw test` (passed; 293 tests, 0 failures, 0 errors, 0 skipped).
 - Refactor compile gate: `./mvnw -q -DskipTests compile` (passed). Pure post-refactor cursor/value/domain tests: 25 tests, 0 failures, 0 errors, 0 skipped.
 - Post-review focused gate: `./mvnw -q '-Dtest=LedgerValueObjectTest,LedgerDomainInvariantTest,LedgerCursorCodecTest,FinancialAccountMigrationTest,FinancialAccountMappingTest,FinancialAccountServiceTest,CashActivityServiceTest,CashLedgerConcurrencyTest,FinancialAccountHttpTest,CashActivityHttpTest,ApiBearerSecurityHttpTest,LedgerTransactionRollbackTest' test` (passed; 61 tests, 0 failures, 0 errors, 0 skipped). This includes V2-to-V3 upgrade, exact PostgreSQL constraint/index inventory, actual policy/FK/sign/numeric/JSONB/reversal/idempotency violations, owner deletion, real workflow rollback, warning/version HTTP behavior, and concurrent creation/authorized-limit/transfer/retry/reversal/opening-correction proof.
-- Final `./mvnw -q "-Dlogging.level.root=ERROR" test` and `./mvnw -q "-Dlogging.level.root=ERROR" verify` (passed; 319 tests, 0 failures, 0 errors, 0 skipped), `./mvnw -q spotless:check` (passed), and `git diff --check` (passed). The implementation is present in repository commit `e08f2c2`; this specification remains active through review.
+- Final `./mvnw -q "-Dlogging.level.root=ERROR" test` and `./mvnw -q "-Dlogging.level.root=ERROR" verify` (passed; 319 tests, 0 failures, 0 errors, 0 skipped), `./mvnw -q spotless:check` (passed), and `git diff --check` (passed). The implementation was accepted in repository commit `e08f2c2`.
 
 ### Follow-up work
 
 - Statement reconciliation/adjustments, pending/settlement states, file import, multi-currency/FX, investing/funding integration, and richer account kinds remain separate capabilities.
 - Select a maintained async/batch library only alongside the first concrete workload; do not revive the retired custom-worker design.
 
-Last updated: 2026-08-21.
+Last updated: 2026-08-23.

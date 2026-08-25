@@ -12,6 +12,7 @@ import java.time.Instant;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -45,7 +46,7 @@ public class FinancialAccountQueryService {
         return readAccount(ownerUserAccountId, accountId);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public BalanceResponse balance(UUID ownerUserAccountId, UUID accountId, Instant asOf) {
         var observedAt = clock.instant();
         var requestedAsOf = asOf == null ? observedAt : asOf;

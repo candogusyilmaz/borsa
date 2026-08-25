@@ -19,7 +19,15 @@ public enum LedgerErrorCode implements ErrorCode {
     IDEMPOTENCY_CONFLICT(HttpStatus.CONFLICT, "The idempotency key was already used for another request."),
     ACTIVITY_NOT_FOUND(HttpStatus.NOT_FOUND, "The activity was not found."),
     ACTIVITY_ALREADY_REVERSED(HttpStatus.CONFLICT, "The activity has already been reversed."),
-    OPENING_STATE_CONFLICT(HttpStatus.CONFLICT, "The opening state could not be corrected.");
+    OPENING_STATE_CONFLICT(HttpStatus.CONFLICT, "The opening state could not be corrected."),
+    RECONCILIATION_NOT_FOUND(HttpStatus.NOT_FOUND, "The reconciliation was not found."),
+    RECONCILIATION_COVERAGE_GAP(
+            HttpStatus.UNPROCESSABLE_CONTENT, "The statement opening is before the account's known coverage."),
+    RECONCILIATION_OPENING_MISMATCH(
+            HttpStatus.UNPROCESSABLE_CONTENT, "The statement opening does not match the ledger opening."),
+    RECONCILIATION_RESOLUTION_REQUIRED(
+            HttpStatus.UNPROCESSABLE_CONTENT, "The requested reconciliation resolution is not admissible."),
+    RECONCILIATION_ALREADY_SUPERSEDED(HttpStatus.CONFLICT, "The reconciliation has already been superseded.");
 
     private final HttpStatus status;
     private final String description;

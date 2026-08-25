@@ -14,8 +14,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -32,7 +34,8 @@ class FinancialAccountMigrationTest {
             "activity",
             "financial_account",
             "idempotency_record",
-            "money_posting");
+            "money_posting",
+            "reconciliation");
 
     private static final Set<String> LEDGER_CONSTRAINTS = Set.of(
             "ck_ledger_account_balance_projection_version_non_negative",
@@ -66,6 +69,14 @@ class FinancialAccountMigrationTest {
             "ck_ledger_money_posting_amount_zero_shape",
             "ck_ledger_money_posting_role",
             "ck_ledger_money_posting_role_sign",
+            "ck_ledger_reconciliation_counts",
+            "ck_ledger_reconciliation_equation",
+            "ck_ledger_reconciliation_no_self_supersession",
+            "ck_ledger_reconciliation_resolution",
+            "ck_ledger_reconciliation_resolution_shape",
+            "ck_ledger_reconciliation_source_kind",
+            "ck_ledger_reconciliation_statement_reference",
+            "ck_ledger_reconciliation_time_order",
             "fk_ledger_account_balance_projection_account",
             "fk_ledger_account_balance_projection_account_currency",
             "fk_ledger_account_balance_projection_owner",
@@ -89,22 +100,34 @@ class FinancialAccountMigrationTest {
             "fk_ledger_money_posting_owner",
             "fk_ledger_money_posting_pocket",
             "fk_ledger_money_posting_pocket_identity",
+            "fk_ledger_reconciliation_account_currency",
+            "fk_ledger_reconciliation_account_owner",
+            "fk_ledger_reconciliation_adjustment_activity",
+            "fk_ledger_reconciliation_owner",
+            "fk_ledger_reconciliation_pocket_identity",
+            "fk_ledger_reconciliation_supersedes",
             "pk_ledger_account_balance_projection",
             "pk_ledger_account_cash_pocket",
             "pk_ledger_activity",
             "pk_ledger_financial_account",
             "pk_ledger_idempotency_record",
             "pk_ledger_money_posting",
+            "pk_ledger_reconciliation",
             "uq_ledger_account_balance_projection_pocket",
             "uq_ledger_account_cash_pocket_account_currency",
             "uq_ledger_account_cash_pocket_identity",
             "uq_ledger_account_cash_pocket_owner_id",
             "uq_ledger_activity_operation",
             "uq_ledger_activity_owner_id",
+            "uq_ledger_activity_owner_id_type",
             "uq_ledger_activity_reversal",
             "uq_ledger_financial_account_id_currency",
             "uq_ledger_financial_account_owner_id",
-            "uq_ledger_idempotency_owner_scope_request");
+            "uq_ledger_idempotency_owner_scope_request",
+            "uq_ledger_reconciliation_adjustment_activity",
+            "uq_ledger_reconciliation_owner_account_id",
+            "uq_ledger_reconciliation_owner_id",
+            "uq_ledger_reconciliation_supersedes");
 
     private static final Set<String> LEDGER_INDEXES = Set.of(
             "ix_ledger_account_balance_projection_owner_account",
@@ -114,7 +137,8 @@ class FinancialAccountMigrationTest {
             "ix_ledger_financial_account_owner_name",
             "ix_ledger_money_posting_account",
             "ix_ledger_money_posting_activity",
-            "uix_ledger_financial_account_active_name");
+            "uix_ledger_financial_account_active_name",
+            "ix_ledger_reconciliation_owner_account_closing");
 
     @Container
     @ServiceConnection
@@ -130,10 +154,10 @@ class FinancialAccountMigrationTest {
     PlatformTransactionManager transactionManager;
 
     @Test
-    void v3AddsExactlyTheFinancialLedgerTablesAndExpectedNumericShape() {
+    void v4AddsExactlyTheReconciliationTableAndExpectedLedgerShape() {
         assertThat(flyway.info().applied())
                 .extracting(migration -> migration.getVersion().toString())
-                .containsExactly("1", "2", "3");
+                .containsExactly("1", "2", "3", "4");
 
         var tables = Set.copyOf(jdbcTemplate.queryForList(
                 "SELECT table_name FROM information_schema.tables WHERE table_schema = 'ledger'", String.class));
@@ -142,6 +166,17 @@ class FinancialAccountMigrationTest {
         assertNumericColumn("financial_account", "authorized_limit");
         assertNumericColumn("money_posting", "amount");
         assertNumericColumn("account_balance_projection", "ledger_balance");
+        for (var column : new String[] {
+            "statement_opening_balance",
+            "statement_closing_balance",
+            "ledger_opening_balance",
+            "ledger_closing_balance_before_adjustment",
+            "period_net_posted_amount",
+            "closing_difference",
+            "adjustment_amount"
+        }) {
+            assertNumericColumn("reconciliation", column);
+        }
 
         var constraints = Set.copyOf(jdbcTemplate.queryForList(
                 "SELECT conname FROM pg_constraint c JOIN pg_namespace n ON n.oid = c.connamespace"
@@ -157,17 +192,17 @@ class FinancialAccountMigrationTest {
     }
 
     @Test
-    void noLaterLedgerStructuresWereAddedToV3() {
+    void noExcludedLaterLedgerStructuresWereAddedToV4() {
         var forbidden = jdbcTemplate.queryForList(
                 "SELECT table_name FROM information_schema.tables WHERE table_schema = 'ledger'"
-                        + " AND table_name IN ('security_posting', 'activity_split', 'reconciliation', 'import_batch',"
+                        + " AND table_name IN ('security_posting', 'activity_split', 'import_batch',"
                         + " 'spending_entry', 'investment_position', 'household_member', 'observation', 'job')",
                 String.class);
         assertThat(forbidden).isEmpty();
     }
 
     @Test
-    void v2DatabaseUpgradesToV3WithoutSkippingTheLedgerMigration() throws Exception {
+    void v3DatabaseUpgradesToV4WithoutSkippingMigrationsOrLosingRepresentativeRows() throws Exception {
         var databaseName = "upgrade_" + UUID.randomUUID().toString().replace("-", "");
         var adminUrl = postgres.getJdbcUrl();
         var targetUrl = adminUrl.substring(0, adminUrl.lastIndexOf('/') + 1) + databaseName;
@@ -175,15 +210,87 @@ class FinancialAccountMigrationTest {
             admin.createStatement().execute("CREATE DATABASE " + databaseName);
         }
         try {
-            var v2 = Flyway.configure()
+            var v3 = Flyway.configure()
                     .dataSource(targetUrl, postgres.getUsername(), postgres.getPassword())
                     .locations("classpath:db/migration")
-                    .target(MigrationVersion.fromVersion("2"))
+                    .target(MigrationVersion.fromVersion("3"))
                     .load();
-            v2.migrate();
-            assertThat(v2.info().applied())
+            v3.migrate();
+            assertThat(v3.info().applied())
                     .extracting(migration -> migration.getVersion().toString())
-                    .containsExactly("1", "2");
+                    .containsExactly("1", "2", "3");
+
+            var v3Jdbc = new JdbcTemplate(
+                    new DriverManagerDataSource(targetUrl, postgres.getUsername(), postgres.getPassword()));
+            var ownerId = UUID.randomUUID();
+            var accountId = UUID.randomUUID();
+            var pocketId = UUID.randomUUID();
+            var activityId = UUID.randomUUID();
+            var now = OffsetDateTime.now(ZoneOffset.UTC);
+            var openingAt = now.minusMinutes(1);
+            v3Jdbc.update(
+                    "INSERT INTO identity.user_account (id, email, email_normalized, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
+                    ownerId,
+                    ownerId + "@v3-upgrade.test",
+                    ownerId + "@v3-upgrade.test",
+                    now,
+                    now);
+            v3Jdbc.update(
+                    "INSERT INTO ledger.financial_account"
+                            + " (id, owner_user_account_id, name, name_normalized, account_kind, tracking_mode,"
+                            + " negative_balance_policy, currency_code, time_zone, created_at, updated_at, version)"
+                            + " VALUES (?, ?, 'V3 Account', 'V3 ACCOUNT', 'CASH_CURRENT', 'FULL_LEDGER',"
+                            + " 'HARD_FLOOR', 'USD', 'UTC', ?, ?, 0)",
+                    accountId,
+                    ownerId,
+                    now,
+                    now);
+            v3Jdbc.update(
+                    "INSERT INTO ledger.activity"
+                            + " (id, owner_user_account_id, client_event_id, operation_scope, command_sequence,"
+                            + " activity_type, recording_mode, effective_at, recorded_at, source_kind, policy_decision)"
+                            + " VALUES (?, ?, ?, 'v3.upgrade', 0, 'OPENING_BALANCE', 'HISTORICAL_FACT', ?, ?, 'USER_ENTERED', 'ALLOWED')",
+                    activityId,
+                    ownerId,
+                    UUID.randomUUID(),
+                    openingAt,
+                    now);
+            v3Jdbc.update(
+                    "UPDATE ledger.financial_account SET current_opening_activity_id = ? WHERE id = ?",
+                    activityId,
+                    accountId);
+            v3Jdbc.update(
+                    "INSERT INTO ledger.account_cash_pocket"
+                            + " (id, owner_user_account_id, financial_account_id, currency_code, coverage_status,"
+                            + " coverage_from, created_at, updated_at, version) VALUES (?, ?, ?, 'USD', 'KNOWN_FROM_OPENING', ?, ?, ?, 0)",
+                    pocketId,
+                    ownerId,
+                    accountId,
+                    openingAt,
+                    now,
+                    now);
+            v3Jdbc.update(
+                    "INSERT INTO ledger.money_posting"
+                            + " (id, owner_user_account_id, activity_id, financial_account_id, cash_pocket_id,"
+                            + " currency_code, amount, posting_role, created_at) VALUES (?, ?, ?, ?, ?, 'USD', 10, 'OPENING', ?)",
+                    UUID.randomUUID(),
+                    ownerId,
+                    activityId,
+                    accountId,
+                    pocketId,
+                    now);
+            v3Jdbc.update(
+                    "INSERT INTO ledger.account_balance_projection"
+                            + " (id, owner_user_account_id, financial_account_id, cash_pocket_id, currency_code,"
+                            + " ledger_balance, last_applied_recorded_at, last_applied_activity_id, updated_at, version)"
+                            + " VALUES (?, ?, ?, ?, 'USD', 10, ?, ?, ?, 0)",
+                    UUID.randomUUID(),
+                    ownerId,
+                    accountId,
+                    pocketId,
+                    now,
+                    activityId,
+                    now);
 
             var latest = Flyway.configure()
                     .dataSource(targetUrl, postgres.getUsername(), postgres.getPassword())
@@ -192,7 +299,18 @@ class FinancialAccountMigrationTest {
             latest.migrate();
             assertThat(latest.info().applied())
                     .extracting(migration -> migration.getVersion().toString())
-                    .containsExactly("1", "2", "3");
+                    .containsExactly("1", "2", "3", "4");
+            assertThat(v3Jdbc.queryForObject(
+                            "SELECT COUNT(*) FROM ledger.financial_account WHERE id = ?", Integer.class, accountId))
+                    .isEqualTo(1);
+            assertThat(v3Jdbc.queryForObject(
+                            "SELECT COUNT(*) FROM ledger.activity WHERE id = ?", Integer.class, activityId))
+                    .isEqualTo(1);
+            assertThat(v3Jdbc.queryForObject(
+                            "SELECT ledger_balance FROM ledger.account_balance_projection WHERE financial_account_id = ?",
+                            String.class,
+                            accountId))
+                    .isEqualTo("10.000000000000000000");
             try (var connection =
                             DriverManager.getConnection(targetUrl, postgres.getUsername(), postgres.getPassword());
                     var statement = connection.createStatement();
@@ -213,6 +331,13 @@ class FinancialAccountMigrationTest {
         var accountId = insertAccount(ownerId);
         var pocketId = insertPocket(ownerId, accountId);
         var currentActionId = insertActivity(ownerId, "CASH_DEPOSIT", "CURRENT_ACTION", "ALLOWED");
+
+        assertThatThrownBy(() -> insertActivity(
+                        ownerId, "RECONCILIATION_ADJUSTMENT", "CURRENT_ACTION", "ALLOWED", "invalid adjustment"))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(
+                        () -> insertActivity(ownerId, "RECONCILIATION_ADJUSTMENT", "HISTORICAL_FACT", "ALLOWED", null))
+                .isInstanceOf(DataIntegrityViolationException.class);
 
         assertThatThrownBy(() -> jdbcTemplate.update(
                         "INSERT INTO ledger.activity"
@@ -270,6 +395,41 @@ class FinancialAccountMigrationTest {
                         timestamp(),
                         timestamp()))
                 .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void databasePreservesV3PostingRoleSignAndZeroShapesWhileAllowingSignedAdjustments() {
+        var ownerId = insertUser();
+        var accountId = insertAccount(ownerId);
+        var pocketId = insertPocket(ownerId, accountId);
+        var activityId = insertActivity(ownerId, "CASH_DEPOSIT", "CURRENT_ACTION", "ALLOWED");
+
+        insertRawPosting(ownerId, activityId, accountId, pocketId, "USD", "0", "OPENING");
+        insertRawPosting(ownerId, activityId, accountId, pocketId, "USD", "-1", "OPENING");
+        insertRawPosting(ownerId, activityId, accountId, pocketId, "USD", "0", "REVERSAL");
+        insertRawPosting(ownerId, activityId, accountId, pocketId, "USD", "1", "REVERSAL");
+        insertRawPosting(ownerId, activityId, accountId, pocketId, "USD", "1", "DEPOSIT");
+        insertRawPosting(ownerId, activityId, accountId, pocketId, "USD", "-1", "WITHDRAWAL");
+        insertRawPosting(ownerId, activityId, accountId, pocketId, "USD", "-1", "TRANSFER_SOURCE");
+        insertRawPosting(ownerId, activityId, accountId, pocketId, "USD", "1", "TRANSFER_DESTINATION");
+        insertRawPosting(ownerId, activityId, accountId, pocketId, "USD", "1", "ADJUSTMENT");
+        insertRawPosting(ownerId, activityId, accountId, pocketId, "USD", "-1", "ADJUSTMENT");
+
+        for (var invalid : new String[][] {
+            {"-1", "DEPOSIT"},
+            {"0", "DEPOSIT"},
+            {"1", "WITHDRAWAL"},
+            {"0", "WITHDRAWAL"},
+            {"1", "TRANSFER_SOURCE"},
+            {"0", "TRANSFER_SOURCE"},
+            {"-1", "TRANSFER_DESTINATION"},
+            {"0", "TRANSFER_DESTINATION"},
+            {"0", "ADJUSTMENT"}
+        }) {
+            assertThatThrownBy(() ->
+                            insertRawPosting(ownerId, activityId, accountId, pocketId, "USD", invalid[0], invalid[1]))
+                    .isInstanceOf(DataIntegrityViolationException.class);
+        }
     }
 
     @Test
@@ -370,6 +530,532 @@ class FinancialAccountMigrationTest {
                         String.class,
                         databaseScale))
                 .isEqualTo("1.000000000000000000");
+
+        var accountId = insertAccount(ownerId);
+        var pocketId = insertPocket(ownerId, accountId);
+        var maximumReconciliationValue = "99999999999999999999.999999999999999999";
+        assertThat(insertRawReconciliation(
+                        ownerId,
+                        accountId,
+                        pocketId,
+                        "USD",
+                        maximumReconciliationValue,
+                        maximumReconciliationValue,
+                        maximumReconciliationValue,
+                        maximumReconciliationValue,
+                        "0",
+                        "0",
+                        null,
+                        0,
+                        0,
+                        "BALANCED",
+                        null,
+                        null,
+                        null))
+                .isNotNull();
+        assertThatThrownBy(() -> insertRawReconciliation(
+                        ownerId,
+                        accountId,
+                        pocketId,
+                        "USD",
+                        "100000000000000000000",
+                        maximumReconciliationValue,
+                        maximumReconciliationValue,
+                        maximumReconciliationValue,
+                        "0",
+                        "0",
+                        null,
+                        0,
+                        0,
+                        "BALANCED",
+                        null,
+                        null,
+                        null))
+                .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void databaseRejectsInvalidReconciliationIdentityEquationsBoundsAndLinks() {
+        var ownerId = insertUser();
+        var otherOwnerId = insertUser();
+        var accountId = insertAccount(ownerId);
+        var sameOwnerOtherAccountId = insertAccount(ownerId);
+        var otherAccountId = insertAccount(otherOwnerId);
+        var pocketId = insertPocket(ownerId, accountId);
+        var sameOwnerOtherPocketId = insertPocket(ownerId, sameOwnerOtherAccountId);
+        var otherPocketId = insertPocket(otherOwnerId, otherAccountId);
+        var activityId = insertActivity(ownerId, "CASH_DEPOSIT", "CURRENT_ACTION", "ALLOWED");
+        var otherActivityId = insertActivity(otherOwnerId, "CASH_DEPOSIT", "CURRENT_ACTION", "ALLOWED");
+        var adjustmentActivityId =
+                insertActivity(ownerId, "RECONCILIATION_ADJUSTMENT", "HISTORICAL_FACT", "ALLOWED", "adjustment");
+        var otherAdjustmentActivityId = insertActivity(
+                otherOwnerId, "RECONCILIATION_ADJUSTMENT", "HISTORICAL_FACT", "ALLOWED", "other adjustment");
+        var extraAdjustmentActivityId =
+                insertActivity(ownerId, "RECONCILIATION_ADJUSTMENT", "HISTORICAL_FACT", "ALLOWED", "extra adjustment");
+
+        var validId = insertRawReconciliation(
+                ownerId,
+                accountId,
+                pocketId,
+                "USD",
+                "100",
+                "100",
+                "100",
+                "100",
+                "0",
+                "0",
+                null,
+                0,
+                1,
+                "BALANCED",
+                null,
+                null,
+                null);
+        assertThat(validId).isNotNull();
+        var adjustedId = insertRawReconciliation(
+                ownerId,
+                accountId,
+                pocketId,
+                "USD",
+                "100",
+                "105",
+                "100",
+                "100",
+                "0",
+                "5",
+                "5",
+                0,
+                1,
+                "ADJUSTED",
+                adjustmentActivityId,
+                null,
+                "adjustment");
+        assertThat(adjustedId).isNotNull();
+        assertThatThrownBy(() -> insertRawReconciliationWithReference(ownerId, accountId, pocketId, " "))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> insertRawReconciliationWithReference(ownerId, accountId, pocketId, "r".repeat(201)))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> insertRawReconciliation(
+                        ownerId,
+                        accountId,
+                        pocketId,
+                        "USD",
+                        "100",
+                        "105",
+                        "100",
+                        "100",
+                        "0",
+                        "5",
+                        "5",
+                        0,
+                        1,
+                        "ADJUSTED",
+                        extraAdjustmentActivityId,
+                        null,
+                        " padded "))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> insertRawReconciliation(
+                        ownerId,
+                        accountId,
+                        pocketId,
+                        "USD",
+                        "100",
+                        "105",
+                        "100",
+                        "100",
+                        "0",
+                        "5",
+                        "5",
+                        0,
+                        1,
+                        "ADJUSTED",
+                        extraAdjustmentActivityId,
+                        null,
+                        "r".repeat(501)))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        var equalTime = timestamp();
+        assertThatThrownBy(() -> insertRawBalancedReconciliationAt(ownerId, accountId, pocketId, equalTime, equalTime))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> insertRawBalancedReconciliationAt(
+                        ownerId, accountId, pocketId, equalTime, equalTime.minusSeconds(1)))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> updateCommitted(
+                        "UPDATE ledger.reconciliation SET statement_reference = ? WHERE id = ?", "rewritten", validId))
+                .isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> updateCommitted("DELETE FROM ledger.reconciliation WHERE id = ?", validId))
+                .isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> updateCommitted(
+                        "UPDATE ledger.reconciliation SET statement_reference = ? WHERE id = ?", " padded ", validId))
+                .isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> updateCommitted(
+                        "UPDATE ledger.reconciliation SET statement_reference = ? WHERE id = ?",
+                        "r".repeat(201),
+                        validId))
+                .isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> updateCommitted(
+                        "UPDATE ledger.reconciliation SET adjustment_reason = ? WHERE id = ?", " padded ", adjustedId))
+                .isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> insertRawReconciliation(
+                        otherOwnerId,
+                        accountId,
+                        pocketId,
+                        "USD",
+                        "100",
+                        "100",
+                        "100",
+                        "100",
+                        "0",
+                        "0",
+                        null,
+                        0,
+                        1,
+                        "BALANCED",
+                        null,
+                        null,
+                        null))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        var selfId = UUID.randomUUID();
+        assertThatThrownBy(() -> insertRawReconciliation(
+                        selfId,
+                        ownerId,
+                        accountId,
+                        pocketId,
+                        "USD",
+                        "100",
+                        "100",
+                        "100",
+                        "100",
+                        "0",
+                        "0",
+                        null,
+                        0,
+                        1,
+                        "BALANCED",
+                        null,
+                        selfId,
+                        null))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        insertRawReconciliation(
+                ownerId,
+                accountId,
+                pocketId,
+                "USD",
+                "100",
+                "100",
+                "100",
+                "100",
+                "0",
+                "0",
+                null,
+                0,
+                1,
+                "BALANCED",
+                null,
+                validId,
+                null);
+        assertThatThrownBy(() -> insertRawReconciliation(
+                        ownerId,
+                        accountId,
+                        pocketId,
+                        "USD",
+                        "100",
+                        "100",
+                        "100",
+                        "100",
+                        "0",
+                        "0",
+                        null,
+                        0,
+                        1,
+                        "BALANCED",
+                        null,
+                        validId,
+                        null))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> insertRawReconciliation(
+                        ownerId,
+                        accountId,
+                        otherPocketId,
+                        "USD",
+                        "100",
+                        "100",
+                        "100",
+                        "100",
+                        "0",
+                        "0",
+                        null,
+                        0,
+                        1,
+                        "BALANCED",
+                        null,
+                        null,
+                        null))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> insertRawReconciliation(
+                        ownerId,
+                        accountId,
+                        pocketId,
+                        "USD",
+                        "99",
+                        "100",
+                        "100",
+                        "100",
+                        "0",
+                        "0",
+                        null,
+                        0,
+                        1,
+                        "BALANCED",
+                        null,
+                        null,
+                        null))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> insertRawReconciliation(
+                        ownerId,
+                        accountId,
+                        pocketId,
+                        "USD",
+                        "100",
+                        "105",
+                        "100",
+                        "100",
+                        "0",
+                        "5",
+                        "5",
+                        0,
+                        1,
+                        "ADJUSTED",
+                        activityId,
+                        null,
+                        "wrong activity type"))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> insertRawReconciliation(
+                        ownerId,
+                        accountId,
+                        pocketId,
+                        "USD",
+                        "100",
+                        "105",
+                        "100",
+                        "100",
+                        "0",
+                        "5",
+                        "5",
+                        0,
+                        1,
+                        "ADJUSTED",
+                        otherAdjustmentActivityId,
+                        null,
+                        "wrong owner"))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> insertRawReconciliation(
+                        ownerId,
+                        accountId,
+                        pocketId,
+                        "USD",
+                        "100",
+                        "106",
+                        "100",
+                        "100",
+                        "0",
+                        "6",
+                        "6",
+                        0,
+                        1,
+                        "ADJUSTED",
+                        adjustmentActivityId,
+                        null,
+                        "duplicate adjustment link"))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> insertRawReconciliation(
+                        ownerId,
+                        accountId,
+                        pocketId,
+                        "EUR",
+                        "100",
+                        "100",
+                        "100",
+                        "100",
+                        "0",
+                        "0",
+                        null,
+                        0,
+                        1,
+                        "BALANCED",
+                        null,
+                        null,
+                        null))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> insertRawReconciliation(
+                        ownerId,
+                        accountId,
+                        pocketId,
+                        "USD",
+                        "100",
+                        "100",
+                        "99",
+                        "100",
+                        "0",
+                        "0",
+                        null,
+                        0,
+                        1,
+                        "BALANCED",
+                        null,
+                        null,
+                        null))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> insertRawReconciliation(
+                        ownerId,
+                        accountId,
+                        pocketId,
+                        "USD",
+                        "100",
+                        "100",
+                        "100",
+                        "100",
+                        "0",
+                        "0",
+                        null,
+                        -1,
+                        1,
+                        "BALANCED",
+                        null,
+                        null,
+                        null))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> insertRawReconciliation(
+                        ownerId,
+                        accountId,
+                        pocketId,
+                        "USD",
+                        "100",
+                        "100",
+                        "100",
+                        "100",
+                        "0",
+                        "0",
+                        null,
+                        0,
+                        1,
+                        "ADJUSTED",
+                        null,
+                        null,
+                        "missing adjustment"))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> insertRawReconciliation(
+                        ownerId,
+                        accountId,
+                        pocketId,
+                        "USD",
+                        "100",
+                        "100",
+                        "100",
+                        "100",
+                        "0",
+                        "0",
+                        null,
+                        0,
+                        1,
+                        "BALANCED",
+                        otherActivityId,
+                        null,
+                        null))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> insertRawReconciliation(
+                        ownerId,
+                        accountId,
+                        pocketId,
+                        "USD",
+                        "100",
+                        "100",
+                        "100",
+                        "100",
+                        "0",
+                        "0",
+                        null,
+                        0,
+                        1,
+                        "BALANCED",
+                        activityId,
+                        validId,
+                        null))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> insertRawReconciliation(
+                        ownerId,
+                        accountId,
+                        pocketId,
+                        "USD",
+                        "100",
+                        "100",
+                        "100",
+                        "100",
+                        "0",
+                        "0",
+                        null,
+                        0,
+                        1,
+                        "BALANCED",
+                        null,
+                        UUID.randomUUID(),
+                        null))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> insertRawReconciliation(
+                        ownerId,
+                        sameOwnerOtherAccountId,
+                        sameOwnerOtherPocketId,
+                        "USD",
+                        "100",
+                        "100",
+                        "100",
+                        "100",
+                        "0",
+                        "0",
+                        null,
+                        0,
+                        1,
+                        "BALANCED",
+                        null,
+                        validId,
+                        null))
+                .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void nonOwnerCascadeDeletionCannotRemoveReconciliationEvidence() {
+        var ownerId = insertUser();
+        var accountId = insertAccount(ownerId);
+        var pocketId = insertPocket(ownerId, accountId);
+        var adjustmentActivityId =
+                insertActivity(ownerId, "RECONCILIATION_ADJUSTMENT", "HISTORICAL_FACT", "ALLOWED", "cascade guard");
+        var reconciliationId = insertRawReconciliation(
+                ownerId,
+                accountId,
+                pocketId,
+                "USD",
+                "100",
+                "101",
+                "100",
+                "100",
+                "0",
+                "1",
+                "1",
+                0,
+                1,
+                "ADJUSTED",
+                adjustmentActivityId,
+                null,
+                "cascade guard");
+
+        assertThatThrownBy(() -> updateCommitted("DELETE FROM ledger.financial_account WHERE id = ?", accountId))
+                .isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> updateCommitted("DELETE FROM ledger.account_cash_pocket WHERE id = ?", pocketId))
+                .isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> updateCommitted("DELETE FROM ledger.activity WHERE id = ?", adjustmentActivityId))
+                .isInstanceOf(DataAccessException.class);
+        assertThat(jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM ledger.reconciliation WHERE id = ?", Integer.class, reconciliationId))
+                .isEqualTo(1);
     }
 
     @Test
@@ -405,6 +1091,64 @@ class FinancialAccountMigrationTest {
                 "UPDATE ledger.financial_account SET current_opening_activity_id = ? WHERE id = ?",
                 activityId,
                 accountId);
+        insertRawReconciliation(
+                ownerId,
+                accountId,
+                pocketId,
+                "USD",
+                "10",
+                "10",
+                "10",
+                "10",
+                "0",
+                "0",
+                null,
+                0,
+                1,
+                "BALANCED",
+                null,
+                null,
+                null);
+        var adjustmentActivityId = insertActivity(
+                ownerId, "RECONCILIATION_ADJUSTMENT", "HISTORICAL_FACT", "ALLOWED", "owner deletion adjustment");
+        var replacementAdjustmentActivityId = insertActivity(
+                ownerId, "RECONCILIATION_ADJUSTMENT", "HISTORICAL_FACT", "ALLOWED", "owner deletion replacement");
+        var adjustedId = insertRawReconciliation(
+                ownerId,
+                accountId,
+                pocketId,
+                "USD",
+                "10",
+                "12",
+                "10",
+                "10",
+                "0",
+                "2",
+                "2",
+                0,
+                2,
+                "ADJUSTED",
+                adjustmentActivityId,
+                null,
+                "owner deletion adjustment");
+        insertRawReconciliation(
+                ownerId,
+                accountId,
+                pocketId,
+                "USD",
+                "10",
+                "11",
+                "10",
+                "10",
+                "0",
+                "1",
+                "1",
+                0,
+                2,
+                "ADJUSTED",
+                replacementAdjustmentActivityId,
+                adjustedId,
+                "owner deletion replacement");
 
         updateCommitted("DELETE FROM identity.user_account WHERE id = ?", ownerId);
 
@@ -520,16 +1264,22 @@ class FinancialAccountMigrationTest {
     }
 
     private UUID insertActivity(UUID ownerId, String type, String mode, String decision) {
+        return insertActivity(ownerId, type, mode, decision, null);
+    }
+
+    private UUID insertActivity(UUID ownerId, String type, String mode, String decision, String correctionReason) {
         var id = UUID.randomUUID();
         updateCommitted(
                 "INSERT INTO ledger.activity"
                         + " (id, owner_user_account_id, client_event_id, operation_scope, command_sequence,"
-                        + " activity_type, recording_mode, effective_at, recorded_at, source_kind, policy_decision)"
-                        + " VALUES (?, ?, ?, ?, 0, ?, ?, ?, ?, 'USER_ENTERED', ?)",
+                        + " correction_reason, activity_type, recording_mode, effective_at, recorded_at,"
+                        + " source_kind, policy_decision)"
+                        + " VALUES (?, ?, ?, ?, 0, ?, ?, ?, ?, ?, 'USER_ENTERED', ?)",
                 id,
                 ownerId,
                 UUID.randomUUID(),
                 "migration." + id,
+                correctionReason,
                 type,
                 mode,
                 timestamp(),
@@ -567,6 +1317,242 @@ class FinancialAccountMigrationTest {
                 amount,
                 role,
                 timestamp());
+    }
+
+    private UUID insertRawReconciliation(
+            UUID ownerId,
+            UUID accountId,
+            UUID pocketId,
+            String currency,
+            String statementOpeningBalance,
+            String statementClosingBalance,
+            String ledgerOpeningBalance,
+            String ledgerClosingBalance,
+            String periodNetPostedAmount,
+            String closingDifference,
+            String adjustmentAmount,
+            long periodPostingCount,
+            long totalPostingCount,
+            String resolution,
+            UUID adjustmentActivityId,
+            UUID supersedesReconciliationId,
+            String adjustmentReason) {
+        return insertRawReconciliation(
+                UUID.randomUUID(),
+                ownerId,
+                accountId,
+                pocketId,
+                currency,
+                statementOpeningBalance,
+                statementClosingBalance,
+                ledgerOpeningBalance,
+                ledgerClosingBalance,
+                periodNetPostedAmount,
+                closingDifference,
+                adjustmentAmount,
+                periodPostingCount,
+                totalPostingCount,
+                resolution,
+                adjustmentActivityId,
+                supersedesReconciliationId,
+                adjustmentReason);
+    }
+
+    private UUID insertRawReconciliation(
+            UUID id,
+            UUID ownerId,
+            UUID accountId,
+            UUID pocketId,
+            String currency,
+            String statementOpeningBalance,
+            String statementClosingBalance,
+            String ledgerOpeningBalance,
+            String ledgerClosingBalance,
+            String periodNetPostedAmount,
+            String closingDifference,
+            String adjustmentAmount,
+            long periodPostingCount,
+            long totalPostingCount,
+            String resolution,
+            UUID adjustmentActivityId,
+            UUID supersedesReconciliationId,
+            String adjustmentReason) {
+        var closingAt = timestamp();
+        return insertRawReconciliationAt(
+                id,
+                ownerId,
+                accountId,
+                pocketId,
+                currency,
+                statementOpeningBalance,
+                statementClosingBalance,
+                ledgerOpeningBalance,
+                ledgerClosingBalance,
+                periodNetPostedAmount,
+                closingDifference,
+                adjustmentAmount,
+                periodPostingCount,
+                totalPostingCount,
+                resolution,
+                adjustmentActivityId,
+                supersedesReconciliationId,
+                adjustmentReason,
+                closingAt.minusMinutes(1),
+                closingAt);
+    }
+
+    private UUID insertRawReconciliationAt(
+            UUID id,
+            UUID ownerId,
+            UUID accountId,
+            UUID pocketId,
+            String currency,
+            String statementOpeningBalance,
+            String statementClosingBalance,
+            String ledgerOpeningBalance,
+            String ledgerClosingBalance,
+            String periodNetPostedAmount,
+            String closingDifference,
+            String adjustmentAmount,
+            long periodPostingCount,
+            long totalPostingCount,
+            String resolution,
+            UUID adjustmentActivityId,
+            UUID supersedesReconciliationId,
+            String adjustmentReason,
+            OffsetDateTime openingAt,
+            OffsetDateTime closingAt) {
+        return insertRawReconciliationAt(
+                id,
+                ownerId,
+                accountId,
+                pocketId,
+                currency,
+                statementOpeningBalance,
+                statementClosingBalance,
+                ledgerOpeningBalance,
+                ledgerClosingBalance,
+                periodNetPostedAmount,
+                closingDifference,
+                adjustmentAmount,
+                periodPostingCount,
+                totalPostingCount,
+                resolution,
+                adjustmentActivityId,
+                supersedesReconciliationId,
+                adjustmentReason,
+                openingAt,
+                closingAt,
+                "migration-reconciliation-" + id);
+    }
+
+    private UUID insertRawReconciliationAt(
+            UUID id,
+            UUID ownerId,
+            UUID accountId,
+            UUID pocketId,
+            String currency,
+            String statementOpeningBalance,
+            String statementClosingBalance,
+            String ledgerOpeningBalance,
+            String ledgerClosingBalance,
+            String periodNetPostedAmount,
+            String closingDifference,
+            String adjustmentAmount,
+            long periodPostingCount,
+            long totalPostingCount,
+            String resolution,
+            UUID adjustmentActivityId,
+            UUID supersedesReconciliationId,
+            String adjustmentReason,
+            OffsetDateTime openingAt,
+            OffsetDateTime closingAt,
+            String statementReference) {
+        updateCommitted(
+                "INSERT INTO ledger.reconciliation"
+                        + " (id, owner_user_account_id, financial_account_id, cash_pocket_id, currency_code,"
+                        + " statement_reference, statement_opening_at, statement_closing_at, statement_opening_balance,"
+                        + " statement_closing_balance, ledger_opening_balance, ledger_closing_balance_before_adjustment,"
+                        + " period_net_posted_amount, closing_difference, adjustment_amount, period_posting_count,"
+                        + " total_posting_count_through_closing, resolution, adjustment_activity_id, supersedes_reconciliation_id,"
+                        + " source_kind, adjustment_reason, created_at)"
+                        + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?::numeric, ?::numeric, ?::numeric, ?::numeric,"
+                        + " ?::numeric, ?::numeric, ?::numeric, ?, ?, ?, ?, ?, 'USER_ENTERED', ?, ?)",
+                id,
+                ownerId,
+                accountId,
+                pocketId,
+                currency,
+                statementReference,
+                openingAt,
+                closingAt,
+                statementOpeningBalance,
+                statementClosingBalance,
+                ledgerOpeningBalance,
+                ledgerClosingBalance,
+                periodNetPostedAmount,
+                closingDifference,
+                adjustmentAmount,
+                periodPostingCount,
+                totalPostingCount,
+                resolution,
+                adjustmentActivityId,
+                supersedesReconciliationId,
+                adjustmentReason,
+                closingAt);
+        return id;
+    }
+
+    private UUID insertRawBalancedReconciliationAt(
+            UUID ownerId, UUID accountId, UUID pocketId, OffsetDateTime openingAt, OffsetDateTime closingAt) {
+        return insertRawReconciliationAt(
+                UUID.randomUUID(),
+                ownerId,
+                accountId,
+                pocketId,
+                "USD",
+                "100",
+                "100",
+                "100",
+                "100",
+                "0",
+                "0",
+                null,
+                0,
+                1,
+                "BALANCED",
+                null,
+                null,
+                null,
+                openingAt,
+                closingAt);
+    }
+
+    private UUID insertRawReconciliationWithReference(
+            UUID ownerId, UUID accountId, UUID pocketId, String statementReference) {
+        var closingAt = timestamp();
+        return insertRawReconciliationAt(
+                UUID.randomUUID(),
+                ownerId,
+                accountId,
+                pocketId,
+                "USD",
+                "100",
+                "100",
+                "100",
+                "100",
+                "0",
+                "0",
+                null,
+                0,
+                1,
+                "BALANCED",
+                null,
+                null,
+                null,
+                closingAt.minusMinutes(1),
+                closingAt,
+                statementReference);
     }
 
     private void insertRawReversal(UUID ownerId, UUID originalActivityId) {

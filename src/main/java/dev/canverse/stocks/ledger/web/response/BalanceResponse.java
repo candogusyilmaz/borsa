@@ -26,7 +26,8 @@ public record BalanceResponse(
         String liabilityOutstanding,
         String overdraftUsed,
         String creditAvailable,
-        boolean policyBreach) {
+        boolean policyBreach,
+        LastReconciliationSummaryResponse lastReconciliation) {
 
     public static BalanceResponse from(BalanceView view) {
         return new BalanceResponse(
@@ -46,6 +47,9 @@ public record BalanceResponse(
                 view.liabilityOutstanding(),
                 view.overdraftUsed(),
                 view.creditAvailable(),
-                view.policyBreach());
+                view.policyBreach(),
+                view.lastReconciliation() == null
+                        ? null
+                        : LastReconciliationSummaryResponse.from(view.lastReconciliation()));
     }
 }

@@ -11,6 +11,8 @@ final class LedgerCommandScopes {
     static final String CASH_ACTIVITY = "ledger.cash-activity";
     static final String TRANSFER = "ledger.transfer";
     static final String ACTIVITY_REVERSAL = "ledger.activity-reversal";
+    static final String RECONCILIATION_COMMIT = "ledger.reconciliation.commit";
+    static final String RECONCILIATION_CORRECTION = "ledger.reconciliation.correction";
 
     private LedgerCommandScopes() {}
 }

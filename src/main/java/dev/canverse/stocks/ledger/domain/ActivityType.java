@@ -5,5 +5,6 @@ public enum ActivityType {
     CASH_DEPOSIT,
     CASH_WITHDRAWAL,
     OWNED_TRANSFER,
-    REVERSAL
+    REVERSAL,
+    RECONCILIATION_ADJUSTMENT
 }
