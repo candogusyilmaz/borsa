@@ -38,6 +38,15 @@ These standards define **how code is written**. Product scope and sequencing liv
 - Avoid `null` as a hidden state. Use validation, explicit optional fields, sealed/result types, or documented `Optional` at query boundaries as appropriate. Do not store `Optional` in entities.
 - Comments explain **why**, invariants, external quirks or non-obvious trade-offs; do not narrate obvious code.
 
+### Directness and abstraction
+
+- Prefer direct, local, readable code. Extract concepts, not lines.
+- Do not create a helper method or class solely to wrap one primitive expression, null check, conversion, delegation, or one condition plus an exception. A one-method class must have real semantic ownership or another concrete reason to exist.
+- Keep helpers that name a meaningful workflow phase, algorithm, transactional substep, cohesive validation phase, or substantial repeated logic.
+- Add a small shared primitive helper only after multiple genuine call sites demonstrate its value. Do not create a generic assertion, validation, or helper framework.
+- Do not optimize implementation structure merely to conform to generic Clean Code or Clean Architecture rules.
+- Long canonical fingerprint construction may be extracted behind a workflow-specific method when it keeps the workflow readable. Keep every canonical input name, value, normalization rule, and ordering explicit and reviewable; do not use reflection, implicit serialization, annotations, builders, or generic command/fingerprint hierarchies for this purpose.
+
 ## 3. Spring style
 
 - Use constructor injection. No field injection.
@@ -82,6 +91,8 @@ Do not create these as global top-level layers at the root package level. Omit a
 
 HTTP contract placement is directional: request records belong in the owning capability's `web/request` package and response records belong in its `web/response` package, even when used by only one controller. Keep meaningful application models and query results in `application/model`; do not move every Java method input/output into the HTTP contract packages. Do not add a parallel `dto`, `mapper` or generic model package.
 
+Do not add intermediate `View`, `Command`, `Result`, mapper, or wrapper types solely to cross a package/layer boundary or satisfy layer purity. An application service may use request/response records directly when that removes meaningless mapping and creates no concrete problem. `Response.from(entity)` and `Response.from(readModel)` are acceptable. Genuine aggregate, query, calculation, lifecycle, and projection read models remain valid; JPA entities must still not be exposed directly as JSON.
+
 Group parameters only when they form a meaningful use-case concept. For example, a reference search owns a record such as `reference/application/model/InstrumentSearchCriteria`; do not wrap every three- or four-argument method in a generic `Command`, `Query`, `Request` or `Parameters` type. Keep security identity and transaction context separate from business criteria.
 
 Avoid `FooService` + `FooServiceImpl`, `FooUseCase`, `FooPort`, `FooAdapter`, mapper interfaces and command-handler classes when one cohesive class is enough. Introduce interfaces for:
@@ -118,7 +129,7 @@ Avoid `FooService` + `FooServiceImpl`, `FooUseCase`, `FooPort`, `FooAdapter`, ma
 - JPA is the default for aggregate writes and straightforward reads.
 - Use Spring `JdbcClient` with explicit SQL for complex/reporting read models where SQL is clearer or more predictable than an ORM query.
 - For inclusive `LocalDate` ranges, use `from.datesUntil(to.plusDays(1))` after checking the maximum range; preserve missing-date and empty-range semantics without using stream side effects such as `peek`.
-- For complex PostgreSQL reference reads, prefer explicit `array_agg`/`array_remove` aggregation for ordered one-to-many values and row-value tuple comparisons for compound keyset cursors when the SQL and indexes align. Do not introduce Spring Data scrolling APIs merely to replace a clear `JdbcClient` cursor contract.
+- For naturally small bounded collections, return the collection without pagination. When ordinary collection pagination is needed, use Spring `Pageable`; `JdbcClient` queries may consume its size, offset, and explicitly allowed sort values directly. Prefer `Slice` when the client needs only bounded results and `hasNext`; use `Page` only when totals or total pages have demonstrated product value. Do not create a custom pagination abstraction around Spring pagination. Custom cursor/keyset pagination is opt-in only for a documented product requirement or measured performance requirement; do not prebuild speculative cursor models, codecs, opaque collection tokens, filter digests, or keyset SQL.
 - Do not maintain parallel JPA/MyBatis/QueryDSL implementations of the same query path. MyBatis and QueryDSL are not part of the initial rewrite.
 - Avoid N+1 queries. Fetch exactly what a use case needs using explicit query shape, projections, entity graphs/fetch joins where justified, or `JdbcClient`.
 - Repository methods should represent meaningful queries, not become generic persistence utility layers.
@@ -147,11 +158,11 @@ Avoid `FooService` + `FooServiceImpl`, `FooUseCase`, `FooPort`, `FooAdapter`, ma
 - Financial decimals are canonical decimal strings according to the accounting contract/OpenAPI schema; do not send JavaScript-sensitive floating numbers.
 - Controllers are the only Bean Validation entry points. Use `@Valid @RequestBody` for request records and Jakarta constraints on request parameters/path variables where needed. Request records may retain constraint metadata and nested `@Valid` type-use annotations for cascading; a deterministic request-record `validate()` method for non-structural rules is called by the controller after binding.
 - Do not put `@Validated` on application services, repositories, domain, infrastructure or configuration classes, and do not put service-method `@Valid` parameters there. Application services receive the already-validated HTTP contract and must not repeat request validation. Keep `Objects.requireNonNull` and runtime checks when they protect security, parsing, configuration, persistence or genuine domain integrity.
-- Response records own transformations from their exact read-model shape through named factories such as `Response.from(view)`. Services orchestrate and select data; they do not accumulate private response-mapping boilerplate.
+- Response records own transformations from their exact entity or read-model shape through named factories such as `Response.from(entity)` and `Response.from(readModel)`. Services orchestrate and select data; they do not accumulate private response-mapping boilerplate or introduce mapping types solely for layer purity.
 - Use RFC 9457-compatible problem details with stable application problem codes and safe messages.
 - Never expose stack traces, SQL errors, raw provider bodies, secrets or internal exception messages to clients.
-- Potentially unbounded collections use cursor pagination.
-- Cursor payloads use one versioned, canonical application format (currently canonical JSON wrapped in unpadded Base64url for new cursor contracts), with decode-then-re-encode validation. Existing public cursor formats remain compatibility exceptions until an explicit versioned API migration; do not silently change an accepted cursor wire contract.
+- Naturally small bounded collections use no pagination. Ordinary collection pagination uses Spring `Pageable`; prefer `Slice` when `hasNext` is enough and use `Page` only when totals or total pages have demonstrated product value. Do not wrap Spring pagination in a custom abstraction.
+- Custom cursor/keyset pagination is permitted only for a documented product or measured performance requirement. Do not create speculative cursor models, codecs, opaque collection tokens, filter digests, or keyset SQL, and do not treat cursor compatibility as a default ordinary-list requirement.
 - Retryable financial commands define idempotency semantics from first release.
 - Derived financial responses include relevant as-of/source/coverage/quality/calculation/projection metadata.
 
@@ -188,6 +199,10 @@ Avoid `FooService` + `FooServiceImpl`, `FooUseCase`, `FooPort`, `FooAdapter`, ma
 
 ### 9.3 Validation errors
 
+- Bean Validation and request validation own structural request shape, malformed input, length, and range errors.
+- Meaningful application or domain rejection uses the owning capability's `ErrorCode` through `AppException`.
+- Do not manufacture field-specific validation metadata for a business rule merely because a request field triggered the rule.
+- Do not create a generic internal validation framework.
 - Bean Validation and MVC controller method validation use `CommonErrorCode.VALIDATION_FAILED` with HTTP 422 and one `params.errors[]` structure.
 - Each validation entry contains `field`, validated application `key`, and safe `detail`; it may include safe constraint attributes such as `min`, `max`, or `value` under nested `params`.
 - Built-in Jakarta constraints map to stable `error.fields.common.*` keys. Explicit custom templates use validated application keys such as `{error.fields.identity.password_too_short}`.
@@ -198,6 +213,11 @@ Avoid `FooService` + `FooServiceImpl`, `FooUseCase`, `FooPort`, `FooAdapter`, ma
 - Use one Spring Boot-managed Micrometer Tracing bridge (currently OpenTelemetry) with W3C propagation. The current span/trace context owns native `traceId`/`spanId` logging and context cleanup; do not manually recreate native MDC management or add exporters/network infrastructure without a concrete requirement.
 - `RequestTraceFilter` remains a compatibility boundary: it generates a server-owned UUID through `IdGenerator`, stores it on the request, returns it in `X-Trace-Id`, and supplies the public `ProblemDetail.traceId`. The UUID is intentionally related to, but distinct from, the native W3C trace ID when the formats differ.
 - Do not trust an inbound `X-Trace-Id` as authoritative and do not create controller-specific trace-ID mechanisms. Inbound `traceparent` is handled by Micrometer; native and compatibility contexts must be isolated and cleaned after every request.
+
+### 9.5 Service and repository granularity
+
+- Preserve coherent workflow, transaction, security, lifecycle, aggregate, and query-family boundaries.
+- Do not merge or split services or repositories solely to reduce file count or method count. Reassess granularity only after accidental concepts and local ceremony are removed and a concrete ownership or readability problem remains.
 
 ## 10. Security and ownership
 

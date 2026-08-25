@@ -58,17 +58,17 @@ Use RFC 9457-style problem details with a product error code and correlation ID:
 
 Clients should branch on `code`, never parse English messages. Do not expose Java exception names/messages.
 
-### 6. Cursor-paginate large resources
+### 6. Paginate ordinary collections only when needed
 
-Use stable cursor pagination for activities, positions, instruments/search results, and alerts:
+Return naturally small bounded collections without pagination. When activities, positions, instruments/search results, alerts, or another ordinary collection needs pagination, use the standard Spring `Pageable` contract:
 
-- `limit` with a safe maximum;
-- opaque `nextCursor`;
-- stable ordering, normally `(effectiveAt DESC, id DESC)`;
+- page and size with a safe maximum;
+- an explicitly allowed sort and stable ordering;
 - server filters for portfolio/account, instrument, activity type, date, tag, and search text;
-- response metadata, not `List` alone.
+- prefer `Slice` when the client needs only bounded results and `hasNext`;
+- use `Page` only when totals or total pages have demonstrated product value.
 
-Offset/page pagination may remain for small admin/reference screens, but transaction feeds change while the user scrolls and benefit from cursors.
+Do not create a custom pagination abstraction around Spring pagination. Custom cursor/keyset pagination is opt-in only for a documented product or measured performance requirement; a changing feed is not by itself a reason to prebuild cursor infrastructure.
 
 ### 7. Make financial writes idempotent
 
@@ -135,13 +135,13 @@ On reconnect it posts them idempotently. The server returns the authoritative ac
 
 ### Server change feed
 
-Offer a user-scoped incremental feed:
+Offer a user-scoped incremental feed with a feature-local synchronization continuation token:
 
-`GET /api/v1/sync/changes?cursor=...`
+`GET /api/v1/sync/changes?continuationToken=...`
 
-It should include changed/deleted entities with opaque cursor/order, entity version, and enough type information to update local caches. Use tombstones for deletion/archival. Authorize every feed row by the current user/household scope.
+It should include changed/deleted entities with an opaque continuation token/order, entity version, and enough type information to update local caches. This token belongs to the synchronization protocol and does not establish cursor pagination for ordinary collection endpoints. Use tombstones for deletion/archival. Authorize every feed row by the current user/household scope.
 
-Do not expose database transaction IDs or assume `updatedAt` alone is a safe cursor.
+Do not expose database transaction IDs or assume `updatedAt` alone is a safe continuation position.
 
 ### Conflict behavior
 
@@ -254,9 +254,9 @@ Before public mobile work goes beyond a prototype:
 - [ ] Activity writes are idempotent and concurrency-tested.
 - [ ] Device refresh sessions rotate and can be revoked.
 - [ ] Google login validates platform-specific audience/issuer.
-- [ ] Core lists are cursor-paginated and filterable.
+- [ ] Core list pagination follows the bounded-collection/`Pageable`/`Slice`/`Page` hierarchy and remains filterable.
 - [ ] Stable problem codes and correlation IDs are documented.
-- [ ] A sync cursor/change feed and client-outbox behavior are tested.
+- [ ] A sync continuation-token/change-feed and client-outbox behavior are tested.
 - [ ] Valuation responses expose as-of time and data quality.
 - [ ] OpenAPI compatibility checks run in CI.
 - [ ] Account export/deletion and privacy behavior work from mobile.

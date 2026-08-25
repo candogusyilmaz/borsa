@@ -1,6 +1,6 @@
 # Backend transformation progress report
 
-Report date: 2026-08-23
+Report date: 2026-08-25
 
 Scope: Spring Boot backend, PostgreSQL dump, database migration strategy, modular-monolith design, offline/fake data approach, and implementation readiness. React production remains unchanged; this update performed only a bounded audit of its legacy authentication/token handling for the build-versus-buy review.
 
@@ -41,14 +41,25 @@ Current-state handoff: use [docs/implementation/STATE.md](../implementation/STAT
 | PR-020 — Canonical reference catalog/manual instruments | **Complete in accepted commit `3f45a8c`** | V2 seven-table reference catalog, deterministic seeds, explicit calendar coverage, owner-scoped manual instrument lifecycle, SQL search/cursor pagination, optimistic alias-replacement concurrency, and real-filter ownership/security proof are implemented; the mixed identity/session standards alignment is explicitly user-authorized and covered |
 | PR-021 — Financial-account onboarding/immutable cash ledger | **Complete in accepted commit `e08f2c2`** | V3 six-table owner-scoped ledger, explicit opening coverage, immutable activities/postings, deposits, withdrawals, same-currency owned transfers, reversal/opening correction, native balance projection/read behavior, policy enforcement, idempotency, locking, and HTTP/security proof |
 | PR-022 — Cash statement reconciliation/explicit adjustments | **Implemented and reviewed in working tree; awaiting user commit** | Manual statement-balance preview/commit with mandatory opening continuity, database/Hibernate append-only evidence, exact adjustment-activity links, explicit unexplained adjustment, superseding correction, staleness visibility, owner-scoped reads, and PostgreSQL/concurrency/security proof; no statement-line import or pending-settlement model |
+| PR-023 — Governing simplicity standards             | **Active documentation-only unit**                   | Current authority is being aligned around direct/local code, bounded-collection pagination, capability-owned validation/errors, pragmatic models/mapping, explicit fingerprints, and evidence-based service/repository boundaries; runtime behavior remains unchanged |
 | Backend standardization cleanup                    | **Complete in commit `cf895ac`; preserved through the current baseline** | Controller-only validation, standard JWT validators with lexical compatibility checks, Boot-managed Micrometer W3C tracing, centralized persistence error mapping, typed authenticated principals, application-owned search criteria, and current package/SQL conventions; no public route or response contract changed |
 | Automated backend coverage                         | 377-test full suite and Maven `verify` green; focused PR-022 gate 80 tests green | The suite covers response/cookie delivery, exact session/token binding, credential failures, validation/parsing, rotation invalid states, rollback, reuse, PostgreSQL V3-to-V4 migration preservation, reconciliation numeric shapes, raw behavioral constraints and append-only mutation rejection, exact opening continuity and adjustment-activity links, reconciliation lifecycle/correction/staleness, duplicate retry concurrency, transaction rollback boundaries, route scope, reference and ledger reads, explicit calendar coverage, owner isolation, bounded cursor search and filter binding, exact financial posting/projection semantics, idempotency/concurrency, statelessness, centralized persistence handling, and W3C trace compatibility |
 
-Overall status: **PR-021 is accepted in `e08f2c2`; PR-022 is implemented and reviewed in the working tree and awaits the user-owned commit decision.**
+Overall status: **PR-021 is accepted in `e08f2c2`; PR-022 is implemented and reviewed in the working tree and awaits the user-owned commit decision; PR-023 is the active documentation-only unit.**
 
-## Current backend standardization checkpoint
+## Current governing simplicity checkpoint
 
-Date: 2026-08-16. This is a cross-cutting cleanup of the accepted identity/reference/platform backend and did not implement or broaden the then-active PR-021 financial scope.
+Date: 2026-08-25. PR-023 is a documentation-only governing-rules unit and does not change product capability or runtime behavior.
+
+- Current authority now prefers direct, local, readable code; extraction of meaningful concepts rather than lines; pragmatic request/response and read-model boundaries; and coherent service/repository ownership rather than file-count optimization.
+- Naturally small bounded collections use no pagination. Ordinary pagination uses Spring `Pageable`, with `Slice` preferred when `hasNext` is enough and `Page` reserved for demonstrated totals value. Custom cursor/keyset infrastructure is opt-in for a documented product or measured performance requirement; a synchronization change feed may define a feature-local continuation token.
+- Structural request shape remains with Bean Validation/request validation; application/domain rejection remains capability `ErrorCode` plus `AppException`. No production validation, error, model, mapping, fingerprint, service, repository, or pagination cleanup was started.
+- Runtime cursor endpoints and supporting classes remain current repository reality pending a later user-controlled cleanup unit. Historical PR specifications and historical implementation evidence remain unchanged.
+- Focused documentation searches, historical-record checks, and final diff inspection passed. `CURRENT.md` remains pointed at PR-023 until user acceptance.
+
+## Historical backend standardization checkpoint
+
+Date: 2026-08-16. This was a cross-cutting cleanup of the accepted identity/reference/platform backend and did not implement or broaden the then-active PR-021 financial scope. Its implementation details are historical evidence; PR-023 is the current governing-rules checkpoint.
 
 - Controller-only validation is now the HTTP barrier: request records keep structural and nested constraints, controllers invoke non-structural request validation, and application services no longer use service-level `@Validated` or `@Valid` method parameters.
 - Local access-token validation composes Spring Security issuer, audience and zero-skew timestamp validators with the existing application-specific lexical/header/claim/lifetime rules, including fractional NumericDate rejection and strict expiry compatibility.
@@ -58,7 +69,7 @@ Date: 2026-08-16. This is a cross-cutting cleanup of the accepted identity/refer
 
 Focused JWT, service, global-error, reference-query and tracing checks are green. Final verification is complete: `./mvnw -q "-Dlogging.level.root=ERROR" test` and `verify` pass with 262 tests, 0 failures, 0 errors and 0 skips; `./mvnw -q spotless:check` also passes.
 
-## Active implementation specification — PR-022
+## Previous active implementation specification — PR-022
 
 - Date: 2026-08-23.
 - Starting implementation commit: `e08f2c2`, the accepted PR-021 product baseline; later commit `bf1852c` changes guidance/documentation only.

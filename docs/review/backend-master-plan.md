@@ -39,12 +39,16 @@ Repository-wide implementation style is governed by [../engineering/coding-stand
 
 These conventions describe the current implementation state and supersede older generic guidance retained in historical PR records:
 
-- Bean Validation starts at controllers. Controllers use `@Valid @RequestBody` and Jakarta constraints for HTTP parameters; request records retain constraint metadata and nested `@Valid` cascading. Non-structural request-record `validate()` methods are invoked by controllers, not repeated in application services. No application service, repository, domain, infrastructure or configuration class uses `@Validated` or service-method `@Valid`.
+- Bean Validation starts at controllers. Controllers use @Valid @RequestBody and Jakarta constraints for HTTP parameters; request records retain constraint metadata and nested @Valid cascading. Request-record validate() methods, when needed, are limited to cross-field structural consistency of the HTTP request itself and are invoked by controllers. Business, application, domain, lifecycle, policy, ownership, and state-dependent rules do not belong in request validation; they are enforced at the appropriate application/domain boundary using the owning capability's ErrorCode through AppException. No application service, repository, domain, infrastructure or configuration class uses @Validated or service-method @Valid.
 - Authenticated controllers receive the existing typed identity with `@AuthenticationPrincipal`; owner/session scoping remains in the existing application and repository queries without repeated raw-claim extraction.
 - Local JWT validation composes Spring Security issuer, audience and zero-skew timestamp validators with a small application validator for required headers, algorithm/key ID/token type, canonical UUID claims, exact lexical timestamp precision, `iat == nbf`, strict existing boundaries and maximum lifetime. Raw-token inspection remains where the lexical contract requires it.
 - Persistence failures cross the service boundary unchanged. The global error handler maps `DataIntegrityViolationException` through the static platform `DatabaseConstraintRegistry`, whose small explicit table maps known identity/reference constraints to existing error codes. Optimistic-lock failures map to the existing state-conflict error; unknown persistence failures remain safe 500 responses.
-- Immutable API/application/read models use records and immutable collections where appropriate. Meaningful use-case criteria belong in the owning `application/model` package; HTTP contracts belong in `web/request` and `web/response`; repository projections remain infrastructure-owned. Do not add generic DTO/mapper/data/view packages or MapStruct.
-- Inclusive date ranges use `LocalDate.datesUntil(end.plusDays(1))` after range-limit validation. Complex PostgreSQL reference reads may use ordered `array_agg`/`array_remove` aggregation and aligned row-value tuple comparisons for compound keyset pagination. A clear `JdbcClient` cursor contract is not replaced by a scrolling abstraction merely for modernization.
+- Prefer direct, local, readable code and extract concepts, not lines. Do not create semantically empty one-condition, one-delegation, conversion, or one-method helper/class abstractions; retain helpers that name a meaningful workflow phase, algorithm, transaction substep, cohesive validation phase, or substantial repeated logic. Shared primitive helpers require multiple genuine call sites, and generic assertion/validation/helper frameworks are not allowed.
+- Bean Validation/request validation owns structural request shape, malformed input, length, and range errors. Meaningful application/domain rejection uses the owning capability's `ErrorCode` through `AppException`; do not manufacture field-specific validation metadata for a business rule merely because a request field triggered it.
+- Immutable API/application/read models use records and immutable collections where appropriate. Meaningful use-case criteria belong in the owning `application/model` package; HTTP contracts belong in `web/request` and `web/response`; repository projections remain infrastructure-owned. Do not add intermediate `View`, `Command`, `Result`, mapper, or wrapper types solely for layer purity or generic DTO/mapper/data/view packages or MapStruct. `Response.from(entity)` and `Response.from(readModel)` are acceptable, and genuine aggregate/query/calculation/lifecycle/projection read models remain valid. JPA entities are never exposed directly as JSON.
+- Inclusive date ranges use `LocalDate.datesUntil(end.plusDays(1))` after range-limit validation. Naturally small bounded collections use no pagination. Ordinary collection pagination uses Spring `Pageable`; prefer `Slice` when the client needs only bounded results and `hasNext`, and use `Page` only when totals or total pages have demonstrated product value. `JdbcClient` queries may consume `Pageable` size, offset, and explicitly allowed sort values directly; do not create a custom pagination wrapper.
+- Custom cursor/keyset pagination is opt-in only for a documented product or measured performance requirement. Do not prebuild speculative cursor models, codecs, opaque collection tokens, filter digests, or keyset SQL. A future synchronization change feed may define its own continuation token as part of that protocol, but it does not establish cursor pagination for ordinary collections.
+- Long canonical fingerprint construction may move behind a workflow-specific method when it keeps the main workflow readable, but every canonical input name, value, normalization rule, and ordering must remain explicit and reviewable. Do not use reflection, implicit serialization, annotations, builders, or generic command/fingerprint hierarchies for this purpose.
 
 ## Intended outcome
 
@@ -123,7 +127,7 @@ All newly implemented APIs use these rules from their first release; R16 audits/
 - opaque UUID/string external identifiers;
 - canonical decimal strings for money, prices, quantities, rates and percentages;
 - RFC 9457-compatible stable problem codes with safe client messages;
-- cursor pagination for potentially unbounded collections;
+- naturally small bounded collections without pagination; ordinary collection pagination through Spring `Pageable`, preferring `Slice` when `hasNext` is enough and using `Page` only when totals have demonstrated product value; custom cursor/keyset pagination only for a documented product or measured performance requirement;
 - explicit owner/household authorization on detail and aggregate reads;
 - idempotency for retryable financial mutations;
 - optimistic version/conflict semantics where mutable metadata can race;
@@ -154,10 +158,14 @@ All newly implemented APIs use these rules from their first release; R16 audits/
 
 ### File economy
 
+- Prefer direct, local, readable code and extract concepts, not lines. Do not create one-condition, one-delegation, conversion, or other semantically empty helper methods/classes merely to satisfy generic Clean Code or Clean Architecture rules.
 - Prefer one cohesive service per aggregate/workflow, not one class per operation.
-- Keep HTTP request/response records in the owning capability's `web/request` and `web/response` packages; keep meaningful application models, commands and query results with the application workflow that owns them.
+- Keep HTTP request/response records in the owning capability's `web/request` and `web/response` packages; keep meaningful application models and query results with the application workflow that owns them. Use request/response records directly when that removes meaningless mapping and creates no concrete problem.
+- Keep genuine aggregate/query/calculation/lifecycle/projection read models when they carry real meaning; do not create `View`, `Command`, `Result`, mapper, or wrapper types solely for layer purity. `Response.from(entity)` and `Response.from(readModel)` are acceptable.
 - Do not create a repository interface and wrapper repository for the same table.
 - Use JPA for aggregate writes/simple reads and Spring `JdbcClient`/explicit SQL for complex read models. Do not restore MyBatis/QueryDSL in the scratch rewrite unless a concrete query proves they add value.
+- Preserve coherent workflow, transaction, security, lifecycle, aggregate, and query-family service/repository boundaries. Do not merge or split them solely to reduce file count or method count; reassess only after accidental concepts and local ceremony are removed and a concrete ownership/readability problem remains.
+- Add a small shared primitive helper only after multiple genuine call sites demonstrate value. Do not create a generic assertion, validation, or helper framework.
 - Add one Flyway migration per coherent release slice, not one migration file per table.
 - Keep architectural decisions and progress in these review documents instead of creating dozens of ADR files during early development.
 
@@ -263,16 +271,16 @@ It is useful as an inventory, not as a restorable target model.
 
 The package names below are coarse. They deliberately do not create one module per feature.
 
-| Java package | Owns                                                                                                                         | Main feature families                                        |
-| ------------ | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `identity`   | User, credentials/external identities, device sessions, household membership/grants                                          | Authentication, FT-13 permissions, export/deletion ownership |
-| `reference`  | Countries, currencies, instruments, markets, calendars, providers, policy identities                                         | Shared reference data for every module                       |
-| `ledger`     | Financial accounts, cash pockets, immutable activities/postings, corrections, idempotency, balances, reconciliation, imports | FND-01, FT-01, FT-31 and the truth behind all posted money   |
-| `investing`  | Portfolio groupings, trade commands, position/lot projections, investment income/actions                                     | Current share tracking, FT-02, FT-11                         |
-| `data`       | Observation series, market/FX/rate/CPI observations, ingestion runs, manual/synthetic/provider sources, quality              | FND-02, all analytics and scenarios                          |
-| `money`      | Spending/income/categories, contracts/bills/cards/debt, people/claims, purchases/recoveries, documents/projects              | FT-03/15–30 except planning-heavy parts                      |
-| `analysis`   | Valuation, daily NAV, performance/decomposition, calculation runs, scenarios, Decision Replay, goals/resilience/briefs       | FND-03/04/05, FT-02/04–12/14                                 |
-| `assets`     | Physical-asset lifecycle, meters, consumption, cost links, service/warranty, valuations, TCO/disposal                        | FT-32                                                        |
+| Java package | Owns                                                                                                                               | Main feature families                                        |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `identity`   | User, credentials/external identities, device sessions, household membership/grants                                                | Authentication, FT-13 permissions, export/deletion ownership |
+| `reference`  | Countries, currencies, instruments, markets, calendars, providers, policy identities                                               | Shared reference data for every module                       |
+| `ledger`     | Financial accounts, cash pockets, immutable activities/postings, corrections, idempotency, balances, reconciliation, imports       | FND-01, FT-01, FT-31 and the truth behind all posted money   |
+| `investing`  | Portfolio groupings, trade commands, position/lot projections, investment income/actions                                           | Current share tracking, FT-02, FT-11                         |
+| `data`       | Observation series, market/FX/rate/CPI observations, ingestion runs, manual/synthetic/provider sources, quality                    | FND-02, all analytics and scenarios                          |
+| `money`      | Spending/income/categories, contracts/bills/cards/debt, people/claims, purchases/recoveries, documents/projects                    | FT-03/15–30 except planning-heavy parts                      |
+| `analysis`   | Valuation, daily NAV, performance/decomposition, calculation runs, scenarios, Decision Replay, goals/resilience/briefs             | FND-03/04/05, FT-02/04–12/14                                 |
+| `assets`     | Physical-asset lifecycle, meters, consumption, cost links, service/warranty, valuations, TCO/disposal                              | FT-32                                                        |
 | `platform`   | Security configuration, file storage abstraction, background-execution integration, clock/ID support, demo-data loader, API errors | Cross-cutting infrastructure only                            |
 
 ### Sub-package structure within each capability
@@ -350,7 +358,7 @@ Database schemas are coarse ownership aids and do not need to match every Java p
 | `money`     | Categories/rules, obligations/contracts/bills, debt/card terms, income, claims, purchases/receipts, documents, projects                                              |
 | `analysis`  | Valuations/NAV, calculation runs, scenarios, plans/goals, decision journal and insights                                                                              |
 | `asset`     | Physical assets, lifecycle/interest, meters/readings, consumption/cost links, service/warranty, valuations/disposal                                                  |
-| `platform`  | Reserved job metadata, selected scheduler/batch integration, audit/security events and storage-object metadata; business document metadata remains in `money`                           |
+| `platform`  | Reserved job metadata, selected scheduler/batch integration, audit/security events and storage-object metadata; business document metadata remains in `money`        |
 
 `public` should contain only Flyway/extension metadata that cannot be placed elsewhere. Cross-schema foreign keys are expected.
 
@@ -686,8 +694,10 @@ Initial endpoints:
 
 - `GET /api/v1/reference/currencies`
 - `GET /api/v1/reference/markets`
-- `GET /api/v1/instruments?query=&cursor=`
+- `GET /api/v1/instruments?query=&page=0&size=20&sort=name,asc`
 - owner/admin-only manual instrument commands
+
+Naturally small reference collections use no pagination. When an ordinary list needs pagination, use `Pageable` and prefer `Slice` unless totals have demonstrated product value.
 
 Exit gate: all stable references are recreated solely from Flyway, no query depends on a hardcoded database ID, and entity mappings contain no database index/constraint definitions.
 
@@ -884,8 +894,8 @@ Exit gate: the complete vehicle MVP reconciles ledger, liability, usage, current
 
 ### R16 — Stable API, export/deletion, operational hardening, and optional providers
 
-1. Audit all endpoints for `/api/v1`, string UUIDs, decimal strings, cursor pagination, optimistic versions and stable problem codes.
-2. Add compact home/timeline/action/read projections and sync/change-feed semantics for future Expo clients without assuming a connected bank feed.
+1. Audit all endpoints for `/api/v1`, string UUIDs, decimal strings, the no-pagination/`Pageable`/`Slice`/`Page` hierarchy, optimistic versions and stable problem codes; use custom cursor/keyset pagination only where a documented product or measured performance requirement exists.
+2. Add compact home/timeline/action/read projections and sync/change-feed semantics for future Expo clients without assuming a connected bank feed. A synchronization change feed may define a feature-local continuation token because continuation is part of that protocol.
 3. Complete account/household export, attachment export, scoped clear/delete, retention, consent and security audit flows.
 4. Add import/rebuild/scenario job status, retries, dead-letter/manual recovery and monitoring.
 5. Add OpenAPI compatibility, migration, security, no-network, container, backup/restore and performance smoke gates.
@@ -1059,7 +1069,7 @@ Exit gate: FT-32 acquisition, loan, annual insurance recognition, card-paid repa
 
 Deliver:
 
-- complete `/api/v1`, UUID/string IDs, decimal strings, cursor pagination, stable problem codes and idempotency;
+- complete `/api/v1`, UUID/string IDs, decimal strings, the no-pagination/`Pageable`/`Slice`/`Page` collection hierarchy, stable problem codes and idempotency; custom cursor/keyset pagination remains opt-in for a documented product or measured performance requirement;
 - device refresh sessions, revocation, OIDC/PKCE identities, sync change feed and compact mobile read models;
 - import/job progress and resume behavior;
 - export/delete/retention/consent/audit flows;

@@ -13,7 +13,8 @@ Last updated: 2026-08-25
 
 - The accepted baseline through PR-021 includes the identity/session security lifecycle, canonical offline reference catalogue, and owner-scoped immutable native-currency cash ledger.
 - PR-021 was accepted in implementation commit `e08f2c2`; later repository commit `bf1852c` changes agent and documentation guidance without adding another product capability.
-- PR-022 is the active implementation specification. Its implementation and review are complete in the working tree and await the user-owned commit decision; `CURRENT.md` remains user-controlled and still points to PR-022.
+- PR-022 implementation and review are complete in the working tree and await the user-owned commit decision.
+- PR-023 is the active documentation-only specification. It will establish governing simplicity rules before any cursor, validation/helper, model/mapping, or fingerprint cleanup changes production behavior.
 
 ## Implemented capabilities
 
@@ -59,12 +60,13 @@ Tables:
 
 - Current capability roots are `identity`, `reference`, `ledger`, and `platform`; HTTP records use capability-owned `web/request` and `web/response` packages, and use-case models use `application/model` where needed.
 - The application uses controller-bound request validation, typed authenticated principals, one stateless bearer chain, centralized persistence/error translation, and UUID compatibility correlation alongside native tracing.
+- PR-023 has adopted the governing simplicity direction in the current standards: direct/local code, no pagination for naturally small bounded collections, Spring `Pageable` for ordinary pagination, and custom cursor/keyset infrastructure only for a demonstrated requirement. Runtime cursor behavior remains present until a separately authorized cleanup changes it.
 - `platform.job` is unused storage scaffolding only. No scheduler, worker, batch, queue, retry framework, or generic workflow runtime is part of the current implementation.
 - The preserved frontend still targets legacy APIs and is outside the backend rewrite baseline.
 
 ## Active implementation scope
 
-- The active PR-022 scope is manual statement-balance reconciliation and explicit unexplained adjustments.
+- PR-023 is the active documentation-only unit establishing governing simplicity standards. No production code, tests, migrations, dependencies, configuration, frontend, product capability, or runtime API behavior changed; current cursor classes, codecs, filter digests, keyset SQL, and cursor endpoints remain repository reality pending later cleanup.
 
 ## Deferred capabilities
 
@@ -85,6 +87,6 @@ Last updated: 2026-08-25
 
 - Operating contract and context router: [AGENTS.md](../../AGENTS.md)
 - Active pointer: [CURRENT.md](CURRENT.md)
-- Active scope: [PR-022 - Cash statement reconciliation and explicit adjustments](PR-022-cash-statement-reconciliation-and-explicit-adjustments.md)
+- Active scope: [PR-023 - Governing simplicity standards](PR-023-governing-simplicity-standards.md)
 
 Load only the standards, contracts, design sections, and repository code relevant to the current role and affected behavior.

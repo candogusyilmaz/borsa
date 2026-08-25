@@ -311,7 +311,7 @@ From the first `/api/v1` endpoint:
 - external IDs are opaque strings/UUIDs;
 - financial decimals are canonical strings;
 - errors use stable RFC 9457-compatible problem codes/messages;
-- potentially unbounded lists use cursor pagination;
+- naturally small bounded lists use no pagination; ordinary paginated lists use Spring `Pageable`, preferring `Slice` when `hasNext` is enough and using `Page` only when totals or total pages have demonstrated product value; custom cursor/keyset pagination is opt-in for a documented product or measured performance requirement;
 - owner/household authorization applies to details and aggregates;
 - financial mutations define idempotency and correction behavior;
 - derived financial responses expose requested/as-of context, source/quality/coverage, calculation version and projection status as applicable.

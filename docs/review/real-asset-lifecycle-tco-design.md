@@ -494,14 +494,16 @@ Any command that also posts money uses the FND-01 preview/commit flow and a clie
 
 ### Queries
 
-- `GET /api/v1/physical-assets?status=&category=&cursor=`
+- `GET /api/v1/physical-assets?status=&category=&page=0&size=20&sort=name,asc`
 - `GET /api/v1/physical-assets/{assetId}`
-- `GET /api/v1/physical-assets/{assetId}/timeline?cursor=&from=&to=`
+- `GET /api/v1/physical-assets/{assetId}/timeline?from=&to=&page=0&size=50&sort=occurredAt,desc`
 - `GET /api/v1/physical-assets/{assetId}/tco?from=&to=&basis=ECONOMIC_ACTUAL&unit=KILOMETER&currency=TRY&profileId=`
 - `GET /api/v1/physical-assets/{assetId}/maintenance-status?asOf=`
 - `GET /api/v1/physical-assets/{assetId}/coverage-status?asOf=`
 - `POST /api/v1/physical-assets/{assetId}/tco-previews` for uncommitted allocation or forecast changes
 - `POST /api/v1/scenarios` using physical-asset strategies for keep/repair/replace/lease/rent comparisons
+
+The asset and timeline collections use no pagination when naturally bounded and Spring `Pageable` when pagination is needed. Prefer `Slice` when the client needs only bounded results and `hasNext`; use `Page` only when totals have demonstrated product value. Custom cursor/keyset pagination requires a documented product or measured performance requirement.
 
 ### TCO response contract
 
