@@ -366,7 +366,6 @@ public class ReconciliationCommandService {
         entityManager.flush();
         var response = reconciliationReadRepository
                 .findDetail(ownerUserAccountId, reconciliation.getId())
-                .map(dev.canverse.stocks.ledger.web.response.ReconciliationResponse::from)
                 .orElseThrow(() -> new AppException(LedgerErrorCode.RECONCILIATION_NOT_FOUND));
         idempotencyStore.save(
                 ownerUserAccountId,

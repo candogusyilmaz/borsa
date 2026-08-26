@@ -1,6 +1,6 @@
 # Backend implementation state
 
-Last updated: 2026-08-25
+Last updated: 2026-08-26
 
 ## Technology baseline
 
@@ -11,10 +11,9 @@ Last updated: 2026-08-25
 
 ## Accepted and active implementation baseline
 
-- The accepted baseline through PR-021 includes the identity/session security lifecycle, canonical offline reference catalogue, and owner-scoped immutable native-currency cash ledger.
-- PR-021 was accepted in implementation commit `e08f2c2`; later repository commit `bf1852c` changes agent and documentation guidance without adding another product capability.
-- PR-022 implementation and review are complete in the working tree and await the user-owned commit decision.
-- PR-023 is the active documentation-only specification. It will establish governing simplicity rules before any cursor, validation/helper, model/mapping, or fingerprint cleanup changes production behavior.
+- The accepted baseline through PR-023 includes the identity/session security lifecycle, canonical offline reference catalogue, owner-scoped immutable native-currency cash ledger, cash-statement reconciliation, and the governing simplicity standards.
+- PR-023 is accepted and committed. Its directness, bounded-list, Spring `Pageable`, `Slice`/`Page`, and evidence-based abstraction rules are authoritative; it changed documentation only and did not change runtime behavior.
+- PR-024 is the active implementation specification. It owns Cleanup B1 only: direct-list financial accounts plus Spring `Pageable`/compact `Slice` ledger activities and reconciliations, with ledger cursor deletion.
 
 ## Implemented capabilities
 
@@ -34,7 +33,7 @@ Last updated: 2026-08-25
 ### Ledger
 
 - V3 provides owner-scoped cash, brokerage, card, and loan account onboarding, explicit opening-state coverage, cash pockets, immutable activities/postings, and a rebuildable native balance projection.
-- Deposits, withdrawals, same-currency owned transfers and previews, policy evaluation, idempotent retries, deterministic locking, reversal, opening correction, current/as-of balance reads, and owner-scoped activity/account cursors are implemented.
+- Deposits, withdrawals, same-currency owned transfers and previews, policy evaluation, idempotent retries, deterministic locking, reversal, opening correction, current/as-of balance reads, an unpaged owner-scoped account list, and owner-scoped activity/reconciliation `Pageable`/`Slice` reads are implemented.
 - The ledger exposes the required authenticated HTTP boundaries. Immutable postings remain the financial fact authority; projections are derived state.
 
 ### Reconciliation
@@ -60,13 +59,14 @@ Tables:
 
 - Current capability roots are `identity`, `reference`, `ledger`, and `platform`; HTTP records use capability-owned `web/request` and `web/response` packages, and use-case models use `application/model` where needed.
 - The application uses controller-bound request validation, typed authenticated principals, one stateless bearer chain, centralized persistence/error translation, and UUID compatibility correlation alongside native tracing.
-- PR-023 has adopted the governing simplicity direction in the current standards: direct/local code, no pagination for naturally small bounded collections, Spring `Pageable` for ordinary pagination, and custom cursor/keyset infrastructure only for a demonstrated requirement. Runtime cursor behavior remains present until a separately authorized cleanup changes it.
+- PR-023 adopted the governing simplicity direction in the current standards: direct/local code, no pagination for naturally small bounded collections, Spring `Pageable` for ordinary pagination, and custom cursor/keyset infrastructure only for a demonstrated requirement. Ledger accounts are now unpaged, and ledger activities/reconciliations use compact project-owned `SliceResponse<T>` results with repository-owned size-plus-one/trim/`hasNext` handling and no Spring `Slice` intermediate. Identity/device-session and reference/instrument-search cursor behavior remains pending the second Cleanup B unit.
 - `platform.job` is unused storage scaffolding only. No scheduler, worker, batch, queue, retry framework, or generic workflow runtime is part of the current implementation.
 - The preserved frontend still targets legacy APIs and is outside the backend rewrite baseline.
 
 ## Active implementation scope
 
-- PR-023 is the active documentation-only unit establishing governing simplicity standards. No production code, tests, migrations, dependencies, configuration, frontend, product capability, or runtime API behavior changed; current cursor classes, codecs, filter digests, keyset SQL, and cursor endpoints remain repository reality pending later cleanup.
+- PR-024 is the active Cleanup B1 unit. Its implementation returns financial accounts as a complete owner-scoped list, replaces activity and reconciliation cursor/keyset reads with Spring `Pageable` plus compact `SliceResponse<T>` contracts, and deletes the ledger cursor stack. The two endpoint-specific repositories own pagination trimming and direct response mapping.
+- Device-session and instrument-search cursor cleanup remains a separate later Cleanup B boundary. Cleanup C validation/error work, Cleanup D model/mapping/fingerprint work, migrations, frontend changes, and all financial-semantic changes are outside PR-024.
 
 ## Deferred capabilities
 
@@ -79,14 +79,14 @@ Tables:
 
 ## Verification state
 
-Latest PR-022 verification is green: the focused PostgreSQL/Testcontainers gate passed 80 tests, the full suite passed 377 tests, and the unskipped Maven `verify` lifecycle passed 377 tests, all with 0 failures, 0 errors, and 0 skips. Spotless passed for all 281 Java files; Docker Desktop/Testcontainers PostgreSQL 17 was available through the approved elevated invocation.
+PR-024 verification passes after the confirmed SOL High review fixes: focused gate 77 tests, full suite and Maven `verify` 376 tests each, and Spotless clean across 271 Java files.
 
-Last updated: 2026-08-25
+Last updated: 2026-08-26
 
 ## Resume context
 
 - Operating contract and context router: [AGENTS.md](../../AGENTS.md)
 - Active pointer: [CURRENT.md](CURRENT.md)
-- Active scope: [PR-023 - Governing simplicity standards](PR-023-governing-simplicity-standards.md)
+- Active scope: [PR-024 - Cleanup B1 ledger pagination simplification](PR-024-ledger-pagination-simplification.md)
 
 Load only the standards, contracts, design sections, and repository code relevant to the current role and affected behavior.

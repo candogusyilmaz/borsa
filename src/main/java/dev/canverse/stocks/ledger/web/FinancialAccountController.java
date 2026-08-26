@@ -11,14 +11,12 @@ import dev.canverse.stocks.ledger.web.request.ArchiveAccountRequest;
 import dev.canverse.stocks.ledger.web.request.CreateFinancialAccountRequest;
 import dev.canverse.stocks.ledger.web.request.OpeningCorrectionRequest;
 import dev.canverse.stocks.ledger.web.response.BalanceResponse;
-import dev.canverse.stocks.ledger.web.response.FinancialAccountPageResponse;
 import dev.canverse.stocks.ledger.web.response.FinancialAccountResponse;
 import dev.canverse.stocks.platform.web.CacheHeaders;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import java.net.URI;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -38,9 +36,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 @RequestMapping("/api/v1/accounts")
 @RequiredArgsConstructor
 public class FinancialAccountController {
-
-    private static final int DEFAULT_LIMIT = 50;
-    private static final int MAX_LIMIT = 100;
 
     private final FinancialAccountOnboardingService onboardingService;
     private final FinancialAccountQueryService queryService;
@@ -62,15 +57,11 @@ public class FinancialAccountController {
     }
 
     @GetMapping
-    public ResponseEntity<FinancialAccountPageResponse> list(
+    public ResponseEntity<List<FinancialAccountResponse>> list(
             @AuthenticationPrincipal AuthenticatedIdentity identity,
-            @RequestParam(defaultValue = "false") boolean includeArchived,
-            @RequestParam(defaultValue = "" + DEFAULT_LIMIT) @Min(1) @Max(MAX_LIMIT) int limit,
-            @RequestParam(required = false) String cursor) {
+            @RequestParam(defaultValue = "false") boolean includeArchived) {
         return new ResponseEntity<>(
-                queryService.list(identity.userAccountId(), includeArchived, limit, cursor),
-                CacheHeaders.noStore(),
-                HttpStatus.OK);
+                queryService.list(identity.userAccountId(), includeArchived), CacheHeaders.noStore(), HttpStatus.OK);
     }
 
     @GetMapping("/{accountId}")

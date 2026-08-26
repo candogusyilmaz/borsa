@@ -18,6 +18,7 @@ import java.net.URI;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -178,16 +179,17 @@ class FinancialAccountHttpTest {
 
         mockMvc.perform(get("/api/v1/accounts")
                         .param("includeArchived", "false")
-                        .param("limit", "10")
                         .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accounts.length()", equalTo(0)));
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()", equalTo(0)))
+                .andExpect(jsonPath("$.accounts").doesNotExist());
         mockMvc.perform(get("/api/v1/accounts")
                         .param("includeArchived", "true")
-                        .param("limit", "10")
                         .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accounts[0].id", equalTo(accountId.toString())));
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].id", equalTo(accountId.toString())));
         assertNoSession(created);
     }
 
@@ -240,48 +242,63 @@ class FinancialAccountHttpTest {
     }
 
     @Test
-    void accountCursorsAreStableAndBoundToTheirFilter() throws Exception {
-        var owner = authenticated("account-http-cursor-owner@example.com");
-        mockMvc.perform(post("/api/v1/accounts")
+    void accountListReturnsOwnerScopedDirectOrderedCollection() throws Exception {
+        var owner = authenticated("account-http-list-owner@example.com");
+        var other = authenticated("account-http-list-other-owner@example.com");
+        var archivedAlpha = mockMvc.perform(post("/api/v1/accounts")
                         .header(HttpHeaders.AUTHORIZATION, owner.bearer())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(createJson(uuid("22000000-0000-4000-8000-000000000001"), "Alpha cash", "1")))
-                .andExpect(status().isCreated());
-        mockMvc.perform(post("/api/v1/accounts")
+                .andExpect(status().isCreated())
+                .andReturn();
+        var archivedAlphaId = idFrom(archivedAlpha);
+        mockMvc.perform(post("/api/v1/accounts/{accountId}/archive", archivedAlphaId)
                         .header(HttpHeaders.AUTHORIZATION, owner.bearer())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(createJson(uuid("22000000-0000-4000-8000-000000000002"), "Beta cash", "1")))
+                        .content(archiveJson(uuid("22000000-0000-4000-8000-000000000002"), 1)))
+                .andExpect(status().isOk());
+
+        var activeAlpha = mockMvc.perform(post("/api/v1/accounts")
+                        .header(HttpHeaders.AUTHORIZATION, owner.bearer())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createJson(uuid("22000000-0000-4000-8000-000000000003"), "alpha cash", "1")))
+                .andExpect(status().isCreated())
+                .andReturn();
+        var activeAlphaId = idFrom(activeAlpha);
+        var betaId = idFrom(mockMvc.perform(post("/api/v1/accounts")
+                        .header(HttpHeaders.AUTHORIZATION, owner.bearer())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createJson(uuid("22000000-0000-4000-8000-000000000004"), "Beta cash", "1")))
+                .andExpect(status().isCreated())
+                .andReturn());
+        mockMvc.perform(post("/api/v1/accounts")
+                        .header(HttpHeaders.AUTHORIZATION, other.bearer())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(createJson(uuid("22000000-0000-4000-8000-000000000005"), "Aardvark cash", "1")))
                 .andExpect(status().isCreated());
 
-        var firstPage = mockMvc.perform(get("/api/v1/accounts")
-                        .param("includeArchived", "false")
-                        .param("limit", "1")
-                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+        var active = mockMvc.perform(get("/api/v1/accounts").header(HttpHeaders.AUTHORIZATION, owner.bearer()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accounts.length()", equalTo(1)))
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()", equalTo(2)))
                 .andReturn();
-        var cursor = JsonPath.<String>read(firstPage.getResponse().getContentAsString(), "$.nextCursor");
-        assertThat(cursor).isNotBlank();
+        assertThat(JsonPath.<List<String>>read(active.getResponse().getContentAsString(), "$[*].id"))
+                .containsExactly(activeAlphaId.toString(), betaId.toString());
 
-        mockMvc.perform(get("/api/v1/accounts")
-                        .param("includeArchived", "false")
-                        .param("limit", "1")
-                        .param("cursor", cursor)
-                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accounts.length()", equalTo(1)))
-                .andExpect(jsonPath("$.accounts[0].name", equalTo("Beta cash")))
-                .andExpect(jsonPath("$.nextCursor").doesNotExist());
-
-        var wrongFilter = mockMvc.perform(get("/api/v1/accounts")
+        var all = mockMvc.perform(get("/api/v1/accounts")
                         .param("includeArchived", "true")
-                        .param("limit", "1")
-                        .param("cursor", cursor)
                         .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
-                .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
                 .andReturn();
-        assertProblemShape(wrongFilter);
+        var allIds = JsonPath.<List<String>>read(all.getResponse().getContentAsString(), "$[*].id");
+        assertThat(allIds.subList(0, 2))
+                .containsExactlyElementsOf(List.of(archivedAlphaId.toString(), activeAlphaId.toString()).stream()
+                        .sorted()
+                        .toList());
+        assertThat(allIds.get(2)).isEqualTo(betaId.toString());
+        assertThat(all.getResponse().getContentAsString())
+                .doesNotContain("\"accounts\"", "\"page\"", "\"size\"", "\"hasNext\"");
     }
 
     @Test

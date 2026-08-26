@@ -15,6 +15,7 @@ import dev.canverse.stocks.identity.application.RefreshSessionIssuanceService;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -151,7 +152,7 @@ class LedgerReconciliationHttpTest {
                         .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
                 .andExpect(status().isOk())
                 .andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-store"))
-                .andExpect(jsonPath("$.reconciliations.length()", equalTo(1)));
+                .andExpect(jsonPath("$.items.length()", equalTo(1)));
         mockMvc.perform(get("/api/v1/accounts/{accountId}/balance", accountId)
                         .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
                 .andExpect(status().isOk())
@@ -773,15 +774,16 @@ class LedgerReconciliationHttpTest {
     }
 
     @Test
-    void reconciliationListUsesStableMultiRowCursorOrderingAndAccountFilterBinding() throws Exception {
-        var owner = authenticated("reconciliation-http-cursor@example.com");
-        var accountId = createAccount(owner, "Cursor account", "100");
-        var otherAccountId = createAccount(owner, "Cursor other account", "100");
+    void reconciliationSlicesUseStableTieOrderingFiltersAndSortValidation() throws Exception {
+        var owner = authenticated("reconciliation-http-pageable@example.com");
+        var otherOwner = authenticated("reconciliation-http-pageable-other@example.com");
+        var accountId = createAccount(owner, "Pageable account", "100");
+        var otherAccountId = createAccount(owner, "Pageable other account", "100");
         var version = JsonPath.<Number>read(
                         mockMvc.perform(post("/api/v1/accounts/{accountId}/reconciliation-previews", accountId)
                                         .header(HttpHeaders.AUTHORIZATION, owner.bearer())
                                         .contentType(MediaType.APPLICATION_JSON)
-                                        .content(previewJson("cursor-seed", "100")))
+                                        .content(previewJson("pageable-seed", "100")))
                                 .andExpect(status().isOk())
                                 .andReturn()
                                 .getResponse()
@@ -795,49 +797,133 @@ class LedgerReconciliationHttpTest {
                             .content(commitJson(
                                     uuid("80000000-0000-4000-8000-00000000000" + index),
                                     version,
-                                    "cursor-" + index,
+                                    "page-" + index,
                                     "100",
                                     "CONFIRM_BALANCED",
                                     null)))
                     .andExpect(status().isCreated());
         }
 
+        var expectedDescending = jdbcTemplate.queryForList(
+                "SELECT id FROM ledger.reconciliation"
+                        + " WHERE owner_user_account_id = ? AND financial_account_id = ?"
+                        + " ORDER BY statement_closing_at DESC, id DESC",
+                UUID.class,
+                owner.userId(),
+                accountId);
+        var expectedAscending = jdbcTemplate.queryForList(
+                "SELECT id FROM ledger.reconciliation"
+                        + " WHERE owner_user_account_id = ? AND financial_account_id = ?"
+                        + " ORDER BY statement_closing_at ASC, id ASC",
+                UUID.class,
+                owner.userId(),
+                accountId);
+        assertThat(expectedDescending).hasSize(3);
+
         var first = mockMvc.perform(get("/api/v1/accounts/{accountId}/reconciliations", accountId)
-                        .param("limit", "1")
+                        .param("page", "0")
+                        .param("size", "1")
                         .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.reconciliations.length()", equalTo(1)))
-                .andExpect(jsonPath("$.nextCursor").isString())
+                .andExpect(jsonPath("$.items.length()", equalTo(1)))
+                .andExpect(jsonPath("$.page", equalTo(0)))
+                .andExpect(jsonPath("$.size", equalTo(1)))
+                .andExpect(jsonPath("$.hasNext", equalTo(true)))
+                .andExpect(jsonPath("$.items[0].lifecycleStatus", equalTo("CURRENT")))
+                .andExpect(jsonPath("$.items[0].resolution", equalTo("BALANCED")))
+                .andExpect(jsonPath("$.items[0].statementClosingBalance", equalTo("100")))
+                .andExpect(jsonPath("$.items[0].closingDifference", equalTo("0")))
                 .andReturn();
-        var firstId = JsonPath.<String>read(first.getResponse().getContentAsString(), "$.reconciliations[0].id");
-        var cursor = JsonPath.<String>read(first.getResponse().getContentAsString(), "$.nextCursor");
+        assertSliceShape(first);
+        assertThat(JsonPath.<String>read(first.getResponse().getContentAsString(), "$.items[0].id"))
+                .isEqualTo(expectedDescending.get(0).toString());
+
         var second = mockMvc.perform(get("/api/v1/accounts/{accountId}/reconciliations", accountId)
-                        .param("limit", "1")
-                        .param("cursor", cursor)
+                        .param("page", "1")
+                        .param("size", "1")
                         .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.reconciliations.length()", equalTo(1)))
-                .andExpect(jsonPath("$.nextCursor").isString())
+                .andExpect(jsonPath("$.items.length()", equalTo(1)))
+                .andExpect(jsonPath("$.page", equalTo(1)))
+                .andExpect(jsonPath("$.size", equalTo(1)))
+                .andExpect(jsonPath("$.hasNext", equalTo(true)))
                 .andReturn();
-        var secondId = JsonPath.<String>read(second.getResponse().getContentAsString(), "$.reconciliations[0].id");
-        assertThat(secondId).isNotEqualTo(firstId);
-        var thirdCursor = JsonPath.<String>read(second.getResponse().getContentAsString(), "$.nextCursor");
+        assertThat(JsonPath.<String>read(second.getResponse().getContentAsString(), "$.items[0].id"))
+                .isEqualTo(expectedDescending.get(1).toString());
+
         var third = mockMvc.perform(get("/api/v1/accounts/{accountId}/reconciliations", accountId)
-                        .param("limit", "1")
-                        .param("cursor", thirdCursor)
+                        .param("page", "2")
+                        .param("size", "1")
                         .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.reconciliations.length()", equalTo(1)))
-                .andExpect(jsonPath("$.nextCursor").doesNotExist())
+                .andExpect(jsonPath("$.items.length()", equalTo(1)))
+                .andExpect(jsonPath("$.page", equalTo(2)))
+                .andExpect(jsonPath("$.size", equalTo(1)))
+                .andExpect(jsonPath("$.hasNext", equalTo(false)))
                 .andReturn();
-        var thirdId = JsonPath.<String>read(third.getResponse().getContentAsString(), "$.reconciliations[0].id");
-        assertThat(thirdId).doesNotContain(firstId).doesNotContain(secondId);
-        mockMvc.perform(get("/api/v1/accounts/{accountId}/reconciliations", otherAccountId)
-                        .param("limit", "1")
-                        .param("cursor", cursor)
+        assertThat(JsonPath.<String>read(third.getResponse().getContentAsString(), "$.items[0].id"))
+                .isEqualTo(expectedDescending.get(2).toString());
+
+        mockMvc.perform(get("/api/v1/accounts/{accountId}/reconciliations", accountId)
+                        .param("page", "3")
+                        .param("size", "1")
+                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items.length()", equalTo(0)))
+                .andExpect(jsonPath("$.page", equalTo(3)))
+                .andExpect(jsonPath("$.size", equalTo(1)))
+                .andExpect(jsonPath("$.hasNext", equalTo(false)));
+
+        var ascending = mockMvc.perform(get("/api/v1/accounts/{accountId}/reconciliations", accountId)
+                        .param("size", "101")
+                        .param("sort", "statementClosingAt,asc")
+                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page", equalTo(0)))
+                .andExpect(jsonPath("$.size", equalTo(100)))
+                .andExpect(jsonPath("$.items.length()", equalTo(3)))
+                .andExpect(jsonPath("$.hasNext", equalTo(false)))
+                .andReturn();
+        assertSliceShape(ascending);
+        assertThat(JsonPath.<List<String>>read(ascending.getResponse().getContentAsString(), "$.items[*].id"))
+                .containsExactlyElementsOf(
+                        expectedAscending.stream().map(UUID::toString).toList());
+
+        mockMvc.perform(get("/api/v1/accounts/{accountId}/reconciliations", accountId)
+                        .param("page", "-2")
+                        .param("size", "0")
+                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page", equalTo(0)))
+                .andExpect(jsonPath("$.size", equalTo(25)));
+
+        mockMvc.perform(get("/api/v1/accounts/{accountId}/reconciliations", accountId)
+                        .param("sort", "id,desc")
                         .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
                 .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED")));
+                .andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED")))
+                .andExpect(jsonPath("$.params.errors[0].field", equalTo("sort")));
+
+        mockMvc.perform(get("/api/v1/accounts/{accountId}/reconciliations", accountId)
+                        .param("sort", "statementClosingAt,desc")
+                        .param("sort", "id,asc")
+                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED")))
+                .andExpect(jsonPath("$.params.errors[0].field", equalTo("sort")));
+
+        mockMvc.perform(get("/api/v1/accounts/{accountId}/reconciliations", otherAccountId)
+                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items.length()", equalTo(0)))
+                .andExpect(jsonPath("$.page", equalTo(0)))
+                .andExpect(jsonPath("$.size", equalTo(25)))
+                .andExpect(jsonPath("$.hasNext", equalTo(false)));
+
+        mockMvc.perform(get("/api/v1/accounts/{accountId}/reconciliations", accountId)
+                        .header(HttpHeaders.AUTHORIZATION, otherOwner.bearer()))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code", equalTo("ACCOUNT_NOT_FOUND")));
     }
 
     private UUID createAccount(Identity owner, String name, String amount) throws Exception {
@@ -897,6 +983,11 @@ class LedgerReconciliationHttpTest {
 
     private static UUID idFrom(MvcResult result) throws Exception {
         return UUID.fromString(JsonPath.<String>read(result.getResponse().getContentAsString(), "$.id"));
+    }
+
+    private static void assertSliceShape(MvcResult result) throws Exception {
+        var body = JsonPath.<Map<String, Object>>read(result.getResponse().getContentAsString(), "$");
+        assertThat(body).containsOnlyKeys("items", "page", "size", "hasNext");
     }
 
     private static UUID uuid(String value) {

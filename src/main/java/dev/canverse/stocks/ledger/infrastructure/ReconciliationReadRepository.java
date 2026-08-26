@@ -1,13 +1,15 @@
 package dev.canverse.stocks.ledger.infrastructure;
 
 import dev.canverse.stocks.ledger.application.model.LastReconciliationSummaryView;
-import dev.canverse.stocks.ledger.application.model.ReconciliationCursor;
 import dev.canverse.stocks.ledger.application.model.ReconciliationPreviewView;
-import dev.canverse.stocks.ledger.application.model.ReconciliationView;
 import dev.canverse.stocks.ledger.domain.CoverageStatus;
 import dev.canverse.stocks.ledger.domain.FinancialAmount;
 import dev.canverse.stocks.ledger.domain.ReconciliationLifecycleStatus;
 import dev.canverse.stocks.ledger.domain.ReconciliationResolution;
+import dev.canverse.stocks.ledger.web.response.ReconciliationResponse;
+import dev.canverse.stocks.platform.error.AppException;
+import dev.canverse.stocks.platform.error.ValidationErrors;
+import dev.canverse.stocks.platform.web.SliceResponse;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -18,6 +20,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
@@ -82,7 +86,7 @@ public class ReconciliationReadRepository {
                 .optional();
     }
 
-    public Optional<ReconciliationView> findDetail(UUID ownerUserAccountId, UUID reconciliationId) {
+    public Optional<ReconciliationResponse> findDetail(UUID ownerUserAccountId, UUID reconciliationId) {
         return jdbcClient
                 .sql(detailSql("r.id = :reconciliationId"))
                 .param("ownerUserAccountId", ownerUserAccountId)
@@ -91,23 +95,47 @@ public class ReconciliationReadRepository {
                 .optional();
     }
 
-    public List<ReconciliationView> findPage(
-            UUID ownerUserAccountId, UUID accountId, ReconciliationCursor cursor, int limit) {
-        var predicate = "r.financial_account_id = :accountId";
-        if (cursor != null) {
-            predicate += " AND (r.statement_closing_at, r.id) < (:cursorClosingAt, :cursorId)";
-        }
+    public SliceResponse<ReconciliationResponse> findReconciliations(
+            UUID ownerUserAccountId, UUID accountId, Pageable pageable) {
+        var pageSize = Objects.requireNonNull(pageable, "pageable").getPageSize();
         var statement = jdbcClient
-                .sql(detailSql(predicate) + " ORDER BY r.statement_closing_at DESC, r.id DESC LIMIT :limit")
+                .sql(detailSql("r.financial_account_id = :accountId")
+                        + reconciliationOrderBy(pageable)
+                        + " LIMIT :fetchLimit OFFSET :offset")
                 .param("ownerUserAccountId", ownerUserAccountId)
                 .param("accountId", accountId)
-                .param("limit", limit);
-        if (cursor != null) {
-            statement = statement
-                    .param("cursorClosingAt", timestamp(cursor.statementClosingAt()))
-                    .param("cursorId", cursor.reconciliationId());
+                .param("fetchLimit", pageSize + 1)
+                .param("offset", pageable.getOffset());
+        var rows = statement.query(this::mapDetail).list();
+        var hasNext = rows.size() > pageSize;
+        var pageRows = hasNext ? rows.subList(0, pageSize) : rows;
+        return new SliceResponse<>(pageRows, pageable.getPageNumber(), pageSize, hasNext);
+    }
+
+    private static String reconciliationOrderBy(Pageable pageable) {
+        var orders = pageable.getSort().stream().toList();
+        if (orders.size() != 1) {
+            throw invalidSort();
         }
-        return statement.query(this::mapDetail).list();
+        var order = orders.getFirst();
+        if ((order.getDirection() != Sort.Direction.ASC && order.getDirection() != Sort.Direction.DESC)
+                || order.isIgnoreCase()
+                || order.getNullHandling() != Sort.NullHandling.NATIVE) {
+            throw invalidSort();
+        }
+        if (!"statementClosingAt".equals(order.getProperty())) {
+            throw invalidSort();
+        }
+        return order.isAscending()
+                ? " ORDER BY r.statement_closing_at ASC, r.id ASC"
+                : " ORDER BY r.statement_closing_at DESC, r.id DESC";
+    }
+
+    private static AppException invalidSort() {
+        return ValidationErrors.invalidField(
+                "sort",
+                "error.fields.ledger.invalid_sort",
+                "The sort must contain exactly one supported property and direction.");
     }
 
     public Optional<LastReconciliationSummaryView> findLatestSummary(UUID ownerUserAccountId, UUID accountId) {
@@ -210,8 +238,8 @@ public class ReconciliationReadRepository {
                 warnings);
     }
 
-    private ReconciliationView mapDetail(ResultSet resultSet, int rowNumber) throws SQLException {
-        return new ReconciliationView(
+    private ReconciliationResponse mapDetail(ResultSet resultSet, int rowNumber) throws SQLException {
+        return new ReconciliationResponse(
                 resultSet.getObject("id", UUID.class),
                 resultSet.getObject("financial_account_id", UUID.class),
                 resultSet.getObject("cash_pocket_id", UUID.class),

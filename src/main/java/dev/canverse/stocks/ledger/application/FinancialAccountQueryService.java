@@ -1,14 +1,13 @@
 package dev.canverse.stocks.ledger.application;
 
-import dev.canverse.stocks.ledger.application.model.AccountCursor;
 import dev.canverse.stocks.ledger.error.LedgerErrorCode;
 import dev.canverse.stocks.ledger.infrastructure.LedgerReadRepository;
 import dev.canverse.stocks.ledger.web.response.BalanceResponse;
-import dev.canverse.stocks.ledger.web.response.FinancialAccountPageResponse;
 import dev.canverse.stocks.ledger.web.response.FinancialAccountResponse;
 import dev.canverse.stocks.platform.error.AppException;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,25 +19,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class FinancialAccountQueryService {
 
     private final LedgerReadRepository readRepository;
-    private final LedgerCursorCodec cursorCodec;
     private final Clock clock;
 
     @Transactional(readOnly = true)
-    public FinancialAccountPageResponse list(
-            UUID ownerUserAccountId, boolean includeArchived, int limit, String cursor) {
-        var filterDigest = cursorCodec.accountFilterDigest(includeArchived);
-        var decoded = cursor == null ? null : cursorCodec.decodeAccount(cursor, filterDigest);
-        var rows = readRepository.findAccounts(ownerUserAccountId, includeArchived, decoded, limit + 1);
-        var hasNext = rows.size() > limit;
-        var page = hasNext ? rows.subList(0, limit) : rows;
-        var next = hasNext
-                ? cursorCodec.encodeAccount(new AccountCursor(
-                        filterDigest,
-                        page.getLast().nameNormalized(),
-                        page.getLast().id()))
-                : null;
-        return new FinancialAccountPageResponse(
-                page.stream().map(FinancialAccountResponse::from).toList(), next);
+    public List<FinancialAccountResponse> list(UUID ownerUserAccountId, boolean includeArchived) {
+        return readRepository.findAccounts(ownerUserAccountId, includeArchived).stream()
+                .map(FinancialAccountResponse::from)
+                .toList();
     }
 
     @Transactional(readOnly = true)

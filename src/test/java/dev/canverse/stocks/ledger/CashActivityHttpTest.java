@@ -137,40 +137,57 @@ class CashActivityHttpTest {
 
         var list = mockMvc.perform(get("/api/v1/activities")
                         .param("accountId", accountId.toString())
-                        .param("limit", "10")
                         .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.activities.length()", equalTo(2)))
+                .andExpect(jsonPath("$.items.length()", equalTo(2)))
+                .andExpect(jsonPath("$.page", equalTo(0)))
+                .andExpect(jsonPath("$.size", equalTo(50)))
+                .andExpect(jsonPath("$.hasNext", equalTo(false)))
                 .andReturn();
+        assertSliceShape(list);
         var activities =
-                JsonPath.<List<Map<String, Object>>>read(list.getResponse().getContentAsString(), "$.activities");
+                JsonPath.<List<Map<String, Object>>>read(list.getResponse().getContentAsString(), "$.items");
         assertThat(activities).anyMatch(activity -> activityId.toString().equals(activity.get("id")));
 
         var firstPage = mockMvc.perform(get("/api/v1/activities")
                         .param("accountId", accountId.toString())
-                        .param("limit", "1")
+                        .param("page", "0")
+                        .param("size", "1")
                         .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.activities.length()", equalTo(1)))
+                .andExpect(jsonPath("$.items.length()", equalTo(1)))
+                .andExpect(jsonPath("$.page", equalTo(0)))
+                .andExpect(jsonPath("$.size", equalTo(1)))
+                .andExpect(jsonPath("$.hasNext", equalTo(true)))
                 .andReturn();
-        var cursor = JsonPath.<String>read(firstPage.getResponse().getContentAsString(), "$.nextCursor");
-        assertThat(cursor).isNotBlank();
-        mockMvc.perform(get("/api/v1/activities")
+        assertSliceShape(firstPage);
+        var firstPageId = JsonPath.<String>read(firstPage.getResponse().getContentAsString(), "$.items[0].id");
+        var secondPage = mockMvc.perform(get("/api/v1/activities")
                         .param("accountId", accountId.toString())
-                        .param("limit", "1")
-                        .param("cursor", cursor)
+                        .param("page", "1")
+                        .param("size", "1")
                         .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.activities.length()", equalTo(1)))
-                .andExpect(jsonPath("$.nextCursor").doesNotExist());
-        var wrongFilter = mockMvc.perform(get("/api/v1/activities")
-                        .param("limit", "1")
-                        .param("cursor", cursor)
-                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
-                .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED")))
+                .andExpect(jsonPath("$.items.length()", equalTo(1)))
+                .andExpect(jsonPath("$.page", equalTo(1)))
+                .andExpect(jsonPath("$.size", equalTo(1)))
+                .andExpect(jsonPath("$.hasNext", equalTo(false)))
                 .andReturn();
-        assertProblemShape(wrongFilter);
+        assertSliceShape(secondPage);
+        var secondPageId = JsonPath.<String>read(secondPage.getResponse().getContentAsString(), "$.items[0].id");
+        assertThat(secondPageId).isNotEqualTo(firstPageId);
+        var emptyPage = mockMvc.perform(get("/api/v1/activities")
+                        .param("accountId", accountId.toString())
+                        .param("page", "2")
+                        .param("size", "1")
+                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items.length()", equalTo(0)))
+                .andExpect(jsonPath("$.page", equalTo(2)))
+                .andExpect(jsonPath("$.size", equalTo(1)))
+                .andExpect(jsonPath("$.hasNext", equalTo(false)))
+                .andReturn();
+        assertSliceShape(emptyPage);
 
         mockMvc.perform(get("/api/v1/accounts/{accountId}/balance", accountId)
                         .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
@@ -218,6 +235,227 @@ class CashActivityHttpTest {
                                 uuid("10000000-0000-4000-8000-000000000005"), "CASH_DEPOSIT", "1", effectiveAt, false)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code", equalTo("ACCOUNT_ARCHIVED")));
+    }
+
+    @Test
+    void activitySlicesHonorSortPolicyPageSizeBoundsAndSpringNormalization() throws Exception {
+        var owner = authenticated("activity-http-pageable-owner@example.com");
+        var accountId = createAccount(owner, uuid("11000000-0000-4000-8000-000000000001"), "Pageable cash", "100");
+        mockMvc.perform(post("/api/v1/accounts/{accountId}/activities", accountId)
+                        .header(HttpHeaders.AUTHORIZATION, owner.bearer())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(activityJson(
+                                uuid("11000000-0000-4000-8000-000000000002"),
+                                "CASH_DEPOSIT",
+                                "5",
+                                "2026-08-17T11:30:00Z",
+                                false)))
+                .andExpect(status().isCreated());
+        mockMvc.perform(post("/api/v1/accounts/{accountId}/activities", accountId)
+                        .header(HttpHeaders.AUTHORIZATION, owner.bearer())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(activityJson(
+                                uuid("11000000-0000-4000-8000-000000000003"),
+                                "CASH_DEPOSIT",
+                                "7",
+                                "2026-08-17T11:45:00Z",
+                                false)))
+                .andExpect(status().isCreated());
+
+        var expectedEffectiveAscending = jdbcTemplate.queryForList(
+                "SELECT a.id FROM ledger.activity a WHERE a.owner_user_account_id = ?"
+                        + " AND EXISTS (SELECT 1 FROM ledger.money_posting p"
+                        + " WHERE p.owner_user_account_id = a.owner_user_account_id"
+                        + " AND p.activity_id = a.id AND p.financial_account_id = ?)"
+                        + " ORDER BY a.effective_at ASC, a.id ASC",
+                UUID.class,
+                owner.userId(),
+                accountId);
+        var expectedEffectiveDescending = jdbcTemplate.queryForList(
+                "SELECT a.id FROM ledger.activity a WHERE a.owner_user_account_id = ?"
+                        + " AND EXISTS (SELECT 1 FROM ledger.money_posting p"
+                        + " WHERE p.owner_user_account_id = a.owner_user_account_id"
+                        + " AND p.activity_id = a.id AND p.financial_account_id = ?)"
+                        + " ORDER BY a.effective_at DESC, a.id DESC",
+                UUID.class,
+                owner.userId(),
+                accountId);
+        var expectedRecordedDescending = jdbcTemplate.queryForList(
+                "SELECT a.id FROM ledger.activity a WHERE a.owner_user_account_id = ?"
+                        + " AND EXISTS (SELECT 1 FROM ledger.money_posting p"
+                        + " WHERE p.owner_user_account_id = a.owner_user_account_id"
+                        + " AND p.activity_id = a.id AND p.financial_account_id = ?)"
+                        + " ORDER BY a.recorded_at DESC, a.id DESC",
+                UUID.class,
+                owner.userId(),
+                accountId);
+
+        var ascending = mockMvc.perform(get("/api/v1/activities")
+                        .param("accountId", accountId.toString())
+                        .param("size", "2")
+                        .param("sort", "effectiveAt,asc")
+                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page", equalTo(0)))
+                .andExpect(jsonPath("$.size", equalTo(2)))
+                .andExpect(jsonPath("$.items.length()", equalTo(2)))
+                .andExpect(jsonPath("$.hasNext", equalTo(true)))
+                .andReturn();
+        assertThat(JsonPath.<List<String>>read(ascending.getResponse().getContentAsString(), "$.items[*].id"))
+                .containsExactlyElementsOf(expectedEffectiveAscending.subList(0, 2).stream()
+                        .map(UUID::toString)
+                        .toList());
+
+        var descending = mockMvc.perform(get("/api/v1/activities")
+                        .param("accountId", accountId.toString())
+                        .param("size", "2")
+                        .param("sort", "effectiveAt,desc")
+                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size", equalTo(2)))
+                .andExpect(jsonPath("$.items.length()", equalTo(2)))
+                .andReturn();
+        assertThat(JsonPath.<List<String>>read(descending.getResponse().getContentAsString(), "$.items[*].id"))
+                .containsExactlyElementsOf(expectedEffectiveDescending.subList(0, 2).stream()
+                        .map(UUID::toString)
+                        .toList());
+
+        var recorded = mockMvc.perform(get("/api/v1/activities")
+                        .param("accountId", accountId.toString())
+                        .param("size", "101")
+                        .param("sort", "recordedAt,desc")
+                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size", equalTo(100)))
+                .andExpect(jsonPath("$.items.length()", equalTo(3)))
+                .andExpect(jsonPath("$.hasNext", equalTo(false)))
+                .andReturn();
+        assertThat(JsonPath.<List<String>>read(recorded.getResponse().getContentAsString(), "$.items[*].id"))
+                .containsExactlyElementsOf(
+                        expectedRecordedDescending.stream().map(UUID::toString).toList());
+
+        mockMvc.perform(get("/api/v1/activities")
+                        .param("page", "-2")
+                        .param("size", "0")
+                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page", equalTo(0)))
+                .andExpect(jsonPath("$.size", equalTo(50)));
+
+        mockMvc.perform(get("/api/v1/activities")
+                        .param("page", "not-a-page")
+                        .param("size", "not-a-size")
+                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page", equalTo(0)))
+                .andExpect(jsonPath("$.size", equalTo(50)));
+
+        var unsupported = mockMvc.perform(get("/api/v1/activities")
+                        .param("sort", "activityType,desc")
+                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED")))
+                .andExpect(jsonPath("$.params.errors[0].field", equalTo("sort")))
+                .andReturn();
+        assertProblemShape(unsupported);
+
+        mockMvc.perform(get("/api/v1/activities")
+                        .param("sort", "recordedAt,desc")
+                        .param("sort", "effectiveAt,asc")
+                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED")))
+                .andExpect(jsonPath("$.params.errors[0].field", equalTo("sort")));
+
+        mockMvc.perform(get("/api/v1/activities")
+                        .param("sort", "recordedAt,desc,ignorecase")
+                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED")))
+                .andExpect(jsonPath("$.params.errors[0].field", equalTo("sort")));
+    }
+
+    @Test
+    void activityListPreservesOwnerAccountPostingAndTieOrdering() throws Exception {
+        var owner = authenticated("activity-http-list-owner@example.com");
+        var otherOwner = authenticated("activity-http-list-other@example.com");
+        var firstAccount =
+                createAccount(owner, uuid("12000000-0000-4000-8000-000000000001"), "First activity account", "100");
+        var secondAccount =
+                createAccount(owner, uuid("12000000-0000-4000-8000-000000000002"), "Second activity account", "200");
+        var otherAccount = createAccount(
+                otherOwner, uuid("12000000-0000-4000-8000-000000000003"), "Other activity account", "300");
+        var tiedEffectiveAt = "2026-08-17T11:30:00Z";
+        var firstActivity =
+                recordActivity(owner, firstAccount, uuid("12000000-0000-4000-8000-000000000004"), "5", tiedEffectiveAt);
+        var secondActivity = recordActivity(
+                owner, secondAccount, uuid("12000000-0000-4000-8000-000000000005"), "7", tiedEffectiveAt);
+        var thirdActivity =
+                recordActivity(owner, firstAccount, uuid("12000000-0000-4000-8000-000000000007"), "9", tiedEffectiveAt);
+        var otherActivity = recordActivity(
+                otherOwner, otherAccount, uuid("12000000-0000-4000-8000-000000000006"), "11", tiedEffectiveAt);
+
+        var ownerList = mockMvc.perform(get("/api/v1/activities")
+                        .param("sort", "recordedAt,asc")
+                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items.length()", equalTo(5)))
+                .andReturn();
+        var ownerIds = JsonPath.<List<String>>read(ownerList.getResponse().getContentAsString(), "$.items[*].id");
+        assertThat(ownerIds).contains(firstActivity.toString(), secondActivity.toString());
+        assertThat(ownerIds).doesNotContain(otherActivity.toString());
+        var expectedRecordedAscending = jdbcTemplate.queryForList(
+                "SELECT id FROM ledger.activity WHERE owner_user_account_id = ? ORDER BY recorded_at ASC, id ASC",
+                UUID.class,
+                owner.userId());
+        assertThat(ownerIds)
+                .containsExactlyElementsOf(
+                        expectedRecordedAscending.stream().map(UUID::toString).toList());
+
+        var firstAccountList = mockMvc.perform(get("/api/v1/activities")
+                        .param("accountId", firstAccount.toString())
+                        .param("sort", "effectiveAt,asc")
+                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items.length()", equalTo(3)))
+                .andReturn();
+        assertSliceShape(firstAccountList);
+
+        var tiedExpected = jdbcTemplate.queryForList(
+                "SELECT a.id FROM ledger.activity a"
+                        + " WHERE a.owner_user_account_id = ?"
+                        + " AND EXISTS (SELECT 1 FROM ledger.money_posting p"
+                        + " WHERE p.owner_user_account_id = a.owner_user_account_id"
+                        + " AND p.activity_id = a.id AND p.financial_account_id = ?)"
+                        + " AND a.effective_at = ? ORDER BY a.effective_at ASC, a.id ASC",
+                UUID.class,
+                owner.userId(),
+                firstAccount,
+                java.time.OffsetDateTime.parse("2026-08-17T11:30:00Z"));
+        var firstAccountIds =
+                JsonPath.<List<String>>read(firstAccountList.getResponse().getContentAsString(), "$.items[*].id");
+        assertThat(firstAccountIds)
+                .containsExactly(
+                        JsonPath.<String>read(firstAccountList.getResponse().getContentAsString(), "$.items[0].id"),
+                        tiedExpected.get(0).toString(),
+                        tiedExpected.get(1).toString());
+        assertThat(firstAccountIds).doesNotContain(secondActivity.toString(), otherActivity.toString());
+        assertThat(firstAccountList.getResponse().getContentAsString())
+                .contains(
+                        firstActivity.toString(),
+                        thirdActivity.toString(),
+                        firstAccount.toString(),
+                        "\"amount\":\"5\"");
+    }
+
+    private UUID recordActivity(Identity owner, UUID accountId, UUID requestId, String amount, String effectiveAt)
+            throws Exception {
+        return idFrom(mockMvc.perform(post("/api/v1/accounts/{accountId}/activities", accountId)
+                        .header(HttpHeaders.AUTHORIZATION, owner.bearer())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(activityJson(requestId, "CASH_DEPOSIT", amount, effectiveAt, false)))
+                .andExpect(status().isCreated())
+                .andReturn());
     }
 
     @Test
@@ -317,7 +555,7 @@ class CashActivityHttpTest {
                         .header(HttpHeaders.AUTHORIZATION, other.bearer()))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code", equalTo("ACTIVITY_NOT_FOUND")));
-        mockMvc.perform(get("/api/v1/activities").param("limit", "10")).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/v1/activities")).andExpect(status().isUnauthorized());
         mockMvc.perform(post("/api/v1/transfers/previews")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
@@ -380,6 +618,11 @@ class CashActivityHttpTest {
     private static void assertProblemShape(MvcResult result) throws Exception {
         var body = JsonPath.<Map<String, Object>>read(result.getResponse().getContentAsString(), "$");
         assertThat(body).containsKeys("type", "title", "status", "instance", "code", "key", "traceId", "timestamp");
+    }
+
+    private static void assertSliceShape(MvcResult result) throws Exception {
+        var body = JsonPath.<Map<String, Object>>read(result.getResponse().getContentAsString(), "$");
+        assertThat(body).containsOnlyKeys("items", "page", "size", "hasNext");
     }
 
     private static void assertTraceAndSession(MvcResult result) {

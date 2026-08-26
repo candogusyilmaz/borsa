@@ -1,12 +1,8 @@
 package dev.canverse.stocks.ledger.infrastructure;
 
-import dev.canverse.stocks.ledger.application.model.AccountCursor;
-import dev.canverse.stocks.ledger.application.model.ActivityCursor;
-import dev.canverse.stocks.ledger.application.model.ActivityView;
 import dev.canverse.stocks.ledger.application.model.BalanceView;
 import dev.canverse.stocks.ledger.application.model.FinancialAccountView;
 import dev.canverse.stocks.ledger.application.model.LastReconciliationSummaryView;
-import dev.canverse.stocks.ledger.application.model.PostingView;
 import dev.canverse.stocks.ledger.domain.AccountKind;
 import dev.canverse.stocks.ledger.domain.ActivityType;
 import dev.canverse.stocks.ledger.domain.CoverageStatus;
@@ -17,6 +13,11 @@ import dev.canverse.stocks.ledger.domain.PostingRole;
 import dev.canverse.stocks.ledger.domain.ProjectionStatus;
 import dev.canverse.stocks.ledger.domain.RecordingMode;
 import dev.canverse.stocks.ledger.domain.TrackingMode;
+import dev.canverse.stocks.ledger.web.response.ActivityResponse;
+import dev.canverse.stocks.ledger.web.response.PostingResponse;
+import dev.canverse.stocks.platform.error.AppException;
+import dev.canverse.stocks.platform.error.ValidationErrors;
+import dev.canverse.stocks.platform.web.SliceResponse;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -31,6 +32,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
@@ -51,20 +54,14 @@ public class LedgerReadRepository {
                 .optional();
     }
 
-    public List<FinancialAccountView> findAccounts(
-            UUID ownerUserAccountId, boolean includeArchived, AccountCursor cursor, int limit) {
-        var sql = accountSql("(:includeArchived OR a.archived_at IS NULL)"
-                        + (cursor == null ? "" : " AND (a.name_normalized, a.id) > (:cursorName, :cursorId) "))
-                + " ORDER BY a.name_normalized, a.id LIMIT :limit";
-        var statement = jdbcClient
-                .sql(sql)
+    public List<FinancialAccountView> findAccounts(UUID ownerUserAccountId, boolean includeArchived) {
+        return jdbcClient
+                .sql(accountSql(
+                        "(:includeArchived OR a.archived_at IS NULL)" + " ORDER BY a.name_normalized ASC, a.id ASC"))
                 .param("ownerUserAccountId", Objects.requireNonNull(ownerUserAccountId, "ownerUserAccountId"))
                 .param("includeArchived", includeArchived)
-                .param("limit", limit);
-        if (cursor != null) {
-            statement = statement.param("cursorName", cursor.nameNormalized()).param("cursorId", cursor.accountId());
-        }
-        return statement.query(this::mapAccount).list();
+                .query(this::mapAccount)
+                .list();
     }
 
     public Optional<BalanceView> findBalance(
@@ -135,8 +132,8 @@ public class LedgerReadRepository {
                 lastReconciliation));
     }
 
-    public List<ActivityView> findActivities(
-            UUID ownerUserAccountId, UUID accountId, ActivityCursor cursor, int limit) {
+    public SliceResponse<ActivityResponse> findActivities(UUID ownerUserAccountId, UUID accountId, Pageable pageable) {
+        var pageSize = Objects.requireNonNull(pageable, "pageable").getPageSize();
         var sql = """
                         SELECT DISTINCT a.id, a.owner_user_account_id, a.activity_type, a.recording_mode, a.effective_at, a.recorded_at,
                        a.policy_decision, a.source_kind, a.reverses_activity_id, a.supersedes_activity_id
@@ -146,24 +143,54 @@ public class LedgerReadRepository {
                 WHERE a.owner_user_account_id = :ownerUserAccountId
                 """
                 + (accountId == null ? "" : " AND p.financial_account_id = :accountId ")
-                + (cursor == null ? "" : " AND (a.recorded_at, a.id) < (:cursorRecordedAt, :cursorId) ")
-                + " ORDER BY a.recorded_at DESC, a.id DESC LIMIT :limit";
+                + activityOrderBy(pageable)
+                + " LIMIT :fetchLimit OFFSET :offset";
         var statement = jdbcClient
                 .sql(sql)
                 .param("ownerUserAccountId", Objects.requireNonNull(ownerUserAccountId, "ownerUserAccountId"))
-                .param("limit", limit);
+                .param("fetchLimit", pageSize + 1)
+                .param("offset", pageable.getOffset());
         if (accountId != null) {
             statement = statement.param("accountId", accountId);
         }
-        if (cursor != null) {
-            statement = statement
-                    .param("cursorRecordedAt", OffsetDateTime.ofInstant(cursor.recordedAt(), ZoneOffset.UTC))
-                    .param("cursorId", cursor.activityId());
-        }
-        return mapActivities(statement.query(this::mapActivityRow).list());
+        var rows = statement.query(this::mapActivityRow).list();
+        var hasNext = rows.size() > pageSize;
+        var pageRows = hasNext ? rows.subList(0, pageSize) : rows;
+        return new SliceResponse<>(mapActivities(pageRows), pageable.getPageNumber(), pageSize, hasNext);
     }
 
-    public Optional<ActivityView> findActivity(UUID ownerUserAccountId, UUID activityId) {
+    private static String activityOrderBy(Pageable pageable) {
+        var orders = pageable.getSort().stream().toList();
+        if (orders.size() != 1) {
+            throw invalidSort();
+        }
+        var order = orders.getFirst();
+        if ((order.getDirection() != Sort.Direction.ASC && order.getDirection() != Sort.Direction.DESC)
+                || order.isIgnoreCase()
+                || order.getNullHandling() != Sort.NullHandling.NATIVE) {
+            throw invalidSort();
+        }
+        return switch (order.getProperty()) {
+            case "recordedAt" ->
+                order.isAscending()
+                        ? " ORDER BY a.recorded_at ASC, a.id ASC"
+                        : " ORDER BY a.recorded_at DESC, a.id DESC";
+            case "effectiveAt" ->
+                order.isAscending()
+                        ? " ORDER BY a.effective_at ASC, a.id ASC"
+                        : " ORDER BY a.effective_at DESC, a.id DESC";
+            default -> throw invalidSort();
+        };
+    }
+
+    private static AppException invalidSort() {
+        return ValidationErrors.invalidField(
+                "sort",
+                "error.fields.ledger.invalid_sort",
+                "The sort must contain exactly one supported property and direction.");
+    }
+
+    public Optional<ActivityResponse> findActivity(UUID ownerUserAccountId, UUID activityId) {
         return jdbcClient
                 .sql("""
                         SELECT a.id, a.owner_user_account_id, a.activity_type, a.recording_mode, a.effective_at, a.recorded_at,
@@ -233,7 +260,7 @@ public class LedgerReadRepository {
                 resultSet.getObject("supersedes_activity_id", UUID.class));
     }
 
-    private List<ActivityView> mapActivities(List<ActivityRow> rows) {
+    private List<ActivityResponse> mapActivities(List<ActivityRow> rows) {
         if (rows.isEmpty()) {
             return List.of();
         }
@@ -241,7 +268,7 @@ public class LedgerReadRepository {
                 rows.getFirst().ownerUserAccountId(),
                 rows.stream().map(ActivityRow::id).toList());
         return rows.stream()
-                .map(row -> new ActivityView(
+                .map(row -> new ActivityResponse(
                         row.id(),
                         row.activityType(),
                         row.recordingMode(),
@@ -255,7 +282,7 @@ public class LedgerReadRepository {
                 .toList();
     }
 
-    private Map<UUID, List<PostingView>> findPostings(UUID ownerUserAccountId, List<UUID> activityIds) {
+    private Map<UUID, List<PostingResponse>> findPostings(UUID ownerUserAccountId, List<UUID> activityIds) {
         var rows = jdbcClient
                 .sql("""
                         SELECT activity_id, financial_account_id, cash_pocket_id, currency_code, amount, posting_role
@@ -275,7 +302,7 @@ public class LedgerReadRepository {
                 .param("activityIds", activityIds)
                 .query((resultSet, rowNumber) -> new PostingRow(
                         resultSet.getObject("activity_id", UUID.class),
-                        new PostingView(
+                        new PostingResponse(
                                 resultSet.getObject("financial_account_id", UUID.class),
                                 resultSet.getObject("cash_pocket_id", UUID.class),
                                 resultSet.getString("currency_code"),
@@ -428,5 +455,5 @@ public class LedgerReadRepository {
             UUID reversesActivityId,
             UUID supersedesActivityId) {}
 
-    private record PostingRow(UUID activityId, PostingView posting) {}
+    private record PostingRow(UUID activityId, PostingResponse posting) {}
 }

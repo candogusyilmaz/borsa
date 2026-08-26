@@ -1,6 +1,6 @@
 # PR-023 - Governing simplicity standards
 
-Status: **ACTIVE**
+Status: **COMPLETE**
 
 ## Goal
 

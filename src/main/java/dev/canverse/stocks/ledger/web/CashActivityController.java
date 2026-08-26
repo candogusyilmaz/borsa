@@ -5,15 +5,16 @@ import dev.canverse.stocks.ledger.application.CashActivityCommandService;
 import dev.canverse.stocks.ledger.application.CashActivityQueryService;
 import dev.canverse.stocks.ledger.web.request.CashActivityRequest;
 import dev.canverse.stocks.ledger.web.request.ReversalRequest;
-import dev.canverse.stocks.ledger.web.response.ActivityPageResponse;
 import dev.canverse.stocks.ledger.web.response.ActivityResponse;
 import dev.canverse.stocks.platform.web.CacheHeaders;
+import dev.canverse.stocks.platform.web.SliceResponse;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import java.net.URI;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,7 +30,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class CashActivityController {
 
     private static final int DEFAULT_LIMIT = 50;
-    private static final int MAX_LIMIT = 100;
     private final CashActivityCommandService commandService;
     private final CashActivityQueryService queryService;
 
@@ -45,13 +45,13 @@ public class CashActivityController {
     }
 
     @GetMapping("/api/v1/activities")
-    public ResponseEntity<ActivityPageResponse> list(
+    public ResponseEntity<SliceResponse<ActivityResponse>> list(
             @AuthenticationPrincipal AuthenticatedIdentity identity,
             @RequestParam(required = false) UUID accountId,
-            @RequestParam(defaultValue = "" + DEFAULT_LIMIT) @Min(1) @Max(MAX_LIMIT) int limit,
-            @RequestParam(required = false) String cursor) {
+            @PageableDefault(size = DEFAULT_LIMIT, sort = "recordedAt", direction = Sort.Direction.DESC)
+                    Pageable pageable) {
         return new ResponseEntity<>(
-                queryService.list(identity.userAccountId(), accountId, limit, cursor),
+                queryService.list(identity.userAccountId(), accountId, pageable),
                 CacheHeaders.noStore(),
                 HttpStatus.OK);
     }

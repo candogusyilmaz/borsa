@@ -255,7 +255,6 @@ public class CashActivityCommandService {
         entityManager.flush();
         var response = readRepository
                 .findActivity(ownerUserAccountId, activity.getId())
-                .map(ActivityResponse::from)
                 .orElseThrow(() -> new AppException(LedgerErrorCode.ACTIVITY_NOT_FOUND));
         idempotencyStore.save(
                 ownerUserAccountId, scope, clientRequestId, hash, "ACTIVITY", activity.getId(), response, observedAt);
