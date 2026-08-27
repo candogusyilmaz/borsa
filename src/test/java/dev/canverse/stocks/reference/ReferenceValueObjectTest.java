@@ -5,11 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 import dev.canverse.stocks.identity.domain.UserAccount;
-import dev.canverse.stocks.platform.application.CanonicalFingerprint;
-import dev.canverse.stocks.platform.application.CursorTokenCodec;
-import dev.canverse.stocks.platform.error.AppException;
-import dev.canverse.stocks.reference.application.InstrumentSearchCursorCodec;
-import dev.canverse.stocks.reference.application.model.InstrumentSearchCursor;
 import dev.canverse.stocks.reference.domain.AliasType;
 import dev.canverse.stocks.reference.domain.CalendarCoverageStatus;
 import dev.canverse.stocks.reference.domain.CountryCode;
@@ -21,23 +16,15 @@ import dev.canverse.stocks.reference.domain.Market;
 import dev.canverse.stocks.reference.domain.MarketCode;
 import dev.canverse.stocks.reference.domain.MarketSessionStatus;
 import dev.canverse.stocks.reference.domain.ValuationMethod;
-import dev.canverse.stocks.reference.error.ReferenceErrorCode;
-import java.nio.charset.StandardCharsets;
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.ZoneId;
-import java.util.Base64;
 import java.util.Locale;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.json.JsonMapper;
 
 class ReferenceValueObjectTest {
-
-    private final InstrumentSearchCursorCodec cursorCodec = new InstrumentSearchCursorCodec(
-            new CursorTokenCodec(),
-            new CanonicalFingerprint(JsonMapper.builder().build()),
-            JsonMapper.builder().build());
 
     @Test
     void stableCodesRequireAlreadyCanonicalUppercaseForms() {
@@ -156,62 +143,9 @@ class ReferenceValueObjectTest {
         assertThatThrownBy(() -> ZoneId.of("not/a-zone")).isInstanceOf(DateTimeException.class);
     }
 
-    @Test
-    void cursorRoundTripIsCanonicalAndFilterBound() {
-        var digest = cursorCodec.filterDigest(
-                "MY", UUID.fromString("10000000-0000-0000-0000-000000000002"), InstrumentType.FUND, false);
-        var cursor = new InstrumentSearchCursor(
-                digest, "MY-FUND", "MANUAL", UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"));
-
-        var encoded = cursorCodec.encode(cursor);
-
-        assertThat(cursorCodec.decode(encoded, digest)).isEqualTo(cursor);
-        assertThatThrownBy(() -> cursorCodec.decode(encoded, cursorCodec.filterDigest("OTHER", null, null, false)))
-                .isInstanceOf(AppException.class)
-                .satisfies(exception -> assertThat(((AppException) exception).getErrorCode())
-                        .isEqualTo(ReferenceErrorCode.INVALID_INSTRUMENT_CURSOR));
-    }
-
-    @Test
-    void cursorRejectsNonCanonicalPayloadsAndTrailingData() {
-        var digest = cursorCodec.filterDigest(null, null, null, false);
-        var payload =
-                "{\"v\":1,\"f\":\"%s\",\"s\":\"ABC\",\"m\":\"MANUAL\",\"i\":\"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa\"}"
-                        .formatted(digest);
-        var canonical =
-                Base64.getUrlEncoder().withoutPadding().encodeToString(payload.getBytes(StandardCharsets.UTF_8));
-        var padded = canonical + "=";
-        var trailing = Base64.getUrlEncoder()
-                .withoutPadding()
-                .encodeToString((payload + " ").getBytes(StandardCharsets.UTF_8));
-        var unknownVersion = encodedPayload(payload.replace("\"v\":1", "\"v\":2"));
-        var wrongFields = encodedPayload(payload.replace(",\"m\":\"MANUAL\"", ""));
-        var extraField = encodedPayload(payload.substring(0, payload.length() - 1) + ",\"x\":1}");
-        var invalidUuid = encodedPayload(payload.replace("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", "not-a-uuid"));
-
-        assertThatThrownBy(() -> cursorCodec.decode(padded, digest)).isInstanceOf(AppException.class);
-        assertThatThrownBy(() -> cursorCodec.decode(trailing, digest)).isInstanceOf(AppException.class);
-        assertInvalidCursor(unknownVersion, digest);
-        assertInvalidCursor(wrongFields, digest);
-        assertInvalidCursor(extraField, digest);
-        assertInvalidCursor(invalidUuid, digest);
-        assertThatThrownBy(() -> cursorCodec.decode("not-a-cursor", digest)).isInstanceOf(AppException.class);
-    }
-
     private static <E extends Enum<E>> void assertEnumJson(JsonMapper mapper, E value, Class<E> enumType, String code)
             throws Exception {
         assertThat(mapper.writeValueAsString(value)).isEqualTo("\"" + code + "\"");
         assertThat(mapper.readValue("\"" + code + "\"", enumType)).isEqualTo(value);
-    }
-
-    private void assertInvalidCursor(String encoded, String digest) {
-        assertThatThrownBy(() -> cursorCodec.decode(encoded, digest))
-                .isInstanceOf(AppException.class)
-                .satisfies(exception -> assertThat(((AppException) exception).getErrorCode())
-                        .isEqualTo(ReferenceErrorCode.INVALID_INSTRUMENT_CURSOR));
-    }
-
-    private static String encodedPayload(String payload) {
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(payload.getBytes(StandardCharsets.UTF_8));
     }
 }

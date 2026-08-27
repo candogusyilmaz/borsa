@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -17,6 +16,9 @@ import dev.canverse.stocks.identity.application.RefreshSessionIssuanceService;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.Comparator;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,13 +84,37 @@ class DeviceSessionHttpTest {
         var session1 = sessionIssuanceService.issue(userId, "laptop");
         var session2 = sessionIssuanceService.issue(userId, "phone");
         var accessToken = tokenIssuanceService.issue(session1.sessionId()).accessToken();
+        var expectedFamilyIds = List.of(session1.sessionId(), session2.sessionId()).stream()
+                .sorted(Comparator.comparing(UUID::toString).reversed())
+                .toList();
+        var legacyCursorField = "next" + "Cursor";
 
         mockMvc.perform(get("/api/v1/auth/sessions").header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Cache-Control", "no-store"))
                 .andExpect(header().string("Pragma", "no-cache"))
-                .andExpect(jsonPath("$.sessions", hasSize(2)))
-                .andExpect(jsonPath("$.nextCursor", nullValue()))
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$.sessions").doesNotExist())
+                .andExpect(jsonPath(
+                        "$[0].familyId", equalTo(expectedFamilyIds.get(0).toString())))
+                .andExpect(jsonPath(
+                        "$[1].familyId", equalTo(expectedFamilyIds.get(1).toString())))
+                .andExpect(jsonPath("$[0].createdAt", equalTo(T0.toString())))
+                .andExpect(jsonPath("$[1].createdAt", equalTo(T0.toString())))
+                .andExpect(jsonPath("$[0].status", equalTo("ACTIVE")))
+                .andExpect(jsonPath("$[1].status", equalTo("ACTIVE")))
+                .andExpect(jsonPath(
+                        "$[0].current", equalTo(expectedFamilyIds.get(0).equals(session1.sessionId()))))
+                .andExpect(jsonPath(
+                        "$[1].current", equalTo(expectedFamilyIds.get(1).equals(session1.sessionId()))))
+                .andExpect(jsonPath("$[0]." + legacyCursorField).doesNotExist())
+                .andExpect(jsonPath("$[0].page").doesNotExist())
+                .andExpect(jsonPath("$[0].size").doesNotExist())
+                .andExpect(jsonPath("$[0].hasNext").doesNotExist())
+                .andExpect(jsonPath("$." + legacyCursorField).doesNotExist())
+                .andExpect(jsonPath("$.page").doesNotExist())
+                .andExpect(jsonPath("$.size").doesNotExist())
+                .andExpect(jsonPath("$.hasNext").doesNotExist())
                 .andExpect(result ->
                         assertThat(result.getRequest().getSession(false)).isNull());
 
@@ -102,19 +128,6 @@ class DeviceSessionHttpTest {
                 .andExpect(jsonPath("$.status", equalTo("ACTIVE")))
                 .andExpect(result ->
                         assertThat(result.getRequest().getSession(false)).isNull());
-    }
-
-    @Test
-    void malformedCursorReturnsBadRequest() throws Exception {
-        var email = "cursor@example.com";
-        var userId = registrationService.register(email, "correct horse battery staple");
-        var session = sessionIssuanceService.issue(userId, "laptop");
-        var accessToken = tokenIssuanceService.issue(session.sessionId()).accessToken();
-
-        mockMvc.perform(get("/api/v1/auth/sessions?cursor=invalid-cursor")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code", equalTo("INVALID_SESSION_CURSOR")));
     }
 
     @Test
@@ -199,29 +212,6 @@ class DeviceSessionHttpTest {
         mockMvc.perform(delete("/api/v1/auth/sessions/" + session2.sessionId())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token1))
                 .andExpect(status().isNoContent());
-    }
-
-    @Test
-    void listSessionsRejectsInvalidLimitAndCursor() throws Exception {
-        var userId = registrationService.register("limittest@example.com", "correct horse battery staple");
-        var session = sessionIssuanceService.issue(userId, "laptop");
-        var token = tokenIssuanceService.issue(session.sessionId()).accessToken();
-
-        // Limit = 0 -> 422 validation failure
-        mockMvc.perform(get("/api/v1/auth/sessions?limit=0").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED")));
-
-        // Limit = 101 -> 422 validation failure
-        mockMvc.perform(get("/api/v1/auth/sessions?limit=101").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED")));
-
-        // Malformed cursor -> 400 INVALID_SESSION_CURSOR
-        mockMvc.perform(get("/api/v1/auth/sessions?cursor=bad-cursor")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code", equalTo("INVALID_SESSION_CURSOR")));
     }
 
     @TestConfiguration(proxyBeanMethods = false)

@@ -2,19 +2,21 @@ package dev.canverse.stocks.reference.web;
 
 import dev.canverse.stocks.identity.application.model.AuthenticatedIdentity;
 import dev.canverse.stocks.platform.web.CacheHeaders;
+import dev.canverse.stocks.platform.web.SliceResponse;
 import dev.canverse.stocks.reference.application.InstrumentSearchService;
 import dev.canverse.stocks.reference.application.ManualInstrumentService;
 import dev.canverse.stocks.reference.application.model.InstrumentSearchCriteria;
 import dev.canverse.stocks.reference.domain.InstrumentType;
 import dev.canverse.stocks.reference.web.request.ManualInstrumentCreateRequest;
 import dev.canverse.stocks.reference.web.request.ManualInstrumentUpdateRequest;
-import dev.canverse.stocks.reference.web.response.InstrumentPageResponse;
 import dev.canverse.stocks.reference.web.response.InstrumentResponse;
+import dev.canverse.stocks.reference.web.response.InstrumentSummaryResponse;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -64,19 +66,15 @@ public class ManualInstrumentController {
     }
 
     @GetMapping
-    public ResponseEntity<InstrumentPageResponse> search(
+    public ResponseEntity<SliceResponse<InstrumentSummaryResponse>> search(
             @AuthenticationPrincipal AuthenticatedIdentity identity,
             @RequestParam(required = false) String query,
             @RequestParam(required = false) UUID marketId,
             @RequestParam(required = false) InstrumentType type,
             @RequestParam(defaultValue = "false") boolean includeInactive,
-            @RequestParam(defaultValue = "" + InstrumentSearchService.DEFAULT_LIMIT)
-                    @Min(InstrumentSearchService.MIN_LIMIT)
-                    @Max(InstrumentSearchService.MAX_LIMIT)
-                    int limit,
-            @RequestParam(required = false) String cursor) {
-        var criteria = new InstrumentSearchCriteria(query, marketId, type, includeInactive, limit, cursor);
-        var response = searchService.search(identity.userAccountId(), criteria);
+            @PageableDefault(size = 25, sort = "name", direction = Sort.Direction.ASC) Pageable pageable) {
+        var criteria = new InstrumentSearchCriteria(query, marketId, type, includeInactive);
+        var response = searchService.search(identity.userAccountId(), criteria, pageable);
         return new ResponseEntity<>(response, CacheHeaders.noStore(), HttpStatus.OK);
     }
 }

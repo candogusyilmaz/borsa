@@ -191,8 +191,10 @@ class ManualInstrumentHttpTest {
                         .param("query", "PRIVATE")
                         .header(HttpHeaders.AUTHORIZATION, other.bearer()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.instruments").isEmpty())
-                .andExpect(jsonPath("$.nextCursor").isEmpty());
+                .andExpect(jsonPath("$.items").isEmpty())
+                .andExpect(jsonPath("$.page", equalTo(0)))
+                .andExpect(jsonPath("$.size", equalTo(25)))
+                .andExpect(jsonPath("$.hasNext", equalTo(false)));
 
         mockMvc.perform(get("/api/v1/reference/instruments/{instrumentId}", GLOBAL_ID)
                         .header(HttpHeaders.AUTHORIZATION, other.bearer()))
@@ -212,16 +214,16 @@ class ManualInstrumentHttpTest {
                         .param("query", "GLOBAL")
                         .header(HttpHeaders.AUTHORIZATION, other.bearer()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.instruments.length()", equalTo(1)))
-                .andExpect(jsonPath("$.instruments[0].ownerManaged", equalTo(false)));
+                .andExpect(jsonPath("$.items.length()", equalTo(1)))
+                .andExpect(jsonPath("$.items[0].ownerManaged", equalTo(false)));
     }
 
     @Test
-    void searchUsesExactPrefixFiltersStableCursorAndInactiveOwnerVisibility() throws Exception {
+    void searchUsesExactPrefixFiltersPageableAndInactiveOwnerVisibility() throws Exception {
         var identity = authenticated("instrument-search-owner@example.com");
-        create(identity, "ALPHA", "Local alpha", "GBP", "USER", "Local alpha alias");
-        var beta = idFrom(create(identity, "BETA", "Local beta", "GBP", "USER", "Local beta alias"));
-        create(identity, "GAMMA", "Local gamma", "GBP", "USER", "Local gamma alias");
+        create(identity, "ZZZ", "Local alpha", "GBP", "USER", "Local alpha alias");
+        var beta = idFrom(create(identity, "YYY", "Local beta", "GBP", "USER", "Local beta alias"));
+        create(identity, "XXX", "Local gamma", "GBP", "USER", "Local gamma alias");
         mockMvc.perform(put("/api/v1/reference/instruments/{instrumentId}", beta)
                         .header(HttpHeaders.AUTHORIZATION, identity.bearer())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -230,60 +232,68 @@ class ManualInstrumentHttpTest {
 
         mockMvc.perform(get("/api/v1/reference/instruments")
                         .param("query", "LOCAL")
-                        .param("limit", "10")
+                        .param("size", "10")
                         .header(HttpHeaders.AUTHORIZATION, identity.bearer()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.instruments.length()", equalTo(2)))
-                .andExpect(jsonPath("$.instruments[0].symbol", equalTo("ALPHA")))
-                .andExpect(jsonPath("$.instruments[0].aliases[0].value", equalTo("Local alpha alias")))
-                .andExpect(jsonPath("$.instruments[1].symbol", equalTo("GAMMA")))
-                .andExpect(jsonPath("$.nextCursor").isEmpty());
-
-        var firstPage = mockMvc.perform(get("/api/v1/reference/instruments")
-                        .param("query", "LOCAL")
-                        .param("limit", "1")
-                        .header(HttpHeaders.AUTHORIZATION, identity.bearer()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.instruments.length()", equalTo(1)))
-                .andExpect(jsonPath("$.instruments[0].symbol", equalTo("ALPHA")))
-                .andExpect(jsonPath("$.nextCursor").isNotEmpty())
-                .andReturn();
-        var cursor = JsonPath.<String>read(firstPage.getResponse().getContentAsString(), "$.nextCursor");
+                .andExpect(jsonPath("$.items.length()", equalTo(2)))
+                .andExpect(jsonPath("$.items[0].symbol", equalTo("ZZZ")))
+                .andExpect(jsonPath("$.items[0].aliases[0].value", equalTo("Local alpha alias")))
+                .andExpect(jsonPath("$.items[1].symbol", equalTo("XXX")))
+                .andExpect(jsonPath("$.page", equalTo(0)))
+                .andExpect(jsonPath("$.size", equalTo(10)))
+                .andExpect(jsonPath("$.hasNext", equalTo(false)))
+                .andExpect(result -> assertThat(JsonPath.<Map<String, Object>>read(
+                                result.getResponse().getContentAsString(), "$"))
+                        .containsOnlyKeys("items", "page", "size", "hasNext"));
 
         mockMvc.perform(get("/api/v1/reference/instruments")
                         .param("query", "LOCAL")
-                        .param("limit", "1")
-                        .param("cursor", cursor)
+                        .param("size", "1")
+                        .param("sort", "name,asc")
                         .header(HttpHeaders.AUTHORIZATION, identity.bearer()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.instruments.length()", equalTo(1)))
-                .andExpect(jsonPath("$.instruments[0].symbol", equalTo("GAMMA")))
-                .andExpect(jsonPath("$.nextCursor").isEmpty());
+                .andExpect(jsonPath("$.items.length()", equalTo(1)))
+                .andExpect(jsonPath("$.items[0].symbol", equalTo("ZZZ")))
+                .andExpect(jsonPath("$.page", equalTo(0)))
+                .andExpect(jsonPath("$.size", equalTo(1)))
+                .andExpect(jsonPath("$.hasNext", equalTo(true)));
 
-        assertProblem(
-                mockMvc.perform(get("/api/v1/reference/instruments")
-                                .param("query", "GAMMA")
-                                .param("limit", "1")
-                                .param("cursor", cursor)
-                                .header(HttpHeaders.AUTHORIZATION, identity.bearer()))
-                        .andExpect(status().isBadRequest())
-                        .andReturn(),
-                "INVALID_INSTRUMENT_CURSOR");
+        mockMvc.perform(get("/api/v1/reference/instruments")
+                        .param("query", "LOCAL")
+                        .param("page", "1")
+                        .param("size", "1")
+                        .param("sort", "name,asc")
+                        .header(HttpHeaders.AUTHORIZATION, identity.bearer()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items.length()", equalTo(1)))
+                .andExpect(jsonPath("$.items[0].symbol", equalTo("XXX")))
+                .andExpect(jsonPath("$.page", equalTo(1)))
+                .andExpect(jsonPath("$.size", equalTo(1)))
+                .andExpect(jsonPath("$.hasNext", equalTo(false)));
 
         mockMvc.perform(get("/api/v1/reference/instruments")
                         .param("query", "LOCAL")
                         .param("includeInactive", "true")
-                        .param("limit", "10")
+                        .param("size", "10")
                         .header(HttpHeaders.AUTHORIZATION, identity.bearer()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.instruments.length()", equalTo(3)))
-                .andExpect(jsonPath("$.instruments[1].symbol", equalTo("BETA")))
-                .andExpect(jsonPath("$.instruments[1].active", equalTo(false)))
-                .andExpect(jsonPath("$.instruments[1].ownerManaged", equalTo(true)));
+                .andExpect(jsonPath("$.items.length()", equalTo(3)))
+                .andExpect(jsonPath("$.items[1].symbol", equalTo("YYY")))
+                .andExpect(jsonPath("$.items[1].active", equalTo(false)))
+                .andExpect(jsonPath("$.items[1].ownerManaged", equalTo(true)));
+
+        mockMvc.perform(get("/api/v1/reference/instruments")
+                        .param("query", "LOCAL")
+                        .param("size", "101")
+                        .header(HttpHeaders.AUTHORIZATION, identity.bearer()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.page", equalTo(0)))
+                .andExpect(jsonPath("$.size", equalTo(100)))
+                .andExpect(jsonPath("$.hasNext", equalTo(false)));
     }
 
     @Test
-    void searchHttpCoversPrefixFilterCollisionLiteralCursorAndOwnershipMatrix() throws Exception {
+    void searchHttpCoversPrefixFilterCollisionLiteralAndOwnershipMatrix() throws Exception {
         var owner = authenticated("instrument-search-matrix-owner@example.com");
         var other = authenticated("instrument-search-matrix-other@example.com");
         insertFixture(MATRIX_GLOBAL_ID, null, MANUAL, "SAME", "Shared global fund", "FUND", true, "COLLIDE");
@@ -303,62 +313,63 @@ class ManualInstrumentHttpTest {
 
         mockMvc.perform(get("/api/v1/reference/instruments")
                         .param("query", "SAME")
-                        .param("limit", "100")
+                        .param("size", "100")
+                        .param("sort", "symbol,asc")
                         .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.instruments.length()", equalTo(3)))
-                .andExpect(jsonPath("$.instruments[0].marketCode", equalTo("MANUAL")))
-                .andExpect(jsonPath("$.instruments[1].marketCode", equalTo("MANUAL")))
-                .andExpect(jsonPath("$.instruments[2].marketCode", equalTo("XIST")))
-                .andExpect(jsonPath("$.instruments[0].ownerManaged", equalTo(false)))
-                .andExpect(jsonPath("$.instruments[1].ownerManaged", equalTo(true)))
-                .andExpect(jsonPath("$.nextCursor").isEmpty());
+                .andExpect(jsonPath("$.items.length()", equalTo(3)))
+                .andExpect(jsonPath("$.items[0].marketCode", equalTo("MANUAL")))
+                .andExpect(jsonPath("$.items[1].marketCode", equalTo("MANUAL")))
+                .andExpect(jsonPath("$.items[2].marketCode", equalTo("XIST")))
+                .andExpect(jsonPath("$.items[0].ownerManaged", equalTo(false)))
+                .andExpect(jsonPath("$.items[1].ownerManaged", equalTo(true)))
+                .andExpect(jsonPath("$.hasNext", equalTo(false)));
         mockMvc.perform(get("/api/v1/reference/instruments")
                         .param("query", "SHARED")
-                        .param("limit", "100")
+                        .param("size", "100")
                         .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.instruments.length()", equalTo(3)));
+                .andExpect(jsonPath("$.items.length()", equalTo(3)));
         mockMvc.perform(get("/api/v1/reference/instruments")
                         .param("query", "COLLIDE")
-                        .param("limit", "100")
+                        .param("size", "100")
                         .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.instruments.length()", equalTo(3)));
+                .andExpect(jsonPath("$.items.length()", equalTo(3)));
         mockMvc.perform(get("/api/v1/reference/instruments")
                         .param("marketId", XIST.toString())
                         .param("type", "ETF")
-                        .param("limit", "100")
+                        .param("size", "100")
                         .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.instruments.length()", equalTo(1)))
-                .andExpect(jsonPath("$.instruments[0].id", equalTo(GLOBAL_XIST_ID.toString())));
+                .andExpect(jsonPath("$.items.length()", equalTo(1)))
+                .andExpect(jsonPath("$.items[0].id", equalTo(GLOBAL_XIST_ID.toString())));
         mockMvc.perform(get("/api/v1/reference/instruments")
                         .param("query", "Literal%")
                         .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.instruments[*].id", equalTo(List.of(percent.toString()))));
+                .andExpect(jsonPath("$.items[*].id", equalTo(List.of(percent.toString()))));
         mockMvc.perform(get("/api/v1/reference/instruments")
                         .param("query", "Literal_")
                         .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.instruments[*].id", equalTo(List.of(underscore.toString()))));
+                .andExpect(jsonPath("$.items[*].id", equalTo(List.of(underscore.toString()))));
         mockMvc.perform(get("/api/v1/reference/instruments")
                         .param("query", "Literal\\")
                         .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.instruments[*].id", equalTo(List.of(backslash.toString()))));
+                .andExpect(jsonPath("$.items[*].id", equalTo(List.of(backslash.toString()))));
         mockMvc.perform(get("/api/v1/reference/instruments")
                         .param("query", "HIDDEN")
                         .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.instruments").isEmpty());
+                .andExpect(jsonPath("$.items").isEmpty());
         mockMvc.perform(get("/api/v1/reference/instruments")
                         .param("query", "HIDDEN")
                         .param("includeInactive", "true")
                         .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.instruments[*].id", equalTo(List.of(ownerInactive.toString()))));
+                .andExpect(jsonPath("$.items[*].id", equalTo(List.of(ownerInactive.toString()))));
 
         var expected = new ArrayList<UUID>();
         for (var index = 0; index < 37; index++) {
@@ -368,53 +379,66 @@ class ManualInstrumentHttpTest {
                     id,
                     owner.userId(),
                     MANUAL,
-                    "HTTP-CURSOR-%03d".formatted(index),
-                    "HTTP cursor fund " + index,
+                    "HTTP-PAGE-%03d".formatted(index),
+                    "HTTP page fund " + index,
                     "FUND",
                     true,
-                    "HTTP-CURSOR-ALIAS-%03d".formatted(index));
+                    "HTTP-PAGE-ALIAS-%03d".formatted(index));
         }
-        var otherCursorId = UUID.fromString("72000000-0000-4000-8000-000000000100");
+        var otherPageId = UUID.fromString("72000000-0000-4000-8000-000000000100");
         insertFixture(
-                otherCursorId,
-                other.userId(),
-                MANUAL,
-                "HTTP-CURSOR-999",
-                "Other cursor fund",
-                "FUND",
-                true,
-                "OTHER-CURSOR");
+                otherPageId, other.userId(), MANUAL, "HTTP-PAGE-999", "Other page fund", "FUND", true, "OTHER-PAGE");
 
-        var collected = new ArrayList<UUID>();
-        String cursor = null;
-        String firstCursor = null;
-        do {
-            var requestBuilder = get("/api/v1/reference/instruments")
-                    .param("query", "HTTP-CURSOR-")
-                    .param("limit", "6");
-            if (cursor != null) {
-                requestBuilder.param("cursor", cursor);
-            }
-            var request = mockMvc.perform(requestBuilder.header(HttpHeaders.AUTHORIZATION, owner.bearer()))
-                    .andExpect(status().isOk())
-                    .andReturn();
-            var ids = JsonPath.<List<String>>read(request.getResponse().getContentAsString(), "$.instruments[*].id");
-            collected.addAll(ids.stream().map(UUID::fromString).toList());
-            cursor = JsonPath.read(request.getResponse().getContentAsString(), "$.nextCursor");
-            if (firstCursor == null) {
-                firstCursor = cursor;
-            }
-        } while (cursor != null);
-        assertThat(collected).containsExactlyElementsOf(expected);
-        assertThat(collected).doesNotHaveDuplicates();
+        var firstPage = mockMvc.perform(get("/api/v1/reference/instruments")
+                        .param("query", "HTTP-PAGE-")
+                        .param("page", "0")
+                        .param("size", "6")
+                        .param("sort", "symbol,asc")
+                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items.length()", equalTo(6)))
+                .andExpect(jsonPath("$.page", equalTo(0)))
+                .andExpect(jsonPath("$.size", equalTo(6)))
+                .andExpect(jsonPath("$.hasNext", equalTo(true)))
+                .andReturn();
+        var firstIds = JsonPath.<List<String>>read(firstPage.getResponse().getContentAsString(), "$.items[*].id");
+        assertThat(firstIds)
+                .containsExactlyElementsOf(
+                        expected.subList(0, 6).stream().map(UUID::toString).toList());
+
+        var secondPage = mockMvc.perform(get("/api/v1/reference/instruments")
+                        .param("query", "HTTP-PAGE-")
+                        .param("page", "1")
+                        .param("size", "6")
+                        .param("sort", "symbol,asc")
+                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items.length()", equalTo(6)))
+                .andExpect(jsonPath("$.page", equalTo(1)))
+                .andExpect(jsonPath("$.hasNext", equalTo(true)))
+                .andReturn();
+        var secondIds = JsonPath.<List<String>>read(secondPage.getResponse().getContentAsString(), "$.items[*].id");
+        assertThat(secondIds)
+                .containsExactlyElementsOf(
+                        expected.subList(6, 12).stream().map(UUID::toString).toList());
+        assertThat(firstIds).doesNotContainAnyElementsOf(secondIds);
 
         mockMvc.perform(get("/api/v1/reference/instruments")
-                        .param("query", "HTTP-CURSOR-")
-                        .param("limit", "100")
-                        .param("cursor", firstCursor)
+                        .param("query", "HTTP-PAGE-")
+                        .param("page", "7")
+                        .param("size", "6")
+                        .param("sort", "symbol,asc")
                         .header(HttpHeaders.AUTHORIZATION, other.bearer()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.instruments[*].id", equalTo(List.of(otherCursorId.toString()))));
+                .andExpect(jsonPath("$.items").isEmpty());
+
+        mockMvc.perform(get("/api/v1/reference/instruments")
+                        .param("query", "HTTP-PAGE-")
+                        .param("size", "100")
+                        .param("sort", "symbol,asc")
+                        .header(HttpHeaders.AUTHORIZATION, other.bearer()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[*].id", equalTo(List.of(otherPageId.toString()))));
     }
 
     @Test
@@ -494,11 +518,19 @@ class ManualInstrumentHttpTest {
 
         assertProblem(
                 mockMvc.perform(get("/api/v1/reference/instruments")
-                                .param("cursor", "not-a-canonical-cursor")
+                                .param("sort", "createdAt,asc")
                                 .header(HttpHeaders.AUTHORIZATION, identity.bearer()))
-                        .andExpect(status().isBadRequest())
+                        .andExpect(status().isUnprocessableEntity())
                         .andReturn(),
-                "INVALID_INSTRUMENT_CURSOR");
+                "VALIDATION_FAILED");
+        assertProblem(
+                mockMvc.perform(get("/api/v1/reference/instruments")
+                                .param("sort", "name,asc")
+                                .param("sort", "symbol,asc")
+                                .header(HttpHeaders.AUTHORIZATION, identity.bearer()))
+                        .andExpect(status().isUnprocessableEntity())
+                        .andReturn(),
+                "VALIDATION_FAILED");
         assertProblem(
                 mockMvc.perform(post("/api/v1/reference/instruments")
                                 .header(HttpHeaders.AUTHORIZATION, identity.bearer())

@@ -1,10 +1,13 @@
 package dev.canverse.stocks.reference.infrastructure;
 
-import dev.canverse.stocks.reference.application.model.InstrumentSearchCursor;
+import dev.canverse.stocks.platform.error.AppException;
+import dev.canverse.stocks.platform.error.ValidationErrors;
+import dev.canverse.stocks.platform.web.SliceResponse;
 import dev.canverse.stocks.reference.domain.AliasType;
 import dev.canverse.stocks.reference.domain.InstrumentType;
 import dev.canverse.stocks.reference.domain.MarketSessionStatus;
 import dev.canverse.stocks.reference.domain.ValuationMethod;
+import dev.canverse.stocks.reference.web.response.InstrumentSummaryResponse;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -23,6 +26,8 @@ import java.util.UUID;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
@@ -111,15 +116,16 @@ public class ReferenceCatalogReadRepository {
                 instrumentRow, aliasesFor(List.of(instrumentRow.id())).getOrDefault(instrumentRow.id(), List.of())));
     }
 
-    public List<InstrumentView> searchInstruments(
+    public SliceResponse<InstrumentSummaryResponse> searchInstruments(
             UUID ownerUserAccountId,
             String queryNormalized,
             UUID marketId,
             InstrumentType type,
             boolean includeInactive,
-            InstrumentSearchCursor cursor,
-            int fetchLimit) {
+            Pageable pageable) {
         Objects.requireNonNull(ownerUserAccountId, "ownerUserAccountId");
+        Objects.requireNonNull(pageable, "pageable");
+        var pageSize = pageable.getPageSize();
         var predicates = new ArrayList<String>();
         predicates.add("((i.owner_user_account_id IS NULL AND i.active)"
                 + " OR (i.owner_user_account_id = :ownerUserAccountId"
@@ -136,10 +142,6 @@ public class ReferenceCatalogReadRepository {
         if (type != null) {
             predicates.add("i.instrument_type = :instrumentType");
         }
-        if (cursor != null) {
-            predicates.add("(i.symbol_normalized, m.code_normalized, i.id)"
-                    + " > (:cursorSymbol, :cursorMarketCode, :cursorInstrumentId)");
-        }
 
         var sql = """
                 SELECT i.id, i.owner_user_account_id, i.market_id, m.code AS market_code,
@@ -150,14 +152,15 @@ public class ReferenceCatalogReadRepository {
                 FROM reference.instrument i
                 JOIN reference.market m ON m.id = i.market_id
                 WHERE %s
-                ORDER BY i.symbol_normalized, m.code_normalized, i.id
-                LIMIT :fetchLimit
-                """.formatted(String.join(" AND ", predicates));
+                """.formatted(String.join(" AND ", predicates))
+                + instrumentOrderBy(pageable)
+                + " LIMIT :fetchLimit OFFSET :offset";
         var statement = jdbcClient
                 .sql(sql)
                 .param("ownerUserAccountId", ownerUserAccountId)
                 .param("includeInactive", includeInactive)
-                .param("fetchLimit", fetchLimit);
+                .param("fetchLimit", pageSize + 1)
+                .param("offset", pageable.getOffset());
         if (queryNormalized != null) {
             statement = statement.param("queryPrefix", escapeLikePrefix(queryNormalized) + "%");
         }
@@ -167,20 +170,49 @@ public class ReferenceCatalogReadRepository {
         if (type != null) {
             statement = statement.param("instrumentType", type.name());
         }
-        if (cursor != null) {
-            statement = statement
-                    .param("cursorSymbol", cursor.symbolNormalized())
-                    .param("cursorMarketCode", cursor.marketCodeNormalized())
-                    .param("cursorInstrumentId", cursor.instrumentId());
-        }
         var rows = statement.query(this::mapInstrumentRow).list();
-        if (rows.isEmpty()) {
-            return List.of();
+        var hasNext = rows.size() > pageSize;
+        var pageRows = hasNext ? rows.subList(0, pageSize) : rows;
+        if (pageRows.isEmpty()) {
+            return new SliceResponse<>(List.of(), pageable.getPageNumber(), pageSize, hasNext);
         }
-        var aliases = aliasesFor(rows.stream().map(InstrumentRow::id).toList());
-        return rows.stream()
+        var aliases = aliasesFor(pageRows.stream().map(InstrumentRow::id).toList());
+        var summaries = pageRows.stream()
                 .map(row -> new InstrumentView(row, aliases.getOrDefault(row.id(), List.of())))
+                .map(InstrumentSummaryResponse::from)
                 .toList();
+        return new SliceResponse<>(summaries, pageable.getPageNumber(), pageSize, hasNext);
+    }
+
+    private static String instrumentOrderBy(Pageable pageable) {
+        var orders = pageable.getSort().stream().toList();
+        if (orders.size() != 1) {
+            throw invalidSort();
+        }
+        var order = orders.getFirst();
+        if ((order.getDirection() != Sort.Direction.ASC && order.getDirection() != Sort.Direction.DESC)
+                || order.isIgnoreCase()
+                || order.getNullHandling() != Sort.NullHandling.NATIVE) {
+            throw invalidSort();
+        }
+        return switch (order.getProperty()) {
+            case "name" ->
+                order.isAscending()
+                        ? " ORDER BY i.name_normalized ASC, i.id ASC"
+                        : " ORDER BY i.name_normalized DESC, i.id DESC";
+            case "symbol" ->
+                order.isAscending()
+                        ? " ORDER BY i.symbol_normalized ASC, m.code_normalized ASC, i.id ASC"
+                        : " ORDER BY i.symbol_normalized DESC, m.code_normalized DESC, i.id DESC";
+            default -> throw invalidSort();
+        };
+    }
+
+    private static AppException invalidSort() {
+        return ValidationErrors.invalidField(
+                "sort",
+                "error.fields.reference.invalid_sort",
+                "The sort must contain exactly one supported property and direction.");
     }
 
     private Optional<InstrumentRow> findInstrumentRow(

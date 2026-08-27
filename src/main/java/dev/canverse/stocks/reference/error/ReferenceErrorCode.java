@@ -12,8 +12,7 @@ public enum ReferenceErrorCode implements ErrorCode {
     DUPLICATE_INSTRUMENT_ALIAS(HttpStatus.CONFLICT, "The instrument alias already exists."),
     INSTRUMENT_VERSION_CONFLICT(HttpStatus.CONFLICT, "The instrument was changed by another request."),
     INACTIVE_REFERENCE(HttpStatus.UNPROCESSABLE_CONTENT, "The requested reference row is inactive."),
-    UNSUPPORTED_MARKET_CURRENCY(HttpStatus.UNPROCESSABLE_CONTENT, "The currency is not supported by the market."),
-    INVALID_INSTRUMENT_CURSOR(HttpStatus.BAD_REQUEST, "The instrument cursor is invalid.");
+    UNSUPPORTED_MARKET_CURRENCY(HttpStatus.UNPROCESSABLE_CONTENT, "The currency is not supported by the market.");
 
     private final HttpStatus status;
     private final String description;

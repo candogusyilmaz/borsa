@@ -3,11 +3,9 @@ package dev.canverse.stocks.identity.web;
 import dev.canverse.stocks.identity.application.DeviceSessionQueryService;
 import dev.canverse.stocks.identity.application.DeviceSessionRevocationService;
 import dev.canverse.stocks.identity.application.model.AuthenticatedIdentity;
-import dev.canverse.stocks.identity.web.response.DeviceSessionPageResponse;
 import dev.canverse.stocks.identity.web.response.DeviceSessionResponse;
 import dev.canverse.stocks.platform.web.CacheHeaders;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -18,7 +16,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -30,11 +27,9 @@ public class DeviceSessionController {
     private final DeviceSessionRevocationService revocationService;
 
     @GetMapping
-    public ResponseEntity<DeviceSessionPageResponse> listSessions(
-            @AuthenticationPrincipal AuthenticatedIdentity identity,
-            @RequestParam(required = false) @Min(1) @Max(100) Integer limit,
-            @RequestParam(required = false) String cursor) {
-        var response = queryService.listSessions(identity.userAccountId(), identity.sessionId(), limit, cursor);
+    public ResponseEntity<List<DeviceSessionResponse>> listSessions(
+            @AuthenticationPrincipal AuthenticatedIdentity identity) {
+        var response = queryService.listSessions(identity.userAccountId(), identity.sessionId());
 
         return new ResponseEntity<>(response, CacheHeaders.noStore(), HttpStatus.OK);
     }

@@ -8,12 +8,14 @@ import dev.canverse.stocks.identity.application.LocalAccountRegistrationService;
 import dev.canverse.stocks.identity.application.RefreshSessionIssuanceService;
 import dev.canverse.stocks.identity.application.RefreshSessionRotationService;
 import dev.canverse.stocks.identity.error.IdentityErrorCode;
+import dev.canverse.stocks.identity.infrastructure.SecureRefreshTokenGenerator;
 import dev.canverse.stocks.identity.web.response.DeviceSessionStatus;
 import dev.canverse.stocks.platform.error.AppException;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +28,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -59,10 +63,16 @@ class DeviceSessionQueryServiceTest {
     RefreshSessionRotationService rotationService;
 
     @Autowired
+    SecureRefreshTokenGenerator refreshTokenGenerator;
+
+    @Autowired
     DeviceSessionQueryService queryService;
 
     @Autowired
     JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    PlatformTransactionManager transactionManager;
 
     @BeforeEach
     void cleanDatabase() {
@@ -80,10 +90,10 @@ class DeviceSessionQueryServiceTest {
         var rotated2 = rotationService.rotate(rotated1.refreshToken()).orElseThrow();
 
         // Current session is rotated2
-        var page = queryService.listSessions(userId, rotated2.sessionId(), 25, null);
-        assertThat(page.sessions()).hasSize(1);
+        var sessions = queryService.listSessions(userId, rotated2.sessionId());
+        assertThat(sessions).hasSize(1);
 
-        var family = page.sessions().getFirst();
+        var family = sessions.getFirst();
         assertThat(family.familyId()).isEqualTo(initial.sessionId());
         assertThat(family.latestGenerationId()).isEqualTo(rotated2.sessionId());
         assertThat(family.deviceLabel()).isEqualTo("Chrome on Mac");
@@ -99,30 +109,64 @@ class DeviceSessionQueryServiceTest {
     }
 
     @Test
-    void keysetPaginationReturnsPagesWithoutGapsOrDuplicates() {
+    void completeListOrdersFamiliesByCreationAndIdAndPreservesInitialCreation() {
         var userId = registrationService.register("pageuser@example.com", "correct horse battery staple");
 
-        var familyIds = new ArrayList<UUID>();
-        for (int i = 0; i < 7; i++) {
-            var session = issuanceService.issue(userId, "device-" + i);
-            familyIds.add(session.sessionId());
-        }
+        var oldFamilyId = UUID.fromString("30000000-0000-4000-8000-000000000001");
+        var tieLowFamilyId = UUID.fromString("30000000-0000-4000-8000-000000000002");
+        var tieHighFamilyId = UUID.fromString("30000000-0000-4000-8000-000000000003");
+        var latestFamilyId = UUID.fromString("30000000-0000-4000-8000-000000000004");
+        var oldCreatedAt = T0.minus(Duration.ofHours(3));
+        var tieCreatedAt = T0.minus(Duration.ofHours(2));
+        var latestCreatedAt = T0.minus(Duration.ofHours(1));
 
-        var currentSessionId = familyIds.getFirst();
-        var collected = new ArrayList<UUID>();
+        var oldSessionId = UUID.fromString("40000000-0000-4000-8000-000000000001");
+        var oldToken = refreshTokenGenerator.generate();
+        insertSession(oldSessionId, userId, oldFamilyId, oldToken.hash(), "old-device", oldCreatedAt);
+        var rotatedSession = rotationService.rotate(oldToken.rawToken()).orElseThrow();
 
-        String cursor = null;
-        int pageSize = 3;
-        do {
-            var page = queryService.listSessions(userId, currentSessionId, pageSize, cursor);
-            for (var session : page.sessions()) {
-                collected.add(session.familyId());
-            }
-            cursor = page.nextCursor();
-        } while (cursor != null);
+        insertSession(
+                UUID.fromString("40000000-0000-4000-8000-000000000002"),
+                userId,
+                tieLowFamilyId,
+                "tie-low-hash",
+                "tie-low-device",
+                tieCreatedAt);
+        insertSession(
+                UUID.fromString("40000000-0000-4000-8000-000000000003"),
+                userId,
+                tieHighFamilyId,
+                "tie-high-hash",
+                "tie-high-device",
+                tieCreatedAt);
+        insertSession(
+                UUID.fromString("40000000-0000-4000-8000-000000000004"),
+                userId,
+                latestFamilyId,
+                "latest-hash",
+                "latest-device",
+                latestCreatedAt);
 
-        assertThat(collected).hasSize(7);
-        assertThat(collected).doesNotHaveDuplicates();
+        var sessions = queryService.listSessions(userId, rotatedSession.sessionId());
+
+        assertThat(sessions).hasSize(4);
+        assertThat(sessions).extracting(session -> session.familyId()).doesNotHaveDuplicates();
+        assertThat(sessions)
+                .extracting(session -> session.familyId())
+                .containsExactly(latestFamilyId, tieHighFamilyId, tieLowFamilyId, oldFamilyId);
+        assertThat(sessions)
+                .extracting(session -> session.createdAt())
+                .containsExactly(latestCreatedAt, tieCreatedAt, tieCreatedAt, oldCreatedAt);
+        assertThat(sessions).extracting(session -> session.current()).containsExactly(false, false, false, true);
+        assertThat(sessions)
+                .extracting(session -> session.status())
+                .containsExactly(
+                        DeviceSessionStatus.ACTIVE,
+                        DeviceSessionStatus.ACTIVE,
+                        DeviceSessionStatus.ACTIVE,
+                        DeviceSessionStatus.ACTIVE);
+        assertThat(sessions.getLast().latestGenerationId()).isEqualTo(rotatedSession.sessionId());
+        assertThat(sessions.getLast().deviceLabel()).isEqualTo("old-device");
     }
 
     @Test
@@ -134,31 +178,15 @@ class DeviceSessionQueryServiceTest {
         var session2 = issuanceService.issue(user2, "device2");
 
         // User 1 lists sessions -> sees only session1
-        var page1 = queryService.listSessions(user1, session1.sessionId(), 25, null);
-        assertThat(page1.sessions()).hasSize(1);
-        assertThat(page1.sessions().getFirst().familyId()).isEqualTo(session1.sessionId());
+        var sessions1 = queryService.listSessions(user1, session1.sessionId());
+        assertThat(sessions1).hasSize(1);
+        assertThat(sessions1.getFirst().familyId()).isEqualTo(session1.sessionId());
 
         // User 1 attempts detail of user 2's session -> 404
         assertThatThrownBy(() -> queryService.getSessionDetail(user1, session1.sessionId(), session2.sessionId()))
                 .isInstanceOf(AppException.class)
                 .satisfies(e ->
                         assertThat(((AppException) e).getErrorCode()).isEqualTo(IdentityErrorCode.SESSION_NOT_FOUND));
-    }
-
-    @Test
-    void rejectsInvalidSessionCursors() {
-        var userId = registrationService.register("cursorfail@example.com", "correct horse battery staple");
-        var session = issuanceService.issue(userId, "device");
-
-        assertThatThrownBy(() -> queryService.listSessions(userId, session.sessionId(), 25, "not-a-valid-cursor"))
-                .isInstanceOf(AppException.class)
-                .satisfies(e -> assertThat(((AppException) e).getErrorCode())
-                        .isEqualTo(IdentityErrorCode.INVALID_SESSION_CURSOR));
-
-        assertThatThrownBy(() -> queryService.listSessions(userId, session.sessionId(), 25, ""))
-                .isInstanceOf(AppException.class)
-                .satisfies(e -> assertThat(((AppException) e).getErrorCode())
-                        .isEqualTo(IdentityErrorCode.INVALID_SESSION_CURSOR));
     }
 
     @Test
@@ -174,10 +202,10 @@ class DeviceSessionQueryServiceTest {
 
         // Bounded list query count check
         var statementsBeforeList = executedStatements.get();
-        var page = queryService.listSessions(userId, session1.sessionId(), 25, null);
+        var sessions = queryService.listSessions(userId, session1.sessionId());
         var statementsAfterList = executedStatements.get();
 
-        assertThat(page.sessions()).hasSize(3);
+        assertThat(sessions).hasSize(3);
         assertThat(statementsAfterList - statementsBeforeList).isEqualTo(1L);
 
         // Bounded detail query count check
@@ -190,6 +218,27 @@ class DeviceSessionQueryServiceTest {
     }
 
     private static final AtomicLong executedStatements = new AtomicLong();
+
+    private void insertSession(
+            UUID sessionId,
+            UUID userId,
+            UUID familyId,
+            String refreshTokenHash,
+            String deviceLabel,
+            Instant createdAt) {
+        new TransactionTemplate(transactionManager)
+                .executeWithoutResult(status -> jdbcTemplate.update(
+                        "INSERT INTO identity.device_session"
+                                + " (id, user_account_id, family_id, refresh_token_hash, device_label, created_at, expires_at)"
+                                + " VALUES (?, ?, ?, ?, ?, ?, ?)",
+                        sessionId,
+                        userId,
+                        familyId,
+                        refreshTokenHash,
+                        deviceLabel,
+                        OffsetDateTime.ofInstant(createdAt, ZoneOffset.UTC),
+                        OffsetDateTime.ofInstant(T0.plus(Duration.ofDays(30)), ZoneOffset.UTC)));
+    }
 
     @TestConfiguration(proxyBeanMethods = false)
     static class TestOverrides {

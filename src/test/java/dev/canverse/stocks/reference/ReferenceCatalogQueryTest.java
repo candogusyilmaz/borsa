@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import dev.canverse.stocks.platform.error.AppException;
+import dev.canverse.stocks.platform.web.SliceResponse;
 import dev.canverse.stocks.reference.application.InstrumentSearchService;
 import dev.canverse.stocks.reference.application.ReferenceCatalogQueryService;
 import dev.canverse.stocks.reference.application.model.InstrumentSearchCriteria;
@@ -11,15 +12,16 @@ import dev.canverse.stocks.reference.domain.CalendarCoverageStatus;
 import dev.canverse.stocks.reference.domain.InstrumentType;
 import dev.canverse.stocks.reference.domain.MarketSessionStatus;
 import dev.canverse.stocks.reference.error.ReferenceErrorCode;
-import dev.canverse.stocks.reference.web.response.InstrumentPageResponse;
 import dev.canverse.stocks.reference.web.response.InstrumentSummaryResponse;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +32,8 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -183,49 +187,47 @@ class ReferenceCatalogQueryTest {
         insertInstrument(
                 OTHER_OWNER, USER_TWO, MANUAL, "OTHER-OWNER", "Other owner fund", "FUND", true, "SHARED_ALIAS");
 
-        var same = search(USER_ONE, "same", null, null, false, 20, null);
-        assertThat(same.instruments())
+        var same = search(USER_ONE, "same", null, null, false, 20);
+        assertThat(same.items())
                 .extracting(InstrumentSummaryResponse::id)
-                .containsExactly(GLOBAL_MANUAL, OWNER_SAME, GLOBAL_XIST);
-        assertThat(same.instruments())
+                .containsExactly(GLOBAL_XIST, GLOBAL_MANUAL, OWNER_SAME);
+        assertThat(same.items())
                 .extracting(InstrumentSummaryResponse::marketCode)
-                .containsExactly("MANUAL", "MANUAL", "XIST");
-        assertThat(same.instruments())
+                .containsExactly("XIST", "MANUAL", "MANUAL");
+        assertThat(same.items())
                 .allSatisfy(summary -> assertThat(summary.aliases()).hasSize(1));
 
-        assertThat(search(USER_ONE, "shared_alias", null, null, false, 20, null).instruments())
+        assertThat(search(USER_ONE, "shared_alias", null, null, false, 20).items())
                 .extracting(InstrumentSummaryResponse::id)
-                .containsExactly(GLOBAL_MANUAL, OWNER_SAME, GLOBAL_XIST);
-        assertThat(search(USER_ONE, "literal%", null, null, false, 20, null).instruments())
+                .containsExactly(GLOBAL_XIST, GLOBAL_MANUAL, OWNER_SAME);
+        assertThat(search(USER_ONE, "literal%", null, null, false, 20).items())
                 .extracting(InstrumentSummaryResponse::id)
                 .containsExactly(PERCENT);
-        assertThat(search(USER_ONE, "literal_", null, null, false, 20, null).instruments())
+        assertThat(search(USER_ONE, "literal_", null, null, false, 20).items())
                 .extracting(InstrumentSummaryResponse::id)
                 .containsExactly(UNDERSCORE);
-        assertThat(search(USER_ONE, "literal\\", null, null, false, 20, null).instruments())
+        assertThat(search(USER_ONE, "literal\\", null, null, false, 20).items())
                 .extracting(InstrumentSummaryResponse::id)
                 .containsExactly(BACKSLASH);
-        assertThat(search(USER_ONE, null, XIST, null, false, 20, null).instruments())
+        assertThat(search(USER_ONE, null, XIST, null, false, 20).items())
                 .extracting(InstrumentSummaryResponse::id)
                 .containsExactly(GLOBAL_XIST);
-        assertThat(search(USER_ONE, null, MANUAL, InstrumentType.ETF, false, 20, null)
-                        .instruments())
+        assertThat(search(USER_ONE, null, MANUAL, InstrumentType.ETF, false, 20).items())
                 .extracting(InstrumentSummaryResponse::id)
                 .containsExactly(UNDERSCORE);
-        assertThat(search(USER_ONE, "hidden", null, null, false, 20, null).instruments())
-                .isEmpty();
-        assertThat(search(USER_ONE, "hidden", null, null, true, 20, null).instruments())
+        assertThat(search(USER_ONE, "hidden", null, null, false, 20).items()).isEmpty();
+        assertThat(search(USER_ONE, "hidden", null, null, true, 20).items())
                 .extracting(InstrumentSummaryResponse::id)
                 .containsExactly(OWNER_INACTIVE);
-        assertThat(search(USER_ONE, null, null, null, false, 20, null).instruments())
+        assertThat(search(USER_ONE, null, null, null, false, 20).items())
                 .extracting(InstrumentSummaryResponse::id)
                 .doesNotContain(OTHER_OWNER, OWNER_INACTIVE, GLOBAL_INACTIVE);
     }
 
     @Test
-    void instrumentSearchCursorsHaveNoGapsAndCannotCrossOwnerVisibility() {
-        insertUser(USER_ONE, "cursor-owner-one@example.com");
-        insertUser(USER_TWO, "cursor-owner-two@example.com");
+    void instrumentSearchPagesHaveCorrectOffsetLookAheadAndOwnerVisibility() {
+        insertUser(USER_ONE, "page-owner-one@example.com");
+        insertUser(USER_TWO, "page-owner-two@example.com");
         var expected = new ArrayList<UUID>();
         for (var index = 0; index < 41; index++) {
             var id = UUID.fromString("71000000-0000-4000-8000-%012d".formatted(index + 1));
@@ -234,52 +236,177 @@ class ReferenceCatalogQueryTest {
                     id,
                     USER_ONE,
                     MANUAL,
-                    "CURSOR-%03d".formatted(index),
-                    "Cursor fund " + index,
+                    "PAGE-%03d".formatted(index),
+                    "Page fund " + index,
                     "FUND",
                     true,
-                    "CURSOR-ALIAS-%03d".formatted(index));
+                    "PAGE-ALIAS-%03d".formatted(index));
         }
         var otherOwnerId = UUID.fromString("71000000-0000-4000-8000-000000000100");
-        insertInstrument(
-                otherOwnerId, USER_TWO, MANUAL, "CURSOR-999", "Other cursor fund", "FUND", true, "OTHER_CURSOR");
+        insertInstrument(otherOwnerId, USER_TWO, MANUAL, "PAGE-999", "Other page fund", "FUND", true, "OTHER_PAGE");
 
-        var collected = new ArrayList<UUID>();
-        String cursor = null;
-        do {
-            var page = search(USER_ONE, "cursor-", null, null, false, 7, cursor);
-            collected.addAll(page.instruments().stream()
-                    .map(InstrumentSummaryResponse::id)
-                    .toList());
-            cursor = page.nextCursor();
-        } while (cursor != null);
+        var firstPage = search(USER_ONE, "page-", null, null, false, PageRequest.of(0, 7, symbolSort()));
+        var secondPage = search(USER_ONE, "page-", null, null, false, PageRequest.of(1, 7, symbolSort()));
+        var pastEndPage = search(USER_ONE, "page-", null, null, false, PageRequest.of(6, 7, symbolSort()));
 
-        assertThat(collected).containsExactlyElementsOf(expected);
-        assertThat(collected).doesNotHaveDuplicates();
+        assertThat(firstPage.items())
+                .extracting(InstrumentSummaryResponse::id)
+                .containsExactlyElementsOf(expected.subList(0, 7));
+        assertThat(firstPage.page()).isZero();
+        assertThat(firstPage.size()).isEqualTo(7);
+        assertThat(firstPage.hasNext()).isTrue();
+        assertThat(firstPage.items()).doesNotHaveDuplicates();
+        assertThat(secondPage.items())
+                .extracting(InstrumentSummaryResponse::id)
+                .containsExactlyElementsOf(expected.subList(7, 14));
+        assertThat(secondPage.page()).isEqualTo(1);
+        assertThat(secondPage.hasNext()).isTrue();
+        assertThat(pastEndPage.items()).isEmpty();
+        assertThat(pastEndPage.page()).isEqualTo(6);
+        assertThat(pastEndPage.size()).isEqualTo(7);
+        assertThat(pastEndPage.hasNext()).isFalse();
 
-        var firstPage = search(USER_ONE, "cursor-", null, null, false, 7, null);
-        var otherOwnerPage = search(USER_TWO, "cursor-", null, null, false, 100, firstPage.nextCursor());
-        assertThat(otherOwnerPage.instruments())
+        var otherOwnerPage = search(USER_TWO, "page-", null, null, false, PageRequest.of(0, 100, symbolSort()));
+        assertThat(otherOwnerPage.items())
                 .extracting(InstrumentSummaryResponse::id)
                 .containsExactly(otherOwnerId);
 
         executedStatements.set(0);
-        var countedPage = search(USER_ONE, "cursor-", null, null, false, 20, null);
-        assertThat(countedPage.instruments()).hasSize(20);
+        lastAliasQueryIds.set(List.of());
+        var countedPage = search(USER_ONE, "page-", null, null, false, PageRequest.of(0, 20, symbolSort()));
+        assertThat(countedPage.items()).hasSize(20);
+        assertThat(countedPage.hasNext()).isTrue();
         assertThat(executedStatements).hasValue(2);
+        assertThat(lastAliasQueryIds.get()).containsExactlyElementsOf(expected.subList(0, 20));
+        assertThat(lastAliasQueryIds.get()).doesNotContain(expected.get(20));
     }
 
-    private InstrumentPageResponse search(
+    @Test
+    void instrumentSearchSortsUseNormalizedValuesAndCompleteTieBreakers() {
+        insertUser(USER_ONE, "sort-owner@example.com");
+        var nameLow = UUID.fromString("73000000-0000-4000-8000-000000000011");
+        var nameTieFirst = UUID.fromString("73000000-0000-4000-8000-000000000012");
+        var nameTieSecond = UUID.fromString("73000000-0000-4000-8000-000000000013");
+        var nameHigh = UUID.fromString("73000000-0000-4000-8000-000000000014");
+        insertInstrument(nameLow, USER_ONE, MANUAL, "NAME-LOW", "Aardvark", "FUND", true, "name-low");
+        insertInstrument(nameTieFirst, USER_ONE, MANUAL, "NAME-TIE-A", "Same Name", "FUND", true, "name-tie-a");
+        insertInstrument(nameTieSecond, USER_ONE, MANUAL, "NAME-TIE-B", "Same Name", "FUND", true, "name-tie-b");
+        insertInstrument(nameHigh, USER_ONE, MANUAL, "NAME-HIGH", "Zulu", "FUND", true, "name-high");
+
+        assertThat(search(USER_ONE, "NAME-", null, null, false, PageRequest.of(0, 10, Sort.by(Sort.Order.asc("name"))))
+                        .items())
+                .extracting(InstrumentSummaryResponse::id)
+                .containsExactly(nameLow, nameTieFirst, nameTieSecond, nameHigh);
+        assertThat(search(USER_ONE, "NAME-", null, null, false, PageRequest.of(0, 10, Sort.by(Sort.Order.desc("name"))))
+                        .items())
+                .extracting(InstrumentSummaryResponse::id)
+                .containsExactly(nameHigh, nameTieSecond, nameTieFirst, nameLow);
+
+        var symbolManualGlobal = UUID.fromString("73000000-0000-4000-8000-000000000021");
+        var symbolManualOwner = UUID.fromString("73000000-0000-4000-8000-000000000022");
+        var symbolXistGlobal = UUID.fromString("73000000-0000-4000-8000-000000000023");
+        insertInstrument(
+                symbolManualGlobal, null, MANUAL, "SAME-SYMBOL", "Symbol global manual", "FUND", true, "symbol-global");
+        insertInstrument(
+                symbolManualOwner,
+                USER_ONE,
+                MANUAL,
+                "SAME-SYMBOL",
+                "Symbol owner manual",
+                "FUND",
+                true,
+                "symbol-owner");
+        insertInstrument(
+                symbolXistGlobal, null, XIST, "SAME-SYMBOL", "Symbol global xist", "FUND", true, "symbol-xist");
+
+        assertThat(search(
+                                USER_ONE,
+                                "SAME-SYMBOL",
+                                null,
+                                null,
+                                false,
+                                PageRequest.of(0, 10, Sort.by(Sort.Order.asc("symbol"))))
+                        .items())
+                .extracting(InstrumentSummaryResponse::id)
+                .containsExactly(symbolManualGlobal, symbolManualOwner, symbolXistGlobal);
+        assertThat(search(
+                                USER_ONE,
+                                "SAME-SYMBOL",
+                                null,
+                                null,
+                                false,
+                                PageRequest.of(0, 10, Sort.by(Sort.Order.desc("symbol"))))
+                        .items())
+                .extracting(InstrumentSummaryResponse::id)
+                .containsExactly(symbolXistGlobal, symbolManualOwner, symbolManualGlobal);
+    }
+
+    @Test
+    void instrumentSearchRejectsUnsupportedSortShapesBeforeBuildingSql() {
+        var criteria = new InstrumentSearchCriteria(null, null, null, false);
+
+        assertThatThrownBy(() -> searchService.search(
+                        USER_ONE, criteria, PageRequest.of(0, 10, Sort.by(Sort.Order.asc("marketId")))))
+                .isInstanceOf(AppException.class)
+                .satisfies(exception ->
+                        assertThat(((AppException) exception).getCode()).isEqualTo("VALIDATION_FAILED"));
+        assertThatThrownBy(() -> searchService.search(
+                        USER_ONE,
+                        criteria,
+                        PageRequest.of(0, 10, Sort.by(Sort.Order.asc("name"), Sort.Order.desc("symbol")))))
+                .isInstanceOf(AppException.class);
+        assertThatThrownBy(() -> searchService.search(
+                        USER_ONE,
+                        criteria,
+                        PageRequest.of(0, 10, Sort.by(Sort.Order.asc("name").ignoreCase()))))
+                .isInstanceOf(AppException.class);
+        assertThatThrownBy(() -> searchService.search(
+                        USER_ONE,
+                        criteria,
+                        PageRequest.of(0, 10, Sort.by(Sort.Order.asc("name").nullsFirst()))))
+                .isInstanceOf(AppException.class);
+    }
+
+    @Test
+    void emptyInstrumentSliceDoesNotLoadAliasesOrRunCountQuery() {
+        executedStatements.set(0);
+
+        var slice = search(USER_ONE, "NO-SUCH-INSTRUMENT", null, null, false, PageRequest.of(0, 7, symbolSort()));
+
+        assertThat(slice.items()).isEmpty();
+        assertThat(slice.hasNext()).isFalse();
+        assertThat(executedStatements).hasValue(1);
+    }
+
+    private SliceResponse<InstrumentSummaryResponse> search(
             UUID ownerUserAccountId,
             String query,
             UUID marketId,
             InstrumentType type,
             boolean includeInactive,
-            int limit,
-            String cursor) {
-        return searchService.search(
+            int size) {
+        return search(
                 ownerUserAccountId,
-                new InstrumentSearchCriteria(query, marketId, type, includeInactive, limit, cursor));
+                query,
+                marketId,
+                type,
+                includeInactive,
+                PageRequest.of(0, size, Sort.by(Sort.Order.asc("name"))));
+    }
+
+    private SliceResponse<InstrumentSummaryResponse> search(
+            UUID ownerUserAccountId,
+            String query,
+            UUID marketId,
+            InstrumentType type,
+            boolean includeInactive,
+            PageRequest pageable) {
+        return searchService.search(
+                ownerUserAccountId, new InstrumentSearchCriteria(query, marketId, type, includeInactive), pageable);
+    }
+
+    private static Sort symbolSort() {
+        return Sort.by(Sort.Order.asc("symbol"));
     }
 
     private void insertUser(UUID id, String email) {
@@ -346,6 +473,7 @@ class ReferenceCatalogQueryTest {
     }
 
     private static final AtomicLong executedStatements = new AtomicLong();
+    private static final AtomicReference<List<UUID>> lastAliasQueryIds = new AtomicReference<>(List.of());
 
     @TestConfiguration(proxyBeanMethods = false)
     static class TestOverrides {
@@ -371,7 +499,29 @@ class ReferenceCatalogQueryTest {
                                                             || "createStatement".equals(connMethod.getName())) {
                                                         executedStatements.incrementAndGet();
                                                     }
-                                                    return connMethod.invoke(connection, connArgs);
+                                                    var statement = connMethod.invoke(connection, connArgs);
+                                                    if ("prepareStatement".equals(connMethod.getName())
+                                                            && connArgs != null
+                                                            && connArgs.length > 0
+                                                            && connArgs[0] instanceof String sql
+                                                            && sql.contains("FROM reference.instrument_alias")) {
+                                                        var aliasIds = new ArrayList<UUID>();
+                                                        lastAliasQueryIds.set(aliasIds);
+                                                        return java.lang.reflect.Proxy.newProxyInstance(
+                                                                java.sql.PreparedStatement.class.getClassLoader(),
+                                                                new Class<?>[] {java.sql.PreparedStatement.class},
+                                                                (statementProxy, statementMethod, statementArgs) -> {
+                                                                    if ("setObject".equals(statementMethod.getName())
+                                                                            && statementArgs != null
+                                                                            && statementArgs.length > 1
+                                                                            && statementArgs[1] instanceof UUID id) {
+                                                                        aliasIds.add(id);
+                                                                    }
+                                                                    return statementMethod.invoke(
+                                                                            statement, statementArgs);
+                                                                });
+                                                    }
+                                                    return statement;
                                                 });
                                     }
                                     return method.invoke(dataSource, args);

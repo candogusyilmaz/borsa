@@ -11,9 +11,10 @@ Last updated: 2026-08-26
 
 ## Accepted and active implementation baseline
 
-- The accepted baseline through PR-023 includes the identity/session security lifecycle, canonical offline reference catalogue, owner-scoped immutable native-currency cash ledger, cash-statement reconciliation, and the governing simplicity standards.
+- The accepted baseline through PR-024 includes the identity/session security lifecycle, canonical offline reference catalogue, owner-scoped immutable native-currency cash ledger, cash-statement reconciliation, the governing simplicity standards, and Cleanup B1 ledger pagination simplification.
 - PR-023 is accepted and committed. Its directness, bounded-list, Spring `Pageable`, `Slice`/`Page`, and evidence-based abstraction rules are authoritative; it changed documentation only and did not change runtime behavior.
-- PR-024 is the active implementation specification. It owns Cleanup B1 only: direct-list financial accounts plus Spring `Pageable`/compact `Slice` ledger activities and reconciliations, with ledger cursor deletion.
+- PR-024 is accepted and committed. Financial accounts are a complete owner-scoped list; ledger activities and reconciliations use Spring `Pageable` with compact project-owned `SliceResponse<T>` results and no ledger cursor infrastructure.
+- PR-025 is the active implementation specification. It owns Cleanup B2 only: direct-list device sessions, pageable compact-slice instrument search, and deletion of the final ordinary-list cursor transport after its consumers are removed.
 
 ## Implemented capabilities
 
@@ -28,7 +29,7 @@ Last updated: 2026-08-26
 
 - V2 provides deterministic offline countries, currencies, markets, market-currency relationships, instruments, aliases, and explicit market-calendar coverage.
 - Authenticated reads expose stable reference data and calendar coverage without schedule inference or live providers.
-- Owner-derived manual instruments support atomic alias replacement, owner/global visibility, prefix search, bounded cursor pagination, and optimistic version conflicts.
+- Owner-derived manual instruments support atomic alias replacement, owner/global visibility, prefix search with Spring `Pageable` and compact `SliceResponse<InstrumentSummaryResponse>` results, and optimistic version conflicts.
 
 ### Ledger
 
@@ -59,14 +60,14 @@ Tables:
 
 - Current capability roots are `identity`, `reference`, `ledger`, and `platform`; HTTP records use capability-owned `web/request` and `web/response` packages, and use-case models use `application/model` where needed.
 - The application uses controller-bound request validation, typed authenticated principals, one stateless bearer chain, centralized persistence/error translation, and UUID compatibility correlation alongside native tracing.
-- PR-023 adopted the governing simplicity direction in the current standards: direct/local code, no pagination for naturally small bounded collections, Spring `Pageable` for ordinary pagination, and custom cursor/keyset infrastructure only for a demonstrated requirement. Ledger accounts are now unpaged, and ledger activities/reconciliations use compact project-owned `SliceResponse<T>` results with repository-owned size-plus-one/trim/`hasNext` handling and no Spring `Slice` intermediate. Identity/device-session and reference/instrument-search cursor behavior remains pending the second Cleanup B unit.
+- PR-023 adopted the governing simplicity direction in the current standards: direct/local code, no pagination for naturally small bounded collections, Spring `Pageable` for ordinary pagination, and custom cursor/keyset infrastructure only for a demonstrated requirement. Ledger accounts are now unpaged, ledger activities/reconciliations use compact project-owned `SliceResponse<T>` results, and PR-025 now applies the same direct approach to complete device-session lists and instrument search. The ordinary-list cursor infrastructure has been removed after source search proved it dead.
 - `platform.job` is unused storage scaffolding only. No scheduler, worker, batch, queue, retry framework, or generic workflow runtime is part of the current implementation.
 - The preserved frontend still targets legacy APIs and is outside the backend rewrite baseline.
 
 ## Active implementation scope
 
-- PR-024 is the active Cleanup B1 unit. Its implementation returns financial accounts as a complete owner-scoped list, replaces activity and reconciliation cursor/keyset reads with Spring `Pageable` plus compact `SliceResponse<T>` contracts, and deletes the ledger cursor stack. The two endpoint-specific repositories own pagination trimming and direct response mapping.
-- Device-session and instrument-search cursor cleanup remains a separate later Cleanup B boundary. Cleanup C validation/error work, Cleanup D model/mapping/fingerprint work, migrations, frontend changes, and all financial-semantic changes are outside PR-024.
+- PR-025 is the active Cleanup B2 unit. It changes device-session listing to one complete owner-scoped logical-family array, changes instrument search to Spring `Pageable` plus compact `SliceResponse<InstrumentSummaryResponse>`, and deletes the remaining session/instrument/generic cursor stack after consumer removal.
+- Session detail/revocation/cookie/security behavior and instrument visibility/filter/alias/manual behavior remain unchanged. Cleanup C validation/error work, Cleanup D model/mapping/fingerprint work, migrations, frontend changes, MyBatis/read-persistence work, and investing/R4 remain outside PR-025.
 
 ## Deferred capabilities
 
@@ -79,7 +80,7 @@ Tables:
 
 ## Verification state
 
-PR-024 verification passes after the confirmed SOL High review fixes: focused gate 77 tests, full suite and Maven `verify` 376 tests each, and Spotless clean across 271 Java files.
+PR-024 is accepted and committed after its confirmed review fixes: focused gate 77 tests, full suite and Maven `verify` 376 tests each, and Spotless clean across 271 Java files. PR-025 implementation verification is complete: focused identity/reference gate 64 tests, full suite 364 tests, Maven `verify` 364 tests, and Spotless clean across 263 Java files (200 main Java files and 63 test Java files).
 
 Last updated: 2026-08-26
 
@@ -87,6 +88,6 @@ Last updated: 2026-08-26
 
 - Operating contract and context router: [AGENTS.md](../../AGENTS.md)
 - Active pointer: [CURRENT.md](CURRENT.md)
-- Active scope: [PR-024 - Cleanup B1 ledger pagination simplification](PR-024-ledger-pagination-simplification.md)
+- Active scope: [PR-025 - Cleanup B2 identity/reference pagination simplification](PR-025-identity-reference-pagination-simplification.md)
 
 Load only the standards, contracts, design sections, and repository code relevant to the current role and affected behavior.
