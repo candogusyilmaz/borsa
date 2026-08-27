@@ -51,9 +51,14 @@ public class CashActivityCommandService {
         Objects.requireNonNull(request, "request");
 
         var amount = LedgerAmountParser.positive(request.amount(), "amount");
-        requireCashActivityType(request.activityType());
+        if (request.activityType() != ActivityType.CASH_DEPOSIT
+                && request.activityType() != ActivityType.CASH_WITHDRAWAL) {
+            throw new AppException(LedgerErrorCode.ACCOUNT_ACTION_NOT_SUPPORTED);
+        }
         var observedAt = clock.instant();
-        LedgerTimingRules.rejectFuture(request.effectiveAt(), observedAt, "effectiveAt");
+        if (Objects.requireNonNull(request.effectiveAt(), "effectiveAt").isAfter(observedAt)) {
+            throw new AppException(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
+        }
         var hash = fingerprint.hash(fingerprint.values(
                 "accountId", accountId.toString(),
                 "activityType", request.activityType().name(),
@@ -76,11 +81,15 @@ public class CashActivityCommandService {
         var account = accountAccess.ownedForUpdate(ownerUserAccountId, accountId);
         requireCashActionAccount(account);
         var projection = accountAccess.projectionForUpdate(ownerUserAccountId, accountId);
-        requireExpectedVersion(projection, request.expectedBalanceVersion());
+        if (request.expectedBalanceVersion() != null && projection.getVersion() != request.expectedBalanceVersion()) {
+            throw new AppException(LedgerErrorCode.BALANCE_VERSION_CONFLICT);
+        }
         var delta = request.activityType() == ActivityType.CASH_DEPOSIT ? amount : amount.negate();
         var evaluation = LedgerPolicyEvaluator.evaluate(
                 account, projection.balance(), delta, request.recordingMode(), request.confirmPolicyBreach());
-        requireAllowed(evaluation);
+        if (!evaluation.allowed()) {
+            throw new AppException(evaluation.errorCode());
+        }
 
         var activity = writeCashActivity(
                 ownerUserAccountId, accountId, request, account, projection, delta, evaluation, observedAt);
@@ -261,12 +270,6 @@ public class CashActivityCommandService {
         return response;
     }
 
-    private static void requireCashActivityType(ActivityType activityType) {
-        if (activityType != ActivityType.CASH_DEPOSIT && activityType != ActivityType.CASH_WITHDRAWAL) {
-            throw new AppException(LedgerErrorCode.ACCOUNT_ACTION_NOT_SUPPORTED);
-        }
-    }
-
     private static void requireCashActionAccount(FinancialAccount account) {
         if (account.isArchived()) {
             throw new AppException(LedgerErrorCode.ACCOUNT_ARCHIVED);
@@ -275,18 +278,6 @@ public class CashActivityCommandService {
                 || account.getAccountKind().isLiability()
                 || !account.getAccountKind().isCashFundingCapable()) {
             throw new AppException(LedgerErrorCode.ACCOUNT_ACTION_NOT_SUPPORTED);
-        }
-    }
-
-    private static void requireAllowed(LedgerPolicyEvaluator.PolicyEvaluation evaluation) {
-        if (!evaluation.allowed()) {
-            throw new AppException(evaluation.errorCode());
-        }
-    }
-
-    private static void requireExpectedVersion(AccountBalanceProjection projection, Long expectedVersion) {
-        if (expectedVersion != null && projection.getVersion() != expectedVersion) {
-            throw new AppException(LedgerErrorCode.BALANCE_VERSION_CONFLICT);
         }
     }
 }

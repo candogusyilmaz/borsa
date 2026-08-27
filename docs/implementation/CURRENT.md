@@ -2,6 +2,6 @@
 
 Status: **ACTIVE**
 
-Specification: [PR-025 - Cleanup B2 identity/reference pagination simplification](PR-025-identity-reference-pagination-simplification.md)
+Specification: [PR-026 - Cleanup C validation, error, and trivial-abstraction simplification](PR-026-validation-error-and-trivial-abstraction-simplification.md)
 
 Implementation and review remain scoped to this specification.

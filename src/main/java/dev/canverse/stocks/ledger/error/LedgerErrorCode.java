@@ -13,6 +13,7 @@ public enum LedgerErrorCode implements ErrorCode {
     ACCOUNT_ACTION_NOT_SUPPORTED(HttpStatus.UNPROCESSABLE_CONTENT, "The requested account action is not supported."),
     ACCOUNT_CURRENCY_UNSUPPORTED(HttpStatus.UNPROCESSABLE_CONTENT, "The requested currency is not available."),
     ACCOUNT_LIMIT_EXCEEDED(HttpStatus.UNPROCESSABLE_CONTENT, "The authorized account limit was exceeded."),
+    FUTURE_TIME_NOT_ALLOWED(HttpStatus.UNPROCESSABLE_CONTENT, "Future effective or as-of ledger time is not allowed."),
     INSUFFICIENT_FUNDS(HttpStatus.UNPROCESSABLE_CONTENT, "The account does not have sufficient funds."),
     POLICY_BREACH_CONFIRMATION_REQUIRED(
             HttpStatus.UNPROCESSABLE_CONTENT, "Explicit confirmation is required for this policy breach."),

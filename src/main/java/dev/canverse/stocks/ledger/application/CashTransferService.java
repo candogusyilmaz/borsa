@@ -23,6 +23,7 @@ import dev.canverse.stocks.platform.id.IdGenerator;
 import jakarta.persistence.EntityManager;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -47,7 +48,9 @@ public class CashTransferService {
     public TransferPreviewResponse preview(UUID ownerUserAccountId, TransferPreviewRequest request) {
         var amount = LedgerAmountParser.positive(request.amount(), "amount");
         var observedAt = clock.instant();
-        LedgerTimingRules.rejectFuture(request.effectiveAt(), observedAt, "effectiveAt");
+        if (Objects.requireNonNull(request.effectiveAt(), "effectiveAt").isAfter(observedAt)) {
+            throw new AppException(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
+        }
         var accounts = accountAccess.loadTransferAccounts(
                 ownerUserAccountId, request.sourceAccountId(), request.destinationAccountId());
         var source = accounts.get(request.sourceAccountId());
@@ -87,7 +90,9 @@ public class CashTransferService {
     public ActivityResponse transfer(UUID ownerUserAccountId, TransferRequest request) {
         var amount = LedgerAmountParser.positive(request.amount(), "amount");
         var observedAt = clock.instant();
-        LedgerTimingRules.rejectFuture(request.effectiveAt(), observedAt, "effectiveAt");
+        if (Objects.requireNonNull(request.effectiveAt(), "effectiveAt").isAfter(observedAt)) {
+            throw new AppException(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
+        }
         var hash = fingerprint.hash(fingerprint.values(
                 "sourceAccountId", request.sourceAccountId().toString(),
                 "destinationAccountId", request.destinationAccountId().toString(),
@@ -116,8 +121,14 @@ public class CashTransferService {
         var projections = accountAccess.lockProjections(ownerUserAccountId, accounts);
         var sourceProjection = projections.get(source.getId());
         var destinationProjection = projections.get(destination.getId());
-        requireExpectedVersion(sourceProjection, request.expectedSourceBalanceVersion());
-        requireExpectedVersion(destinationProjection, request.expectedDestinationBalanceVersion());
+        if (request.expectedSourceBalanceVersion() != null
+                && sourceProjection.getVersion() != request.expectedSourceBalanceVersion()) {
+            throw new AppException(LedgerErrorCode.BALANCE_VERSION_CONFLICT);
+        }
+        if (request.expectedDestinationBalanceVersion() != null
+                && destinationProjection.getVersion() != request.expectedDestinationBalanceVersion()) {
+            throw new AppException(LedgerErrorCode.BALANCE_VERSION_CONFLICT);
+        }
         var sourceEvaluation = LedgerPolicyEvaluator.evaluate(
                 source,
                 sourceProjection.balance(),
@@ -130,8 +141,12 @@ public class CashTransferService {
                 amount,
                 request.recordingMode(),
                 request.confirmPolicyBreach());
-        requireAllowed(sourceEvaluation);
-        requireAllowed(destinationEvaluation);
+        if (!sourceEvaluation.allowed()) {
+            throw new AppException(sourceEvaluation.errorCode());
+        }
+        if (!destinationEvaluation.allowed()) {
+            throw new AppException(destinationEvaluation.errorCode());
+        }
 
         var activity = writeTransfer(
                 ownerUserAccountId,
@@ -239,18 +254,6 @@ public class CashTransferService {
                 throw new AppException(LedgerErrorCode.ACCOUNT_CURRENCY_UNSUPPORTED);
             }
             throw new AppException(LedgerErrorCode.ACCOUNT_ACTION_NOT_SUPPORTED);
-        }
-    }
-
-    private static void requireAllowed(LedgerPolicyEvaluator.PolicyEvaluation evaluation) {
-        if (!evaluation.allowed()) {
-            throw new AppException(evaluation.errorCode());
-        }
-    }
-
-    private static void requireExpectedVersion(AccountBalanceProjection projection, Long expectedVersion) {
-        if (expectedVersion != null && projection.getVersion() != expectedVersion) {
-            throw new AppException(LedgerErrorCode.BALANCE_VERSION_CONFLICT);
         }
     }
 }

@@ -83,12 +83,13 @@ public class Reconciliation {
         if (periodPostingCount < 0 || totalPostingCountThroughClosing < 0) {
             throw new IllegalArgumentException("Posting counts must be non-negative");
         }
-        var opening = requireAmount(statementOpeningBalance, "statementOpeningBalance");
-        var closing = requireAmount(statementClosingBalance, "statementClosingBalance");
-        var ledgerOpening = requireAmount(ledgerOpeningBalance, "ledgerOpeningBalance");
-        var ledgerClosing = requireAmount(ledgerClosingBalanceBeforeAdjustment, "ledgerClosingBalanceBeforeAdjustment");
-        var periodNet = requireAmount(periodNetPostedAmount, "periodNetPostedAmount");
-        var difference = requireAmount(closingDifference, "closingDifference");
+        var opening = Objects.requireNonNull(statementOpeningBalance, "statementOpeningBalance");
+        var closing = Objects.requireNonNull(statementClosingBalance, "statementClosingBalance");
+        var ledgerOpening = Objects.requireNonNull(ledgerOpeningBalance, "ledgerOpeningBalance");
+        var ledgerClosing =
+                Objects.requireNonNull(ledgerClosingBalanceBeforeAdjustment, "ledgerClosingBalanceBeforeAdjustment");
+        var periodNet = Objects.requireNonNull(periodNetPostedAmount, "periodNetPostedAmount");
+        var difference = Objects.requireNonNull(closingDifference, "closingDifference");
         if (!opening.equals(ledgerOpening)) {
             throw new IllegalArgumentException("Reconciliation statement opening does not match ledger opening");
         }
@@ -112,7 +113,7 @@ public class Reconciliation {
                 throw new IllegalArgumentException("Balanced reconciliation has an invalid adjustment shape");
             }
         } else {
-            var adjustment = requireAmount(adjustmentAmount, "adjustmentAmount");
+            var adjustment = Objects.requireNonNull(adjustmentAmount, "adjustmentAmount");
             if (difference.isZero()
                     || !adjustment.equals(difference)
                     || adjustmentActivityId == null
@@ -152,10 +153,6 @@ public class Reconciliation {
         reconciliation.adjustmentReason = normalizedReason;
         reconciliation.createdAt = Objects.requireNonNull(createdAt, "createdAt");
         return reconciliation;
-    }
-
-    private static FinancialAmount requireAmount(FinancialAmount amount, String name) {
-        return Objects.requireNonNull(amount, name);
     }
 
     private static String requireBoundedText(String value, int maxLength, String name) {

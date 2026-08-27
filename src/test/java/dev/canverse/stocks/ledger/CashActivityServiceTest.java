@@ -224,6 +224,56 @@ class CashActivityServiceTest {
     }
 
     @Test
+    void futureCashActivityUsesCapabilityError() {
+        var ownerId = insertUser("cash-future-activity-owner@example.com");
+        var account = createAccount(ownerId, "Future activity", NegativeBalancePolicy.HARD_FLOOR, "10");
+
+        assertThatThrownBy(() -> activityService.recordCashActivity(
+                        ownerId,
+                        account.id(),
+                        new CashActivityRequest(
+                                UUID.randomUUID(),
+                                ActivityType.CASH_DEPOSIT,
+                                "1",
+                                RecordingMode.CURRENT_ACTION,
+                                Instant.now().plusSeconds(60),
+                                false,
+                                null)))
+                .extracting(exception -> ((dev.canverse.stocks.platform.error.AppException) exception).getErrorCode())
+                .isEqualTo(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
+    }
+
+    @Test
+    void futureTransferPreviewAndCommitUseCapabilityError() {
+        var ownerId = insertUser("cash-future-transfer-owner@example.com");
+        var source = createAccount(ownerId, "Future source", NegativeBalancePolicy.HARD_FLOOR, "10");
+        var destination = createAccount(ownerId, "Future destination", NegativeBalancePolicy.HARD_FLOOR, "10");
+        var futureAt = Instant.now().plusSeconds(60);
+
+        assertThatThrownBy(() -> transferService.preview(
+                        ownerId,
+                        new TransferPreviewRequest(
+                                source.id(), destination.id(), "1", RecordingMode.CURRENT_ACTION, futureAt, false)))
+                .extracting(exception -> ((dev.canverse.stocks.platform.error.AppException) exception).getErrorCode())
+                .isEqualTo(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
+
+        assertThatThrownBy(() -> transferService.transfer(
+                        ownerId,
+                        new TransferRequest(
+                                UUID.randomUUID(),
+                                source.id(),
+                                destination.id(),
+                                "1",
+                                RecordingMode.CURRENT_ACTION,
+                                futureAt,
+                                false,
+                                null,
+                                null)))
+                .extracting(exception -> ((dev.canverse.stocks.platform.error.AppException) exception).getErrorCode())
+                .isEqualTo(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
+    }
+
+    @Test
     void transferPreviewAndCommitUseEqualOppositeNativeCurrencyPostings() {
         var ownerId = insertUser("cash-transfer-owner@example.com");
         var source = createAccount(ownerId, "Source", NegativeBalancePolicy.HARD_FLOOR, "100");

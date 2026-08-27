@@ -47,15 +47,12 @@ public record ManualInstrumentCreateRequest(
         try {
             InstrumentSymbol.of(symbol);
         } catch (IllegalArgumentException exception) {
-            throw invalidSymbol();
+            throw ValidationErrors.invalidField(
+                    "symbol",
+                    "error.fields.reference.invalid_value",
+                    "The symbol must contain 1 to " + ManualInstrumentConstraints.MAX_SYMBOL_LENGTH
+                            + " valid characters.");
         }
-    }
-
-    private static AppException invalidSymbol() {
-        return ValidationErrors.invalidField(
-                "symbol",
-                "error.fields.reference.invalid_value",
-                "The symbol must contain 1 to " + ManualInstrumentConstraints.MAX_SYMBOL_LENGTH + " valid characters.");
     }
 
     private void validateName() {

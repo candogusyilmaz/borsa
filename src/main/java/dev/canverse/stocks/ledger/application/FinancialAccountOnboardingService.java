@@ -57,12 +57,16 @@ public class FinancialAccountOnboardingService {
         Objects.requireNonNull(ownerUserAccountId, "ownerUserAccountId");
         Objects.requireNonNull(request, "request");
 
-        var currency = normalizeCurrency(request.currency());
+        var currency =
+                Objects.requireNonNull(request.currency(), "currency").trim().toUpperCase(Locale.ROOT);
         var opening = request.openingState();
         var openingAmount = opening == null ? null : LedgerAmountParser.exact(opening.amount(), "openingState.amount");
         var observedAt = clock.instant();
         if (opening != null) {
-            LedgerTimingRules.rejectFuture(opening.effectiveAt(), observedAt, "openingState.effectiveAt");
+            if (Objects.requireNonNull(opening.effectiveAt(), "openingState.effectiveAt")
+                    .isAfter(observedAt)) {
+                throw new AppException(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
+            }
         }
         var timeZone = validateTimeZone(request.timeZone());
         var authorizedLimit = LedgerAmountParser.optional(request.authorizedLimit(), "authorizedLimit");
@@ -221,10 +225,6 @@ public class FinancialAccountOnboardingService {
         if (!entity.isActive()) {
             throw new AppException(LedgerErrorCode.ACCOUNT_CURRENCY_UNSUPPORTED);
         }
-    }
-
-    private static String normalizeCurrency(String currency) {
-        return Objects.requireNonNull(currency, "currency").trim().toUpperCase(Locale.ROOT);
     }
 
     private static String validateTimeZone(String timeZone) {

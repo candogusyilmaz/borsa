@@ -37,7 +37,9 @@ public class FinancialAccountQueryService {
     public BalanceResponse balance(UUID ownerUserAccountId, UUID accountId, Instant asOf) {
         var observedAt = clock.instant();
         var requestedAsOf = asOf == null ? observedAt : asOf;
-        LedgerTimingRules.rejectFuture(requestedAsOf, observedAt, "asOf");
+        if (requestedAsOf.isAfter(observedAt)) {
+            throw new AppException(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
+        }
         return readRepository
                 .findBalance(
                         ownerUserAccountId,

@@ -1,6 +1,6 @@
 # Backend implementation state
 
-Last updated: 2026-08-26
+Last updated: 2026-08-27
 
 ## Technology baseline
 
@@ -11,10 +11,11 @@ Last updated: 2026-08-26
 
 ## Accepted and active implementation baseline
 
-- The accepted baseline through PR-024 includes the identity/session security lifecycle, canonical offline reference catalogue, owner-scoped immutable native-currency cash ledger, cash-statement reconciliation, the governing simplicity standards, and Cleanup B1 ledger pagination simplification.
+- The accepted baseline through PR-025 includes the identity/session security lifecycle, canonical offline reference catalogue, owner-scoped immutable native-currency cash ledger, cash-statement reconciliation, the governing simplicity standards, and complete Cleanup B (ledger and identity/reference pagination simplification).
 - PR-023 is accepted and committed. Its directness, bounded-list, Spring `Pageable`, `Slice`/`Page`, and evidence-based abstraction rules are authoritative; it changed documentation only and did not change runtime behavior.
 - PR-024 is accepted and committed. Financial accounts are a complete owner-scoped list; ledger activities and reconciliations use Spring `Pageable` with compact project-owned `SliceResponse<T>` results and no ledger cursor infrastructure.
-- PR-025 is the active implementation specification. It owns Cleanup B2 only: direct-list device sessions, pageable compact-slice instrument search, and deletion of the final ordinary-list cursor transport after its consumers are removed.
+- PR-025 is accepted and committed. Cleanup B is complete.
+- PR-026 is the active implementation specification. It owns Cleanup C validation/error and trivial-abstraction simplification only.
 
 ## Implemented capabilities
 
@@ -66,8 +67,8 @@ Tables:
 
 ## Active implementation scope
 
-- PR-025 is the active Cleanup B2 unit. It changes device-session listing to one complete owner-scoped logical-family array, changes instrument search to Spring `Pageable` plus compact `SliceResponse<InstrumentSummaryResponse>`, and deletes the remaining session/instrument/generic cursor stack after consumer removal.
-- Session detail/revocation/cookie/security behavior and instrument visibility/filter/alias/manual behavior remain unchanged. Cleanup C validation/error work, Cleanup D model/mapping/fingerprint work, migrations, frontend changes, MyBatis/read-persistence work, and investing/R4 remain outside PR-025.
+- PR-025 is accepted and committed; Cleanup B is complete. Device-session listing is a complete owner-scoped logical-family array, instrument search uses Spring `Pageable` plus compact `SliceResponse<InstrumentSummaryResponse>` results, and the remaining session/instrument/generic cursor stack was deleted after consumer removal.
+- PR-026 is active and implemented. It changes only ledger future-time errors, reconciliation non-controller period integrity where required, deletion/inlining of the specified trivial abstractions, and preservation of structural validation. Cleanup D, migrations, frontend changes, MyBatis/read-persistence work, and investing/R4 remain outside PR-026.
 
 ## Deferred capabilities
 
@@ -80,14 +81,14 @@ Tables:
 
 ## Verification state
 
-PR-024 is accepted and committed after its confirmed review fixes: focused gate 77 tests, full suite and Maven `verify` 376 tests each, and Spotless clean across 271 Java files. PR-025 implementation verification is complete: focused identity/reference gate 64 tests, full suite 364 tests, Maven `verify` 364 tests, and Spotless clean across 263 Java files (200 main Java files and 63 test Java files).
+PR-024 is accepted and committed after its confirmed review fixes: focused gate 77 tests, full suite and Maven `verify` 376 tests each, and Spotless clean across 271 Java files. PR-025 is accepted and committed; Cleanup B is complete after focused identity/reference gate 64 tests, full suite 364 tests, Maven `verify` 364 tests, and Spotless clean across 263 Java files (200 main Java files and 63 test Java files). PR-026 is active and implemented: the focused gate passed 87 tests, the full suite and Maven `verify` passed 370 tests each, and Spotless is clean across 262 Java files (199 main Java files and 63 test Java files). Ledger future-time rejection is capability-coded as `FUTURE_TIME_NOT_ALLOWED`; structural validation remains field-oriented; `LedgerTimingRules` is deleted; and reconciliation period ordering remains protected by a direct preview invariant plus the `Reconciliation.create` domain invariant for commit/correction.
 
-Last updated: 2026-08-26
+Last updated: 2026-08-27
 
 ## Resume context
 
 - Operating contract and context router: [AGENTS.md](../../AGENTS.md)
 - Active pointer: [CURRENT.md](CURRENT.md)
-- Active scope: [PR-025 - Cleanup B2 identity/reference pagination simplification](PR-025-identity-reference-pagination-simplification.md)
+- Active scope: [PR-026 - Cleanup C validation, error, and trivial-abstraction simplification](PR-026-validation-error-and-trivial-abstraction-simplification.md)
 
 Load only the standards, contracts, design sections, and repository code relevant to the current role and affected behavior.

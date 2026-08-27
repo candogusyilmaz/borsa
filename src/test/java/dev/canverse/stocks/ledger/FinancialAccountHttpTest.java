@@ -338,7 +338,9 @@ class FinancialAccountHttpTest {
                                 {"clientRequestId":"30000000-0000-4000-8000-000000000003","name":"Future opening","kind":"CASH_CURRENT","trackingMode":"FULL_LEDGER","currency":"USD","timeZone":"UTC","policy":"HARD_FLOOR","openingState":{"amount":"1","effectiveAt":"2026-08-18T12:00:00Z"}}
                                 """))
                 .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED")))
+                .andExpect(jsonPath("$.code", equalTo("FUTURE_TIME_NOT_ALLOWED")))
+                .andExpect(jsonPath("$.key", equalTo("error.ledger.future_time_not_allowed")))
+                .andExpect(jsonPath("$.params").doesNotExist())
                 .andReturn();
         assertProblemShape(futureOpening);
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ledger.financial_account", Integer.class))

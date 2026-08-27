@@ -21,6 +21,7 @@ import jakarta.persistence.EntityManager;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -59,7 +60,9 @@ public class FinancialAccountLifecycleService {
         }
 
         var account = accountAccess.ownedForUpdate(ownerUserAccountId, accountId);
-        requireVersion(account, request.version());
+        if (account.getVersion() != request.version()) {
+            throw new AppException(LedgerErrorCode.ACCOUNT_VERSION_CONFLICT);
+        }
         account.archive(observedAt);
         return saveResult(
                 ownerUserAccountId,
@@ -75,7 +78,9 @@ public class FinancialAccountLifecycleService {
             UUID ownerUserAccountId, UUID accountId, OpeningCorrectionRequest request) {
         var observedAt = clock.instant();
         var replacementAmount = LedgerAmountParser.exact(request.amount(), "amount");
-        LedgerTimingRules.rejectFuture(request.effectiveAt(), observedAt, "effectiveAt");
+        if (Objects.requireNonNull(request.effectiveAt(), "effectiveAt").isAfter(observedAt)) {
+            throw new AppException(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
+        }
         var hash = fingerprint.hash(fingerprint.values(
                 "accountId", accountId.toString(),
                 "amount", replacementAmount.canonical(),
@@ -95,7 +100,9 @@ public class FinancialAccountLifecycleService {
         }
 
         var account = accountAccess.ownedForUpdate(ownerUserAccountId, accountId);
-        requireOpeningVersion(account, request.version());
+        if (account.getVersion() != request.version()) {
+            throw new AppException(LedgerErrorCode.OPENING_STATE_CONFLICT);
+        }
         if (!account.isFullLedger() || account.getCurrentOpeningActivityId() == null) {
             throw new AppException(LedgerErrorCode.OPENING_STATE_CONFLICT);
         }
@@ -217,17 +224,5 @@ public class FinancialAccountLifecycleService {
                 response,
                 observedAt);
         return response;
-    }
-
-    private static void requireVersion(FinancialAccount account, long expectedVersion) {
-        if (account.getVersion() != expectedVersion) {
-            throw new AppException(LedgerErrorCode.ACCOUNT_VERSION_CONFLICT);
-        }
-    }
-
-    private static void requireOpeningVersion(FinancialAccount account, long expectedVersion) {
-        if (account.getVersion() != expectedVersion) {
-            throw new AppException(LedgerErrorCode.OPENING_STATE_CONFLICT);
-        }
     }
 }

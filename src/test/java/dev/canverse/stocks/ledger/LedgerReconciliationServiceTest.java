@@ -28,6 +28,7 @@ import dev.canverse.stocks.ledger.web.request.ReversalRequest;
 import dev.canverse.stocks.ledger.web.request.TransferPreviewRequest;
 import dev.canverse.stocks.ledger.web.request.TransferRequest;
 import dev.canverse.stocks.ledger.web.response.FinancialAccountResponse;
+import dev.canverse.stocks.platform.error.AppException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -78,6 +79,106 @@ class LedgerReconciliationServiceTest {
 
     @Autowired
     JdbcTemplate jdbcTemplate;
+
+    @Test
+    void previewRetainsPeriodIntegrityWhenControllerValidationIsBypassed() {
+        assertThatThrownBy(() -> reconciliationService.preview(
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        new ReconciliationPreviewRequest(
+                                "invalid-period",
+                                Instant.parse("2026-08-17T11:30:00Z"),
+                                Instant.parse("2026-08-17T11:00:00Z"),
+                                "100",
+                                "100")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Statement opening must precede closing");
+    }
+
+    @Test
+    void futureReconciliationOpeningAndClosingUseCapabilityErrorAcrossWorkflows() {
+        var now = Instant.now();
+        var past = now.minusSeconds(60);
+        var future = now.plusSeconds(60);
+
+        assertThatThrownBy(() -> reconciliationService.preview(
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        new ReconciliationPreviewRequest(
+                                "future-preview-opening", future, future.plusSeconds(60), "100", "100")))
+                .extracting(exception -> ((AppException) exception).getErrorCode())
+                .isEqualTo(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
+        assertThatThrownBy(() -> reconciliationService.preview(
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        new ReconciliationPreviewRequest("future-preview-closing", past, future, "100", "100")))
+                .extracting(exception -> ((AppException) exception).getErrorCode())
+                .isEqualTo(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
+
+        assertThatThrownBy(() -> reconciliationService.commit(
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        new ReconciliationCommitRequest(
+                                "future-commit-opening",
+                                future,
+                                future.plusSeconds(60),
+                                "100",
+                                "100",
+                                UUID.randomUUID(),
+                                0L,
+                                ReconciliationAction.CONFIRM_BALANCED,
+                                null)))
+                .extracting(exception -> ((AppException) exception).getErrorCode())
+                .isEqualTo(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
+        assertThatThrownBy(() -> reconciliationService.commit(
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        new ReconciliationCommitRequest(
+                                "future-commit-closing",
+                                past,
+                                future,
+                                "100",
+                                "100",
+                                UUID.randomUUID(),
+                                0L,
+                                ReconciliationAction.CONFIRM_BALANCED,
+                                null)))
+                .extracting(exception -> ((AppException) exception).getErrorCode())
+                .isEqualTo(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
+
+        assertThatThrownBy(() -> reconciliationService.correct(
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        new ReconciliationCorrectionRequest(
+                                "future-correction-opening",
+                                future,
+                                future.plusSeconds(60),
+                                "100",
+                                "100",
+                                UUID.randomUUID(),
+                                0L,
+                                ReconciliationAction.CONFIRM_BALANCED,
+                                null,
+                                "Future correction")))
+                .extracting(exception -> ((AppException) exception).getErrorCode())
+                .isEqualTo(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
+        assertThatThrownBy(() -> reconciliationService.correct(
+                        UUID.randomUUID(),
+                        UUID.randomUUID(),
+                        new ReconciliationCorrectionRequest(
+                                "future-correction-closing",
+                                past,
+                                future,
+                                "100",
+                                "100",
+                                UUID.randomUUID(),
+                                0L,
+                                ReconciliationAction.CONFIRM_BALANCED,
+                                null,
+                                "Future correction")))
+                .extracting(exception -> ((AppException) exception).getErrorCode())
+                .isEqualTo(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
+    }
 
     @Test
     void previewUsesInclusiveAsOfBoundariesAndBalancedCommitCreatesNoMoney() {

@@ -28,7 +28,6 @@ import dev.canverse.stocks.ledger.web.response.ReconciliationPreviewResponse;
 import dev.canverse.stocks.ledger.web.response.ReconciliationResponse;
 import dev.canverse.stocks.platform.application.CanonicalFingerprint;
 import dev.canverse.stocks.platform.error.AppException;
-import dev.canverse.stocks.platform.error.ValidationErrors;
 import dev.canverse.stocks.platform.id.IdGenerator;
 import jakarta.persistence.EntityManager;
 import java.time.Clock;
@@ -65,11 +64,18 @@ public class ReconciliationCommandService {
                 request.statementClosingAt(),
                 request.statementOpeningBalance(),
                 request.statementClosingBalance());
+        if (!statement.statementOpeningAt().isBefore(statement.statementClosingAt())) {
+            throw new IllegalArgumentException("Statement opening must precede closing");
+        }
         var observedAt = clock.instant();
-        rejectFuture(statement.statementOpeningAt(), observedAt, "statementOpeningAt");
-        rejectFuture(statement.statementClosingAt(), observedAt, "statementClosingAt");
+        if (statement.statementOpeningAt().isAfter(observedAt)
+                || statement.statementClosingAt().isAfter(observedAt)) {
+            throw new AppException(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
+        }
         var comparison = comparison(ownerUserAccountId, accountId, statement);
-        requireReconciliationAccount(comparison);
+        if (comparison.cashPocketId() == null || comparison.coverageStatus() == CoverageStatus.UNTRACKED) {
+            throw new AppException(LedgerErrorCode.ACCOUNT_ACTION_NOT_SUPPORTED);
+        }
         requireCoverage(comparison);
         return ReconciliationPreviewResponse.from(comparison);
     }
@@ -83,8 +89,10 @@ public class ReconciliationCommandService {
                 request.statementOpeningBalance(),
                 request.statementClosingBalance());
         var observedAt = clock.instant();
-        rejectFuture(statement.statementOpeningAt(), observedAt, "statementOpeningAt");
-        rejectFuture(statement.statementClosingAt(), observedAt, "statementClosingAt");
+        if (statement.statementOpeningAt().isAfter(observedAt)
+                || statement.statementClosingAt().isAfter(observedAt)) {
+            throw new AppException(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
+        }
         var hash = fingerprint.hash(fingerprint.values(
                 "accountId", accountId.toString(),
                 "statementReference", statement.statementReference(),
@@ -108,9 +116,13 @@ public class ReconciliationCommandService {
         }
 
         var account = accountAccess.ownedForUpdate(ownerUserAccountId, accountId);
-        requireFullLedger(account);
+        if (account.getTrackingMode() != TrackingMode.FULL_LEDGER) {
+            throw new AppException(LedgerErrorCode.ACCOUNT_ACTION_NOT_SUPPORTED);
+        }
         var projection = accountAccess.projectionForUpdate(ownerUserAccountId, accountId);
-        requireExpectedVersion(projection, request.expectedBalanceVersion());
+        if (projection.getVersion() != request.expectedBalanceVersion()) {
+            throw new AppException(LedgerErrorCode.BALANCE_VERSION_CONFLICT);
+        }
         var comparison = comparison(ownerUserAccountId, accountId, statement);
         requireCoverage(comparison);
         requireOpeningContinuity(comparison);
@@ -146,8 +158,10 @@ public class ReconciliationCommandService {
                 request.statementOpeningBalance(),
                 request.statementClosingBalance());
         var observedAt = clock.instant();
-        rejectFuture(statement.statementOpeningAt(), observedAt, "statementOpeningAt");
-        rejectFuture(statement.statementClosingAt(), observedAt, "statementClosingAt");
+        if (statement.statementOpeningAt().isAfter(observedAt)
+                || statement.statementClosingAt().isAfter(observedAt)) {
+            throw new AppException(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
+        }
         var hash = fingerprint.hash(fingerprint.values(
                 "reconciliationId", reconciliationId.toString(),
                 "statementReference", statement.statementReference(),
@@ -181,9 +195,13 @@ public class ReconciliationCommandService {
         }
 
         var account = accountAccess.ownedForUpdate(ownerUserAccountId, target.getFinancialAccountId());
-        requireFullLedger(account);
+        if (account.getTrackingMode() != TrackingMode.FULL_LEDGER) {
+            throw new AppException(LedgerErrorCode.ACCOUNT_ACTION_NOT_SUPPORTED);
+        }
         var projection = accountAccess.projectionForUpdate(ownerUserAccountId, target.getFinancialAccountId());
-        requireExpectedVersion(projection, request.expectedBalanceVersion());
+        if (projection.getVersion() != request.expectedBalanceVersion()) {
+            throw new AppException(LedgerErrorCode.BALANCE_VERSION_CONFLICT);
+        }
         var initialComparison = comparison(ownerUserAccountId, target.getFinancialAccountId(), statement);
         requireCoverage(initialComparison);
 
@@ -392,18 +410,6 @@ public class ReconciliationCommandService {
                 .orElseThrow(() -> new AppException(LedgerErrorCode.ACCOUNT_NOT_FOUND));
     }
 
-    private static void requireReconciliationAccount(ReconciliationPreviewView comparison) {
-        if (comparison.cashPocketId() == null || comparison.coverageStatus() == CoverageStatus.UNTRACKED) {
-            throw new AppException(LedgerErrorCode.ACCOUNT_ACTION_NOT_SUPPORTED);
-        }
-    }
-
-    private static void requireFullLedger(FinancialAccount account) {
-        if (account.getTrackingMode() != TrackingMode.FULL_LEDGER) {
-            throw new AppException(LedgerErrorCode.ACCOUNT_ACTION_NOT_SUPPORTED);
-        }
-    }
-
     private static void requireCoverage(ReconciliationPreviewView comparison) {
         if (comparison.coverageFrom() == null || comparison.statementOpeningAt().isBefore(comparison.coverageFrom())) {
             throw new AppException(LedgerErrorCode.RECONCILIATION_COVERAGE_GAP);
@@ -428,20 +434,10 @@ public class ReconciliationCommandService {
         }
     }
 
-    private static void requireExpectedVersion(AccountBalanceProjection projection, long expectedVersion) {
-        if (projection.getVersion() != expectedVersion) {
-            throw new AppException(LedgerErrorCode.BALANCE_VERSION_CONFLICT);
-        }
-    }
-
     private static PolicyDecision historicalAdjustmentDecision(PolicyDecision decision) {
         return decision == PolicyDecision.HISTORICAL_BREACH_RECORDED
                 ? PolicyDecision.HISTORICAL_BREACH_RECORDED
                 : PolicyDecision.ALLOWED;
-    }
-
-    private static void rejectFuture(Instant instant, Instant observedAt, String field) {
-        LedgerTimingRules.rejectFuture(Objects.requireNonNull(instant, field), observedAt, field);
     }
 
     private static String normalized(String value) {
@@ -456,12 +452,6 @@ public class ReconciliationCommandService {
             String statementClosingBalance) {
         var opening = Objects.requireNonNull(statementOpeningAt, "statementOpeningAt");
         var closing = Objects.requireNonNull(statementClosingAt, "statementClosingAt");
-        if (!opening.isBefore(closing)) {
-            throw ValidationErrors.invalidField(
-                    "statementOpeningAt",
-                    "error.fields.ledger.invalid_reconciliation_period",
-                    "The statement opening instant must precede the closing instant.");
-        }
         return new StatementValues(
                 Objects.requireNonNull(statementReference, "statementReference").trim(),
                 opening,

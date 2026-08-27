@@ -328,9 +328,59 @@ class FinancialAccountServiceTest {
                                 NegativeBalancePolicy.HARD_FLOOR,
                                 "10",
                                 Instant.now().plusSeconds(60))))
-                .isInstanceOf(AppException.class);
+                .isInstanceOf(AppException.class)
+                .extracting(exception -> ((AppException) exception).getErrorCode())
+                .isEqualTo(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
 
         assertNoLedgerRows(ownerId);
+    }
+
+    @Test
+    void futureOpeningCorrectionUsesCapabilityError() {
+        var ownerId = insertUser("ledger-future-opening-correction@example.com");
+        var openingAt = Instant.now().minusSeconds(10).truncatedTo(ChronoUnit.MICROS);
+        var account = accountService.create(
+                ownerId,
+                createRequest(
+                        UUID.randomUUID(),
+                        "Future opening correction",
+                        AccountKind.CASH_CURRENT,
+                        TrackingMode.FULL_LEDGER,
+                        NegativeBalancePolicy.HARD_FLOOR,
+                        "10",
+                        openingAt));
+
+        assertThatThrownBy(() -> lifecycleService.correctOpening(
+                        ownerId,
+                        account.id(),
+                        new OpeningCorrectionRequest(
+                                UUID.randomUUID(),
+                                "20",
+                                Instant.now().plusSeconds(60),
+                                "Future correction",
+                                account.version())))
+                .extracting(exception -> ((AppException) exception).getErrorCode())
+                .isEqualTo(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
+    }
+
+    @Test
+    void futureBalanceAsOfUsesCapabilityError() {
+        var ownerId = insertUser("ledger-future-balance@example.com");
+        var account = accountService.create(
+                ownerId,
+                createRequest(
+                        UUID.randomUUID(),
+                        "Future balance",
+                        AccountKind.CASH_CURRENT,
+                        TrackingMode.FULL_LEDGER,
+                        NegativeBalancePolicy.HARD_FLOOR,
+                        "10",
+                        Instant.now().minusSeconds(10)));
+
+        assertThatThrownBy(() -> queryService.balance(
+                        ownerId, account.id(), Instant.now().plusSeconds(60)))
+                .extracting(exception -> ((AppException) exception).getErrorCode())
+                .isEqualTo(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
     }
 
     @Test

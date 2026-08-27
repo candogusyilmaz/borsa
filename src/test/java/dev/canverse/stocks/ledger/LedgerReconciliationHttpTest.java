@@ -459,7 +459,10 @@ class LedgerReconciliationHttpTest {
                         .header(HttpHeaders.AUTHORIZATION, owner.bearer())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(valid.replace("2026-08-17T11:30:00Z", "2026-08-18T11:30:00Z")))
-                .andExpect(status().isUnprocessableContent());
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.code", equalTo("FUTURE_TIME_NOT_ALLOWED")))
+                .andExpect(jsonPath("$.key", equalTo("error.ledger.future_time_not_allowed")))
+                .andExpect(jsonPath("$.params").doesNotExist());
 
         var preview = mockMvc.perform(post("/api/v1/accounts/{accountId}/reconciliation-previews", accountId)
                         .header(HttpHeaders.AUTHORIZATION, owner.bearer())
