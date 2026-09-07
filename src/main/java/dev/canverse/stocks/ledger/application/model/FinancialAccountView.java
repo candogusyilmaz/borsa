@@ -10,7 +10,6 @@ import java.util.UUID;
 public record FinancialAccountView(
         UUID id,
         String name,
-        String nameNormalized,
         AccountKind accountKind,
         TrackingMode trackingMode,
         String currencyCode,

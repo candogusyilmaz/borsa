@@ -32,23 +32,19 @@ public class ReferenceCatalogQueryService {
 
     @Transactional(readOnly = true)
     public List<CountryResponse> countries() {
-        return readRepository.findActiveCountries().stream()
-                .map(CountryResponse::from)
-                .toList();
+        return List.copyOf(readRepository.findActiveCountries());
     }
 
     @Transactional(readOnly = true)
     public List<CurrencyResponse> currencies() {
-        return readRepository.findActiveCurrencies().stream()
-                .map(CurrencyResponse::from)
-                .toList();
+        return List.copyOf(readRepository.findActiveCurrencies());
     }
 
     @Transactional(readOnly = true)
     public List<MarketResponse> markets() {
-        var marketRows = readRepository.findActiveMarkets();
-        marketRows.forEach(row -> validateTimeZone(row.timeZone()));
-        return marketRows.stream().map(MarketResponse::from).toList();
+        var markets = List.copyOf(readRepository.findActiveMarkets());
+        markets.forEach(market -> validateTimeZone(market.timeZone()));
+        return markets;
     }
 
     @Transactional(readOnly = true)

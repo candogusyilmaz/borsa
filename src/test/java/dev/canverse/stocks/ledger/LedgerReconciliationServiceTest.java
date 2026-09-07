@@ -282,6 +282,11 @@ class LedgerReconciliationServiceTest {
                         committed.adjustmentActivityId()))
                 .isEqualTo("RECONCILIATION_ADJUSTMENT");
         assertThat(jdbcTemplate.queryForObject(
+                        "SELECT policy_decision FROM ledger.activity WHERE id = ?",
+                        String.class,
+                        committed.adjustmentActivityId()))
+                .isEqualTo("ALLOWED");
+        assertThat(jdbcTemplate.queryForObject(
                         "SELECT amount FROM ledger.money_posting WHERE activity_id = ?",
                         java.math.BigDecimal.class,
                         committed.adjustmentActivityId()))

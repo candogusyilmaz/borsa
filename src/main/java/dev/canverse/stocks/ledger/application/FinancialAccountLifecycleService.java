@@ -81,12 +81,12 @@ public class FinancialAccountLifecycleService {
         if (Objects.requireNonNull(request.effectiveAt(), "effectiveAt").isAfter(observedAt)) {
             throw new AppException(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
         }
-        var hash = fingerprint.hash(fingerprint.values(
-                "accountId", accountId.toString(),
-                "amount", replacementAmount.canonical(),
-                "effectiveAt", request.effectiveAt().toString(),
-                "correctionReason", request.correctionReason().trim(),
-                "version", request.version()));
+        var hash = openingCorrectionFingerprint(
+                accountId,
+                replacementAmount,
+                request.effectiveAt(),
+                request.correctionReason().trim(),
+                request.version());
         commandLockRepository.lock(
                 ownerUserAccountId, LedgerCommandScopes.OPENING_CORRECTION, request.clientRequestId());
         var replay = idempotencyStore.replay(
@@ -134,6 +134,16 @@ public class FinancialAccountLifecycleService {
                 request.clientRequestId(),
                 hash,
                 observedAt);
+    }
+
+    private String openingCorrectionFingerprint(
+            UUID accountId, FinancialAmount amount, Instant effectiveAt, String correctionReason, Long version) {
+        return fingerprint.hash(fingerprint.values(
+                "accountId", accountId.toString(),
+                "amount", amount.canonical(),
+                "effectiveAt", effectiveAt.toString(),
+                "correctionReason", correctionReason,
+                "version", version));
     }
 
     private Activity writeOpeningCorrection(

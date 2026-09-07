@@ -1,12 +1,12 @@
 package dev.canverse.stocks.ledger.application;
 
-import dev.canverse.stocks.ledger.application.model.TransferPreviewView;
 import dev.canverse.stocks.ledger.domain.AccountBalanceProjection;
 import dev.canverse.stocks.ledger.domain.Activity;
 import dev.canverse.stocks.ledger.domain.FinancialAccount;
 import dev.canverse.stocks.ledger.domain.FinancialAmount;
 import dev.canverse.stocks.ledger.domain.MoneyPosting;
 import dev.canverse.stocks.ledger.domain.PolicyDecision;
+import dev.canverse.stocks.ledger.domain.RecordingMode;
 import dev.canverse.stocks.ledger.domain.TrackingMode;
 import dev.canverse.stocks.ledger.error.LedgerErrorCode;
 import dev.canverse.stocks.ledger.infrastructure.ActivityRepository;
@@ -70,7 +70,7 @@ public class CashTransferService {
                 amount,
                 request.recordingMode(),
                 request.confirmPolicyBreach());
-        return TransferPreviewResponse.from(new TransferPreviewView(
+        return new TransferPreviewResponse(
                 source.getId(),
                 destination.getId(),
                 source.getCurrencyCode(),
@@ -83,7 +83,7 @@ public class CashTransferService {
                 destinationEvaluation.decision(),
                 sourceProjection.getVersion(),
                 destinationProjection.getVersion(),
-                sourceEvaluation.allowed() && destinationEvaluation.allowed()));
+                sourceEvaluation.allowed() && destinationEvaluation.allowed());
     }
 
     @Transactional
@@ -93,15 +93,15 @@ public class CashTransferService {
         if (Objects.requireNonNull(request.effectiveAt(), "effectiveAt").isAfter(observedAt)) {
             throw new AppException(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
         }
-        var hash = fingerprint.hash(fingerprint.values(
-                "sourceAccountId", request.sourceAccountId().toString(),
-                "destinationAccountId", request.destinationAccountId().toString(),
-                "amount", amount.canonical(),
-                "recordingMode", request.recordingMode().name(),
-                "effectiveAt", request.effectiveAt().toString(),
-                "confirmPolicyBreach", request.confirmPolicyBreach(),
-                "expectedSourceBalanceVersion", request.expectedSourceBalanceVersion(),
-                "expectedDestinationBalanceVersion", request.expectedDestinationBalanceVersion()));
+        var hash = transferFingerprint(
+                request.sourceAccountId(),
+                request.destinationAccountId(),
+                amount,
+                request.recordingMode(),
+                request.effectiveAt(),
+                request.confirmPolicyBreach(),
+                request.expectedSourceBalanceVersion(),
+                request.expectedDestinationBalanceVersion());
         commandLockRepository.lock(ownerUserAccountId, LedgerCommandScopes.TRANSFER, request.clientRequestId());
         var replay = idempotencyStore.replay(
                 request.clientRequestId(),
@@ -205,6 +205,26 @@ public class CashTransferService {
         sourceProjection.apply(amount.negate(), observedAt, activity.getId(), observedAt);
         destinationProjection.apply(amount, observedAt, activity.getId(), observedAt);
         return activity;
+    }
+
+    private String transferFingerprint(
+            UUID sourceAccountId,
+            UUID destinationAccountId,
+            FinancialAmount amount,
+            RecordingMode recordingMode,
+            Instant effectiveAt,
+            boolean confirmPolicyBreach,
+            Long expectedSourceBalanceVersion,
+            Long expectedDestinationBalanceVersion) {
+        return fingerprint.hash(fingerprint.values(
+                "sourceAccountId", sourceAccountId.toString(),
+                "destinationAccountId", destinationAccountId.toString(),
+                "amount", amount.canonical(),
+                "recordingMode", recordingMode.name(),
+                "effectiveAt", effectiveAt.toString(),
+                "confirmPolicyBreach", confirmPolicyBreach,
+                "expectedSourceBalanceVersion", expectedSourceBalanceVersion,
+                "expectedDestinationBalanceVersion", expectedDestinationBalanceVersion));
     }
 
     private static PolicyDecision combinedDecision(

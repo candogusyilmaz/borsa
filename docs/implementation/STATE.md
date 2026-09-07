@@ -1,6 +1,6 @@
 # Backend implementation state
 
-Last updated: 2026-08-27
+Last updated: 2026-09-07
 
 ## Technology baseline
 
@@ -11,11 +11,12 @@ Last updated: 2026-08-27
 
 ## Accepted and active implementation baseline
 
-- The accepted baseline through PR-025 includes the identity/session security lifecycle, canonical offline reference catalogue, owner-scoped immutable native-currency cash ledger, cash-statement reconciliation, the governing simplicity standards, and complete Cleanup B (ledger and identity/reference pagination simplification).
+- The accepted baseline through PR-026 includes the identity/session security lifecycle, canonical offline reference catalogue, owner-scoped immutable native-currency cash ledger, cash-statement reconciliation, the governing simplicity standards, Cleanup B pagination simplification, and Cleanup C validation/error/trivial-abstraction simplification.
 - PR-023 is accepted and committed. Its directness, bounded-list, Spring `Pageable`, `Slice`/`Page`, and evidence-based abstraction rules are authoritative; it changed documentation only and did not change runtime behavior.
 - PR-024 is accepted and committed. Financial accounts are a complete owner-scoped list; ledger activities and reconciliations use Spring `Pageable` with compact project-owned `SliceResponse<T>` results and no ledger cursor infrastructure.
 - PR-025 is accepted and committed. Cleanup B is complete.
-- PR-026 is the active implementation specification. It owns Cleanup C validation/error and trivial-abstraction simplification only.
+- PR-026 is accepted and committed. Cleanup C validation/error and trivial-abstraction simplification is complete.
+- PR-027 is the active implementation specification. Cleanup D redundant model, mapping, and fingerprint readability work is implemented in the working tree and remains active until user acceptance.
 
 ## Implemented capabilities
 
@@ -68,7 +69,7 @@ Tables:
 ## Active implementation scope
 
 - PR-025 is accepted and committed; Cleanup B is complete. Device-session listing is a complete owner-scoped logical-family array, instrument search uses Spring `Pageable` plus compact `SliceResponse<InstrumentSummaryResponse>` results, and the remaining session/instrument/generic cursor stack was deleted after consumer removal.
-- PR-026 is active and implemented. It changes only ledger future-time errors, reconciliation non-controller period integrity where required, deletion/inlining of the specified trivial abstractions, and preservation of structural validation. Cleanup D, migrations, frontend changes, MyBatis/read-persistence work, and investing/R4 remain outside PR-026.
+- PR-026 is accepted and committed; Cleanup C is complete. PR-027 / Cleanup D is active and owns only redundant model/mapping removal, unused projection trimming, workflow-specific fingerprint readability, and the audited historical-policy pass-through. Its implementation is present in the working tree; Cleanup E, migrations, frontend changes, MyBatis/read-persistence work, and investing/R4 remain outside PR-027.
 
 ## Deferred capabilities
 
@@ -81,14 +82,14 @@ Tables:
 
 ## Verification state
 
-PR-024 is accepted and committed after its confirmed review fixes: focused gate 77 tests, full suite and Maven `verify` 376 tests each, and Spotless clean across 271 Java files. PR-025 is accepted and committed; Cleanup B is complete after focused identity/reference gate 64 tests, full suite 364 tests, Maven `verify` 364 tests, and Spotless clean across 263 Java files (200 main Java files and 63 test Java files). PR-026 is active and implemented: the focused gate passed 87 tests, the full suite and Maven `verify` passed 370 tests each, and Spotless is clean across 262 Java files (199 main Java files and 63 test Java files). Ledger future-time rejection is capability-coded as `FUTURE_TIME_NOT_ALLOWED`; structural validation remains field-oriented; `LedgerTimingRules` is deleted; and reconciliation period ordering remains protected by a direct preview invariant plus the `Reconciliation.create` domain invariant for commit/correction.
+PR-026 is accepted and committed; Cleanup C is complete. PR-027 / Cleanup D is active and implemented: the redundant preview/reference row/model/factory surfaces and unused read projections are removed, genuine read models remain, five workflow-specific fingerprint methods preserve the existing canonical identity, and the historical policy decision is passed through unchanged. The positive historical-adjustment test explicitly proves persisted `ALLOWED`, while the negative historical-adjustment test continues to prove `HISTORICAL_BREACH_RECORDED`. The focused PR-027 gate passed 99 tests, and the full suite plus Maven `verify` passed 371 tests each with 0 failures, 0 errors, and 0 skips against the final working tree. Spotless passed, Docker Desktop/Testcontainers PostgreSQL 17 was available, and no required tests were skipped or replaced. Static audits pass, including no deleted-symbol or removed-view matches, unchanged normalized predicates/order clauses, unchanged `CanonicalFingerprint`, and 261 Java files (198 production and 63 test).
 
-Last updated: 2026-08-27
+Last updated: 2026-09-07
 
 ## Resume context
 
 - Operating contract and context router: [AGENTS.md](../../AGENTS.md)
 - Active pointer: [CURRENT.md](CURRENT.md)
-- Active scope: [PR-026 - Cleanup C validation, error, and trivial-abstraction simplification](PR-026-validation-error-and-trivial-abstraction-simplification.md)
+- Active scope: [PR-027 - Cleanup D redundant model, mapping, and fingerprint readability](PR-027-redundant-model-mapping-and-fingerprint-readability.md)
 
 Load only the standards, contracts, design sections, and repository code relevant to the current role and affected behavior.

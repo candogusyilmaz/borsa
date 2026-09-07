@@ -207,7 +207,7 @@ public class LedgerReadRepository {
 
     private String accountSql(String predicate) {
         return """
-                SELECT a.id, a.name, a.name_normalized, a.account_kind, a.tracking_mode, a.currency_code, a.time_zone,
+                SELECT a.id, a.name, a.account_kind, a.tracking_mode, a.currency_code, a.time_zone,
                        a.negative_balance_policy, a.authorized_limit, a.archived_at, a.version,
                        a.created_at, a.updated_at,
                        COALESCE(p.coverage_status, 'UNTRACKED') AS coverage_status,
@@ -229,7 +229,6 @@ public class LedgerReadRepository {
         return new FinancialAccountView(
                 resultSet.getObject("id", UUID.class),
                 resultSet.getString("name"),
-                resultSet.getString("name_normalized"),
                 accountKind,
                 TrackingMode.valueOf(resultSet.getString("tracking_mode")),
                 resultSet.getString("currency_code"),

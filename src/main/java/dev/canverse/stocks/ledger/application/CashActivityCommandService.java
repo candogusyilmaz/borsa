@@ -6,6 +6,7 @@ import dev.canverse.stocks.ledger.domain.ActivityType;
 import dev.canverse.stocks.ledger.domain.FinancialAccount;
 import dev.canverse.stocks.ledger.domain.FinancialAmount;
 import dev.canverse.stocks.ledger.domain.MoneyPosting;
+import dev.canverse.stocks.ledger.domain.RecordingMode;
 import dev.canverse.stocks.ledger.domain.TrackingMode;
 import dev.canverse.stocks.ledger.error.LedgerErrorCode;
 import dev.canverse.stocks.ledger.infrastructure.ActivityRepository;
@@ -59,14 +60,14 @@ public class CashActivityCommandService {
         if (Objects.requireNonNull(request.effectiveAt(), "effectiveAt").isAfter(observedAt)) {
             throw new AppException(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
         }
-        var hash = fingerprint.hash(fingerprint.values(
-                "accountId", accountId.toString(),
-                "activityType", request.activityType().name(),
-                "amount", amount.canonical(),
-                "recordingMode", request.recordingMode().name(),
-                "effectiveAt", request.effectiveAt().toString(),
-                "confirmPolicyBreach", request.confirmPolicyBreach(),
-                "expectedBalanceVersion", request.expectedBalanceVersion()));
+        var hash = cashActivityFingerprint(
+                accountId,
+                request.activityType(),
+                amount,
+                request.recordingMode(),
+                request.effectiveAt(),
+                request.confirmPolicyBreach(),
+                request.expectedBalanceVersion());
         commandLockRepository.lock(ownerUserAccountId, LedgerCommandScopes.CASH_ACTIVITY, request.clientRequestId());
         var replay = idempotencyStore.replay(
                 request.clientRequestId(),
@@ -159,6 +160,24 @@ public class CashActivityCommandService {
                 request.clientRequestId(),
                 observedAt,
                 LedgerCommandScopes.ACTIVITY_REVERSAL);
+    }
+
+    private String cashActivityFingerprint(
+            UUID accountId,
+            ActivityType activityType,
+            FinancialAmount amount,
+            RecordingMode recordingMode,
+            Instant effectiveAt,
+            boolean confirmPolicyBreach,
+            Long expectedBalanceVersion) {
+        return fingerprint.hash(fingerprint.values(
+                "accountId", accountId.toString(),
+                "activityType", activityType.name(),
+                "amount", amount.canonical(),
+                "recordingMode", recordingMode.name(),
+                "effectiveAt", effectiveAt.toString(),
+                "confirmPolicyBreach", confirmPolicyBreach,
+                "expectedBalanceVersion", expectedBalanceVersion));
     }
 
     private Activity writeCashActivity(

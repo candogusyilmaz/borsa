@@ -284,9 +284,17 @@ class CashActivityServiceTest {
                 new TransferPreviewRequest(
                         source.id(), destination.id(), "25.00", RecordingMode.CURRENT_ACTION, effectiveAt, false));
         assertThat(preview.sourceBefore()).isEqualTo("100");
+        assertThat(preview.sourceAccountId()).isEqualTo(source.id());
         assertThat(preview.sourceAfter()).isEqualTo("75");
+        assertThat(preview.destinationAccountId()).isEqualTo(destination.id());
         assertThat(preview.destinationBefore()).isEqualTo("10");
         assertThat(preview.destinationAfter()).isEqualTo("35");
+        assertThat(preview.currency()).isEqualTo("USD");
+        assertThat(preview.amount()).isEqualTo("25");
+        assertThat(preview.sourceDecision()).hasToString("ALLOWED");
+        assertThat(preview.destinationDecision()).hasToString("ALLOWED");
+        assertThat(preview.sourceVersion()).isZero();
+        assertThat(preview.destinationVersion()).isZero();
         assertThat(preview.allowed()).isTrue();
 
         var transfer = transferService.transfer(
@@ -307,6 +315,59 @@ class CashActivityServiceTest {
                 .isEqualTo("75");
         assertThat(accountQueryService.balance(ownerId, destination.id(), null).ledgerBalance())
                 .isEqualTo("35");
+    }
+
+    @Test
+    void transferExactRetryReplaysWithoutSecondEffectAndChangedReuseConflicts() {
+        var ownerId = insertUser("cash-transfer-retry-owner@example.com");
+        var source = createAccount(ownerId, "Transfer retry source", NegativeBalancePolicy.HARD_FLOOR, "100");
+        var destination = createAccount(ownerId, "Transfer retry destination", NegativeBalancePolicy.HARD_FLOOR, "10");
+        var request = new TransferRequest(
+                UUID.randomUUID(),
+                source.id(),
+                destination.id(),
+                "25.00",
+                RecordingMode.CURRENT_ACTION,
+                Instant.now().minusSeconds(1),
+                false,
+                0L,
+                0L);
+
+        var original = transferService.transfer(ownerId, request);
+        var replay = transferService.transfer(ownerId, request);
+
+        assertThat(replay.id()).isEqualTo(original.id());
+        assertThat(jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM ledger.activity WHERE owner_user_account_id = ?", Integer.class, ownerId))
+                .isEqualTo(3);
+        assertThat(jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM ledger.money_posting WHERE owner_user_account_id = ?",
+                        Integer.class,
+                        ownerId))
+                .isEqualTo(4);
+        assertThat(accountQueryService.balance(ownerId, source.id(), null).ledgerBalance())
+                .isEqualTo("75");
+        assertThat(accountQueryService.balance(ownerId, destination.id(), null).ledgerBalance())
+                .isEqualTo("35");
+
+        var changed = new TransferRequest(
+                request.clientRequestId(),
+                request.sourceAccountId(),
+                request.destinationAccountId(),
+                "26.00",
+                request.recordingMode(),
+                request.effectiveAt(),
+                request.confirmPolicyBreach(),
+                request.expectedSourceBalanceVersion(),
+                request.expectedDestinationBalanceVersion());
+        assertThatThrownBy(() -> transferService.transfer(ownerId, changed))
+                .extracting(exception -> ((dev.canverse.stocks.platform.error.AppException) exception).getErrorCode())
+                .isEqualTo(LedgerErrorCode.IDEMPOTENCY_CONFLICT);
+        assertThat(jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM ledger.activity WHERE owner_user_account_id = ?", Integer.class, ownerId))
+                .isEqualTo(3);
+        assertThat(accountQueryService.balance(ownerId, source.id(), null).ledgerBalance())
+                .isEqualTo("75");
     }
 
     @Test

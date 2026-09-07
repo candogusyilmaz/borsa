@@ -3,13 +3,17 @@ package dev.canverse.stocks.ledger;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import dev.canverse.stocks.ledger.application.CashActivityCommandService;
 import dev.canverse.stocks.ledger.application.FinancialAccountLifecycleService;
 import dev.canverse.stocks.ledger.application.FinancialAccountOnboardingService;
 import dev.canverse.stocks.ledger.application.FinancialAccountQueryService;
 import dev.canverse.stocks.ledger.domain.AccountKind;
+import dev.canverse.stocks.ledger.domain.ActivityType;
 import dev.canverse.stocks.ledger.domain.NegativeBalancePolicy;
+import dev.canverse.stocks.ledger.domain.RecordingMode;
 import dev.canverse.stocks.ledger.domain.TrackingMode;
 import dev.canverse.stocks.ledger.error.LedgerErrorCode;
+import dev.canverse.stocks.ledger.web.request.CashActivityRequest;
 import dev.canverse.stocks.ledger.web.request.CreateFinancialAccountRequest;
 import dev.canverse.stocks.ledger.web.request.OpeningCorrectionRequest;
 import dev.canverse.stocks.ledger.web.request.OpeningStateRequest;
@@ -46,6 +50,9 @@ class FinancialAccountServiceTest {
 
     @Autowired
     FinancialAccountLifecycleService lifecycleService;
+
+    @Autowired
+    CashActivityCommandService activityService;
 
     @Autowired
     JdbcTemplate jdbcTemplate;
@@ -426,20 +433,48 @@ class FinancialAccountServiceTest {
         var correction = new OpeningCorrectionRequest(
                 UUID.randomUUID(), "25.50", openingAt, "Bank statement correction", account.version());
         var corrected = lifecycleService.correctOpening(ownerId, account.id(), correction);
+        activityService.recordCashActivity(
+                ownerId,
+                account.id(),
+                new CashActivityRequest(
+                        UUID.randomUUID(),
+                        ActivityType.CASH_DEPOSIT,
+                        "1",
+                        RecordingMode.CURRENT_ACTION,
+                        Instant.now().minusSeconds(1),
+                        false,
+                        null));
+        var replay = lifecycleService.correctOpening(ownerId, account.id(), correction);
         var balance = queryService.balance(ownerId, account.id(), null);
 
         assertThat(corrected.version()).isEqualTo(2);
+        assertThat(replay).isEqualTo(corrected);
         assertThat(corrected.policyBreach()).isFalse();
-        assertThat(balance.ledgerBalance()).isEqualTo("25.5");
+        assertThat(balance.ledgerBalance()).isEqualTo("26.5");
         assertThat(balance.policyBreach()).isFalse();
         assertThat(jdbcTemplate.queryForObject(
                         "SELECT COUNT(*) FROM ledger.activity WHERE owner_user_account_id = ?", Integer.class, ownerId))
-                .isEqualTo(3);
+                .isEqualTo(4);
         assertThat(jdbcTemplate.queryForObject(
                         "SELECT COUNT(*) FROM ledger.money_posting WHERE owner_user_account_id = ?",
                         Integer.class,
                         ownerId))
-                .isEqualTo(3);
+                .isEqualTo(4);
+
+        var changed = new OpeningCorrectionRequest(
+                correction.clientRequestId(),
+                "26.50",
+                correction.effectiveAt(),
+                correction.correctionReason(),
+                correction.version());
+        assertThatThrownBy(() -> lifecycleService.correctOpening(ownerId, account.id(), changed))
+                .extracting(exception -> ((AppException) exception).getErrorCode())
+                .isEqualTo(LedgerErrorCode.IDEMPOTENCY_CONFLICT);
+        assertThat(queryService.balance(ownerId, account.id(), null).ledgerBalance())
+                .isEqualTo("26.5");
+        assertThat(jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM ledger.activity WHERE owner_user_account_id = ?", Integer.class, ownerId))
+                .isEqualTo(4);
     }
 
     @Test

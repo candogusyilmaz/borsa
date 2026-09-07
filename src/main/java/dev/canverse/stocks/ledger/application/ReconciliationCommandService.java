@@ -8,7 +8,6 @@ import dev.canverse.stocks.ledger.domain.CoverageStatus;
 import dev.canverse.stocks.ledger.domain.FinancialAccount;
 import dev.canverse.stocks.ledger.domain.FinancialAmount;
 import dev.canverse.stocks.ledger.domain.MoneyPosting;
-import dev.canverse.stocks.ledger.domain.PolicyDecision;
 import dev.canverse.stocks.ledger.domain.PostingRole;
 import dev.canverse.stocks.ledger.domain.Reconciliation;
 import dev.canverse.stocks.ledger.domain.ReconciliationResolution;
@@ -21,6 +20,7 @@ import dev.canverse.stocks.ledger.infrastructure.LedgerCommandLockRepository;
 import dev.canverse.stocks.ledger.infrastructure.MoneyPostingRepository;
 import dev.canverse.stocks.ledger.infrastructure.ReconciliationReadRepository;
 import dev.canverse.stocks.ledger.infrastructure.ReconciliationRepository;
+import dev.canverse.stocks.ledger.web.request.ReconciliationAction;
 import dev.canverse.stocks.ledger.web.request.ReconciliationCommitRequest;
 import dev.canverse.stocks.ledger.web.request.ReconciliationCorrectionRequest;
 import dev.canverse.stocks.ledger.web.request.ReconciliationPreviewRequest;
@@ -93,16 +93,12 @@ public class ReconciliationCommandService {
                 || statement.statementClosingAt().isAfter(observedAt)) {
             throw new AppException(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
         }
-        var hash = fingerprint.hash(fingerprint.values(
-                "accountId", accountId.toString(),
-                "statementReference", statement.statementReference(),
-                "statementOpeningAt", statement.statementOpeningAt().toString(),
-                "statementClosingAt", statement.statementClosingAt().toString(),
-                "statementOpeningBalance", statement.statementOpeningBalance().canonical(),
-                "statementClosingBalance", statement.statementClosingBalance().canonical(),
-                "expectedBalanceVersion", request.expectedBalanceVersion(),
-                "resolution", request.resolution().name(),
-                "adjustmentReason", normalized(request.adjustmentReason())));
+        var hash = reconciliationCommitFingerprint(
+                accountId,
+                statement,
+                request.expectedBalanceVersion(),
+                request.resolution(),
+                request.adjustmentReason());
         commandLockRepository.lock(
                 ownerUserAccountId, LedgerCommandScopes.RECONCILIATION_COMMIT, request.clientRequestId());
         var replay = idempotencyStore.replay(
@@ -162,17 +158,13 @@ public class ReconciliationCommandService {
                 || statement.statementClosingAt().isAfter(observedAt)) {
             throw new AppException(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
         }
-        var hash = fingerprint.hash(fingerprint.values(
-                "reconciliationId", reconciliationId.toString(),
-                "statementReference", statement.statementReference(),
-                "statementOpeningAt", statement.statementOpeningAt().toString(),
-                "statementClosingAt", statement.statementClosingAt().toString(),
-                "statementOpeningBalance", statement.statementOpeningBalance().canonical(),
-                "statementClosingBalance", statement.statementClosingBalance().canonical(),
-                "expectedBalanceVersion", request.expectedBalanceVersion(),
-                "resolution", request.resolution().name(),
-                "adjustmentReason", normalized(request.adjustmentReason()),
-                "correctionReason", request.correctionReason().trim()));
+        var hash = reconciliationCorrectionFingerprint(
+                reconciliationId,
+                statement,
+                request.expectedBalanceVersion(),
+                request.resolution(),
+                request.adjustmentReason(),
+                request.correctionReason().trim());
         commandLockRepository.lock(
                 ownerUserAccountId, LedgerCommandScopes.RECONCILIATION_CORRECTION, request.clientRequestId());
         var replay = idempotencyStore.replay(
@@ -279,7 +271,7 @@ public class ReconciliationCommandService {
                     commandSequence,
                     statement.statementClosingAt(),
                     observedAt,
-                    historicalAdjustmentDecision(evaluation.decision()),
+                    evaluation.decision(),
                     adjustmentReason.trim());
             activityRepository.save(activity);
             postingRepository.save(MoneyPosting.adjustment(
@@ -434,14 +426,42 @@ public class ReconciliationCommandService {
         }
     }
 
-    private static PolicyDecision historicalAdjustmentDecision(PolicyDecision decision) {
-        return decision == PolicyDecision.HISTORICAL_BREACH_RECORDED
-                ? PolicyDecision.HISTORICAL_BREACH_RECORDED
-                : PolicyDecision.ALLOWED;
+    private String reconciliationCommitFingerprint(
+            UUID accountId,
+            StatementValues statement,
+            Long expectedBalanceVersion,
+            ReconciliationAction resolution,
+            String adjustmentReason) {
+        return fingerprint.hash(fingerprint.values(
+                "accountId", accountId.toString(),
+                "statementReference", statement.statementReference(),
+                "statementOpeningAt", statement.statementOpeningAt().toString(),
+                "statementClosingAt", statement.statementClosingAt().toString(),
+                "statementOpeningBalance", statement.statementOpeningBalance().canonical(),
+                "statementClosingBalance", statement.statementClosingBalance().canonical(),
+                "expectedBalanceVersion", expectedBalanceVersion,
+                "resolution", resolution.name(),
+                "adjustmentReason", adjustmentReason == null ? null : adjustmentReason.trim()));
     }
 
-    private static String normalized(String value) {
-        return value == null ? null : value.trim();
+    private String reconciliationCorrectionFingerprint(
+            UUID reconciliationId,
+            StatementValues statement,
+            Long expectedBalanceVersion,
+            ReconciliationAction resolution,
+            String adjustmentReason,
+            String correctionReason) {
+        return fingerprint.hash(fingerprint.values(
+                "reconciliationId", reconciliationId.toString(),
+                "statementReference", statement.statementReference(),
+                "statementOpeningAt", statement.statementOpeningAt().toString(),
+                "statementClosingAt", statement.statementClosingAt().toString(),
+                "statementOpeningBalance", statement.statementOpeningBalance().canonical(),
+                "statementClosingBalance", statement.statementClosingBalance().canonical(),
+                "expectedBalanceVersion", expectedBalanceVersion,
+                "resolution", resolution.name(),
+                "adjustmentReason", adjustmentReason == null ? null : adjustmentReason.trim(),
+                "correctionReason", correctionReason));
     }
 
     private static StatementValues statementValues(

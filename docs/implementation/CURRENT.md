@@ -2,6 +2,6 @@
 
 Status: **ACTIVE**
 
-Specification: [PR-026 - Cleanup C validation, error, and trivial-abstraction simplification](PR-026-validation-error-and-trivial-abstraction-simplification.md)
+Specification: [PR-027 - Cleanup D redundant model, mapping, and fingerprint readability](PR-027-redundant-model-mapping-and-fingerprint-readability.md)
 
 Implementation and review remain scoped to this specification.

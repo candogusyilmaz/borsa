@@ -7,7 +7,10 @@ import dev.canverse.stocks.reference.domain.AliasType;
 import dev.canverse.stocks.reference.domain.InstrumentType;
 import dev.canverse.stocks.reference.domain.MarketSessionStatus;
 import dev.canverse.stocks.reference.domain.ValuationMethod;
+import dev.canverse.stocks.reference.web.response.CountryResponse;
+import dev.canverse.stocks.reference.web.response.CurrencyResponse;
 import dev.canverse.stocks.reference.web.response.InstrumentSummaryResponse;
+import dev.canverse.stocks.reference.web.response.MarketResponse;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -38,22 +41,27 @@ public class ReferenceCatalogReadRepository {
 
     private final JdbcClient jdbcClient;
 
-    public List<CountryRow> findActiveCountries() {
-        return jdbcClient
+    public List<CountryResponse> findActiveCountries() {
+        return List.copyOf(jdbcClient
                 .sql("SELECT code, name, active FROM reference.country WHERE active ORDER BY code")
-                .query(CountryRow.class)
-                .list();
+                .query(CountryResponse.class)
+                .list());
     }
 
-    public List<CurrencyRow> findActiveCurrencies() {
-        return jdbcClient
+    public List<CurrencyResponse> findActiveCurrencies() {
+        return List.copyOf(jdbcClient
                 .sql("SELECT code, name, symbol, minor_unit, active FROM reference.currency WHERE active ORDER BY code")
-                .query(CurrencyRow.class)
-                .list();
+                .query((rs, rowNum) -> new CurrencyResponse(
+                        rs.getString("code"),
+                        rs.getString("name"),
+                        rs.getString("symbol"),
+                        rs.getInt("minor_unit"),
+                        rs.getBoolean("active")))
+                .list());
     }
 
-    public List<MarketRow> findActiveMarkets() {
-        return jdbcClient.sql("""
+    public List<MarketResponse> findActiveMarkets() {
+        return List.copyOf(jdbcClient.sql("""
                         SELECT m.id, m.code, m.name, m.market_type, m.country_code, m.time_zone,
                                m.active, m.source_kind,
                                array_remove(array_agg(mc.currency_code ORDER BY mc.currency_code), NULL)
@@ -66,7 +74,7 @@ public class ReferenceCatalogReadRepository {
                         GROUP BY m.id, m.code, m.name, m.market_type, m.country_code, m.time_zone,
                                  m.active, m.source_kind, m.code_normalized
                         ORDER BY m.code_normalized
-                        """).query(this::mapMarketRow).list();
+                        """).query(this::mapMarketResponse).list());
     }
 
     public Optional<MarketCalendarHeader> findActiveMarket(UUID marketId) {
@@ -145,8 +153,7 @@ public class ReferenceCatalogReadRepository {
 
         var sql = """
                 SELECT i.id, i.owner_user_account_id, i.market_id, m.code AS market_code,
-                       m.code_normalized AS market_code_normalized,
-                       i.symbol, i.symbol_normalized, i.name, i.name_normalized,
+                       i.symbol, i.name,
                        i.instrument_type, i.quotation_currency_code, i.valuation_method,
                        i.active, i.source_kind, i.version, i.created_at, i.updated_at
                 FROM reference.instrument i
@@ -219,8 +226,7 @@ public class ReferenceCatalogReadRepository {
             String additionalPredicate, UnaryOperator<JdbcClient.StatementSpec> parameters) {
         var statement = jdbcClient.sql("""
                 SELECT i.id, i.owner_user_account_id, i.market_id, m.code AS market_code,
-                       m.code_normalized AS market_code_normalized,
-                       i.symbol, i.symbol_normalized, i.name, i.name_normalized,
+                       i.symbol, i.name,
                        i.instrument_type, i.quotation_currency_code, i.valuation_method,
                        i.active, i.source_kind, i.version, i.created_at, i.updated_at
                 FROM reference.instrument i
@@ -236,7 +242,7 @@ public class ReferenceCatalogReadRepository {
         }
         var rows = jdbcClient
                 .sql("""
-                        SELECT id, instrument_id, alias_type, alias_value, alias_normalized
+                        SELECT id, instrument_id, alias_type, alias_value
                         FROM reference.instrument_alias
                         WHERE instrument_id IN (:instrumentIds)
                         ORDER BY instrument_id, alias_type, alias_normalized, id
@@ -256,18 +262,18 @@ public class ReferenceCatalogReadRepository {
         return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
     }
 
-    private MarketRow mapMarketRow(ResultSet rs, int rowNum) throws SQLException {
-        return new MarketRow(
+    private MarketResponse mapMarketResponse(ResultSet rs, int rowNum) throws SQLException {
+        return new MarketResponse(
                 rs.getObject("id", UUID.class),
                 rs.getString("code"),
                 rs.getString("name"),
                 rs.getString("market_type"),
                 rs.getString("country_code"),
                 rs.getString("time_zone"),
-                rs.getBoolean("active"),
-                rs.getString("source_kind"),
                 arrayValues(rs.getArray("quotation_currencies")),
-                rs.getString("primary_quotation_currency"));
+                rs.getString("primary_quotation_currency"),
+                rs.getBoolean("active"),
+                rs.getString("source_kind"));
     }
 
     private static List<String> arrayValues(java.sql.Array sqlArray) throws SQLException {
@@ -289,11 +295,8 @@ public class ReferenceCatalogReadRepository {
                 rs.getObject("owner_user_account_id", UUID.class),
                 rs.getObject("market_id", UUID.class),
                 rs.getString("market_code"),
-                rs.getString("market_code_normalized"),
                 rs.getString("symbol"),
-                rs.getString("symbol_normalized"),
                 rs.getString("name"),
-                rs.getString("name_normalized"),
                 InstrumentType.valueOf(rs.getString("instrument_type")),
                 rs.getString("quotation_currency_code"),
                 ValuationMethod.valueOf(rs.getString("valuation_method")),
@@ -309,33 +312,11 @@ public class ReferenceCatalogReadRepository {
                 rs.getObject("id", UUID.class),
                 rs.getObject("instrument_id", UUID.class),
                 AliasType.valueOf(rs.getString("alias_type")),
-                rs.getString("alias_value"),
-                rs.getString("alias_normalized"));
+                rs.getString("alias_value"));
     }
 
     private static Instant instant(OffsetDateTime value) {
         return value == null ? null : value.toInstant();
-    }
-
-    public record CountryRow(String code, String name, boolean active) {}
-
-    public record CurrencyRow(String code, String name, String symbol, short minorUnit, boolean active) {}
-
-    public record MarketRow(
-            UUID id,
-            String code,
-            String name,
-            String marketType,
-            String countryCode,
-            String timeZone,
-            boolean active,
-            String sourceKind,
-            List<String> quotationCurrencies,
-            String primaryQuotationCurrency) {
-
-        public MarketRow {
-            quotationCurrencies = List.copyOf(quotationCurrencies);
-        }
     }
 
     public record MarketCalendarHeader(UUID id, String code, String timeZone) {}
@@ -352,11 +333,8 @@ public class ReferenceCatalogReadRepository {
             UUID ownerId,
             UUID marketId,
             String marketCode,
-            String marketCodeNormalized,
             String symbol,
-            String symbolNormalized,
             String name,
-            String nameNormalized,
             InstrumentType instrumentType,
             String quotationCurrency,
             ValuationMethod valuationMethod,
@@ -366,7 +344,7 @@ public class ReferenceCatalogReadRepository {
             Instant createdAt,
             Instant updatedAt) {}
 
-    public record AliasRow(UUID id, UUID instrumentId, AliasType type, String value, String normalizedValue) {}
+    public record AliasRow(UUID id, UUID instrumentId, AliasType type, String value) {}
 
     public record InstrumentView(InstrumentRow row, List<AliasRow> aliases) {
 
