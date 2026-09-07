@@ -13,13 +13,9 @@ public record InstrumentSymbol(String value) {
         Objects.requireNonNull(value, "value");
         value = value.trim();
         var normalized = value.toUpperCase(Locale.ROOT);
-        if (value.isEmpty()
-                || value.length() > ManualInstrumentConstraints.MAX_SYMBOL_LENGTH
-                || normalized.length() > ManualInstrumentConstraints.MAX_SYMBOL_LENGTH
-                || !FORMAT.matcher(value).matches()) {
-            throw new IllegalArgumentException("Instrument symbol must contain 1 to "
-                    + ManualInstrumentConstraints.MAX_SYMBOL_LENGTH
-                    + " valid characters");
+        if (value.isEmpty() || value.length() > ManualInstrumentConstraints.MAX_SYMBOL_LENGTH ||
+                normalized.length() > ManualInstrumentConstraints.MAX_SYMBOL_LENGTH || !FORMAT.matcher(value).matches()) {
+            throw new IllegalArgumentException("Instrument symbol must contain 1 to " + ManualInstrumentConstraints.MAX_SYMBOL_LENGTH + " valid characters");
         }
     }
 

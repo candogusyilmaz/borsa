@@ -51,15 +51,11 @@ public class ManualInstrumentService {
         var symbol = InstrumentSymbol.of(request.symbol());
         var name = request.name().trim();
         var quotationCurrency = CurrencyCode.of(request.quotationCurrency());
-        var market = marketRepository
-                .findById(request.marketId())
-                .orElseThrow(() -> new AppException(ReferenceErrorCode.MARKET_NOT_FOUND));
+        var market = marketRepository.findById(request.marketId()).orElseThrow(() -> new AppException(ReferenceErrorCode.MARKET_NOT_FOUND));
         if (!market.isActive()) {
             throw new AppException(ReferenceErrorCode.INACTIVE_REFERENCE);
         }
-        var currencyEntity = currencyRepository
-                .findById(quotationCurrency.value())
-                .orElseThrow(() -> new AppException(ReferenceErrorCode.CURRENCY_NOT_FOUND));
+        var currencyEntity = currencyRepository.findById(quotationCurrency.value()).orElseThrow(() -> new AppException(ReferenceErrorCode.CURRENCY_NOT_FOUND));
         if (!currencyEntity.isActive()) {
             throw new AppException(ReferenceErrorCode.INACTIVE_REFERENCE);
         }
@@ -69,45 +65,32 @@ public class ManualInstrumentService {
 
         var owner = entityManager.getReference(UserAccount.class, ownerUserAccountId);
         var observedAt = clock.instant();
-        var instrument = Instrument.manual(
-                idGenerator.next(),
-                owner,
-                market,
-                symbol,
-                name,
-                request.instrumentType(),
-                quotationCurrency,
-                request.valuationMethod(),
-                observedAt);
+        var instrument = Instrument.manual(idGenerator.next(), owner, market, symbol, name, request.instrumentType(), quotationCurrency,
+                request.valuationMethod(), observedAt);
         var savedInstrument = instrumentRepository.save(instrument);
         instrumentAliasRepository.saveAll(createAliases(savedInstrument, request.aliases(), observedAt));
-        // The JDBC read model below uses a separate connection and must see the aggregate before returning.
+        // The JDBC read model below uses a separate connection and must see the
+        // aggregate before returning.
         instrumentRepository.flush();
         instrumentAliasRepository.flush();
-        return readRepository
-                .findVisibleInstrument(ownerUserAccountId, instrument.getId())
-                .map(InstrumentResponse::from)
+        return readRepository.findVisibleInstrument(ownerUserAccountId, instrument.getId()).map(InstrumentResponse::from)
                 .orElseThrow(() -> new IllegalStateException("Created instrument was not readable"));
     }
 
     @Transactional
-    public InstrumentResponse update(
-            UUID ownerUserAccountId, UUID instrumentId, ManualInstrumentUpdateRequest request) {
+    public InstrumentResponse update(UUID ownerUserAccountId, UUID instrumentId, ManualInstrumentUpdateRequest request) {
         Objects.requireNonNull(ownerUserAccountId, "ownerUserAccountId");
         Objects.requireNonNull(instrumentId, "instrumentId");
         Objects.requireNonNull(request, "request");
-        var instrument = instrumentRepository
-                .findOwnedById(instrumentId, ownerUserAccountId)
+        var instrument = instrumentRepository.findOwnedById(instrumentId, ownerUserAccountId)
                 .orElseThrow(() -> new AppException(ReferenceErrorCode.INSTRUMENT_NOT_FOUND));
         if (instrument.getVersion() != request.version()) {
             throw new AppException(ReferenceErrorCode.INSTRUMENT_VERSION_CONFLICT);
         }
         var name = request.name().trim();
         var observedAt = clock.instant();
-        var metadataChanged = !Objects.equals(instrument.getName(), name)
-                || instrument.getValuationMethod() != request.valuationMethod()
-                || instrument.isActive() != request.active()
-                || !Objects.equals(instrument.getUpdatedAt(), observedAt);
+        var metadataChanged = !Objects.equals(instrument.getName(), name) || instrument.getValuationMethod() != request.valuationMethod() ||
+                instrument.isActive() != request.active() || !Objects.equals(instrument.getUpdatedAt(), observedAt);
         if (metadataChanged) {
             instrument.updateMetadata(name, request.valuationMethod(), request.active(), observedAt);
             entityManager.flush();
@@ -117,36 +100,24 @@ public class ManualInstrumentService {
         instrumentAliasRepository.deleteByInstrumentId(instrumentId);
         var managedInstrument = instrumentRepository.getReferenceById(instrumentId);
         instrumentAliasRepository.saveAll(createAliases(managedInstrument, request.aliases(), observedAt));
-        // The replacement must be visible to the explicit response projection in this transaction.
+        // The replacement must be visible to the explicit response projection in this
+        // transaction.
         instrumentAliasRepository.flush();
-        return readRepository
-                .findVisibleInstrument(ownerUserAccountId, instrumentId)
-                .map(InstrumentResponse::from)
+        return readRepository.findVisibleInstrument(ownerUserAccountId, instrumentId).map(InstrumentResponse::from)
                 .orElseThrow(() -> new AppException(ReferenceErrorCode.INSTRUMENT_NOT_FOUND));
     }
 
     @Transactional(readOnly = true)
     public InstrumentResponse get(UUID ownerUserAccountId, UUID instrumentId) {
-        return readRepository
-                .findVisibleInstrument(ownerUserAccountId, instrumentId)
-                .map(InstrumentResponse::from)
+        return readRepository.findVisibleInstrument(ownerUserAccountId, instrumentId).map(InstrumentResponse::from)
                 .orElseThrow(() -> new AppException(ReferenceErrorCode.INSTRUMENT_NOT_FOUND));
     }
 
-    private List<InstrumentAlias> createAliases(
-            Instrument instrument, List<InstrumentAliasInput> aliases, Instant observedAt) {
-        return aliases.stream()
-                .map(alias -> {
-                    var value = alias.value().trim();
-                    return InstrumentAlias.create(
-                            idGenerator.next(),
-                            instrument,
-                            alias.type(),
-                            value,
-                            value.toUpperCase(Locale.ROOT),
-                            observedAt);
-                })
-                .toList();
+    private List<InstrumentAlias> createAliases(Instrument instrument, List<InstrumentAliasInput> aliases, Instant observedAt) {
+        return aliases.stream().map(alias -> {
+            var value = alias.value().trim();
+            return InstrumentAlias.create(idGenerator.next(), instrument, alias.type(), value, value.toUpperCase(Locale.ROOT), observedAt);
+        }).toList();
     }
 
     private void forceAliasAggregateVersion(UUID instrumentId, UUID ownerUserAccountId, long expectedVersion) {

@@ -36,8 +36,7 @@ public class SecurityEvent {
     @JdbcTypeCode(SqlTypes.JSON)
     private String details;
 
-    public static SecurityEvent create(
-            UUID id, UserAccount userAccount, String eventType, Instant occurredAt, String details) {
+    public static SecurityEvent create(UUID id, UserAccount userAccount, String eventType, Instant occurredAt, String details) {
         Objects.requireNonNull(id, "id");
         Objects.requireNonNull(eventType, "eventType");
         Objects.requireNonNull(occurredAt, "occurredAt");

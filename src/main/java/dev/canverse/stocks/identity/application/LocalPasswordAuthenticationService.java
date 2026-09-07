@@ -20,8 +20,7 @@ public class LocalPasswordAuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final String dummyEncodedHash;
 
-    public LocalPasswordAuthenticationService(
-            AuthIdentityRepository authIdentityRepository, PasswordEncoder passwordEncoder) {
+    public LocalPasswordAuthenticationService(AuthIdentityRepository authIdentityRepository, PasswordEncoder passwordEncoder) {
         this.authIdentityRepository = authIdentityRepository;
         this.passwordEncoder = passwordEncoder;
         this.dummyEncodedHash = passwordEncoder.encode(DUMMY_PASSWORD);
@@ -39,9 +38,7 @@ public class LocalPasswordAuthenticationService {
             throw new AppException(IdentityErrorCode.INVALID_CREDENTIALS);
         }
 
-        var userAccount = localIdentity
-                .orElseThrow(() -> new AppException(IdentityErrorCode.INVALID_CREDENTIALS))
-                .getUserAccount();
+        var userAccount = localIdentity.orElseThrow(() -> new AppException(IdentityErrorCode.INVALID_CREDENTIALS)).getUserAccount();
         if (userAccount.getDisabledAt() != null) {
             throw new AppException(IdentityErrorCode.INVALID_CREDENTIALS);
         }

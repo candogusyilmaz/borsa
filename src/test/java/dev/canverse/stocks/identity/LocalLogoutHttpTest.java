@@ -33,15 +33,10 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        properties = {
-            "stocks.identity.refresh-session.lifetime=30d",
-            "stocks.identity.access-token.issuer=https://issuer.test",
-            "stocks.identity.access-token.audience=canverse-test-api",
-            "stocks.identity.access-token.lifetime=5m",
-            "stocks.identity.access-token.key-id=test-ephemeral"
-        })
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK,
+        properties = {"stocks.identity.refresh-session.lifetime=30d", "stocks.identity.access-token.issuer=https://issuer.test",
+                "stocks.identity.access-token.audience=canverse-test-api", "stocks.identity.access-token.lifetime=5m",
+                "stocks.identity.access-token.key-id=test-ephemeral"})
 @AutoConfigureMockMvc
 @Testcontainers
 @Import(LocalLogoutHttpTest.TestOverrides.class)
@@ -70,8 +65,7 @@ class LocalLogoutHttpTest {
 
     @BeforeEach
     void cleanDatabase() {
-        jdbcTemplate.execute(
-                "TRUNCATE TABLE platform.security_event, identity.device_session, identity.auth_identity, identity.user_account CASCADE");
+        jdbcTemplate.execute("TRUNCATE TABLE platform.security_event, identity.device_session, identity.auth_identity, identity.user_account CASCADE");
     }
 
     @Test
@@ -80,25 +74,18 @@ class LocalLogoutHttpTest {
         var session = sessionIssuanceService.issue(userId, "laptop");
         var accessToken = tokenIssuanceService.issue(session.sessionId()).accessToken();
 
-        mockMvc.perform(post("/api/v1/auth/logout")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "scope": "CURRENT_SESSION"
-                                }
-                                """))
-                .andExpect(status().isNoContent())
-                .andExpect(header().string("Cache-Control", "no-store"))
-                .andExpect(header().string("Pragma", "no-cache"))
-                .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("Max-Age=0")))
+        mockMvc.perform(
+                post("/api/v1/auth/logout").header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken).contentType(MediaType.APPLICATION_JSON).content("""
+                        {
+                          "scope": "CURRENT_SESSION"
+                        }
+                        """)).andExpect(status().isNoContent()).andExpect(header().string("Cache-Control", "no-store"))
+                .andExpect(header().string("Pragma", "no-cache")).andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("Max-Age=0")))
                 .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("1970")))
-                .andExpect(result ->
-                        assertThat(result.getRequest().getSession(false)).isNull());
+                .andExpect(result -> assertThat(result.getRequest().getSession(false)).isNull());
 
         // Calling /me with same token now fails
-        mockMvc.perform(get("/api/v1/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/v1/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)).andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -109,26 +96,17 @@ class LocalLogoutHttpTest {
         var token1 = tokenIssuanceService.issue(s1.sessionId()).accessToken();
         var token2 = tokenIssuanceService.issue(s2.sessionId()).accessToken();
 
-        mockMvc.perform(post("/api/v1/auth/logout")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token1)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "scope": "ALL_SESSIONS"
-                                }
-                                """))
-                .andExpect(status().isNoContent())
-                .andExpect(header().string("Cache-Control", "no-store"))
-                .andExpect(header().string("Pragma", "no-cache"))
+        mockMvc.perform(post("/api/v1/auth/logout").header(HttpHeaders.AUTHORIZATION, "Bearer " + token1).contentType(MediaType.APPLICATION_JSON).content("""
+                {
+                  "scope": "ALL_SESSIONS"
+                }
+                """)).andExpect(status().isNoContent()).andExpect(header().string("Cache-Control", "no-store")).andExpect(header().string("Pragma", "no-cache"))
                 .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("Max-Age=0")))
-                .andExpect(result ->
-                        assertThat(result.getRequest().getSession(false)).isNull());
+                .andExpect(result -> assertThat(result.getRequest().getSession(false)).isNull());
 
         // Both tokens now fail
-        mockMvc.perform(get("/api/v1/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token1))
-                .andExpect(status().isUnauthorized());
-        mockMvc.perform(get("/api/v1/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token2))
-                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/v1/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token1)).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/v1/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token2)).andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -137,16 +115,12 @@ class LocalLogoutHttpTest {
         var session = sessionIssuanceService.issue(userId, "laptop");
         var accessToken = tokenIssuanceService.issue(session.sessionId()).accessToken();
 
-        mockMvc.perform(post("/api/v1/auth/logout")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "scope": "UNKNOWN_SCOPE"
-                                }
-                                """))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code", equalTo("MALFORMED_REQUEST")));
+        mockMvc.perform(
+                post("/api/v1/auth/logout").header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken).contentType(MediaType.APPLICATION_JSON).content("""
+                        {
+                          "scope": "UNKNOWN_SCOPE"
+                        }
+                        """)).andExpect(status().isBadRequest()).andExpect(jsonPath("$.code", equalTo("MALFORMED_REQUEST")));
     }
 
     @TestConfiguration(proxyBeanMethods = false)

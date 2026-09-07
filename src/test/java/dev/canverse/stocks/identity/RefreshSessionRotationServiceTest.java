@@ -41,15 +41,10 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.NONE,
-        properties = {
-            "stocks.identity.refresh-session.lifetime=2h",
-            "stocks.identity.access-token.issuer=https://issuer.test",
-            "stocks.identity.access-token.audience=canverse-test-api",
-            "stocks.identity.access-token.lifetime=5m",
-            "stocks.identity.access-token.key-id=test-ephemeral"
-        })
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE,
+        properties = {"stocks.identity.refresh-session.lifetime=2h", "stocks.identity.access-token.issuer=https://issuer.test",
+                "stocks.identity.access-token.audience=canverse-test-api", "stocks.identity.access-token.lifetime=5m",
+                "stocks.identity.access-token.key-id=test-ephemeral"})
 @Testcontainers
 @Import(RefreshSessionRotationServiceTest.TestOverrides.class)
 class RefreshSessionRotationServiceTest {
@@ -116,12 +111,8 @@ class RefreshSessionRotationServiceTest {
 
     @Test
     void normalRotationRetainsTwoGenerationHistoryAndBindsSuccessorAccessToken() {
-        var fixture = registerAndIssue(
-                uuid("10000000-0000-4000-8000-000000000001"),
-                uuid("20000000-0000-4000-8000-000000000002"),
-                uuid("30000000-0000-4000-8000-000000000003"),
-                uuid("40000000-0000-4000-8000-000000000004"),
-                "normal@example.com");
+        var fixture = registerAndIssue(uuid("10000000-0000-4000-8000-000000000001"), uuid("20000000-0000-4000-8000-000000000002"),
+                uuid("30000000-0000-4000-8000-000000000003"), uuid("40000000-0000-4000-8000-000000000004"), "normal@example.com");
         var replacementId = uuid("50000000-0000-4000-8000-000000000005");
         var replacementAccessTokenId = uuid("60000000-0000-4000-8000-000000000006");
         idGenerator.setNextIds(replacementId, replacementAccessTokenId);
@@ -148,10 +139,8 @@ class RefreshSessionRotationServiceTest {
         assertThat(newState.refreshTokenHash()).isEqualTo(refreshTokenGenerator.hash(rotated.refreshToken()));
         assertThat(deviceSessionRepository.findByFamilyIdAndRevokedAtIsNull(fixture.sessionId()))
                 .hasValueSatisfying(session -> assertThat(session.getId()).isEqualTo(replacementId));
-        assertThat(jwtDecoder.decode(rotated.accessToken()).getClaimAsString("sid"))
-                .isEqualTo(replacementId.toString());
-        assertThatThrownBy(() -> accessTokenConverter.convert(jwtDecoder.decode(fixture.accessToken())))
-                .isInstanceOf(RuntimeException.class);
+        assertThat(jwtDecoder.decode(rotated.accessToken()).getClaimAsString("sid")).isEqualTo(replacementId.toString());
+        assertThatThrownBy(() -> accessTokenConverter.convert(jwtDecoder.decode(fixture.accessToken()))).isInstanceOf(RuntimeException.class);
     }
 
     @Test
@@ -162,54 +151,34 @@ class RefreshSessionRotationServiceTest {
         assertThat(persistedDatabaseState()).isEqualTo(unknownBefore);
         assertThat(idGenerator.consumedIds()).isEmpty();
 
-        var expired = registerAndIssue(
-                uuid("70000000-0000-4000-8000-000000000007"),
-                uuid("71000000-0000-4000-8000-000000000017"),
-                uuid("72000000-0000-4000-8000-000000000027"),
-                uuid("73000000-0000-4000-8000-000000000037"),
-                "expired@example.com");
+        var expired = registerAndIssue(uuid("70000000-0000-4000-8000-000000000007"), uuid("71000000-0000-4000-8000-000000000017"),
+                uuid("72000000-0000-4000-8000-000000000027"), uuid("73000000-0000-4000-8000-000000000037"), "expired@example.com");
         runInTransaction(() -> {
             var updated = jdbcTemplate.update(
-                    "UPDATE identity.device_session SET created_at = "
-                            + "TIMESTAMPTZ '2026-08-15 11:59:59.750+00', "
-                            + "expires_at = TIMESTAMPTZ '2026-08-15 12:00:00.750+00' WHERE refresh_token_hash = ?",
+                    "UPDATE identity.device_session SET created_at = " + "TIMESTAMPTZ '2026-08-15 11:59:59.750+00', " +
+                            "expires_at = TIMESTAMPTZ '2026-08-15 12:00:00.750+00' WHERE refresh_token_hash = ?",
                     refreshTokenGenerator.hash(expired.refreshToken()));
             assertThat(updated).isOne();
             assertThat(jdbcTemplate.queryForObject(
-                            "SELECT to_char(expires_at AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS.MS') "
-                                    + "FROM identity.device_session WHERE refresh_token_hash = ?",
-                            String.class,
-                            refreshTokenGenerator.hash(expired.refreshToken())))
-                    .isEqualTo("2026-08-15 12:00:00.750");
+                    "SELECT to_char(expires_at AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS.MS') " + "FROM identity.device_session WHERE refresh_token_hash = ?",
+                    String.class, refreshTokenGenerator.hash(expired.refreshToken()))).isEqualTo("2026-08-15 12:00:00.750");
         });
         assertThat(persistedSession(expired.sessionId()).expiresAt()).isEqualTo(OBSERVED_AT);
         assertInvalidWithoutMutation(expired.refreshToken());
 
-        var revoked = registerAndIssue(
-                uuid("74000000-0000-4000-8000-000000000047"),
-                uuid("75000000-0000-4000-8000-000000000057"),
-                uuid("76000000-0000-4000-8000-000000000067"),
-                uuid("77000000-0000-4000-8000-000000000077"),
-                "revoked@example.com");
+        var revoked = registerAndIssue(uuid("74000000-0000-4000-8000-000000000047"), uuid("75000000-0000-4000-8000-000000000057"),
+                uuid("76000000-0000-4000-8000-000000000067"), uuid("77000000-0000-4000-8000-000000000077"), "revoked@example.com");
         runInTransaction(() -> {
-            var updated = jdbcTemplate.update(
-                    "UPDATE identity.device_session SET revoked_at = TIMESTAMPTZ '2026-08-15 12:00:00.750+00', "
-                            + "revoke_reason = ? WHERE refresh_token_hash = ?",
-                    "MANUAL",
-                    refreshTokenGenerator.hash(revoked.refreshToken()));
+            var updated = jdbcTemplate.update("UPDATE identity.device_session SET revoked_at = TIMESTAMPTZ '2026-08-15 12:00:00.750+00', " +
+                    "revoke_reason = ? WHERE refresh_token_hash = ?", "MANUAL", refreshTokenGenerator.hash(revoked.refreshToken()));
             assertThat(updated).isOne();
         });
         assertInvalidWithoutMutation(revoked.refreshToken());
 
-        var disabled = registerAndIssue(
-                uuid("78000000-0000-4000-8000-000000000087"),
-                uuid("79000000-0000-4000-8000-000000000097"),
-                uuid("7a000000-0000-4000-8000-0000000000a7"),
-                uuid("7b000000-0000-4000-8000-0000000000b7"),
-                "disabled@example.com");
+        var disabled = registerAndIssue(uuid("78000000-0000-4000-8000-000000000087"), uuid("79000000-0000-4000-8000-000000000097"),
+                uuid("7a000000-0000-4000-8000-0000000000a7"), uuid("7b000000-0000-4000-8000-0000000000b7"), "disabled@example.com");
         runInTransaction(() -> {
-            var updated = jdbcTemplate.update(
-                    "UPDATE identity.user_account SET disabled_at = TIMESTAMPTZ '2026-08-15 11:59:59.750+00' WHERE id = ?",
+            var updated = jdbcTemplate.update("UPDATE identity.user_account SET disabled_at = TIMESTAMPTZ '2026-08-15 11:59:59.750+00' WHERE id = ?",
                     disabled.userId());
             assertThat(updated).isOne();
         });
@@ -218,12 +187,8 @@ class RefreshSessionRotationServiceTest {
 
     @Test
     void replacedTokenReuseCommitsFamilyRevocationBeforeRejectedOutcome() {
-        var fixture = registerAndIssue(
-                uuid("11000000-0000-4000-8000-000000000011"),
-                uuid("12000000-0000-4000-8000-000000000012"),
-                uuid("13000000-0000-4000-8000-000000000013"),
-                uuid("14000000-0000-4000-8000-000000000014"),
-                "reuse@example.com");
+        var fixture = registerAndIssue(uuid("11000000-0000-4000-8000-000000000011"), uuid("12000000-0000-4000-8000-000000000012"),
+                uuid("13000000-0000-4000-8000-000000000013"), uuid("14000000-0000-4000-8000-000000000014"), "reuse@example.com");
         var replacementId = uuid("15000000-0000-4000-8000-000000000015");
         var replacementAccessTokenId = uuid("16000000-0000-4000-8000-000000000016");
         idGenerator.setNextIds(replacementId, replacementAccessTokenId);
@@ -232,38 +197,24 @@ class RefreshSessionRotationServiceTest {
 
         assertThat(rotationService.rotate(fixture.refreshToken())).isEmpty();
 
-        assertThat(deviceSessionRepository.findByFamilyIdAndRevokedAtIsNull(fixture.sessionId()))
-                .isEmpty();
+        assertThat(deviceSessionRepository.findByFamilyIdAndRevokedAtIsNull(fixture.sessionId())).isEmpty();
         assertThat(persistedSession(replacementId).revokeReason()).isEqualTo("REUSE_DETECTED");
-        assertThatThrownBy(() -> accessTokenConverter.convert(jwtDecoder.decode(first.accessToken())))
-                .isInstanceOf(RuntimeException.class);
+        assertThatThrownBy(() -> accessTokenConverter.convert(jwtDecoder.decode(first.accessToken()))).isInstanceOf(RuntimeException.class);
     }
 
     @Test
     void jwtFailureRollsBackPredecessorMutationAndSuccessorInsert() {
-        var fixture = registerAndIssue(
-                uuid("21000000-0000-4000-8000-000000000021"),
-                uuid("22000000-0000-4000-8000-000000000022"),
-                uuid("23000000-0000-4000-8000-000000000023"),
-                uuid("24000000-0000-4000-8000-000000000024"),
-                "rollback@example.com");
+        var fixture = registerAndIssue(uuid("21000000-0000-4000-8000-000000000021"), uuid("22000000-0000-4000-8000-000000000022"),
+                uuid("23000000-0000-4000-8000-000000000023"), uuid("24000000-0000-4000-8000-000000000024"), "rollback@example.com");
         var replacementId = uuid("25000000-0000-4000-8000-000000000025");
         var failingAccessService = mock(AccessTokenIssuanceService.class);
         when(failingAccessService.issue(replacementId)).thenThrow(new IllegalStateException("jwt failure"));
         idGenerator.setNextIds(replacementId);
-        var directService = new RefreshSessionRotationService(
-                refreshTokenGenerator,
-                deviceSessionRepository,
-                userAccountRepository,
-                failingAccessService,
-                securityEventRecorder,
-                clock,
-                idGenerator);
+        var directService = new RefreshSessionRotationService(refreshTokenGenerator, deviceSessionRepository, userAccountRepository, failingAccessService,
+                securityEventRecorder, clock, idGenerator);
 
-        assertThatThrownBy(() -> new TransactionTemplate(transactionManager)
-                        .execute(status -> directService.rotate(fixture.refreshToken())))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("jwt failure");
+        assertThatThrownBy(() -> new TransactionTemplate(transactionManager).execute(status -> directService.rotate(fixture.refreshToken())))
+                .isInstanceOf(IllegalStateException.class).hasMessage("jwt failure");
 
         var state = persistedSession(fixture.sessionId());
         assertThat(state.lastUsedAt()).isNull();
@@ -274,12 +225,8 @@ class RefreshSessionRotationServiceTest {
 
     @Test
     void concurrentDuplicateRefreshLeavesNoActiveFamilyGeneration() throws Exception {
-        var fixture = registerAndIssue(
-                uuid("31000000-0000-4000-8000-000000000031"),
-                uuid("32000000-0000-4000-8000-000000000032"),
-                uuid("33000000-0000-4000-8000-000000000033"),
-                uuid("34000000-0000-4000-8000-000000000034"),
-                "concurrent@example.com");
+        var fixture = registerAndIssue(uuid("31000000-0000-4000-8000-000000000031"), uuid("32000000-0000-4000-8000-000000000032"),
+                uuid("33000000-0000-4000-8000-000000000033"), uuid("34000000-0000-4000-8000-000000000034"), "concurrent@example.com");
         var replacementId = uuid("35000000-0000-4000-8000-000000000035");
         var replacementAccessTokenId = uuid("36000000-0000-4000-8000-000000000036");
         idGenerator.setNextIds(replacementId, replacementAccessTokenId);
@@ -295,20 +242,16 @@ class RefreshSessionRotationServiceTest {
             }));
             assertThat(rotationComplete.await(10, TimeUnit.SECONDS)).isTrue();
             var second = executor.submit(() -> rotationService.rotate(fixture.refreshToken()));
-            assertThat(waitingOnUserAccountLock())
-                    .as("second refresh remains blocked on the owner row")
-                    .isTrue();
+            assertThat(waitingOnUserAccountLock()).as("second refresh remains blocked on the owner row").isTrue();
             releaseFirstTransaction.countDown();
 
             var firstResult = first.get(10, TimeUnit.SECONDS);
             var secondResult = second.get(10, TimeUnit.SECONDS);
             assertThat(firstResult).isPresent();
             assertThat(secondResult).isEmpty();
-            assertThat(deviceSessionRepository.findByFamilyIdAndRevokedAtIsNull(fixture.sessionId()))
-                    .isEmpty();
+            assertThat(deviceSessionRepository.findByFamilyIdAndRevokedAtIsNull(fixture.sessionId())).isEmpty();
             var winning = firstResult.orElseThrow();
-            assertThatThrownBy(() -> accessTokenConverter.convert(jwtDecoder.decode(winning.accessToken())))
-                    .isInstanceOf(RuntimeException.class);
+            assertThatThrownBy(() -> accessTokenConverter.convert(jwtDecoder.decode(winning.accessToken()))).isInstanceOf(RuntimeException.class);
         } finally {
             releaseFirstTransaction.countDown();
             executor.shutdownNow();
@@ -326,18 +269,9 @@ class RefreshSessionRotationServiceTest {
     private PersistedSession persistedSession(UUID sessionId) {
         return new TransactionTemplate(transactionManager).execute(status -> {
             var session = deviceSessionRepository.findById(sessionId).orElseThrow();
-            return new PersistedSession(
-                    session.getId(),
-                    session.getUserAccount().getId(),
-                    session.getFamilyId(),
-                    session.getRefreshTokenHash(),
-                    session.getDeviceLabel(),
-                    session.getCreatedAt(),
-                    session.getLastUsedAt(),
-                    session.getExpiresAt(),
-                    session.getRevokedAt(),
-                    session.getRevokeReason(),
-                    session.getReplacedBySessionId());
+            return new PersistedSession(session.getId(), session.getUserAccount().getId(), session.getFamilyId(), session.getRefreshTokenHash(),
+                    session.getDeviceLabel(), session.getCreatedAt(), session.getLastUsedAt(), session.getExpiresAt(), session.getRevokedAt(),
+                    session.getRevokeReason(), session.getReplacedBySessionId());
         });
     }
 
@@ -350,20 +284,15 @@ class RefreshSessionRotationServiceTest {
     }
 
     private List<Map<String, Object>> persistedDatabaseState() {
-        return List.of(Map.of(
-                "users", jdbcTemplate.queryForList("SELECT * FROM identity.user_account ORDER BY id"),
-                "auth", jdbcTemplate.queryForList("SELECT * FROM identity.auth_identity ORDER BY id"),
-                "sessions", jdbcTemplate.queryForList("SELECT * FROM identity.device_session ORDER BY id")));
+        return List.of(Map.of("users", jdbcTemplate.queryForList("SELECT * FROM identity.user_account ORDER BY id"), "auth",
+                jdbcTemplate.queryForList("SELECT * FROM identity.auth_identity ORDER BY id"), "sessions",
+                jdbcTemplate.queryForList("SELECT * FROM identity.device_session ORDER BY id")));
     }
 
     private boolean waitingOnUserAccountLock() {
         for (var attempt = 0; attempt < 500; attempt++) {
-            var waiting = jdbcTemplate.queryForObject(
-                    "SELECT count(*) FROM pg_stat_activity a "
-                            + "WHERE a.wait_event_type = 'Lock' "
-                            + "AND cardinality(pg_blocking_pids(a.pid)) > 0 "
-                            + "AND a.query ILIKE '%user_account%'",
-                    Long.class);
+            var waiting = jdbcTemplate.queryForObject("SELECT count(*) FROM pg_stat_activity a " + "WHERE a.wait_event_type = 'Lock' " +
+                    "AND cardinality(pg_blocking_pids(a.pid)) > 0 " + "AND a.query ILIKE '%user_account%'", Long.class);
             if (waiting != null && waiting > 0) {
                 return true;
             }
@@ -409,16 +338,6 @@ class RefreshSessionRotationServiceTest {
 
     private record Fixture(UUID userId, UUID sessionId, String refreshToken, String accessToken) {}
 
-    private record PersistedSession(
-            UUID id,
-            UUID userAccountId,
-            UUID familyId,
-            String refreshTokenHash,
-            String deviceLabel,
-            Instant createdAt,
-            Instant lastUsedAt,
-            Instant expiresAt,
-            Instant revokedAt,
-            String revokeReason,
-            UUID replacedBySessionId) {}
+    private record PersistedSession(UUID id, UUID userAccountId, UUID familyId, String refreshTokenHash, String deviceLabel, Instant createdAt,
+            Instant lastUsedAt, Instant expiresAt, Instant revokedAt, String revokeReason, UUID replacedBySessionId) {}
 }

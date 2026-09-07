@@ -1,12 +1,7 @@
 package dev.canverse.stocks.ledger.domain;
 
 public enum AccountKind {
-    CASH_CURRENT,
-    CASH_SAVINGS,
-    CASH_WALLET,
-    BROKERAGE,
-    CREDIT_CARD,
-    LOAN;
+    CASH_CURRENT, CASH_SAVINGS, CASH_WALLET, BROKERAGE, CREDIT_CARD, LOAN;
 
     public boolean isLiability() {
         return this == CREDIT_CARD || this == LOAN;

@@ -17,8 +17,7 @@ public class LocalLoginAttemptService {
     private final AuthenticationAbuseProtection abuseProtection;
     private final SecurityEventRecorder securityEventRecorder;
 
-    public LocalLoginResult attemptLogin(
-            String email, String password, String deviceLabel, String remoteAddr, String traceId) {
+    public LocalLoginResult attemptLogin(String email, String password, String deviceLabel, String remoteAddr, String traceId) {
         Objects.requireNonNull(email, "email");
         Objects.requireNonNull(password, "password");
         Objects.requireNonNull(traceId, "traceId");
@@ -41,13 +40,11 @@ public class LocalLoginAttemptService {
     }
 
     private void handleInvalidCredentials(String email, String remoteAddr, String traceId) {
-        securityEventRecorder.recordAnonymousRequiresNew(
-                SecurityEventRecorder.LOCAL_LOGIN_FAILED, Map.of("traceId", traceId, "operation", "LOGIN"));
+        securityEventRecorder.recordAnonymousRequiresNew(SecurityEventRecorder.LOCAL_LOGIN_FAILED, Map.of("traceId", traceId, "operation", "LOGIN"));
 
         abuseProtection.recordLoginFailure(email, remoteAddr).ifPresent(transition -> {
             try {
-                securityEventRecorder.recordAnonymousRequiresNew(
-                        SecurityEventRecorder.LOCAL_LOGIN_THROTTLED, Map.of("traceId", traceId, "operation", "LOGIN"));
+                securityEventRecorder.recordAnonymousRequiresNew(SecurityEventRecorder.LOCAL_LOGIN_THROTTLED, Map.of("traceId", traceId, "operation", "LOGIN"));
             } catch (RuntimeException exception) {
                 abuseProtection.rollbackThrottle(transition);
                 throw exception;

@@ -7,16 +7,8 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-public record DeviceSessionResponse(
-        @NotNull UUID familyId,
-        @NotNull UUID latestGenerationId,
-        String deviceLabel,
-        @NotNull Instant createdAt,
-        Instant lastUsedAt,
-        @NotNull Instant expiresAt,
-        Instant endedAt,
-        @NotNull DeviceSessionStatus status,
-        boolean current) {
+public record DeviceSessionResponse(@NotNull UUID familyId, @NotNull UUID latestGenerationId, String deviceLabel, @NotNull Instant createdAt,
+        Instant lastUsedAt, @NotNull Instant expiresAt, Instant endedAt, @NotNull DeviceSessionStatus status, boolean current) {
 
     public static DeviceSessionResponse from(DeviceSessionFamilyRecord record, Instant observedAt) {
         if (!Objects.equals(record.minExpiresAt(), record.maxExpiresAt())) {
@@ -28,8 +20,7 @@ public record DeviceSessionResponse(
         Instant endedAt;
 
         if (record.terminalRevokedAt() != null) {
-            status = DeviceSession.REUSE_DETECTED_REVOKE_REASON.equals(record.terminalRevokeReason())
-                    ? DeviceSessionStatus.COMPROMISED
+            status = DeviceSession.REUSE_DETECTED_REVOKE_REASON.equals(record.terminalRevokeReason()) ? DeviceSessionStatus.COMPROMISED
                     : DeviceSessionStatus.REVOKED;
             endedAt = record.terminalRevokedAt();
         } else if (expiresAt.isAfter(observedAt)) {
@@ -40,15 +31,7 @@ public record DeviceSessionResponse(
             endedAt = expiresAt;
         }
 
-        return new DeviceSessionResponse(
-                record.familyId(),
-                record.latestGenerationId(),
-                record.deviceLabel(),
-                record.createdAt(),
-                record.lastUsedAt(),
-                expiresAt,
-                endedAt,
-                status,
-                record.current());
+        return new DeviceSessionResponse(record.familyId(), record.latestGenerationId(), record.deviceLabel(), record.createdAt(), record.lastUsedAt(),
+                expiresAt, endedAt, status, record.current());
     }
 }

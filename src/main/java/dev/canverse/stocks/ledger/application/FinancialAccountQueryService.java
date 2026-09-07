@@ -23,9 +23,7 @@ public class FinancialAccountQueryService {
 
     @Transactional(readOnly = true)
     public List<FinancialAccountResponse> list(UUID ownerUserAccountId, boolean includeArchived) {
-        return readRepository.findAccounts(ownerUserAccountId, includeArchived).stream()
-                .map(FinancialAccountResponse::from)
-                .toList();
+        return readRepository.findAccounts(ownerUserAccountId, includeArchived).stream().map(FinancialAccountResponse::from).toList();
     }
 
     @Transactional(readOnly = true)
@@ -40,21 +38,12 @@ public class FinancialAccountQueryService {
         if (requestedAsOf.isAfter(observedAt)) {
             throw new AppException(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
         }
-        return readRepository
-                .findBalance(
-                        ownerUserAccountId,
-                        accountId,
-                        requestedAsOf,
-                        asOf == null ? observedAt : requestedAsOf,
-                        asOf == null)
-                .map(BalanceResponse::from)
-                .orElseThrow(() -> new AppException(LedgerErrorCode.ACCOUNT_NOT_FOUND));
+        return readRepository.findBalance(ownerUserAccountId, accountId, requestedAsOf, asOf == null ? observedAt : requestedAsOf, asOf == null)
+                .map(BalanceResponse::from).orElseThrow(() -> new AppException(LedgerErrorCode.ACCOUNT_NOT_FOUND));
     }
 
     private FinancialAccountResponse readAccount(UUID ownerUserAccountId, UUID accountId) {
-        return readRepository
-                .findAccount(ownerUserAccountId, accountId)
-                .map(FinancialAccountResponse::from)
+        return readRepository.findAccount(ownerUserAccountId, accountId).map(FinancialAccountResponse::from)
                 .orElseThrow(() -> new AppException(LedgerErrorCode.ACCOUNT_NOT_FOUND));
     }
 }

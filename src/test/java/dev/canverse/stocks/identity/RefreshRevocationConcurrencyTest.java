@@ -31,15 +31,10 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.NONE,
-        properties = {
-            "stocks.identity.refresh-session.lifetime=30d",
-            "stocks.identity.access-token.issuer=https://issuer.test",
-            "stocks.identity.access-token.audience=canverse-test-api",
-            "stocks.identity.access-token.lifetime=5m",
-            "stocks.identity.access-token.key-id=test-ephemeral"
-        })
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE,
+        properties = {"stocks.identity.refresh-session.lifetime=30d", "stocks.identity.access-token.issuer=https://issuer.test",
+                "stocks.identity.access-token.audience=canverse-test-api", "stocks.identity.access-token.lifetime=5m",
+                "stocks.identity.access-token.key-id=test-ephemeral"})
 @Testcontainers
 @Import(RefreshRevocationConcurrencyTest.TestOverrides.class)
 class RefreshRevocationConcurrencyTest {
@@ -73,8 +68,7 @@ class RefreshRevocationConcurrencyTest {
 
     @BeforeEach
     void cleanDatabase() {
-        jdbcTemplate.execute(
-                "TRUNCATE TABLE platform.security_event, identity.device_session, identity.auth_identity, identity.user_account CASCADE");
+        jdbcTemplate.execute("TRUNCATE TABLE platform.security_event, identity.device_session, identity.auth_identity, identity.user_account CASCADE");
     }
 
     @Test
@@ -106,8 +100,7 @@ class RefreshRevocationConcurrencyTest {
 
             // Refresh fails because family was already revoked
             assertThat(refreshResult).isEmpty();
-            assertThat(sessionRepository.findByFamilyIdAndRevokedAtIsNull(session.sessionId()))
-                    .isEmpty();
+            assertThat(sessionRepository.findByFamilyIdAndRevokedAtIsNull(session.sessionId())).isEmpty();
         } finally {
             releaseRevocation.countDown();
             executor.shutdownNow();
@@ -145,9 +138,9 @@ class RefreshRevocationConcurrencyTest {
             revocationFuture.get(10, TimeUnit.SECONDS);
 
             assertThat(refreshResult).isPresent();
-            // Revocation executed after refresh reloaded the terminal generation and revoked the successor
-            assertThat(sessionRepository.findByFamilyIdAndRevokedAtIsNull(session.sessionId()))
-                    .isEmpty();
+            // Revocation executed after refresh reloaded the terminal generation and
+            // revoked the successor
+            assertThat(sessionRepository.findByFamilyIdAndRevokedAtIsNull(session.sessionId())).isEmpty();
         } finally {
             releaseRefresh.countDown();
             executor.shutdownNow();
@@ -181,8 +174,7 @@ class RefreshRevocationConcurrencyTest {
             var refreshResult = refreshFuture.get(10, TimeUnit.SECONDS);
 
             assertThat(refreshResult).isEmpty();
-            assertThat(sessionRepository.findByFamilyIdAndRevokedAtIsNull(session.sessionId()))
-                    .isEmpty();
+            assertThat(sessionRepository.findByFamilyIdAndRevokedAtIsNull(session.sessionId())).isEmpty();
         } finally {
             releaseRevocation.countDown();
             executor.shutdownNow();
@@ -219,8 +211,7 @@ class RefreshRevocationConcurrencyTest {
             revocationFuture.get(10, TimeUnit.SECONDS);
 
             assertThat(refreshResult).isPresent();
-            assertThat(sessionRepository.findByFamilyIdAndRevokedAtIsNull(session.sessionId()))
-                    .isEmpty();
+            assertThat(sessionRepository.findByFamilyIdAndRevokedAtIsNull(session.sessionId())).isEmpty();
         } finally {
             releaseRefresh.countDown();
             executor.shutdownNow();
@@ -255,10 +246,8 @@ class RefreshRevocationConcurrencyTest {
             var refreshResult = refreshFuture.get(10, TimeUnit.SECONDS);
 
             assertThat(refreshResult).isEmpty();
-            assertThat(sessionRepository.findByFamilyIdAndRevokedAtIsNull(session1.sessionId()))
-                    .isEmpty();
-            assertThat(sessionRepository.findByFamilyIdAndRevokedAtIsNull(session2.sessionId()))
-                    .isEmpty();
+            assertThat(sessionRepository.findByFamilyIdAndRevokedAtIsNull(session1.sessionId())).isEmpty();
+            assertThat(sessionRepository.findByFamilyIdAndRevokedAtIsNull(session2.sessionId())).isEmpty();
         } finally {
             releaseRevocation.countDown();
             executor.shutdownNow();
@@ -296,10 +285,8 @@ class RefreshRevocationConcurrencyTest {
             logoutFuture.get(10, TimeUnit.SECONDS);
 
             assertThat(refreshResult).isPresent();
-            assertThat(sessionRepository.findByFamilyIdAndRevokedAtIsNull(session1.sessionId()))
-                    .isEmpty();
-            assertThat(sessionRepository.findByFamilyIdAndRevokedAtIsNull(session2.sessionId()))
-                    .isEmpty();
+            assertThat(sessionRepository.findByFamilyIdAndRevokedAtIsNull(session1.sessionId())).isEmpty();
+            assertThat(sessionRepository.findByFamilyIdAndRevokedAtIsNull(session2.sessionId())).isEmpty();
         } finally {
             releaseRefresh.countDown();
             executor.shutdownNow();
@@ -308,12 +295,8 @@ class RefreshRevocationConcurrencyTest {
 
     private boolean waitingOnUserAccountLock() {
         for (var attempt = 0; attempt < 500; attempt++) {
-            var waiting = jdbcTemplate.queryForObject(
-                    "SELECT count(*) FROM pg_stat_activity a "
-                            + "WHERE a.wait_event_type = 'Lock' "
-                            + "AND cardinality(pg_blocking_pids(a.pid)) > 0 "
-                            + "AND a.query ILIKE '%user_account%'",
-                    Long.class);
+            var waiting = jdbcTemplate.queryForObject("SELECT count(*) FROM pg_stat_activity a " + "WHERE a.wait_event_type = 'Lock' " +
+                    "AND cardinality(pg_blocking_pids(a.pid)) > 0 " + "AND a.query ILIKE '%user_account%'", Long.class);
             if (waiting != null && waiting > 0) {
                 return true;
             }

@@ -58,14 +58,8 @@ class EntityMappingTest {
     @Test
     void userAccountCanBeLoaded() {
         var userId = UUID.randomUUID();
-        jdbcTemplate.update(
-                "INSERT INTO identity.user_account (id, email, email_normalized, created_at, updated_at)"
-                        + " VALUES (?, ?, ?, ?, ?)",
-                userId,
-                "Alice@example.com",
-                "alice@example.com",
-                T1,
-                T2);
+        jdbcTemplate.update("INSERT INTO identity.user_account (id, email, email_normalized, created_at, updated_at)" + " VALUES (?, ?, ?, ?, ?)", userId,
+                "Alice@example.com", "alice@example.com", T1, T2);
 
         entityManager.clear();
 
@@ -83,25 +77,10 @@ class EntityMappingTest {
     void authIdentityCanBeLoadedWithUserAccountReference() {
         var userId = UUID.randomUUID();
         var authId = UUID.randomUUID();
-        jdbcTemplate.update(
-                "INSERT INTO identity.user_account (id, email, email_normalized, created_at, updated_at)"
-                        + " VALUES (?, ?, ?, ?, ?)",
-                userId,
-                "bob@example.com",
-                "bob@example.com",
-                T1,
-                T1);
-        jdbcTemplate.update(
-                "INSERT INTO identity.auth_identity"
-                        + " (id, user_account_id, provider, provider_subject, password_hash, created_at, updated_at)"
-                        + " VALUES (?, ?, ?, ?, ?, ?, ?)",
-                authId,
-                userId,
-                "LOCAL",
-                "bob@example.com",
-                "$2a$12$hashedpassword",
-                T1,
-                T1);
+        jdbcTemplate.update("INSERT INTO identity.user_account (id, email, email_normalized, created_at, updated_at)" + " VALUES (?, ?, ?, ?, ?)", userId,
+                "bob@example.com", "bob@example.com", T1, T1);
+        jdbcTemplate.update("INSERT INTO identity.auth_identity" + " (id, user_account_id, provider, provider_subject, password_hash, created_at, updated_at)" +
+                " VALUES (?, ?, ?, ?, ?, ?, ?)", authId, userId, "LOCAL", "bob@example.com", "$2a$12$hashedpassword", T1, T1);
 
         entityManager.clear();
 
@@ -119,24 +98,10 @@ class EntityMappingTest {
         var userId = UUID.randomUUID();
         var sessionId = UUID.randomUUID();
         var familyId = UUID.randomUUID();
-        jdbcTemplate.update(
-                "INSERT INTO identity.user_account (id, email, email_normalized, created_at, updated_at)"
-                        + " VALUES (?, ?, ?, ?, ?)",
-                userId,
-                "carol@example.com",
-                "carol@example.com",
-                T1,
-                T1);
-        jdbcTemplate.update(
-                "INSERT INTO identity.device_session"
-                        + " (id, user_account_id, family_id, refresh_token_hash, created_at, expires_at)"
-                        + " VALUES (?, ?, ?, ?, ?, ?)",
-                sessionId,
-                userId,
-                familyId,
-                "token-hash-carol",
-                T1,
-                T3);
+        jdbcTemplate.update("INSERT INTO identity.user_account (id, email, email_normalized, created_at, updated_at)" + " VALUES (?, ?, ?, ?, ?)", userId,
+                "carol@example.com", "carol@example.com", T1, T1);
+        jdbcTemplate.update("INSERT INTO identity.device_session" + " (id, user_account_id, family_id, refresh_token_hash, created_at, expires_at)" +
+                " VALUES (?, ?, ?, ?, ?, ?)", sessionId, userId, familyId, "token-hash-carol", T1, T3);
 
         entityManager.clear();
 
@@ -155,13 +120,8 @@ class EntityMappingTest {
     @Test
     void anonymousSecurityEventCanBeLoaded() {
         var eventId = UUID.randomUUID();
-        jdbcTemplate.update(
-                "INSERT INTO platform.security_event (id, event_type, occurred_at, details)"
-                        + " VALUES (?, ?, ?, CAST(? AS jsonb))",
-                eventId,
-                "LOGIN_FAILED",
-                T1,
-                "{\"reason\": \"bad_password\"}");
+        jdbcTemplate.update("INSERT INTO platform.security_event (id, event_type, occurred_at, details)" + " VALUES (?, ?, ?, CAST(? AS jsonb))", eventId,
+                "LOGIN_FAILED", T1, "{\"reason\": \"bad_password\"}");
 
         entityManager.clear();
 
@@ -176,19 +136,8 @@ class EntityMappingTest {
     @Test
     void jobCanBeLoaded() {
         var jobId = UUID.randomUUID();
-        jdbcTemplate.update(
-                "INSERT INTO platform.job"
-                        + " (id, job_type, status, payload, available_at, attempt_count, max_attempts, created_at, updated_at)"
-                        + " VALUES (?, ?, ?, CAST(? AS jsonb), ?, ?, ?, ?, ?)",
-                jobId,
-                "IMPORT_CSV",
-                "READY",
-                "{\"file\": \"stocks.csv\"}",
-                T1,
-                0,
-                5,
-                T1,
-                T1);
+        jdbcTemplate.update("INSERT INTO platform.job" + " (id, job_type, status, payload, available_at, attempt_count, max_attempts, created_at, updated_at)" +
+                " VALUES (?, ?, ?, CAST(? AS jsonb), ?, ?, ?, ?, ?)", jobId, "IMPORT_CSV", "READY", "{\"file\": \"stocks.csv\"}", T1, 0, 5, T1, T1);
 
         entityManager.clear();
 

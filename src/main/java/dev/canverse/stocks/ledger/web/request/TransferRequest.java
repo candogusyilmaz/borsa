@@ -7,13 +7,6 @@ import jakarta.validation.constraints.PositiveOrZero;
 import java.time.Instant;
 import java.util.UUID;
 
-public record TransferRequest(
-        @NotNull UUID clientRequestId,
-        @NotNull UUID sourceAccountId,
-        @NotNull UUID destinationAccountId,
-        @NotBlank String amount,
-        @NotNull RecordingMode recordingMode,
-        @NotNull Instant effectiveAt,
-        boolean confirmPolicyBreach,
-        @PositiveOrZero Long expectedSourceBalanceVersion,
+public record TransferRequest(@NotNull UUID clientRequestId, @NotNull UUID sourceAccountId, @NotNull UUID destinationAccountId, @NotBlank String amount,
+        @NotNull RecordingMode recordingMode, @NotNull Instant effectiveAt, boolean confirmPolicyBreach, @PositiveOrZero Long expectedSourceBalanceVersion,
         @PositiveOrZero Long expectedDestinationBalanceVersion) {}

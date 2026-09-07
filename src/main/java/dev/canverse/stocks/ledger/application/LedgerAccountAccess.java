@@ -13,7 +13,9 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-/** Applies the owner scope and deterministic lock order to ledger aggregate access. */
+/**
+ * Applies the owner scope and deterministic lock order to ledger aggregate access.
+ */
 @Component
 @RequiredArgsConstructor
 final class LedgerAccountAccess {
@@ -22,26 +24,19 @@ final class LedgerAccountAccess {
     private final AccountBalanceProjectionRepository projectionRepository;
 
     FinancialAccount owned(UUID ownerUserAccountId, UUID accountId) {
-        return accountRepository
-                .findOwned(accountId, ownerUserAccountId)
-                .orElseThrow(() -> new AppException(LedgerErrorCode.ACCOUNT_NOT_FOUND));
+        return accountRepository.findOwned(accountId, ownerUserAccountId).orElseThrow(() -> new AppException(LedgerErrorCode.ACCOUNT_NOT_FOUND));
     }
 
     FinancialAccount ownedForUpdate(UUID ownerUserAccountId, UUID accountId) {
-        return accountRepository
-                .findOwnedForUpdate(accountId, ownerUserAccountId)
-                .orElseThrow(() -> new AppException(LedgerErrorCode.ACCOUNT_NOT_FOUND));
+        return accountRepository.findOwnedForUpdate(accountId, ownerUserAccountId).orElseThrow(() -> new AppException(LedgerErrorCode.ACCOUNT_NOT_FOUND));
     }
 
     AccountBalanceProjection projection(UUID ownerUserAccountId, UUID accountId) {
-        return projectionRepository
-                .findOwned(ownerUserAccountId, accountId)
-                .orElseThrow(() -> new AppException(LedgerErrorCode.ACCOUNT_NOT_FOUND));
+        return projectionRepository.findOwned(ownerUserAccountId, accountId).orElseThrow(() -> new AppException(LedgerErrorCode.ACCOUNT_NOT_FOUND));
     }
 
     AccountBalanceProjection projectionForUpdate(UUID ownerUserAccountId, UUID accountId) {
-        return projectionRepository
-                .findOwnedForUpdate(ownerUserAccountId, accountId)
+        return projectionRepository.findOwnedForUpdate(ownerUserAccountId, accountId)
                 .orElseThrow(() -> new AppException(LedgerErrorCode.ACCOUNT_ACTION_NOT_SUPPORTED));
     }
 
@@ -58,8 +53,7 @@ final class LedgerAccountAccess {
         return accounts;
     }
 
-    LinkedHashMap<UUID, AccountBalanceProjection> lockProjections(
-            UUID ownerUserAccountId, Map<UUID, FinancialAccount> accounts) {
+    LinkedHashMap<UUID, AccountBalanceProjection> lockProjections(UUID ownerUserAccountId, Map<UUID, FinancialAccount> accounts) {
         var projections = new LinkedHashMap<UUID, AccountBalanceProjection>();
         for (var accountId : accounts.keySet()) {
             projections.put(accountId, projectionForUpdate(ownerUserAccountId, accountId));

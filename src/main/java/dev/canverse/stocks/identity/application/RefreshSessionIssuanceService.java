@@ -31,17 +31,14 @@ public class RefreshSessionIssuanceService {
     public IssuedRefreshSession issue(UUID userAccountId, String deviceLabel) {
         Objects.requireNonNull(userAccountId, "userAccountId");
 
-        var userAccount = userAccountRepository
-                .findById(userAccountId)
-                .filter(account -> account.getDisabledAt() == null)
+        var userAccount = userAccountRepository.findById(userAccountId).filter(account -> account.getDisabledAt() == null)
                 .orElseThrow(() -> new AppException(IdentityErrorCode.INVALID_CREDENTIALS));
 
         var generatedToken = refreshTokenGenerator.generate();
         var sessionId = idGenerator.next();
         var createdAt = clock.instant();
         var expiresAt = createdAt.plus(refreshSessionProperties.lifetime());
-        var deviceSession = DeviceSession.initialGeneration(
-                sessionId, userAccount, generatedToken.hash(), deviceLabel, createdAt, expiresAt);
+        var deviceSession = DeviceSession.initialGeneration(sessionId, userAccount, generatedToken.hash(), deviceLabel, createdAt, expiresAt);
 
         deviceSessionRepository.saveAndFlush(deviceSession);
 

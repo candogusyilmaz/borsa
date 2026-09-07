@@ -52,37 +52,24 @@ class ContextSmokeTest {
 
     @Test
     void legacyApplicationTablesAreNotPresent() {
-        var count = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM information_schema.tables"
-                        + " WHERE table_schema = 'public'"
-                        + " AND table_name IN ('portfolio', 'account', 'instrument', 'transaction')",
-                Integer.class);
+        var count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM information_schema.tables" + " WHERE table_schema = 'public'" +
+                " AND table_name IN ('portfolio', 'account', 'instrument', 'transaction')", Integer.class);
         assertThat(count).isZero();
     }
 
     @Test
     void fiveFoundationTablesExistInCorrectSchemas() {
-        var tables = jdbcTemplate.queryForList(
-                "SELECT table_schema || '.' || table_name"
-                        + " FROM information_schema.tables"
-                        + " WHERE (table_schema = 'identity' AND table_name IN ('user_account','auth_identity','device_session'))"
-                        + " OR (table_schema = 'platform' AND table_name IN ('security_event','job'))",
-                String.class);
-        assertThat(tables)
-                .containsExactlyInAnyOrder(
-                        "identity.user_account",
-                        "identity.auth_identity",
-                        "identity.device_session",
-                        "platform.security_event",
-                        "platform.job");
+        var tables = jdbcTemplate.queryForList("SELECT table_schema || '.' || table_name" + " FROM information_schema.tables" +
+                " WHERE (table_schema = 'identity' AND table_name IN ('user_account','auth_identity','device_session'))" +
+                " OR (table_schema = 'platform' AND table_name IN ('security_event','job'))", String.class);
+        assertThat(tables).containsExactlyInAnyOrder("identity.user_account", "identity.auth_identity", "identity.device_session", "platform.security_event",
+                "platform.job");
     }
 
     @Test
     void noApplicationDomainTableCreatedInPublicSchema() {
         var count = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM information_schema.tables"
-                        + " WHERE table_schema = 'public'"
-                        + " AND table_name NOT IN ('flyway_schema_history')",
+                "SELECT COUNT(*) FROM information_schema.tables" + " WHERE table_schema = 'public'" + " AND table_name NOT IN ('flyway_schema_history')",
                 Integer.class);
         assertThat(count).isZero();
     }

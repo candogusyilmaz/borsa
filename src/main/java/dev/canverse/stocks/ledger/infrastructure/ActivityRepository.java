@@ -17,7 +17,6 @@ public interface ActivityRepository extends JpaRepository<Activity, UUID> {
     @Query("select a from Activity a where a.id = :activityId and a.ownerUserAccountId = :ownerUserAccountId")
     Optional<Activity> findOwnedForUpdate(UUID activityId, UUID ownerUserAccountId);
 
-    @Query(
-            "select a from Activity a where a.ownerUserAccountId = :ownerUserAccountId and a.reversesActivityId = :activityId")
+    @Query("select a from Activity a where a.ownerUserAccountId = :ownerUserAccountId and a.reversesActivityId = :activityId")
     Optional<Activity> findReversal(UUID activityId, UUID ownerUserAccountId);
 }

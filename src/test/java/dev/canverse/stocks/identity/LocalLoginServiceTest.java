@@ -42,8 +42,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.NONE,
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE,
         properties = {"stocks.identity.refresh-session.lifetime=2h", "stocks.identity.access-token.lifetime=5m"})
 @Testcontainers
 @Import(LocalLoginServiceTest.TestOverrides.class)
@@ -111,12 +110,8 @@ class LocalLoginServiceTest {
         var expectedAccessExpiry = OBSERVED_AT.plus(ACCESS_TOKEN_LIFETIME).truncatedTo(ChronoUnit.SECONDS);
         assertThat(result.sessionId()).isEqualTo(sessionId).isEqualTo(persistedSession.id());
         assertThat(result.accessToken()).isEqualTo(ACCESS_TOKEN);
-        assertThat(result.accessTokenExpiresAt())
-                .isEqualTo(expectedAccessExpiry)
-                .isEqualTo(jwtEncoder.lastParameters().getClaims().getExpiresAt());
-        assertThat(result.refreshTokenExpiresAt())
-                .isEqualTo(expectedRefreshExpiry)
-                .isEqualTo(persistedSession.expiresAt());
+        assertThat(result.accessTokenExpiresAt()).isEqualTo(expectedAccessExpiry).isEqualTo(jwtEncoder.lastParameters().getClaims().getExpiresAt());
+        assertThat(result.refreshTokenExpiresAt()).isEqualTo(expectedRefreshExpiry).isEqualTo(persistedSession.expiresAt());
         assertThat(persistedSession.userAccountId()).isEqualTo(userId);
         assertThat(persistedSession.familyId()).isEqualTo(sessionId);
         assertThat(persistedSession.deviceLabel()).isEqualTo(deviceLabel);
@@ -130,8 +125,7 @@ class LocalLoginServiceTest {
         assertThat(rawTokenTextColumnOccurrences(result.refreshToken())).isZero();
         assertThat(jwtEncoder.invocations()).isOne();
         assertThat(jwtEncoder.sessionRowsVisibleAtEncode()).isOne();
-        assertThat(jwtEncoder.lastParameters().getClaims().getClaimAsString("sid"))
-                .isEqualTo(sessionId.toString());
+        assertThat(jwtEncoder.lastParameters().getClaims().getClaimAsString("sid")).isEqualTo(sessionId.toString());
         assertThat(jwtEncoder.lastParameters().getClaims().getId()).isEqualTo(tokenId.toString());
         assertThat(idGenerator.invocations()).isGreaterThanOrEqualTo(2);
         assertThat(deviceSessionRepository.count()).isOne();
@@ -175,8 +169,7 @@ class LocalLoginServiceTest {
 
         assertThat(result.sessionId()).isEqualTo(sessionId);
         assertThat(persistedSession(sessionId).deviceLabel()).isNull();
-        assertThat(jwtEncoder.lastParameters().getClaims().getClaimAsString("sid"))
-                .isEqualTo(sessionId.toString());
+        assertThat(jwtEncoder.lastParameters().getClaims().getClaimAsString("sid")).isEqualTo(sessionId.toString());
         assertThat(deviceSessionRepository.count()).isOne();
     }
 
@@ -198,12 +191,10 @@ class LocalLoginServiceTest {
         var thrown = catchThrowable(() -> loginService.login(email, RAW_PASSWORD, deviceLabel));
 
         assertThat(thrown).isSameAs(encodingFailure);
-        assertThat(thrown.toString())
-                .doesNotContain(email, RAW_PASSWORD, deviceLabel, sessionId.toString(), tokenId.toString());
+        assertThat(thrown.toString()).doesNotContain(email, RAW_PASSWORD, deviceLabel, sessionId.toString(), tokenId.toString());
         assertThat(jwtEncoder.invocations()).isOne();
         assertThat(jwtEncoder.sessionRowsVisibleAtEncode()).isOne();
-        assertThat(jwtEncoder.lastParameters().getClaims().getClaimAsString("sid"))
-                .isEqualTo(sessionId.toString());
+        assertThat(jwtEncoder.lastParameters().getClaims().getClaimAsString("sid")).isEqualTo(sessionId.toString());
         assertThat(idGenerator.invocations()).isEqualTo(2);
         assertThat(deviceSessionRepository.count()).isZero();
         assertThat(identitySnapshot()).isEqualTo(identityBeforeLogin);
@@ -211,11 +202,8 @@ class LocalLoginServiceTest {
 
     @Test
     void nullCredentialsFailBeforeIssuance() {
-        assertThatThrownBy(() -> loginService.login(null, RAW_PASSWORD, "device"))
-                .isExactlyInstanceOf(NullPointerException.class)
-                .hasMessage("email");
-        assertThatThrownBy(() -> loginService.login("alice@example.com", null, "device"))
-                .isExactlyInstanceOf(NullPointerException.class)
+        assertThatThrownBy(() -> loginService.login(null, RAW_PASSWORD, "device")).isExactlyInstanceOf(NullPointerException.class).hasMessage("email");
+        assertThatThrownBy(() -> loginService.login("alice@example.com", null, "device")).isExactlyInstanceOf(NullPointerException.class)
                 .hasMessage("rawPassword");
 
         assertThat(deviceSessionRepository.count()).isZero();
@@ -235,44 +223,25 @@ class LocalLoginServiceTest {
     private PersistedSession persistedSession(UUID sessionId) {
         return new TransactionTemplate(transactionManager).execute(status -> {
             var session = deviceSessionRepository.findById(sessionId).orElseThrow();
-            return new PersistedSession(
-                    session.getId(),
-                    session.getUserAccount().getId(),
-                    session.getFamilyId(),
-                    session.getRefreshTokenHash(),
-                    session.getDeviceLabel(),
-                    session.getCreatedAt(),
-                    session.getLastUsedAt(),
-                    session.getExpiresAt(),
-                    session.getRevokedAt(),
-                    session.getRevokeReason(),
-                    session.getReplacedBySessionId());
+            return new PersistedSession(session.getId(), session.getUserAccount().getId(), session.getFamilyId(), session.getRefreshTokenHash(),
+                    session.getDeviceLabel(), session.getCreatedAt(), session.getLastUsedAt(), session.getExpiresAt(), session.getRevokedAt(),
+                    session.getRevokeReason(), session.getReplacedBySessionId());
         });
     }
 
     private IdentityState identitySnapshot() {
-        return new IdentityState(
-                List.copyOf(jdbcTemplate.queryForList("SELECT * FROM identity.user_account ORDER BY id")),
+        return new IdentityState(List.copyOf(jdbcTemplate.queryForList("SELECT * FROM identity.user_account ORDER BY id")),
                 List.copyOf(jdbcTemplate.queryForList("SELECT * FROM identity.auth_identity ORDER BY id")));
     }
 
     private String independentHash(String rawToken) throws NoSuchAlgorithmException {
         var digest = MessageDigest.getInstance("SHA-256");
-        return Base64.getUrlEncoder()
-                .withoutPadding()
-                .encodeToString(digest.digest(rawToken.getBytes(StandardCharsets.UTF_8)));
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(digest.digest(rawToken.getBytes(StandardCharsets.UTF_8)));
     }
 
     private long rawTokenTextColumnOccurrences(String rawToken) {
-        return jdbcTemplate.queryForObject(
-                "SELECT count(*) FROM identity.device_session"
-                        + " WHERE strpos(refresh_token_hash, ?) > 0"
-                        + " OR strpos(coalesce(device_label, ''), ?) > 0"
-                        + " OR strpos(coalesce(revoke_reason, ''), ?) > 0",
-                Long.class,
-                rawToken,
-                rawToken,
-                rawToken);
+        return jdbcTemplate.queryForObject("SELECT count(*) FROM identity.device_session" + " WHERE strpos(refresh_token_hash, ?) > 0" +
+                " OR strpos(coalesce(device_label, ''), ?) > 0" + " OR strpos(coalesce(revoke_reason, ''), ?) > 0", Long.class, rawToken, rawToken, rawToken);
     }
 
     private void runInTransaction(Runnable action) {
@@ -340,34 +309,18 @@ class LocalLoginServiceTest {
         public Jwt encode(JwtEncoderParameters parameters) {
             invocations++;
             lastParameters = parameters;
-            sessionRowsVisibleAtEncode =
-                    jdbcTemplate.queryForObject("SELECT count(*) FROM identity.device_session", Long.class);
+            sessionRowsVisibleAtEncode = jdbcTemplate.queryForObject("SELECT count(*) FROM identity.device_session", Long.class);
             if (failure != null) {
                 throw failure;
             }
 
             var claims = parameters.getClaims();
-            return new Jwt(
-                    ACCESS_TOKEN,
-                    claims.getIssuedAt(),
-                    claims.getExpiresAt(),
-                    parameters.getJwsHeader().getHeaders(),
-                    claims.getClaims());
+            return new Jwt(ACCESS_TOKEN, claims.getIssuedAt(), claims.getExpiresAt(), parameters.getJwsHeader().getHeaders(), claims.getClaims());
         }
     }
 
-    private record PersistedSession(
-            UUID id,
-            UUID userAccountId,
-            UUID familyId,
-            String refreshTokenHash,
-            String deviceLabel,
-            Instant createdAt,
-            Instant lastUsedAt,
-            Instant expiresAt,
-            Instant revokedAt,
-            String revokeReason,
-            UUID replacedBySessionId) {}
+    private record PersistedSession(UUID id, UUID userAccountId, UUID familyId, String refreshTokenHash, String deviceLabel, Instant createdAt,
+            Instant lastUsedAt, Instant expiresAt, Instant revokedAt, String revokeReason, UUID replacedBySessionId) {}
 
     private record IdentityState(List<Map<String, Object>> users, List<Map<String, Object>> identities) {}
 }

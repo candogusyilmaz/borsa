@@ -5,4 +5,5 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(RefreshSessionProperties.class)
-public class RefreshSessionConfiguration {}
+public class RefreshSessionConfiguration {
+}

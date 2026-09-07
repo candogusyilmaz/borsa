@@ -71,9 +71,7 @@ class ReferenceEntityMappingTest {
         var country = entityManager.find(Country.class, "TR");
         var currency = currencyRepository.findById("TRY").orElseThrow();
         var xist = marketRepository.findById(XIST).orElseThrow();
-        var marketCurrency = marketCurrencyRepository
-                .findById(new MarketCurrencyId(XIST, "TRY"))
-                .orElseThrow();
+        var marketCurrency = marketCurrencyRepository.findById(new MarketCurrencyId(XIST, "TRY")).orElseThrow();
 
         assertThat(country.getCode()).isEqualTo("TR");
         assertThat(currency.getMinorUnit()).isEqualTo((short) 2);
@@ -90,49 +88,21 @@ class ReferenceEntityMappingTest {
         var aliasId = UUID.randomUUID();
         var date = LocalDate.of(2026, 8, 17);
         var created = OffsetDateTime.ofInstant(T1, ZoneOffset.UTC);
+        jdbcTemplate.update("INSERT INTO identity.user_account (id, email, email_normalized, created_at, updated_at) VALUES (?, ?, ?, ?, ?)", userId,
+                "mapping-reference@example.com", "mapping-reference@example.com", created, created);
         jdbcTemplate.update(
-                "INSERT INTO identity.user_account (id, email, email_normalized, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
-                userId,
-                "mapping-reference@example.com",
-                "mapping-reference@example.com",
-                created,
+                "INSERT INTO reference.instrument" + " (id, owner_user_account_id, market_id, symbol, symbol_normalized, name, name_normalized," +
+                        " instrument_type, quotation_currency_code, valuation_method, source_kind, created_at, updated_at)" +
+                        " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                instrumentId, userId, MANUAL, "MAP-FUND", "MAP-FUND", "Mapping fund", "MAPPING FUND", "FUND", "TRY", "MANUAL_VALUE", "USER_ENTERED", created,
                 created);
         jdbcTemplate.update(
-                "INSERT INTO reference.instrument"
-                        + " (id, owner_user_account_id, market_id, symbol, symbol_normalized, name, name_normalized,"
-                        + " instrument_type, quotation_currency_code, valuation_method, source_kind, created_at, updated_at)"
-                        + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                instrumentId,
-                userId,
-                MANUAL,
-                "MAP-FUND",
-                "MAP-FUND",
-                "Mapping fund",
-                "MAPPING FUND",
-                "FUND",
-                "TRY",
-                "MANUAL_VALUE",
-                "USER_ENTERED",
-                created,
-                created);
-        jdbcTemplate.update(
-                "INSERT INTO reference.instrument_alias"
-                        + " (id, instrument_id, alias_type, alias_value, alias_normalized, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-                aliasId,
-                instrumentId,
-                "USER",
-                "Map Alias",
-                "MAP ALIAS",
-                created);
-        jdbcTemplate.update(
-                "INSERT INTO reference.market_calendar"
-                        + " (market_id, calendar_date, session_status, opens_at, closes_at, source_kind, created_at)"
-                        + " VALUES (?, ?, 'OPEN', ?, ?, 'USER_ENTERED', ?)",
-                MANUAL,
-                date,
-                LocalTime.of(9, 0),
-                LocalTime.of(17, 0),
-                created);
+                "INSERT INTO reference.instrument_alias" +
+                        " (id, instrument_id, alias_type, alias_value, alias_normalized, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+                aliasId, instrumentId, "USER", "Map Alias", "MAP ALIAS", created);
+        jdbcTemplate.update("INSERT INTO reference.market_calendar" +
+                " (market_id, calendar_date, session_status, opens_at, closes_at, source_kind, created_at)" + " VALUES (?, ?, 'OPEN', ?, ?, 'USER_ENTERED', ?)",
+                MANUAL, date, LocalTime.of(9, 0), LocalTime.of(17, 0), created);
 
         entityManager.clear();
 

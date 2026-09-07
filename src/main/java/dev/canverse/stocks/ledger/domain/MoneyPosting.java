@@ -34,170 +34,50 @@ public class MoneyPosting {
 
     private Instant createdAt;
 
-    public static MoneyPosting opening(
-            UUID id,
-            UUID ownerUserAccountId,
-            UUID activityId,
-            UUID financialAccountId,
-            UUID cashPocketId,
-            String currencyCode,
-            FinancialAmount amount,
-            Instant createdAt) {
-        return create(
-                id,
-                ownerUserAccountId,
-                activityId,
-                financialAccountId,
-                cashPocketId,
-                currencyCode,
-                amount,
-                PostingRole.OPENING,
-                createdAt);
+    public static MoneyPosting opening(UUID id, UUID ownerUserAccountId, UUID activityId, UUID financialAccountId, UUID cashPocketId, String currencyCode,
+            FinancialAmount amount, Instant createdAt) {
+        return create(id, ownerUserAccountId, activityId, financialAccountId, cashPocketId, currencyCode, amount, PostingRole.OPENING, createdAt);
     }
 
-    public static MoneyPosting deposit(
-            UUID id,
-            UUID ownerUserAccountId,
-            UUID activityId,
-            UUID financialAccountId,
-            UUID cashPocketId,
-            String currencyCode,
-            FinancialAmount amount,
-            Instant createdAt) {
+    public static MoneyPosting deposit(UUID id, UUID ownerUserAccountId, UUID activityId, UUID financialAccountId, UUID cashPocketId, String currencyCode,
+            FinancialAmount amount, Instant createdAt) {
         requirePositive(amount, PostingRole.DEPOSIT);
-        return create(
-                id,
-                ownerUserAccountId,
-                activityId,
-                financialAccountId,
-                cashPocketId,
-                currencyCode,
-                amount,
-                PostingRole.DEPOSIT,
-                createdAt);
+        return create(id, ownerUserAccountId, activityId, financialAccountId, cashPocketId, currencyCode, amount, PostingRole.DEPOSIT, createdAt);
     }
 
-    public static MoneyPosting withdrawal(
-            UUID id,
-            UUID ownerUserAccountId,
-            UUID activityId,
-            UUID financialAccountId,
-            UUID cashPocketId,
-            String currencyCode,
-            FinancialAmount amount,
-            Instant createdAt) {
+    public static MoneyPosting withdrawal(UUID id, UUID ownerUserAccountId, UUID activityId, UUID financialAccountId, UUID cashPocketId, String currencyCode,
+            FinancialAmount amount, Instant createdAt) {
         requireNegative(amount, PostingRole.WITHDRAWAL);
-        return create(
-                id,
-                ownerUserAccountId,
-                activityId,
-                financialAccountId,
-                cashPocketId,
-                currencyCode,
-                amount,
-                PostingRole.WITHDRAWAL,
-                createdAt);
+        return create(id, ownerUserAccountId, activityId, financialAccountId, cashPocketId, currencyCode, amount, PostingRole.WITHDRAWAL, createdAt);
     }
 
-    public static MoneyPosting transferSource(
-            UUID id,
-            UUID ownerUserAccountId,
-            UUID activityId,
-            UUID financialAccountId,
-            UUID cashPocketId,
-            String currencyCode,
-            FinancialAmount amount,
-            Instant createdAt) {
+    public static MoneyPosting transferSource(UUID id, UUID ownerUserAccountId, UUID activityId, UUID financialAccountId, UUID cashPocketId,
+            String currencyCode, FinancialAmount amount, Instant createdAt) {
         requireNegative(amount, PostingRole.TRANSFER_SOURCE);
-        return create(
-                id,
-                ownerUserAccountId,
-                activityId,
-                financialAccountId,
-                cashPocketId,
-                currencyCode,
-                amount,
-                PostingRole.TRANSFER_SOURCE,
-                createdAt);
+        return create(id, ownerUserAccountId, activityId, financialAccountId, cashPocketId, currencyCode, amount, PostingRole.TRANSFER_SOURCE, createdAt);
     }
 
-    public static MoneyPosting transferDestination(
-            UUID id,
-            UUID ownerUserAccountId,
-            UUID activityId,
-            UUID financialAccountId,
-            UUID cashPocketId,
-            String currencyCode,
-            FinancialAmount amount,
-            Instant createdAt) {
+    public static MoneyPosting transferDestination(UUID id, UUID ownerUserAccountId, UUID activityId, UUID financialAccountId, UUID cashPocketId,
+            String currencyCode, FinancialAmount amount, Instant createdAt) {
         requirePositive(amount, PostingRole.TRANSFER_DESTINATION);
-        return create(
-                id,
-                ownerUserAccountId,
-                activityId,
-                financialAccountId,
-                cashPocketId,
-                currencyCode,
-                amount,
-                PostingRole.TRANSFER_DESTINATION,
-                createdAt);
+        return create(id, ownerUserAccountId, activityId, financialAccountId, cashPocketId, currencyCode, amount, PostingRole.TRANSFER_DESTINATION, createdAt);
     }
 
-    public static MoneyPosting reversal(
-            UUID id,
-            UUID ownerUserAccountId,
-            UUID activityId,
-            UUID financialAccountId,
-            UUID cashPocketId,
-            String currencyCode,
-            FinancialAmount amount,
-            Instant createdAt) {
-        return create(
-                id,
-                ownerUserAccountId,
-                activityId,
-                financialAccountId,
-                cashPocketId,
-                currencyCode,
-                amount,
-                PostingRole.REVERSAL,
-                createdAt);
+    public static MoneyPosting reversal(UUID id, UUID ownerUserAccountId, UUID activityId, UUID financialAccountId, UUID cashPocketId, String currencyCode,
+            FinancialAmount amount, Instant createdAt) {
+        return create(id, ownerUserAccountId, activityId, financialAccountId, cashPocketId, currencyCode, amount, PostingRole.REVERSAL, createdAt);
     }
 
-    public static MoneyPosting adjustment(
-            UUID id,
-            UUID ownerUserAccountId,
-            UUID activityId,
-            UUID financialAccountId,
-            UUID cashPocketId,
-            String currencyCode,
-            FinancialAmount amount,
-            Instant createdAt) {
+    public static MoneyPosting adjustment(UUID id, UUID ownerUserAccountId, UUID activityId, UUID financialAccountId, UUID cashPocketId, String currencyCode,
+            FinancialAmount amount, Instant createdAt) {
         if (Objects.requireNonNull(amount, "amount").isZero()) {
             throw new IllegalArgumentException("ADJUSTMENT posting amount must be non-zero");
         }
-        return create(
-                id,
-                ownerUserAccountId,
-                activityId,
-                financialAccountId,
-                cashPocketId,
-                currencyCode,
-                amount,
-                PostingRole.ADJUSTMENT,
-                createdAt);
+        return create(id, ownerUserAccountId, activityId, financialAccountId, cashPocketId, currencyCode, amount, PostingRole.ADJUSTMENT, createdAt);
     }
 
-    private static MoneyPosting create(
-            UUID id,
-            UUID ownerUserAccountId,
-            UUID activityId,
-            UUID financialAccountId,
-            UUID cashPocketId,
-            String currencyCode,
-            FinancialAmount amount,
-            PostingRole postingRole,
-            Instant createdAt) {
+    private static MoneyPosting create(UUID id, UUID ownerUserAccountId, UUID activityId, UUID financialAccountId, UUID cashPocketId, String currencyCode,
+            FinancialAmount amount, PostingRole postingRole, Instant createdAt) {
         var posting = new MoneyPosting();
         posting.id = Objects.requireNonNull(id, "id");
         posting.ownerUserAccountId = Objects.requireNonNull(ownerUserAccountId, "ownerUserAccountId");

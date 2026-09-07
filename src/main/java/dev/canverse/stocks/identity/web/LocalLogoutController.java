@@ -24,8 +24,7 @@ public class LocalLogoutController {
     private final DeviceSessionRevocationService revocationService;
 
     @PostMapping("logout")
-    public ResponseEntity<Void> logout(
-            @AuthenticationPrincipal AuthenticatedIdentity identity, @Valid @RequestBody LogoutRequest request) {
+    public ResponseEntity<Void> logout(@AuthenticationPrincipal AuthenticatedIdentity identity, @Valid @RequestBody LogoutRequest request) {
 
         if (request.scope() == LogoutScope.CURRENT_SESSION) {
             revocationService.logoutCurrentSession(identity.userAccountId(), identity.sessionId());

@@ -43,24 +43,15 @@ public class AccountBalanceProjection {
     @Version
     private long version;
 
-    public static AccountBalanceProjection create(
-            UUID id,
-            UUID ownerUserAccountId,
-            FinancialAccount financialAccount,
-            AccountCashPocket cashPocket,
-            String currencyCode,
-            FinancialAmount openingBalance,
-            Instant recordedAt,
-            UUID activityId,
-            Instant observedAt) {
+    public static AccountBalanceProjection create(UUID id, UUID ownerUserAccountId, FinancialAccount financialAccount, AccountCashPocket cashPocket,
+            String currencyCode, FinancialAmount openingBalance, Instant recordedAt, UUID activityId, Instant observedAt) {
         var projection = new AccountBalanceProjection();
         projection.id = Objects.requireNonNull(id, "id");
         projection.ownerUserAccountId = Objects.requireNonNull(ownerUserAccountId, "ownerUserAccountId");
         projection.financialAccount = Objects.requireNonNull(financialAccount, "financialAccount");
         projection.cashPocket = Objects.requireNonNull(cashPocket, "cashPocket");
         projection.currencyCode = Objects.requireNonNull(currencyCode, "currencyCode");
-        projection.ledgerBalance =
-                Objects.requireNonNull(openingBalance, "openingBalance").value();
+        projection.ledgerBalance = Objects.requireNonNull(openingBalance, "openingBalance").value();
         projection.lastAppliedRecordedAt = Objects.requireNonNull(recordedAt, "recordedAt");
         projection.lastAppliedActivityId = Objects.requireNonNull(activityId, "activityId");
         projection.updatedAt = Objects.requireNonNull(observedAt, "observedAt");

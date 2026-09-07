@@ -9,9 +9,8 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface DeviceSessionRepository extends JpaRepository<DeviceSession, UUID> {
 
-    @Query(
-            "select new dev.canverse.stocks.identity.infrastructure.RefreshSessionOwnerProjection(s.id, s.userAccount.id) "
-                    + "from DeviceSession s where s.refreshTokenHash = :refreshTokenHash")
+    @Query("select new dev.canverse.stocks.identity.infrastructure.RefreshSessionOwnerProjection(s.id, s.userAccount.id) " +
+            "from DeviceSession s where s.refreshTokenHash = :refreshTokenHash")
     Optional<RefreshSessionOwnerProjection> findRefreshSessionOwnerByRefreshTokenHash(String refreshTokenHash);
 
     @Query("select s from DeviceSession s where s.id = :sessionId and s.userAccount.id = :userAccountId")

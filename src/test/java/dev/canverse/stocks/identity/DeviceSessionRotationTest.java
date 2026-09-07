@@ -46,8 +46,7 @@ class DeviceSessionRotationTest {
         assertThat(session.getRevokedAt()).isEqualTo(ROTATED_AT);
         assertThat(session.getRevokeReason()).isEqualTo(DeviceSession.ROTATED_REVOKE_REASON);
         assertThat(session.getReplacedBySessionId()).isEqualTo(replacementId);
-        assertThatThrownBy(
-                        () -> session.rotate(uuid("50000000-0000-4000-8000-000000000005"), "second-hash", ROTATED_AT))
+        assertThatThrownBy(() -> session.rotate(uuid("50000000-0000-4000-8000-000000000005"), "second-hash", ROTATED_AT))
                 .isInstanceOf(IllegalStateException.class);
     }
 
@@ -65,8 +64,7 @@ class DeviceSessionRotationTest {
     }
 
     private DeviceSession initialSession(UserAccount user) {
-        return DeviceSession.initialGeneration(
-                uuid("80000000-0000-4000-8000-000000000008"), user, "initial-hash", "phone", CREATED_AT, EXPIRES_AT);
+        return DeviceSession.initialGeneration(uuid("80000000-0000-4000-8000-000000000008"), user, "initial-hash", "phone", CREATED_AT, EXPIRES_AT);
     }
 
     private UserAccount user(String id) {

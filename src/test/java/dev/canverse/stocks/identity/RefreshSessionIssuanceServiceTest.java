@@ -36,9 +36,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.NONE,
-        properties = "stocks.identity.refresh-session.lifetime=12h")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, properties = "stocks.identity.refresh-session.lifetime=12h")
 @Testcontainers
 @Import(RefreshSessionIssuanceServiceTest.TestOverrides.class)
 class RefreshSessionIssuanceServiceTest {
@@ -171,9 +169,7 @@ class RefreshSessionIssuanceServiceTest {
 
         idGenerator.setNextIds(disabledUserId, disabledAuthIdentityId);
         registrationService.register("disabled-session@example.com", RAW_PASSWORD);
-        runInTransaction(() -> jdbcTemplate.update(
-                "UPDATE identity.user_account SET disabled_at = ? WHERE id = ?",
-                DISABLED_AT.atOffset(ZoneOffset.UTC),
+        runInTransaction(() -> jdbcTemplate.update("UPDATE identity.user_account SET disabled_at = ? WHERE id = ?", DISABLED_AT.atOffset(ZoneOffset.UTC),
                 disabledUserId));
 
         var disabledFailure = catchThrowable(() -> issuanceService.issue(disabledUserId, "disabled device"));
@@ -194,21 +190,12 @@ class RefreshSessionIssuanceServiceTest {
 
     private String independentHash(String rawToken) throws NoSuchAlgorithmException {
         var digest = MessageDigest.getInstance("SHA-256");
-        return Base64.getUrlEncoder()
-                .withoutPadding()
-                .encodeToString(digest.digest(rawToken.getBytes(StandardCharsets.UTF_8)));
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(digest.digest(rawToken.getBytes(StandardCharsets.UTF_8)));
     }
 
     private long rawTokenTextColumnOccurrences(String rawToken) {
-        return jdbcTemplate.queryForObject(
-                "SELECT count(*) FROM identity.device_session"
-                        + " WHERE strpos(refresh_token_hash, ?) > 0"
-                        + " OR strpos(coalesce(device_label, ''), ?) > 0"
-                        + " OR strpos(coalesce(revoke_reason, ''), ?) > 0",
-                Long.class,
-                rawToken,
-                rawToken,
-                rawToken);
+        return jdbcTemplate.queryForObject("SELECT count(*) FROM identity.device_session" + " WHERE strpos(refresh_token_hash, ?) > 0" +
+                " OR strpos(coalesce(device_label, ''), ?) > 0" + " OR strpos(coalesce(revoke_reason, ''), ?) > 0", Long.class, rawToken, rawToken, rawToken);
     }
 
     private void runInTransaction(Runnable action) {

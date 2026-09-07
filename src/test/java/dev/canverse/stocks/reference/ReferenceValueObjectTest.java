@@ -73,10 +73,8 @@ class ReferenceValueObjectTest {
         assertEnumJson(mapper, MarketSessionStatus.OPEN, MarketSessionStatus.class, "OPEN");
         assertEnumJson(mapper, ValuationMethod.MANUAL_VALUE, ValuationMethod.class, "MANUAL_VALUE");
 
-        assertThatThrownBy(() -> mapper.readValue("\"equity\"", InstrumentType.class))
-                .isInstanceOf(Exception.class);
-        assertThatThrownBy(() -> mapper.readValue("\"UNKNOWN\"", AliasType.class))
-                .isInstanceOf(Exception.class);
+        assertThatThrownBy(() -> mapper.readValue("\"equity\"", InstrumentType.class)).isInstanceOf(Exception.class);
+        assertThatThrownBy(() -> mapper.readValue("\"UNKNOWN\"", AliasType.class)).isInstanceOf(Exception.class);
     }
 
     @Test
@@ -85,16 +83,8 @@ class ReferenceValueObjectTest {
         var owner = mock(UserAccount.class);
         var market = mock(Market.class);
         var createdAt = Instant.parse("2026-08-16T09:00:00Z");
-        var instrument = Instrument.manual(
-                id,
-                owner,
-                market,
-                InstrumentSymbol.of("owner-fund"),
-                "Owner fund",
-                InstrumentType.FUND,
-                CurrencyCode.of("GBP"),
-                ValuationMethod.MANUAL_VALUE,
-                createdAt);
+        var instrument = Instrument.manual(id, owner, market, InstrumentSymbol.of("owner-fund"), "Owner fund", InstrumentType.FUND, CurrencyCode.of("GBP"),
+                ValuationMethod.MANUAL_VALUE, createdAt);
 
         assertThat(instrument.getId()).isEqualTo(id);
         assertThat(instrument.getOwnerUserAccount()).isSameAs(owner);
@@ -123,17 +113,8 @@ class ReferenceValueObjectTest {
         assertThat(instrument.getSourceKind()).isEqualTo("USER_ENTERED");
         assertThat(instrument.getCreatedAt()).isEqualTo(createdAt);
 
-        assertThatThrownBy(() -> Instrument.manual(
-                        id,
-                        null,
-                        market,
-                        InstrumentSymbol.of("fund"),
-                        "Fund",
-                        InstrumentType.FUND,
-                        CurrencyCode.of("GBP"),
-                        ValuationMethod.MANUAL_VALUE,
-                        createdAt))
-                .isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(() -> Instrument.manual(id, null, market, InstrumentSymbol.of("fund"), "Fund", InstrumentType.FUND, CurrencyCode.of("GBP"),
+                ValuationMethod.MANUAL_VALUE, createdAt)).isInstanceOf(NullPointerException.class);
     }
 
     @Test
@@ -143,8 +124,7 @@ class ReferenceValueObjectTest {
         assertThatThrownBy(() -> ZoneId.of("not/a-zone")).isInstanceOf(DateTimeException.class);
     }
 
-    private static <E extends Enum<E>> void assertEnumJson(JsonMapper mapper, E value, Class<E> enumType, String code)
-            throws Exception {
+    private static <E extends Enum<E>> void assertEnumJson(JsonMapper mapper, E value, Class<E> enumType, String code) throws Exception {
         assertThat(mapper.writeValueAsString(value)).isEqualTo("\"" + code + "\"");
         assertThat(mapper.readValue("\"" + code + "\"", enumType)).isEqualTo(value);
     }

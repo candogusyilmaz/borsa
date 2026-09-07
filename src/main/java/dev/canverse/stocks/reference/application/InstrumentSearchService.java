@@ -22,8 +22,7 @@ public class InstrumentSearchService {
     private final ReferenceCatalogReadRepository readRepository;
 
     @Transactional(readOnly = true)
-    public SliceResponse<InstrumentSummaryResponse> search(
-            UUID ownerUserAccountId, InstrumentSearchCriteria criteria, Pageable pageable) {
+    public SliceResponse<InstrumentSummaryResponse> search(UUID ownerUserAccountId, InstrumentSearchCriteria criteria, Pageable pageable) {
         Objects.requireNonNull(ownerUserAccountId, "ownerUserAccountId");
         Objects.requireNonNull(criteria, "criteria");
         var query = criteria.query();
@@ -31,8 +30,7 @@ public class InstrumentSearchService {
         var type = criteria.type();
         var includeInactive = criteria.includeInactive();
         var queryNormalized = normalizeQuery(query);
-        return readRepository.searchInstruments(
-                ownerUserAccountId, queryNormalized, marketId, type, includeInactive, pageable);
+        return readRepository.searchInstruments(ownerUserAccountId, queryNormalized, marketId, type, includeInactive, pageable);
     }
 
     private static String normalizeQuery(String query) {
@@ -41,9 +39,7 @@ public class InstrumentSearchService {
         }
         var trimmed = query.trim();
         if (trimmed.isEmpty() || trimmed.length() > MAX_QUERY_LENGTH) {
-            throw ValidationErrors.invalidField(
-                    "query",
-                    "error.fields.reference.invalid_value",
+            throw ValidationErrors.invalidField("query", "error.fields.reference.invalid_value",
                     "The query must contain 1 to " + MAX_QUERY_LENGTH + " characters after trimming.");
         }
         return trimmed.toUpperCase(Locale.ROOT);

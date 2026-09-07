@@ -27,16 +27,14 @@ public class DeviceSessionController {
     private final DeviceSessionRevocationService revocationService;
 
     @GetMapping
-    public ResponseEntity<List<DeviceSessionResponse>> listSessions(
-            @AuthenticationPrincipal AuthenticatedIdentity identity) {
+    public ResponseEntity<List<DeviceSessionResponse>> listSessions(@AuthenticationPrincipal AuthenticatedIdentity identity) {
         var response = queryService.listSessions(identity.userAccountId(), identity.sessionId());
 
         return new ResponseEntity<>(response, CacheHeaders.noStore(), HttpStatus.OK);
     }
 
     @GetMapping("{familyId}")
-    public ResponseEntity<DeviceSessionResponse> getSession(
-            @AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID familyId) {
+    public ResponseEntity<DeviceSessionResponse> getSession(@AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID familyId) {
         var response = queryService.getSessionDetail(identity.userAccountId(), identity.sessionId(), familyId);
 
         var headers = CacheHeaders.noStore();
@@ -44,10 +42,8 @@ public class DeviceSessionController {
     }
 
     @DeleteMapping("{familyId}")
-    public ResponseEntity<Void> revokeSession(
-            @AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID familyId) {
-        var isCurrentFamily =
-                revocationService.revokeSelectedFamily(identity.userAccountId(), identity.sessionId(), familyId);
+    public ResponseEntity<Void> revokeSession(@AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID familyId) {
+        var isCurrentFamily = revocationService.revokeSelectedFamily(identity.userAccountId(), identity.sessionId(), familyId);
 
         var headers = CacheHeaders.noStore();
         if (isCurrentFamily) {

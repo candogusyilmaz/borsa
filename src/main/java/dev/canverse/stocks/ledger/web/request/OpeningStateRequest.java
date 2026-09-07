@@ -4,5 +4,4 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 
-public record OpeningStateRequest(
-        @NotBlank String amount, @NotNull Instant effectiveAt) {}
+public record OpeningStateRequest(@NotBlank String amount, @NotNull Instant effectiveAt) {}

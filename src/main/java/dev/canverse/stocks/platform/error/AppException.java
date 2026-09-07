@@ -10,7 +10,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-/** Base exception for expected application failures with a strict parameter contract. */
+/**
+ * Base exception for expected application failures with a strict parameter contract.
+ */
 public class AppException extends RuntimeException {
 
     private final ErrorCode errorCode;
@@ -57,12 +59,8 @@ public class AppException extends RuntimeException {
 
     private static void validateParamKeys(ErrorCode errorCode, Set<String> suppliedKeys) {
         if (!suppliedKeys.equals(errorCode.getRequiredParams())) {
-            throw new IllegalStateException("Error parameters do not match the required contract for "
-                    + errorCode.getCode()
-                    + ": required="
-                    + errorCode.getRequiredParams()
-                    + ", supplied="
-                    + suppliedKeys);
+            throw new IllegalStateException("Error parameters do not match the required contract for " + errorCode.getCode() + ": required=" +
+                    errorCode.getRequiredParams() + ", supplied=" + suppliedKeys);
         }
     }
 

@@ -46,193 +46,55 @@ public class Activity {
     private UUID reversesActivityId;
     private UUID supersedesActivityId;
 
-    public static Activity openingBalance(
-            UUID id,
-            UUID ownerUserAccountId,
-            UUID clientEventId,
-            String operationScope,
-            long commandSequence,
-            Instant effectiveAt,
-            Instant recordedAt,
-            PolicyDecision policyDecision) {
+    public static Activity openingBalance(UUID id, UUID ownerUserAccountId, UUID clientEventId, String operationScope, long commandSequence,
+            Instant effectiveAt, Instant recordedAt, PolicyDecision policyDecision) {
         requireHistoricalDecision(policyDecision);
-        return create(
-                id,
-                ownerUserAccountId,
-                clientEventId,
-                operationScope,
-                commandSequence,
-                ActivityType.OPENING_BALANCE,
-                RecordingMode.HISTORICAL_FACT,
-                effectiveAt,
-                recordedAt,
-                policyDecision,
-                null,
-                null,
-                null);
+        return create(id, ownerUserAccountId, clientEventId, operationScope, commandSequence, ActivityType.OPENING_BALANCE, RecordingMode.HISTORICAL_FACT,
+                effectiveAt, recordedAt, policyDecision, null, null, null);
     }
 
-    public static Activity correctedOpeningBalance(
-            UUID id,
-            UUID ownerUserAccountId,
-            UUID clientEventId,
-            String operationScope,
-            long commandSequence,
-            Instant effectiveAt,
-            Instant recordedAt,
-            PolicyDecision policyDecision,
-            String correctionReason,
-            UUID supersedesActivityId) {
+    public static Activity correctedOpeningBalance(UUID id, UUID ownerUserAccountId, UUID clientEventId, String operationScope, long commandSequence,
+            Instant effectiveAt, Instant recordedAt, PolicyDecision policyDecision, String correctionReason, UUID supersedesActivityId) {
         requireHistoricalDecision(policyDecision);
-        return create(
-                id,
-                ownerUserAccountId,
-                clientEventId,
-                operationScope,
-                commandSequence,
-                ActivityType.OPENING_BALANCE,
-                RecordingMode.HISTORICAL_FACT,
-                effectiveAt,
-                recordedAt,
-                policyDecision,
-                requireReason(correctionReason),
-                null,
+        return create(id, ownerUserAccountId, clientEventId, operationScope, commandSequence, ActivityType.OPENING_BALANCE, RecordingMode.HISTORICAL_FACT,
+                effectiveAt, recordedAt, policyDecision, requireReason(correctionReason), null,
                 Objects.requireNonNull(supersedesActivityId, "supersedesActivityId"));
     }
 
-    public static Activity cashDeposit(
-            UUID id,
-            UUID ownerUserAccountId,
-            UUID clientEventId,
-            String operationScope,
-            long commandSequence,
-            RecordingMode recordingMode,
-            Instant effectiveAt,
-            Instant recordedAt,
-            PolicyDecision policyDecision) {
-        return cashActivity(
-                id,
-                ownerUserAccountId,
-                clientEventId,
-                operationScope,
-                commandSequence,
-                ActivityType.CASH_DEPOSIT,
-                recordingMode,
-                effectiveAt,
-                recordedAt,
-                policyDecision);
+    public static Activity cashDeposit(UUID id, UUID ownerUserAccountId, UUID clientEventId, String operationScope, long commandSequence,
+            RecordingMode recordingMode, Instant effectiveAt, Instant recordedAt, PolicyDecision policyDecision) {
+        return cashActivity(id, ownerUserAccountId, clientEventId, operationScope, commandSequence, ActivityType.CASH_DEPOSIT, recordingMode, effectiveAt,
+                recordedAt, policyDecision);
     }
 
-    public static Activity cashWithdrawal(
-            UUID id,
-            UUID ownerUserAccountId,
-            UUID clientEventId,
-            String operationScope,
-            long commandSequence,
-            RecordingMode recordingMode,
-            Instant effectiveAt,
-            Instant recordedAt,
-            PolicyDecision policyDecision) {
-        return cashActivity(
-                id,
-                ownerUserAccountId,
-                clientEventId,
-                operationScope,
-                commandSequence,
-                ActivityType.CASH_WITHDRAWAL,
-                recordingMode,
-                effectiveAt,
-                recordedAt,
-                policyDecision);
+    public static Activity cashWithdrawal(UUID id, UUID ownerUserAccountId, UUID clientEventId, String operationScope, long commandSequence,
+            RecordingMode recordingMode, Instant effectiveAt, Instant recordedAt, PolicyDecision policyDecision) {
+        return cashActivity(id, ownerUserAccountId, clientEventId, operationScope, commandSequence, ActivityType.CASH_WITHDRAWAL, recordingMode, effectiveAt,
+                recordedAt, policyDecision);
     }
 
-    public static Activity ownedTransfer(
-            UUID id,
-            UUID ownerUserAccountId,
-            UUID clientEventId,
-            String operationScope,
-            long commandSequence,
-            RecordingMode recordingMode,
-            Instant effectiveAt,
-            Instant recordedAt,
-            PolicyDecision policyDecision) {
-        return cashActivity(
-                id,
-                ownerUserAccountId,
-                clientEventId,
-                operationScope,
-                commandSequence,
-                ActivityType.OWNED_TRANSFER,
-                recordingMode,
-                effectiveAt,
-                recordedAt,
-                policyDecision);
+    public static Activity ownedTransfer(UUID id, UUID ownerUserAccountId, UUID clientEventId, String operationScope, long commandSequence,
+            RecordingMode recordingMode, Instant effectiveAt, Instant recordedAt, PolicyDecision policyDecision) {
+        return cashActivity(id, ownerUserAccountId, clientEventId, operationScope, commandSequence, ActivityType.OWNED_TRANSFER, recordingMode, effectiveAt,
+                recordedAt, policyDecision);
     }
 
-    public static Activity reconciliationAdjustment(
-            UUID id,
-            UUID ownerUserAccountId,
-            UUID clientEventId,
-            String operationScope,
-            long commandSequence,
-            Instant effectiveAt,
-            Instant recordedAt,
-            PolicyDecision policyDecision,
-            String adjustmentReason) {
+    public static Activity reconciliationAdjustment(UUID id, UUID ownerUserAccountId, UUID clientEventId, String operationScope, long commandSequence,
+            Instant effectiveAt, Instant recordedAt, PolicyDecision policyDecision, String adjustmentReason) {
         requireHistoricalDecision(policyDecision);
-        return create(
-                id,
-                ownerUserAccountId,
-                clientEventId,
-                operationScope,
-                commandSequence,
-                ActivityType.RECONCILIATION_ADJUSTMENT,
-                RecordingMode.HISTORICAL_FACT,
-                effectiveAt,
-                recordedAt,
-                policyDecision,
-                requireReason(adjustmentReason),
-                null,
+        return create(id, ownerUserAccountId, clientEventId, operationScope, commandSequence, ActivityType.RECONCILIATION_ADJUSTMENT,
+                RecordingMode.HISTORICAL_FACT, effectiveAt, recordedAt, policyDecision, requireReason(adjustmentReason), null, null);
+    }
+
+    public static Activity reversal(UUID id, UUID ownerUserAccountId, UUID clientEventId, String operationScope, long commandSequence, Instant effectiveAt,
+            Instant recordedAt, String correctionReason, UUID reversesActivityId) {
+        return create(id, ownerUserAccountId, clientEventId, operationScope, commandSequence, ActivityType.REVERSAL, RecordingMode.HISTORICAL_FACT, effectiveAt,
+                recordedAt, PolicyDecision.NOT_APPLICABLE, requireReason(correctionReason), Objects.requireNonNull(reversesActivityId, "reversesActivityId"),
                 null);
     }
 
-    public static Activity reversal(
-            UUID id,
-            UUID ownerUserAccountId,
-            UUID clientEventId,
-            String operationScope,
-            long commandSequence,
-            Instant effectiveAt,
-            Instant recordedAt,
-            String correctionReason,
-            UUID reversesActivityId) {
-        return create(
-                id,
-                ownerUserAccountId,
-                clientEventId,
-                operationScope,
-                commandSequence,
-                ActivityType.REVERSAL,
-                RecordingMode.HISTORICAL_FACT,
-                effectiveAt,
-                recordedAt,
-                PolicyDecision.NOT_APPLICABLE,
-                requireReason(correctionReason),
-                Objects.requireNonNull(reversesActivityId, "reversesActivityId"),
-                null);
-    }
-
-    private static Activity cashActivity(
-            UUID id,
-            UUID ownerUserAccountId,
-            UUID clientEventId,
-            String operationScope,
-            long commandSequence,
-            ActivityType activityType,
-            RecordingMode recordingMode,
-            Instant effectiveAt,
-            Instant recordedAt,
-            PolicyDecision policyDecision) {
+    private static Activity cashActivity(UUID id, UUID ownerUserAccountId, UUID clientEventId, String operationScope, long commandSequence,
+            ActivityType activityType, RecordingMode recordingMode, Instant effectiveAt, Instant recordedAt, PolicyDecision policyDecision) {
         if (recordingMode == null) {
             throw new NullPointerException("recordingMode");
         }
@@ -241,36 +103,13 @@ public class Activity {
         } else {
             requireHistoricalDecision(policyDecision);
         }
-        return create(
-                id,
-                ownerUserAccountId,
-                clientEventId,
-                operationScope,
-                commandSequence,
-                activityType,
-                recordingMode,
-                effectiveAt,
-                recordedAt,
-                policyDecision,
-                null,
-                null,
-                null);
+        return create(id, ownerUserAccountId, clientEventId, operationScope, commandSequence, activityType, recordingMode, effectiveAt, recordedAt,
+                policyDecision, null, null, null);
     }
 
-    private static Activity create(
-            UUID id,
-            UUID ownerUserAccountId,
-            UUID clientEventId,
-            String operationScope,
-            long commandSequence,
-            ActivityType activityType,
-            RecordingMode recordingMode,
-            Instant effectiveAt,
-            Instant recordedAt,
-            PolicyDecision policyDecision,
-            String correctionReason,
-            UUID reversesActivityId,
-            UUID supersedesActivityId) {
+    private static Activity create(UUID id, UUID ownerUserAccountId, UUID clientEventId, String operationScope, long commandSequence, ActivityType activityType,
+            RecordingMode recordingMode, Instant effectiveAt, Instant recordedAt, PolicyDecision policyDecision, String correctionReason,
+            UUID reversesActivityId, UUID supersedesActivityId) {
         var activity = new Activity();
         activity.id = Objects.requireNonNull(id, "id");
         activity.ownerUserAccountId = Objects.requireNonNull(ownerUserAccountId, "ownerUserAccountId");
@@ -294,9 +133,8 @@ public class Activity {
     }
 
     private static void requireCurrentDecision(PolicyDecision policyDecision) {
-        if (policyDecision != PolicyDecision.ALLOWED
-                && policyDecision != PolicyDecision.CONFIRMED_BREACH
-                && policyDecision != PolicyDecision.HISTORICAL_BREACH_RECORDED) {
+        if (policyDecision != PolicyDecision.ALLOWED && policyDecision != PolicyDecision.CONFIRMED_BREACH &&
+                policyDecision != PolicyDecision.HISTORICAL_BREACH_RECORDED) {
             throw new IllegalArgumentException("Current action has an invalid policy decision");
         }
     }
@@ -308,8 +146,7 @@ public class Activity {
     }
 
     private static String requireReason(String correctionReason) {
-        var reason =
-                Objects.requireNonNull(correctionReason, "correctionReason").trim();
+        var reason = Objects.requireNonNull(correctionReason, "correctionReason").trim();
         if (reason.isBlank() || reason.length() > 500) {
             throw new IllegalArgumentException("correctionReason must contain 1 to 500 characters");
         }

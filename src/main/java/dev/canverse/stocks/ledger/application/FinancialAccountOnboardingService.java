@@ -57,14 +57,12 @@ public class FinancialAccountOnboardingService {
         Objects.requireNonNull(ownerUserAccountId, "ownerUserAccountId");
         Objects.requireNonNull(request, "request");
 
-        var currency =
-                Objects.requireNonNull(request.currency(), "currency").trim().toUpperCase(Locale.ROOT);
+        var currency = Objects.requireNonNull(request.currency(), "currency").trim().toUpperCase(Locale.ROOT);
         var opening = request.openingState();
         var openingAmount = opening == null ? null : LedgerAmountParser.exact(opening.amount(), "openingState.amount");
         var observedAt = clock.instant();
         if (opening != null) {
-            if (Objects.requireNonNull(opening.effectiveAt(), "openingState.effectiveAt")
-                    .isAfter(observedAt)) {
+            if (Objects.requireNonNull(opening.effectiveAt(), "openingState.effectiveAt").isAfter(observedAt)) {
                 throw new AppException(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
             }
         }
@@ -72,11 +70,7 @@ public class FinancialAccountOnboardingService {
         var authorizedLimit = LedgerAmountParser.optional(request.authorizedLimit(), "authorizedLimit");
         var requestHash = requestHash(request, currency, timeZone, authorizedLimit, openingAmount);
         commandLockRepository.lock(ownerUserAccountId, LedgerCommandScopes.ACCOUNT_CREATE, request.clientRequestId());
-        var replay = idempotencyStore.replay(
-                request.clientRequestId(),
-                ownerUserAccountId,
-                LedgerCommandScopes.ACCOUNT_CREATE,
-                requestHash,
+        var replay = idempotencyStore.replay(request.clientRequestId(), ownerUserAccountId, LedgerCommandScopes.ACCOUNT_CREATE, requestHash,
                 FinancialAccountResponse.class);
         if (replay != null) {
             return replay;
@@ -87,124 +81,49 @@ public class FinancialAccountOnboardingService {
         var account = createAccount(ownerUserAccountId, request, currency, timeZone, authorizedLimit, observedAt);
         if (request.trackingMode() == TrackingMode.FULL_LEDGER) {
             var openingState = request.openingState();
-            var openingActivity = writeOpening(
-                    ownerUserAccountId,
-                    account,
-                    openingAmount,
-                    openingState.effectiveAt(),
-                    request.clientRequestId(),
-                    observedAt);
+            var openingActivity = writeOpening(ownerUserAccountId, account, openingAmount, openingState.effectiveAt(), request.clientRequestId(), observedAt);
             account.setCurrentOpeningActivity(openingActivity.getId());
         }
 
         entityManager.flush();
         var response = readAccount(ownerUserAccountId, account.getId());
-        idempotencyStore.save(
-                ownerUserAccountId,
-                LedgerCommandScopes.ACCOUNT_CREATE,
-                request.clientRequestId(),
-                requestHash,
-                "FINANCIAL_ACCOUNT",
-                account.getId(),
-                response,
-                observedAt);
+        idempotencyStore.save(ownerUserAccountId, LedgerCommandScopes.ACCOUNT_CREATE, request.clientRequestId(), requestHash, "FINANCIAL_ACCOUNT",
+                account.getId(), response, observedAt);
         return response;
     }
 
-    private Activity writeOpening(
-            UUID ownerUserAccountId,
-            FinancialAccount account,
-            FinancialAmount openingAmount,
-            Instant effectiveAt,
-            UUID clientRequestId,
+    private Activity writeOpening(UUID ownerUserAccountId, FinancialAccount account, FinancialAmount openingAmount, Instant effectiveAt, UUID clientRequestId,
             Instant observedAt) {
-        var pocket = AccountCashPocket.create(
-                idGenerator.next(), ownerUserAccountId, account, account.getCurrencyCode(), effectiveAt, observedAt);
+        var pocket = AccountCashPocket.create(idGenerator.next(), ownerUserAccountId, account, account.getCurrencyCode(), effectiveAt, observedAt);
         pocketRepository.save(pocket);
 
-        var openingDecision =
-                openingAmount.isNegative() ? PolicyDecision.HISTORICAL_BREACH_RECORDED : PolicyDecision.ALLOWED;
-        var openingActivity = Activity.openingBalance(
-                idGenerator.next(),
-                ownerUserAccountId,
-                clientRequestId,
-                LedgerCommandScopes.ACCOUNT_CREATE,
-                0,
-                effectiveAt,
-                observedAt,
-                openingDecision);
+        var openingDecision = openingAmount.isNegative() ? PolicyDecision.HISTORICAL_BREACH_RECORDED : PolicyDecision.ALLOWED;
+        var openingActivity = Activity.openingBalance(idGenerator.next(), ownerUserAccountId, clientRequestId, LedgerCommandScopes.ACCOUNT_CREATE, 0,
+                effectiveAt, observedAt, openingDecision);
         activityRepository.save(openingActivity);
-        postingRepository.save(MoneyPosting.opening(
-                idGenerator.next(),
-                ownerUserAccountId,
-                openingActivity.getId(),
-                account.getId(),
-                pocket.getId(),
-                account.getCurrencyCode(),
-                openingAmount,
-                observedAt));
-        projectionRepository.save(AccountBalanceProjection.create(
-                idGenerator.next(),
-                ownerUserAccountId,
-                account,
-                pocket,
-                account.getCurrencyCode(),
-                openingAmount,
-                observedAt,
-                openingActivity.getId(),
-                observedAt));
+        postingRepository.save(MoneyPosting.opening(idGenerator.next(), ownerUserAccountId, openingActivity.getId(), account.getId(), pocket.getId(),
+                account.getCurrencyCode(), openingAmount, observedAt));
+        projectionRepository.save(AccountBalanceProjection.create(idGenerator.next(), ownerUserAccountId, account, pocket, account.getCurrencyCode(),
+                openingAmount, observedAt, openingActivity.getId(), observedAt));
         return openingActivity;
     }
 
-    private String requestHash(
-            CreateFinancialAccountRequest request,
-            String currency,
-            String timeZone,
-            FinancialAmount authorizedLimit,
+    private String requestHash(CreateFinancialAccountRequest request, String currency, String timeZone, FinancialAmount authorizedLimit,
             FinancialAmount openingAmount) {
         var opening = request.openingState();
-        return fingerprint.hash(fingerprint.values(
-                "name",
-                request.name().trim(),
-                "kind",
-                request.kind().name(),
-                "trackingMode",
-                request.trackingMode().name(),
-                "currency",
-                currency,
-                "timeZone",
-                timeZone,
-                "policy",
-                request.policy() == null ? null : request.policy().name(),
-                "authorizedLimit",
-                authorizedLimit == null ? null : authorizedLimit.canonical(),
-                "openingAmount",
-                openingAmount == null ? null : openingAmount.canonical(),
-                "openingEffectiveAt",
-                opening == null ? null : opening.effectiveAt().toString()));
+        return fingerprint.hash(fingerprint.values("name", request.name().trim(), "kind", request.kind().name(), "trackingMode", request.trackingMode().name(),
+                "currency", currency, "timeZone", timeZone, "policy", request.policy() == null ? null : request.policy().name(), "authorizedLimit",
+                authorizedLimit == null ? null : authorizedLimit.canonical(), "openingAmount", openingAmount == null ? null : openingAmount.canonical(),
+                "openingEffectiveAt", opening == null ? null : opening.effectiveAt().toString()));
     }
 
-    private FinancialAccount createAccount(
-            UUID ownerUserAccountId,
-            CreateFinancialAccountRequest request,
-            String currency,
-            String timeZone,
-            FinancialAmount authorizedLimit,
-            Instant observedAt) {
+    private FinancialAccount createAccount(UUID ownerUserAccountId, CreateFinancialAccountRequest request, String currency, String timeZone,
+            FinancialAmount authorizedLimit, Instant observedAt) {
         var owner = entityManager.getReference(UserAccount.class, ownerUserAccountId);
         FinancialAccount account;
         try {
-            account = FinancialAccount.create(
-                    idGenerator.next(),
-                    owner,
-                    request.name(),
-                    request.kind(),
-                    request.trackingMode(),
-                    currency,
-                    timeZone,
-                    request.policy(),
-                    authorizedLimit,
-                    observedAt);
+            account = FinancialAccount.create(idGenerator.next(), owner, request.name(), request.kind(), request.trackingMode(), currency, timeZone,
+                    request.policy(), authorizedLimit, observedAt);
         } catch (IllegalArgumentException exception) {
             throw new AppException(LedgerErrorCode.ACCOUNT_ACTION_NOT_SUPPORTED, exception);
         }
@@ -212,16 +131,12 @@ public class FinancialAccountOnboardingService {
     }
 
     private FinancialAccountResponse readAccount(UUID ownerUserAccountId, UUID accountId) {
-        return readRepository
-                .findAccount(ownerUserAccountId, accountId)
-                .map(FinancialAccountResponse::from)
+        return readRepository.findAccount(ownerUserAccountId, accountId).map(FinancialAccountResponse::from)
                 .orElseThrow(() -> new AppException(LedgerErrorCode.ACCOUNT_NOT_FOUND));
     }
 
     private void validateCurrency(String currency) {
-        var entity = currencyRepository
-                .findById(currency)
-                .orElseThrow(() -> new AppException(LedgerErrorCode.ACCOUNT_CURRENCY_UNSUPPORTED));
+        var entity = currencyRepository.findById(currency).orElseThrow(() -> new AppException(LedgerErrorCode.ACCOUNT_CURRENCY_UNSUPPORTED));
         if (!entity.isActive()) {
             throw new AppException(LedgerErrorCode.ACCOUNT_CURRENCY_UNSUPPORTED);
         }
@@ -231,8 +146,7 @@ public class FinancialAccountOnboardingService {
         try {
             return FinancialAccount.requireIanaTimeZone(timeZone);
         } catch (IllegalArgumentException exception) {
-            throw ValidationErrors.invalidField(
-                    "timeZone", "error.fields.ledger.invalid_timezone", "The time zone must be an IANA zone.");
+            throw ValidationErrors.invalidField("timeZone", "error.fields.ledger.invalid_timezone", "The time zone must be an IANA zone.");
         }
     }
 }

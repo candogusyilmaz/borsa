@@ -24,25 +24,20 @@ class ErrorContractTest {
 
     @Test
     void appExceptionAcceptsExactRequiredParams() {
-        var exception =
-                new AppException(CommonErrorCode.ENTITY_NOT_FOUND, Map.of("entity", "Example", "id", "example-1"));
+        var exception = new AppException(CommonErrorCode.ENTITY_NOT_FOUND, Map.of("entity", "Example", "id", "example-1"));
 
-        assertThat(exception.getParams())
-                .containsExactlyInAnyOrderEntriesOf(Map.of("entity", "Example", "id", "example-1"));
+        assertThat(exception.getParams()).containsExactlyInAnyOrderEntriesOf(Map.of("entity", "Example", "id", "example-1"));
         assertThat(exception.getErrorCode()).isEqualTo(CommonErrorCode.ENTITY_NOT_FOUND);
     }
 
     @Test
     void missingRequiredParamsFailImmediately() {
-        assertThatThrownBy(() -> new AppException(CommonErrorCode.ENTITY_NOT_FOUND, Map.of("entity", "Example")))
-                .isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> new AppException(CommonErrorCode.ENTITY_NOT_FOUND, Map.of("entity", "Example"))).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void extraParamsFailImmediately() {
-        assertThatThrownBy(() -> new AppException(
-                        CommonErrorCode.ENTITY_NOT_FOUND,
-                        Map.of("entity", "Example", "id", "example-1", "unexpected", true)))
+        assertThatThrownBy(() -> new AppException(CommonErrorCode.ENTITY_NOT_FOUND, Map.of("entity", "Example", "id", "example-1", "unexpected", true)))
                 .isInstanceOf(IllegalStateException.class);
     }
 
@@ -57,33 +52,23 @@ class ErrorContractTest {
         supplied.put("other", "not copied");
 
         assertThat(exception.getParams()).doesNotContainKey("other");
-        assertThat(exception.getParams().get("errors").toString())
-                .contains("first")
-                .doesNotContain("second");
-        assertThatThrownBy(() -> exception.getParams().put("errors", List.of()))
-                .isInstanceOf(UnsupportedOperationException.class);
+        assertThat(exception.getParams().get("errors").toString()).contains("first").doesNotContain("second");
+        assertThatThrownBy(() -> exception.getParams().put("errors", List.of())).isInstanceOf(UnsupportedOperationException.class);
     }
 
     @Test
     void validationKeyShapeAcceptsApplicationKeys() {
-        assertThat(ValidationKeySupport.isValidApplicationKey("error.fields.common.not_blank"))
-                .isTrue();
-        assertThat(ValidationKeySupport.isValidApplicationKey("error.fields.identity.password_too_short"))
-                .isTrue();
-        assertThat(ValidationKeySupport.isValidApplicationKey("error.identity.invalid_credentials"))
-                .isTrue();
+        assertThat(ValidationKeySupport.isValidApplicationKey("error.fields.common.not_blank")).isTrue();
+        assertThat(ValidationKeySupport.isValidApplicationKey("error.fields.identity.password_too_short")).isTrue();
+        assertThat(ValidationKeySupport.isValidApplicationKey("error.identity.invalid_credentials")).isTrue();
     }
 
     @Test
     void malformedValidationKeysAreRejectedAndUseSafeFallback() {
-        assertThat(ValidationKeySupport.isValidApplicationKey("{error.fields.common.not_blank}"))
-                .isFalse();
-        assertThat(ValidationKeySupport.isValidApplicationKey("jakarta.validation.constraints.NotBlank.message"))
-                .isFalse();
-        assertThat(ValidationKeySupport.isValidApplicationKey("error.fields.Common.not_blank"))
-                .isFalse();
-        assertThat(ValidationKeySupport.explicitApplicationKey("{not-a-client-key}"))
-                .isNull();
+        assertThat(ValidationKeySupport.isValidApplicationKey("{error.fields.common.not_blank}")).isFalse();
+        assertThat(ValidationKeySupport.isValidApplicationKey("jakarta.validation.constraints.NotBlank.message")).isFalse();
+        assertThat(ValidationKeySupport.isValidApplicationKey("error.fields.Common.not_blank")).isFalse();
+        assertThat(ValidationKeySupport.explicitApplicationKey("{not-a-client-key}")).isNull();
         assertThat(ValidationKeySupport.builtInKey("UnknownConstraint")).isNull();
     }
 }

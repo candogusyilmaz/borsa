@@ -48,15 +48,10 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.NONE,
-        properties = {
-            "stocks.identity.refresh-session.lifetime=2h",
-            "stocks.identity.access-token.issuer=https://issuer.test",
-            "stocks.identity.access-token.audience=canverse-test-api",
-            "stocks.identity.access-token.lifetime=5m",
-            "stocks.identity.access-token.key-id=test-ephemeral"
-        })
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE,
+        properties = {"stocks.identity.refresh-session.lifetime=2h", "stocks.identity.access-token.issuer=https://issuer.test",
+                "stocks.identity.access-token.audience=canverse-test-api", "stocks.identity.access-token.lifetime=5m",
+                "stocks.identity.access-token.key-id=test-ephemeral"})
 @Testcontainers
 @Import(AccessTokenIssuanceServiceTest.TestOverrides.class)
 class AccessTokenIssuanceServiceTest {
@@ -127,12 +122,10 @@ class AccessTokenIssuanceServiceTest {
         assertThat(issued.expiresAt()).isEqualTo(expectedExpiresAt).isEqualTo(decoded.getExpiresAt());
         assertThat(issued.expiresAt()).isBefore(fullPrecisionExpiresAt);
         assertThat(snapshot()).isEqualTo(beforeIssuance);
-        assertThat(persistedTokenMaterialOccurrences(issued.accessToken(), tokenId))
-                .isZero();
+        assertThat(persistedTokenMaterialOccurrences(issued.accessToken(), tokenId)).isZero();
 
         var unrelatedKeyPair = newRsaKeyPair();
-        assertThatThrownBy(() -> decode(issued.accessToken(), (RSAPublicKey) unrelatedKeyPair.getPublic()))
-                .isInstanceOf(JwtException.class);
+        assertThatThrownBy(() -> decode(issued.accessToken(), (RSAPublicKey) unrelatedKeyPair.getPublic())).isInstanceOf(JwtException.class);
     }
 
     @Test
@@ -155,17 +148,10 @@ class AccessTokenIssuanceServiceTest {
         assertThat(secondDecoded.getId()).isEqualTo(secondTokenId.toString());
         assertThat(firstDecoded.getId()).isNotEqualTo(secondDecoded.getId());
         assertThat(first.accessToken()).isNotEqualTo(second.accessToken());
-        assertThat(firstDecoded.getSubject())
-                .isEqualTo(secondDecoded.getSubject())
-                .isEqualTo(userId.toString());
-        assertThat(firstDecoded.getClaimAsString("sid"))
-                .isEqualTo(secondDecoded.getClaimAsString("sid"))
-                .isEqualTo(sessionId.toString());
-        assertThat(firstDecoded.getIssuedAt())
-                .isEqualTo(secondDecoded.getIssuedAt())
-                .isEqualTo(ISSUED_AT);
-        assertThat(firstDecoded.getExpiresAt())
-                .isEqualTo(secondDecoded.getExpiresAt())
+        assertThat(firstDecoded.getSubject()).isEqualTo(secondDecoded.getSubject()).isEqualTo(userId.toString());
+        assertThat(firstDecoded.getClaimAsString("sid")).isEqualTo(secondDecoded.getClaimAsString("sid")).isEqualTo(sessionId.toString());
+        assertThat(firstDecoded.getIssuedAt()).isEqualTo(secondDecoded.getIssuedAt()).isEqualTo(ISSUED_AT);
+        assertThat(firstDecoded.getExpiresAt()).isEqualTo(secondDecoded.getExpiresAt())
                 .isEqualTo(OBSERVED_AT.plus(ACCESS_TOKEN_LIFETIME).truncatedTo(ChronoUnit.SECONDS));
         assertThat(snapshot()).isEqualTo(beforeIssuance);
     }
@@ -179,9 +165,7 @@ class AccessTokenIssuanceServiceTest {
         idGenerator.setNextIds(userId, authIdentityId, sessionId, tokenId);
         registerAndIssueSession(userId, sessionId, "short-session@example.com");
         var sessionExpiresAt = OBSERVED_AT.plusSeconds(90).plusMillis(125);
-        runInTransaction(() -> jdbcTemplate.update(
-                "UPDATE identity.device_session SET expires_at = ? WHERE id = ?",
-                sessionExpiresAt.atOffset(ZoneOffset.UTC),
+        runInTransaction(() -> jdbcTemplate.update("UPDATE identity.device_session SET expires_at = ? WHERE id = ?", sessionExpiresAt.atOffset(ZoneOffset.UTC),
                 sessionId));
         var beforeIssuance = snapshot();
 
@@ -211,41 +195,19 @@ class AccessTokenIssuanceServiceTest {
         var nearExpiryAuthId = UUID.fromString("0c000000-0000-0000-0000-00000000000c");
         var nearExpirySessionId = UUID.fromString("0d000000-0000-0000-0000-00000000000d");
         var unusedTokenId = UUID.fromString("0e000000-0000-0000-0000-00000000000e");
-        idGenerator.setNextIds(
-                revokedUserId,
-                revokedAuthId,
-                revokedSessionId,
-                expiredUserId,
-                expiredAuthId,
-                expiredSessionId,
-                disabledUserId,
-                disabledAuthId,
-                disabledSessionId,
-                nearExpiryUserId,
-                nearExpiryAuthId,
-                nearExpirySessionId);
+        idGenerator.setNextIds(revokedUserId, revokedAuthId, revokedSessionId, expiredUserId, expiredAuthId, expiredSessionId, disabledUserId, disabledAuthId,
+                disabledSessionId, nearExpiryUserId, nearExpiryAuthId, nearExpirySessionId);
         registerAndIssueSession(revokedUserId, revokedSessionId, "revoked@example.com");
         registerAndIssueSession(expiredUserId, expiredSessionId, "expired@example.com");
         registerAndIssueSession(disabledUserId, disabledSessionId, "disabled@example.com");
         registerAndIssueSession(nearExpiryUserId, nearExpirySessionId, "near-expiry@example.com");
         runInTransaction(() -> {
-            jdbcTemplate.update(
-                    "UPDATE identity.device_session SET revoked_at = ?, revoke_reason = ? WHERE id = ?",
-                    OBSERVED_AT.atOffset(ZoneOffset.UTC),
-                    "test fixture",
-                    revokedSessionId);
-            jdbcTemplate.update(
-                    "UPDATE identity.device_session SET created_at = ?, expires_at = ? WHERE id = ?",
-                    OBSERVED_AT.minus(Duration.ofHours(1)).atOffset(ZoneOffset.UTC),
-                    OBSERVED_AT.atOffset(ZoneOffset.UTC),
-                    expiredSessionId);
-            jdbcTemplate.update(
-                    "UPDATE identity.user_account SET disabled_at = ? WHERE id = ?",
-                    DISABLED_AT.atOffset(ZoneOffset.UTC),
-                    disabledUserId);
-            jdbcTemplate.update(
-                    "UPDATE identity.device_session SET expires_at = ? WHERE id = ?",
-                    OBSERVED_AT.plusMillis(100).atOffset(ZoneOffset.UTC),
+            jdbcTemplate.update("UPDATE identity.device_session SET revoked_at = ?, revoke_reason = ? WHERE id = ?", OBSERVED_AT.atOffset(ZoneOffset.UTC),
+                    "test fixture", revokedSessionId);
+            jdbcTemplate.update("UPDATE identity.device_session SET created_at = ?, expires_at = ? WHERE id = ?",
+                    OBSERVED_AT.minus(Duration.ofHours(1)).atOffset(ZoneOffset.UTC), OBSERVED_AT.atOffset(ZoneOffset.UTC), expiredSessionId);
+            jdbcTemplate.update("UPDATE identity.user_account SET disabled_at = ? WHERE id = ?", DISABLED_AT.atOffset(ZoneOffset.UTC), disabledUserId);
+            jdbcTemplate.update("UPDATE identity.device_session SET expires_at = ? WHERE id = ?", OBSERVED_AT.plusMillis(100).atOffset(ZoneOffset.UTC),
                     nearExpirySessionId);
         });
         idGenerator.setNextIds(unusedTokenId);
@@ -269,23 +231,16 @@ class AccessTokenIssuanceServiceTest {
 
     private void registerAndIssueSession(UUID userId, UUID sessionId, String email) {
         assertThat(registrationService.register(email, RAW_PASSWORD)).isEqualTo(userId);
-        assertThat(refreshSessionIssuanceService.issue(userId, "test device").sessionId())
-                .isEqualTo(sessionId);
+        assertThat(refreshSessionIssuanceService.issue(userId, "test device").sessionId()).isEqualTo(sessionId);
     }
 
-    private void assertExactToken(
-            String compactToken, Jwt decoded, UUID userId, UUID sessionId, UUID tokenId, Instant expectedExpiresAt)
-            throws Exception {
+    private void assertExactToken(String compactToken, Jwt decoded, UUID userId, UUID sessionId, UUID tokenId, Instant expectedExpiresAt) throws Exception {
         var parts = compactToken.split("\\.");
         assertThat(parts).hasSize(3);
         Map<String, Object> headers = decodeRawJsonPart(parts[0]);
         Map<String, Object> claims = decodeRawJsonPart(parts[1]);
 
-        assertThat(headers)
-                .containsOnlyKeys("alg", "kid", "typ")
-                .containsEntry("alg", "RS256")
-                .containsEntry("kid", KEY_ID)
-                .containsEntry("typ", "access");
+        assertThat(headers).containsOnlyKeys("alg", "kid", "typ").containsEntry("alg", "RS256").containsEntry("kid", KEY_ID).containsEntry("typ", "access");
         assertThat(claims).containsOnlyKeys("iss", "sub", "aud", "iat", "nbf", "exp", "jti", "sid");
         assertThat(claims.get("iss")).isEqualTo(ISSUER);
         assertThat(claims.get("sub")).isEqualTo(userId.toString());
@@ -315,10 +270,7 @@ class AccessTokenIssuanceServiceTest {
     }
 
     private Jwt decode(String compactToken, RSAPublicKey publicKey) {
-        var decoder = NimbusJwtDecoder.withPublicKey(publicKey)
-                .signatureAlgorithm(SignatureAlgorithm.RS256)
-                .validateType(false)
-                .build();
+        var decoder = NimbusJwtDecoder.withPublicKey(publicKey).signatureAlgorithm(SignatureAlgorithm.RS256).validateType(false).build();
         decoder.setJwtValidator(jwt -> OAuth2TokenValidatorResult.success());
         return decoder.decode(compactToken);
     }
@@ -340,25 +292,14 @@ class AccessTokenIssuanceServiceTest {
 
     private long persistedTokenMaterialOccurrences(String compactToken, UUID tokenId) {
         return jdbcTemplate.queryForObject(
-                "SELECT count(*) FROM identity.device_session"
-                        + " WHERE strpos(refresh_token_hash, ?) > 0"
-                        + " OR strpos(coalesce(device_label, ''), ?) > 0"
-                        + " OR strpos(coalesce(revoke_reason, ''), ?) > 0"
-                        + " OR strpos(refresh_token_hash, ?) > 0"
-                        + " OR strpos(coalesce(device_label, ''), ?) > 0"
-                        + " OR strpos(coalesce(revoke_reason, ''), ?) > 0",
-                Long.class,
-                compactToken,
-                compactToken,
-                compactToken,
-                tokenId.toString(),
-                tokenId.toString(),
-                tokenId.toString());
+                "SELECT count(*) FROM identity.device_session" + " WHERE strpos(refresh_token_hash, ?) > 0" + " OR strpos(coalesce(device_label, ''), ?) > 0" +
+                        " OR strpos(coalesce(revoke_reason, ''), ?) > 0" + " OR strpos(refresh_token_hash, ?) > 0" +
+                        " OR strpos(coalesce(device_label, ''), ?) > 0" + " OR strpos(coalesce(revoke_reason, ''), ?) > 0",
+                Long.class, compactToken, compactToken, compactToken, tokenId.toString(), tokenId.toString(), tokenId.toString());
     }
 
     private PersistedIdentityState snapshot() {
-        return new PersistedIdentityState(
-                List.copyOf(jdbcTemplate.queryForList("SELECT * FROM identity.user_account ORDER BY id")),
+        return new PersistedIdentityState(List.copyOf(jdbcTemplate.queryForList("SELECT * FROM identity.user_account ORDER BY id")),
                 List.copyOf(jdbcTemplate.queryForList("SELECT * FROM identity.auth_identity ORDER BY id")),
                 List.copyOf(jdbcTemplate.queryForList("SELECT * FROM identity.device_session ORDER BY id")));
     }
@@ -383,8 +324,5 @@ class AccessTokenIssuanceServiceTest {
         }
     }
 
-    private record PersistedIdentityState(
-            List<Map<String, Object>> users,
-            List<Map<String, Object>> identities,
-            List<Map<String, Object>> sessions) {}
+    private record PersistedIdentityState(List<Map<String, Object>> users, List<Map<String, Object>> identities, List<Map<String, Object>> sessions) {}
 }

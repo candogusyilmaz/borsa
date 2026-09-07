@@ -21,16 +21,16 @@ public class RequestTraceFilter extends OncePerRequestFilter {
 
     public static final String TRACE_ID_HEADER = "X-Trace-Id";
     public static final String TRACE_ID_ATTRIBUTE = RequestTraceFilter.class.getName() + ".traceId";
-    /** Compatibility-only correlation value; Micrometer owns the native traceId/spanId MDC entries. */
+    /**
+     * Compatibility-only correlation value; Micrometer owns the native traceId/spanId MDC entries.
+     */
     public static final String TRACE_ID_MDC_KEY = "compatibilityTraceId";
 
     private final IdGenerator idGenerator;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
-        var traceId = Objects.requireNonNull(idGenerator.next(), "idGenerator returned null")
-                .toString();
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        var traceId = Objects.requireNonNull(idGenerator.next(), "idGenerator returned null").toString();
         request.setAttribute(TRACE_ID_ATTRIBUTE, traceId);
         response.setHeader(TRACE_ID_HEADER, traceId);
         MDC.put(TRACE_ID_MDC_KEY, traceId);

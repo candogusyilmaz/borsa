@@ -20,9 +20,7 @@ public class CurrentUserQueryService {
     public CurrentUserResponse getCurrentUser(UUID userAccountId) {
         Objects.requireNonNull(userAccountId, "userAccountId");
 
-        var userAccount = userAccountRepository
-                .findById(userAccountId)
-                .filter(user -> user.getDisabledAt() == null)
+        var userAccount = userAccountRepository.findById(userAccountId).filter(user -> user.getDisabledAt() == null)
                 .orElseThrow(() -> new AppException(IdentityErrorCode.INVALID_CREDENTIALS));
 
         return new CurrentUserResponse(userAccount.getId(), userAccount.getEmail(), userAccount.getCreatedAt());

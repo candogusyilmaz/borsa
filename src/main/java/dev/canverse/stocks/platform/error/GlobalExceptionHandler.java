@@ -79,7 +79,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         this.tracer = tracer;
     }
 
-    /** Test-only compatibility constructor for callers that do not need native tracing. */
+    /**
+     * Test-only compatibility constructor for callers that do not need native tracing.
+     */
     public GlobalExceptionHandler(Clock clock) {
         this(clock, Tracer.NOOP);
     }
@@ -88,25 +90,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleAppException(AppException exception, WebRequest request) {
         var errorCode = exception.getErrorCode();
         if (errorCode.getStatus().is5xxServerError()) {
-            log.error(
-                    "Application error code={} traceId={} params={}",
-                    errorCode.getCode(),
-                    traceId(request),
-                    exception.getParams(),
-                    exception);
+            log.error("Application error code={} traceId={} params={}", errorCode.getCode(), traceId(request), exception.getParams(), exception);
         } else {
-            log.warn(
-                    "Application error code={} traceId={} params={}",
-                    errorCode.getCode(),
-                    traceId(request),
-                    exception.getParams());
+            log.warn("Application error code={} traceId={} params={}", errorCode.getCode(), traceId(request), exception.getParams());
         }
         return problemResponse(errorCode, exception.getParams(), HttpHeaders.EMPTY, request);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<Object> handleDataIntegrityViolation(
-            DataIntegrityViolationException exception, WebRequest request) {
+    public ResponseEntity<Object> handleDataIntegrityViolation(DataIntegrityViolationException exception, WebRequest request) {
         var mappedErrorCode = DatabaseConstraintRegistry.resolve(exception);
         if (mappedErrorCode.isPresent()) {
             return handleAppException(new AppException(mappedErrorCode.get(), exception), request);
@@ -115,8 +107,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(org.hibernate.exception.ConstraintViolationException.class)
-    public ResponseEntity<Object> handleHibernateConstraintViolation(
-            org.hibernate.exception.ConstraintViolationException exception, WebRequest request) {
+    public ResponseEntity<Object> handleHibernateConstraintViolation(org.hibernate.exception.ConstraintViolationException exception, WebRequest request) {
         var mappedErrorCode = DatabaseConstraintRegistry.resolve(exception);
         if (mappedErrorCode.isPresent()) {
             return handleAppException(new AppException(mappedErrorCode.get(), exception), request);
@@ -125,193 +116,144 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<Object> handleConstraintViolation(
-            ConstraintViolationException exception, WebRequest request) {
-        var errors = exception.getConstraintViolations().stream()
-                .map(this::validationError)
-                .toList();
+    public ResponseEntity<Object> handleConstraintViolation(ConstraintViolationException exception, WebRequest request) {
+        var errors = exception.getConstraintViolations().stream().map(this::validationError).toList();
         return validationResponse(errors, HttpHeaders.EMPTY, request);
     }
 
     @ExceptionHandler({ObjectOptimisticLockingFailureException.class, OptimisticLockException.class})
     public ResponseEntity<Object> handleOptimisticLockConflict(Exception exception, WebRequest request) {
-        log.warn(
-                "Optimistic locking conflict traceId={} nativeTraceId={}",
-                traceId(request),
-                nativeTraceId(),
-                exception);
+        log.warn("Optimistic locking conflict traceId={} nativeTraceId={}", traceId(request), nativeTraceId(), exception);
         return problemResponse(CommonErrorCode.STATE_CONFLICT, Map.of(), HttpHeaders.EMPTY, request);
     }
 
     private ResponseEntity<Object> unknownPersistenceFailure(Throwable exception, WebRequest request) {
-        log.error(
-                "Unknown persistence failure traceId={} nativeTraceId={}",
-                traceId(request),
-                nativeTraceId(),
-                exception);
-        return problemResponse(
-                CommonErrorCode.INTERNAL_ERROR,
-                Map.of("detail", "Unhandled persistence failure"),
-                HttpHeaders.EMPTY,
-                request);
+        log.error("Unknown persistence failure traceId={} nativeTraceId={}", traceId(request), nativeTraceId(), exception);
+        return problemResponse(CommonErrorCode.INTERNAL_ERROR, Map.of("detail", "Unhandled persistence failure"), HttpHeaders.EMPTY, request);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleUnexpected(Exception exception, WebRequest request) {
         log.error("Unhandled exception traceId={} nativeTraceId={}", traceId(request), nativeTraceId(), exception);
-        return problemResponse(
-                CommonErrorCode.INTERNAL_ERROR,
-                Map.of("detail", "Unhandled server exception"),
-                HttpHeaders.EMPTY,
-                request);
+        return problemResponse(CommonErrorCode.INTERNAL_ERROR, Map.of("detail", "Unhandled server exception"), HttpHeaders.EMPTY, request);
     }
 
     @Override
-    protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(
-            HttpRequestMethodNotSupportedException exception,
-            HttpHeaders headers,
-            HttpStatusCode status,
-            WebRequest request) {
+    protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException exception, HttpHeaders headers,
+            HttpStatusCode status, WebRequest request) {
         return frameworkResponse(CommonErrorCode.METHOD_NOT_ALLOWED, headers, request, exception);
     }
 
     @Override
-    protected ResponseEntity<Object> handleHttpMediaTypeNotSupported(
-            HttpMediaTypeNotSupportedException exception,
-            HttpHeaders headers,
-            HttpStatusCode status,
+    protected ResponseEntity<Object> handleHttpMediaTypeNotSupported(HttpMediaTypeNotSupportedException exception, HttpHeaders headers, HttpStatusCode status,
             WebRequest request) {
         return frameworkResponse(CommonErrorCode.UNSUPPORTED_MEDIA_TYPE, headers, request, exception);
     }
 
     @Override
-    protected ResponseEntity<Object> handleHttpMediaTypeNotAcceptable(
-            HttpMediaTypeNotAcceptableException exception,
-            HttpHeaders headers,
-            HttpStatusCode status,
+    protected ResponseEntity<Object> handleHttpMediaTypeNotAcceptable(HttpMediaTypeNotAcceptableException exception, HttpHeaders headers, HttpStatusCode status,
             WebRequest request) {
         return frameworkResponse(CommonErrorCode.NOT_ACCEPTABLE, headers, request, exception);
     }
 
     @Override
-    protected ResponseEntity<Object> handleMissingPathVariable(
-            MissingPathVariableException exception, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+    protected ResponseEntity<Object> handleMissingPathVariable(MissingPathVariableException exception, HttpHeaders headers, HttpStatusCode status,
+            WebRequest request) {
         return internalFrameworkResponse(headers, request, exception);
     }
 
     @Override
-    protected ResponseEntity<Object> handleMissingServletRequestParameter(
-            MissingServletRequestParameterException exception,
-            HttpHeaders headers,
-            HttpStatusCode status,
-            WebRequest request) {
-        return problemResponse(
-                CommonErrorCode.MISSING_REQUEST_VALUE,
-                Map.of("parameter", exception.getParameterName()),
-                headers,
-                request);
+    protected ResponseEntity<Object> handleMissingServletRequestParameter(MissingServletRequestParameterException exception, HttpHeaders headers,
+            HttpStatusCode status, WebRequest request) {
+        return problemResponse(CommonErrorCode.MISSING_REQUEST_VALUE, Map.of("parameter", exception.getParameterName()), headers, request);
     }
 
     @Override
-    protected ResponseEntity<Object> handleMissingServletRequestPart(
-            MissingServletRequestPartException exception,
-            HttpHeaders headers,
-            HttpStatusCode status,
+    protected ResponseEntity<Object> handleMissingServletRequestPart(MissingServletRequestPartException exception, HttpHeaders headers, HttpStatusCode status,
             WebRequest request) {
-        return problemResponse(
-                CommonErrorCode.MISSING_REQUEST_VALUE,
-                Map.of("parameter", exception.getRequestPartName()),
-                headers,
-                request);
+        return problemResponse(CommonErrorCode.MISSING_REQUEST_VALUE, Map.of("parameter", exception.getRequestPartName()), headers, request);
     }
 
     @Override
-    protected ResponseEntity<Object> handleServletRequestBindingException(
-            ServletRequestBindingException exception, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+    protected ResponseEntity<Object> handleServletRequestBindingException(ServletRequestBindingException exception, HttpHeaders headers, HttpStatusCode status,
+            WebRequest request) {
         return frameworkResponse(CommonErrorCode.REQUEST_BINDING_FAILED, headers, request, exception);
     }
 
     @Override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(
-            MethodArgumentNotValidException exception, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        var errors = exception.getBindingResult().getAllErrors().stream()
-                .map(this::validationError)
-                .toList();
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException exception, HttpHeaders headers, HttpStatusCode status,
+            WebRequest request) {
+        var errors = exception.getBindingResult().getAllErrors().stream().map(this::validationError).toList();
         return validationResponse(errors, headers, request);
     }
 
     @Override
-    protected ResponseEntity<Object> handleHandlerMethodValidationException(
-            HandlerMethodValidationException exception,
-            HttpHeaders headers,
-            HttpStatusCode status,
+    protected ResponseEntity<Object> handleHandlerMethodValidationException(HandlerMethodValidationException exception, HttpHeaders headers,
+            HttpStatusCode status, WebRequest request) {
+        return validationResponse(validationErrors(exception), headers, request);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleNoHandlerFoundException(NoHandlerFoundException exception, HttpHeaders headers, HttpStatusCode status,
+            WebRequest request) {
+        return frameworkResponse(CommonErrorCode.RESOURCE_NOT_FOUND, headers, request, exception);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleNoResourceFoundException(NoResourceFoundException exception, HttpHeaders headers, HttpStatusCode status,
+            WebRequest request) {
+        return frameworkResponse(CommonErrorCode.RESOURCE_NOT_FOUND, headers, request, exception);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleAsyncRequestTimeoutException(AsyncRequestTimeoutException exception, HttpHeaders headers, HttpStatusCode status,
+            WebRequest request) {
+        return frameworkResponse(CommonErrorCode.SERVICE_UNAVAILABLE, headers, request, exception);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException exception, HttpHeaders headers, HttpStatusCode status,
+            WebRequest request) {
+        return frameworkResponse(CommonErrorCode.PAYLOAD_TOO_LARGE, headers, request, exception);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleConversionNotSupported(ConversionNotSupportedException exception, HttpHeaders headers, HttpStatusCode status,
+            WebRequest request) {
+        return internalFrameworkResponse(headers, request, exception);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleTypeMismatch(TypeMismatchException exception, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        return frameworkResponse(CommonErrorCode.MALFORMED_REQUEST, headers, request, exception);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException exception, HttpHeaders headers, HttpStatusCode status,
+            WebRequest request) {
+        return frameworkResponse(CommonErrorCode.MALFORMED_REQUEST, headers, request, exception);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleHttpMessageNotWritable(HttpMessageNotWritableException exception, HttpHeaders headers, HttpStatusCode status,
+            WebRequest request) {
+        return internalFrameworkResponse(headers, request, exception);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleMethodValidationException(MethodValidationException exception, HttpHeaders headers, HttpStatus status,
             WebRequest request) {
         return validationResponse(validationErrors(exception), headers, request);
     }
 
     @Override
-    protected ResponseEntity<Object> handleNoHandlerFoundException(
-            NoHandlerFoundException exception, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        return frameworkResponse(CommonErrorCode.RESOURCE_NOT_FOUND, headers, request, exception);
-    }
-
-    @Override
-    protected ResponseEntity<Object> handleNoResourceFoundException(
-            NoResourceFoundException exception, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        return frameworkResponse(CommonErrorCode.RESOURCE_NOT_FOUND, headers, request, exception);
-    }
-
-    @Override
-    protected ResponseEntity<Object> handleAsyncRequestTimeoutException(
-            AsyncRequestTimeoutException exception, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        return frameworkResponse(CommonErrorCode.SERVICE_UNAVAILABLE, headers, request, exception);
-    }
-
-    @Override
-    protected ResponseEntity<Object> handleMaxUploadSizeExceededException(
-            MaxUploadSizeExceededException exception, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        return frameworkResponse(CommonErrorCode.PAYLOAD_TOO_LARGE, headers, request, exception);
-    }
-
-    @Override
-    protected ResponseEntity<Object> handleConversionNotSupported(
-            ConversionNotSupportedException exception, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        return internalFrameworkResponse(headers, request, exception);
-    }
-
-    @Override
-    protected ResponseEntity<Object> handleTypeMismatch(
-            TypeMismatchException exception, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        return frameworkResponse(CommonErrorCode.MALFORMED_REQUEST, headers, request, exception);
-    }
-
-    @Override
-    protected ResponseEntity<Object> handleHttpMessageNotReadable(
-            HttpMessageNotReadableException exception, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        return frameworkResponse(CommonErrorCode.MALFORMED_REQUEST, headers, request, exception);
-    }
-
-    @Override
-    protected ResponseEntity<Object> handleHttpMessageNotWritable(
-            HttpMessageNotWritableException exception, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        return internalFrameworkResponse(headers, request, exception);
-    }
-
-    @Override
-    protected ResponseEntity<Object> handleMethodValidationException(
-            MethodValidationException exception, HttpHeaders headers, HttpStatus status, WebRequest request) {
-        return validationResponse(validationErrors(exception), headers, request);
-    }
-
-    @Override
-    protected ResponseEntity<Object> handleAsyncRequestNotUsableException(
-            AsyncRequestNotUsableException exception, WebRequest request) {
+    protected ResponseEntity<Object> handleAsyncRequestNotUsableException(AsyncRequestNotUsableException exception, WebRequest request) {
         return internalFrameworkResponse(HttpHeaders.EMPTY, request, exception);
     }
 
     @Override
-    protected ResponseEntity<Object> handleErrorResponseException(
-            ErrorResponseException exception, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+    protected ResponseEntity<Object> handleErrorResponseException(ErrorResponseException exception, HttpHeaders headers, HttpStatusCode status,
+            WebRequest request) {
         var errorCode = frameworkErrorCode(status);
         if (errorCode == CommonErrorCode.INTERNAL_ERROR) {
             return internalFrameworkResponse(headers, request, exception);
@@ -322,19 +264,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return frameworkResponse(errorCode, headers, request, exception);
     }
 
-    private ResponseEntity<Object> validationResponse(
-            List<Map<String, Object>> errors, HttpHeaders headers, WebRequest request) {
-        var safeErrors = errors.isEmpty()
-                ? List.of(Map.of(
-                        "field", "",
-                        "key", ValidationKeySupport.FALLBACK_KEY,
-                        "detail", "Validation failed."))
+    private ResponseEntity<Object> validationResponse(List<Map<String, Object>> errors, HttpHeaders headers, WebRequest request) {
+        var safeErrors = errors.isEmpty() ? List.of(Map.of("field", "", "key", ValidationKeySupport.FALLBACK_KEY, "detail", "Validation failed."))
                 : List.copyOf(errors);
-        log.warn(
-                "Request validation failed traceId={} nativeTraceId={} errorCount={}",
-                traceId(request),
-                nativeTraceId(),
-                safeErrors.size());
+        log.warn("Request validation failed traceId={} nativeTraceId={} errorCount={}", traceId(request), nativeTraceId(), safeErrors.size());
         return problemResponse(CommonErrorCode.VALIDATION_FAILED, Map.of("errors", safeErrors), headers, request);
     }
 
@@ -360,24 +293,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private Map<String, Object> validationError(ConstraintViolation<?> violation) {
         var field = lastPathSegment(violation.getPropertyPath().toString());
-        var constraintName = violation
-                .getConstraintDescriptor()
-                .getAnnotation()
-                .annotationType()
-                .getSimpleName();
+        var constraintName = violation.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName();
         return validationEntry(field, constraintName, violation.getMessageTemplate(), safeAttributes(violation));
     }
 
     private Map<String, Object> validationError(ObjectError error) {
         var violation = unwrapViolation(error);
         var field = error instanceof FieldError fieldError ? fieldError.getField() : error.getObjectName();
-        var constraintName = violation == null
-                ? constraintName(error.getCodes())
-                : violation
-                        .getConstraintDescriptor()
-                        .getAnnotation()
-                        .annotationType()
-                        .getSimpleName();
+        var constraintName = violation == null ? constraintName(error.getCodes())
+                : violation.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName();
         var messageTemplate = violation == null ? error.getDefaultMessage() : violation.getMessageTemplate();
         Map<String, Object> attributes = violation == null ? Map.of() : safeAttributes(violation);
         return validationEntry(field, constraintName, messageTemplate, attributes);
@@ -387,15 +311,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return validationEntry(field, constraintName(error.getCodes()), error.getDefaultMessage(), Map.of());
     }
 
-    private Map<String, Object> validationEntry(
-            String field, String constraintName, String messageTemplate, Map<String, Object> attributes) {
+    private Map<String, Object> validationEntry(String field, String constraintName, String messageTemplate, Map<String, Object> attributes) {
         var explicitKey = ValidationKeySupport.explicitApplicationKey(messageTemplate);
         var builtInKey = ValidationKeySupport.builtInKey(constraintName);
         if (explicitKey == null && builtInKey == null) {
             log.warn("Unmapped validation message template constraint={} template={}", constraintName, messageTemplate);
         }
-        var key =
-                explicitKey == null ? builtInKey == null ? ValidationKeySupport.FALLBACK_KEY : builtInKey : explicitKey;
+        var key = explicitKey == null ? builtInKey == null ? ValidationKeySupport.FALLBACK_KEY : builtInKey : explicitKey;
         var detail = ValidationKeySupport.safeDetail(constraintName, messageTemplate, explicitKey != null);
         var error = new LinkedHashMap<String, Object>();
         error.put("field", field == null ? "" : field);
@@ -407,28 +329,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return Map.copyOf(error);
     }
 
-    private ResponseEntity<Object> frameworkResponse(
-            ErrorCode errorCode, HttpHeaders headers, WebRequest request, Exception exception) {
+    private ResponseEntity<Object> frameworkResponse(ErrorCode errorCode, HttpHeaders headers, WebRequest request, Exception exception) {
         if (errorCode.getStatus().is5xxServerError()) {
-            log.error(
-                    "Framework error mapped to {} traceId={} nativeTraceId={}",
-                    errorCode.getCode(),
-                    traceId(request),
-                    nativeTraceId(),
-                    exception);
+            log.error("Framework error mapped to {} traceId={} nativeTraceId={}", errorCode.getCode(), traceId(request), nativeTraceId(), exception);
         }
         return problemResponse(errorCode, Map.of(), headers, request);
     }
 
-    private ResponseEntity<Object> internalFrameworkResponse(
-            HttpHeaders headers, WebRequest request, Exception exception) {
+    private ResponseEntity<Object> internalFrameworkResponse(HttpHeaders headers, WebRequest request, Exception exception) {
         log.error("Internal framework error traceId={} nativeTraceId={}", traceId(request), nativeTraceId(), exception);
-        return problemResponse(
-                CommonErrorCode.INTERNAL_ERROR, Map.of("detail", "Internal framework failure"), headers, request);
+        return problemResponse(CommonErrorCode.INTERNAL_ERROR, Map.of("detail", "Internal framework failure"), headers, request);
     }
 
-    private ResponseEntity<Object> problemResponse(
-            ErrorCode errorCode, Map<String, ?> params, HttpHeaders headers, WebRequest request) {
+    private ResponseEntity<Object> problemResponse(ErrorCode errorCode, Map<String, ?> params, HttpHeaders headers, WebRequest request) {
         var problem = ProblemDetail.forStatus(errorCode.getStatus());
         problem.setType(URI.create(PROBLEM_TYPE_BASE + toKebabCase(errorCode.getCode())));
         problem.setTitle(reasonPhrase(errorCode.getStatus()));
@@ -485,11 +398,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     private static boolean isSafeAttribute(Object value) {
-        return value == null
-                || value instanceof String
-                || value instanceof Number
-                || value instanceof Boolean
-                || value instanceof Character;
+        return value == null || value instanceof String || value instanceof Number || value instanceof Boolean || value instanceof Character;
     }
 
     private static String parameterName(ParameterValidationResult result) {

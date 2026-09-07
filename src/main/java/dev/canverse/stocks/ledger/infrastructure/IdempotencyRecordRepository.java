@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface IdempotencyRecordRepository extends JpaRepository<IdempotencyRecord, UUID> {
 
-    @Query("select r from IdempotencyRecord r where r.ownerUserAccountId = :ownerUserAccountId"
-            + " and r.operationScope = :operationScope and r.clientRequestId = :clientRequestId")
+    @Query("select r from IdempotencyRecord r where r.ownerUserAccountId = :ownerUserAccountId" +
+            " and r.operationScope = :operationScope and r.clientRequestId = :clientRequestId")
     Optional<IdempotencyRecord> findByKey(UUID ownerUserAccountId, String operationScope, UUID clientRequestId);
 }

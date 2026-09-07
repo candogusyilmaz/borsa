@@ -3,7 +3,9 @@ package dev.canverse.stocks.reference.domain;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-/** Canonical three-letter currency identity; it does not contain an exchange rate. */
+/**
+ * Canonical three-letter currency identity; it does not contain an exchange rate.
+ */
 public record CurrencyCode(String value) {
 
     private static final Pattern FORMAT = Pattern.compile("[A-Z]{3}");

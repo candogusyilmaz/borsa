@@ -36,12 +36,7 @@ public class AuthIdentity {
 
     private Instant updatedAt;
 
-    public static AuthIdentity local(
-            UUID id,
-            UserAccount userAccount,
-            String normalizedEmail,
-            String encodedPasswordHash,
-            Instant registrationTime) {
+    public static AuthIdentity local(UUID id, UserAccount userAccount, String normalizedEmail, String encodedPasswordHash, Instant registrationTime) {
         var authIdentity = new AuthIdentity();
         authIdentity.id = Objects.requireNonNull(id, "id");
         authIdentity.userAccount = Objects.requireNonNull(userAccount, "userAccount");

@@ -99,12 +99,9 @@ class LocalAccountRegistrationServiceTest {
         assertThat(authIdentity.getCreatedAt()).isEqualTo(REGISTRATION_TIME);
         assertThat(authIdentity.getUpdatedAt()).isEqualTo(REGISTRATION_TIME);
         assertThat(authIdentity.getPasswordHash()).isNotEqualTo(RAW_PASSWORD).startsWith("{");
-        assertThat(passwordEncoder.matches(RAW_PASSWORD, authIdentity.getPasswordHash()))
-                .isTrue();
-        assertThat(passwordEncoder.matches("wrong password", authIdentity.getPasswordHash()))
-                .isFalse();
-        assertThat(jdbcTemplate.queryForObject(
-                        "SELECT user_account_id FROM identity.auth_identity WHERE id = ?", UUID.class, authIdentityId))
+        assertThat(passwordEncoder.matches(RAW_PASSWORD, authIdentity.getPasswordHash())).isTrue();
+        assertThat(passwordEncoder.matches("wrong password", authIdentity.getPasswordHash())).isFalse();
+        assertThat(jdbcTemplate.queryForObject("SELECT user_account_id FROM identity.auth_identity WHERE id = ?", UUID.class, authIdentityId))
                 .isEqualTo(userId);
     }
 
@@ -126,8 +123,7 @@ class LocalAccountRegistrationServiceTest {
         assertThat(userAccountRepository.count()).isOne();
         assertThat(authIdentityRepository.count()).isOne();
         var persistedUserAccount = userAccountRepository.findById(userId).orElseThrow();
-        var persistedAuthIdentity =
-                authIdentityRepository.findById(authIdentityId).orElseThrow();
+        var persistedAuthIdentity = authIdentityRepository.findById(authIdentityId).orElseThrow();
         assertThat(persistedUserAccount.getId()).isEqualTo(firstUserAccount.getId());
         assertThat(persistedUserAccount.getEmail()).isEqualTo(firstUserAccount.getEmail());
         assertThat(persistedUserAccount.getEmailNormalized()).isEqualTo(firstUserAccount.getEmailNormalized());
@@ -149,24 +145,13 @@ class LocalAccountRegistrationServiceTest {
         var requestedAuthIdentityId = UUID.fromString("80000000-0000-0000-0000-000000000008");
 
         runInTransaction(() -> {
-            jdbcTemplate.update(
-                    "INSERT INTO identity.user_account (id, email, email_normalized, created_at, updated_at)"
-                            + " VALUES (?, ?, ?, ?, ?)",
-                    fixtureUserId,
-                    "fixture-owner@example.com",
-                    "fixture-owner@example.com",
-                    REGISTRATION_TIME.atOffset(ZoneOffset.UTC),
+            jdbcTemplate.update("INSERT INTO identity.user_account (id, email, email_normalized, created_at, updated_at)" + " VALUES (?, ?, ?, ?, ?)",
+                    fixtureUserId, "fixture-owner@example.com", "fixture-owner@example.com", REGISTRATION_TIME.atOffset(ZoneOffset.UTC),
                     REGISTRATION_TIME.atOffset(ZoneOffset.UTC));
             jdbcTemplate.update(
-                    "INSERT INTO identity.auth_identity"
-                            + " (id, user_account_id, provider, provider_subject, password_hash, created_at, updated_at)"
-                            + " VALUES (?, ?, ?, ?, ?, ?, ?)",
-                    fixtureAuthIdentityId,
-                    fixtureUserId,
-                    "LOCAL",
-                    "collision@example.com",
-                    "fixture-hash",
-                    REGISTRATION_TIME.atOffset(ZoneOffset.UTC),
+                    "INSERT INTO identity.auth_identity" + " (id, user_account_id, provider, provider_subject, password_hash, created_at, updated_at)" +
+                            " VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    fixtureAuthIdentityId, fixtureUserId, "LOCAL", "collision@example.com", "fixture-hash", REGISTRATION_TIME.atOffset(ZoneOffset.UTC),
                     REGISTRATION_TIME.atOffset(ZoneOffset.UTC));
         });
         idGenerator.setNextIds(requestedUserId, requestedAuthIdentityId);
@@ -176,15 +161,9 @@ class LocalAccountRegistrationServiceTest {
         assertThat(thrown).isExactlyInstanceOf(DataIntegrityViolationException.class);
         assertThat(userAccountRepository.count()).isOne();
         assertThat(authIdentityRepository.count()).isOne();
-        assertThat(userAccountRepository.findById(fixtureUserId).orElseThrow().getEmail())
-                .isEqualTo("fixture-owner@example.com");
-        assertThat(authIdentityRepository
-                        .findById(fixtureAuthIdentityId)
-                        .orElseThrow()
-                        .getProviderSubject())
-                .isEqualTo("collision@example.com");
-        assertThat(userAccountRepository.existsByEmailNormalized("collision@example.com"))
-                .isFalse();
+        assertThat(userAccountRepository.findById(fixtureUserId).orElseThrow().getEmail()).isEqualTo("fixture-owner@example.com");
+        assertThat(authIdentityRepository.findById(fixtureAuthIdentityId).orElseThrow().getProviderSubject()).isEqualTo("collision@example.com");
+        assertThat(userAccountRepository.existsByEmailNormalized("collision@example.com")).isFalse();
     }
 
     private void runInTransaction(Runnable action) {

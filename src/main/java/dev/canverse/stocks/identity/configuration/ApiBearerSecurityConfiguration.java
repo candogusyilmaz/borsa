@@ -25,27 +25,15 @@ public class ApiBearerSecurityConfiguration {
     }
 
     @Bean
-    SecurityFilterChain apiBearerSecurityFilterChain(
-            HttpSecurity http,
-            JwtDecoder jwtDecoder,
-            LocalAccessTokenAuthenticationConverter authenticationConverter,
-            LocalBearerAuthenticationEntryPoint authenticationEntryPoint)
-            throws Exception {
-        http.securityMatcher("/api/v1/**")
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+    SecurityFilterChain apiBearerSecurityFilterChain(HttpSecurity http, JwtDecoder jwtDecoder, LocalAccessTokenAuthenticationConverter authenticationConverter,
+            LocalBearerAuthenticationEntryPoint authenticationEntryPoint) throws Exception {
+        http.securityMatcher("/api/v1/**").sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/register")
-                        .permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/login")
-                        .permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/refresh")
-                        .permitAll()
-                        .anyRequest()
-                        .authenticated())
+                .authorizeHttpRequests(authorize -> authorize.requestMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll().requestMatchers(HttpMethod.POST, "/api/v1/auth/refresh").permitAll()
+                        .anyRequest().authenticated())
                 .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(authenticationEntryPoint))
-                .oauth2ResourceServer(resourceServer -> resourceServer
-                        .authenticationEntryPoint(authenticationEntryPoint)
+                .oauth2ResourceServer(resourceServer -> resourceServer.authenticationEntryPoint(authenticationEntryPoint)
                         .jwt(jwt -> jwt.decoder(jwtDecoder).jwtAuthenticationConverter(authenticationConverter)));
         return http.build();
     }

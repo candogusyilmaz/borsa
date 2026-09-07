@@ -42,16 +42,10 @@ public class DeviceSessionReadRepository {
                 FROM family_summary
                 ORDER BY created_at DESC, family_id DESC
                 """;
-        return jdbcClient
-                .sql(sql)
-                .param("userAccountId", userAccountId)
-                .param("currentSessionId", currentSessionId)
-                .query(this::mapFamilyRow)
-                .list();
+        return jdbcClient.sql(sql).param("userAccountId", userAccountId).param("currentSessionId", currentSessionId).query(this::mapFamilyRow).list();
     }
 
-    public Optional<DeviceSessionFamilyRecord> findFamilyDetail(
-            UUID userAccountId, UUID currentSessionId, UUID familyId) {
+    public Optional<DeviceSessionFamilyRecord> findFamilyDetail(UUID userAccountId, UUID currentSessionId, UUID familyId) {
         Objects.requireNonNull(userAccountId, "userAccountId");
         Objects.requireNonNull(currentSessionId, "currentSessionId");
         Objects.requireNonNull(familyId, "familyId");
@@ -73,13 +67,8 @@ public class DeviceSessionReadRepository {
                 GROUP BY s.family_id
                 """;
 
-        return jdbcClient
-                .sql(sql)
-                .param("userAccountId", userAccountId)
-                .param("currentSessionId", currentSessionId)
-                .param("familyId", familyId)
-                .query(this::mapFamilyRow)
-                .optional();
+        return jdbcClient.sql(sql).param("userAccountId", userAccountId).param("currentSessionId", currentSessionId).param("familyId", familyId)
+                .query(this::mapFamilyRow).optional();
     }
 
     private DeviceSessionFamilyRecord mapFamilyRow(ResultSet rs, int rowNum) throws SQLException {
@@ -95,16 +84,9 @@ public class DeviceSessionReadRepository {
         var terminalRevokeReason = rs.getString("terminal_revoke_reason");
         var isCurrent = rs.getBoolean("is_current");
 
-        return new DeviceSessionFamilyRecord(
-                familyId,
-                latestGenerationId,
-                deviceLabel,
-                createdAt != null ? createdAt.toInstant() : null,
-                lastUsedAt != null ? lastUsedAt.toInstant() : null,
-                minExpiresAt != null ? minExpiresAt.toInstant() : null,
-                maxExpiresAt != null ? maxExpiresAt.toInstant() : null,
-                terminalRevokedAt != null ? terminalRevokedAt.toInstant() : null,
-                terminalRevokeReason,
+        return new DeviceSessionFamilyRecord(familyId, latestGenerationId, deviceLabel, createdAt != null ? createdAt.toInstant() : null,
+                lastUsedAt != null ? lastUsedAt.toInstant() : null, minExpiresAt != null ? minExpiresAt.toInstant() : null,
+                maxExpiresAt != null ? maxExpiresAt.toInstant() : null, terminalRevokedAt != null ? terminalRevokedAt.toInstant() : null, terminalRevokeReason,
                 isCurrent);
     }
 }

@@ -26,16 +26,13 @@ public class TransferController {
     private final CashTransferService transferService;
 
     @PostMapping("/previews")
-    public ResponseEntity<TransferPreviewResponse> preview(
-            @AuthenticationPrincipal AuthenticatedIdentity identity,
+    public ResponseEntity<TransferPreviewResponse> preview(@AuthenticationPrincipal AuthenticatedIdentity identity,
             @Valid @RequestBody TransferPreviewRequest request) {
-        return new ResponseEntity<>(
-                transferService.preview(identity.userAccountId(), request), CacheHeaders.noStore(), HttpStatus.OK);
+        return new ResponseEntity<>(transferService.preview(identity.userAccountId(), request), CacheHeaders.noStore(), HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<ActivityResponse> transfer(
-            @AuthenticationPrincipal AuthenticatedIdentity identity, @Valid @RequestBody TransferRequest request) {
+    public ResponseEntity<ActivityResponse> transfer(@AuthenticationPrincipal AuthenticatedIdentity identity, @Valid @RequestBody TransferRequest request) {
         var response = transferService.transfer(identity.userAccountId(), request);
         var headers = CacheHeaders.noStore();
         headers.setLocation(URI.create("/api/v1/activities/" + response.id()));

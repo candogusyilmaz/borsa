@@ -57,37 +57,19 @@ public class Reconciliation {
 
     private Instant createdAt;
 
-    public static Reconciliation create(
-            UUID id,
-            UUID ownerUserAccountId,
-            UUID financialAccountId,
-            UUID cashPocketId,
-            String currencyCode,
-            String statementReference,
-            Instant statementOpeningAt,
-            Instant statementClosingAt,
-            FinancialAmount statementOpeningBalance,
-            FinancialAmount statementClosingBalance,
-            FinancialAmount ledgerOpeningBalance,
-            FinancialAmount ledgerClosingBalanceBeforeAdjustment,
-            FinancialAmount periodNetPostedAmount,
-            FinancialAmount closingDifference,
-            FinancialAmount adjustmentAmount,
-            long periodPostingCount,
-            long totalPostingCountThroughClosing,
-            ReconciliationResolution resolution,
-            UUID adjustmentActivityId,
-            UUID supersedesReconciliationId,
-            String adjustmentReason,
-            Instant createdAt) {
+    public static Reconciliation create(UUID id, UUID ownerUserAccountId, UUID financialAccountId, UUID cashPocketId, String currencyCode,
+            String statementReference, Instant statementOpeningAt, Instant statementClosingAt, FinancialAmount statementOpeningBalance,
+            FinancialAmount statementClosingBalance, FinancialAmount ledgerOpeningBalance, FinancialAmount ledgerClosingBalanceBeforeAdjustment,
+            FinancialAmount periodNetPostedAmount, FinancialAmount closingDifference, FinancialAmount adjustmentAmount, long periodPostingCount,
+            long totalPostingCountThroughClosing, ReconciliationResolution resolution, UUID adjustmentActivityId, UUID supersedesReconciliationId,
+            String adjustmentReason, Instant createdAt) {
         if (periodPostingCount < 0 || totalPostingCountThroughClosing < 0) {
             throw new IllegalArgumentException("Posting counts must be non-negative");
         }
         var opening = Objects.requireNonNull(statementOpeningBalance, "statementOpeningBalance");
         var closing = Objects.requireNonNull(statementClosingBalance, "statementClosingBalance");
         var ledgerOpening = Objects.requireNonNull(ledgerOpeningBalance, "ledgerOpeningBalance");
-        var ledgerClosing =
-                Objects.requireNonNull(ledgerClosingBalanceBeforeAdjustment, "ledgerClosingBalanceBeforeAdjustment");
+        var ledgerClosing = Objects.requireNonNull(ledgerClosingBalanceBeforeAdjustment, "ledgerClosingBalanceBeforeAdjustment");
         var periodNet = Objects.requireNonNull(periodNetPostedAmount, "periodNetPostedAmount");
         var difference = Objects.requireNonNull(closingDifference, "closingDifference");
         if (!opening.equals(ledgerOpening)) {
@@ -96,31 +78,21 @@ public class Reconciliation {
         if (!ledgerOpening.add(periodNet).equals(ledgerClosing)) {
             throw new IllegalArgumentException("Reconciliation period equation does not balance");
         }
-        if (statementOpeningAt == null
-                || statementClosingAt == null
-                || !statementOpeningAt.isBefore(statementClosingAt)) {
+        if (statementOpeningAt == null || statementClosingAt == null || !statementOpeningAt.isBefore(statementClosingAt)) {
             throw new IllegalArgumentException("Statement opening must precede closing");
         }
         var normalizedReference = requireBoundedText(statementReference, 200, "statementReference");
         var effectiveResolution = Objects.requireNonNull(resolution, "resolution");
         var normalizedReason = adjustmentReason == null ? null : adjustmentReason.trim();
         if (effectiveResolution == ReconciliationResolution.BALANCED) {
-            if (!difference.isZero()
-                    || adjustmentAmount != null
-                    || adjustmentActivityId != null
-                    || normalizedReason != null
-                    || !ledgerClosing.equals(closing)) {
+            if (!difference.isZero() || adjustmentAmount != null || adjustmentActivityId != null || normalizedReason != null ||
+                    !ledgerClosing.equals(closing)) {
                 throw new IllegalArgumentException("Balanced reconciliation has an invalid adjustment shape");
             }
         } else {
             var adjustment = Objects.requireNonNull(adjustmentAmount, "adjustmentAmount");
-            if (difference.isZero()
-                    || !adjustment.equals(difference)
-                    || adjustmentActivityId == null
-                    || normalizedReason == null
-                    || normalizedReason.isBlank()
-                    || normalizedReason.length() > 500
-                    || !ledgerClosing.add(adjustment).equals(closing)) {
+            if (difference.isZero() || !adjustment.equals(difference) || adjustmentActivityId == null || normalizedReason == null ||
+                    normalizedReason.isBlank() || normalizedReason.length() > 500 || !ledgerClosing.add(adjustment).equals(closing)) {
                 throw new IllegalArgumentException("Adjusted reconciliation has an invalid adjustment shape");
             }
         }

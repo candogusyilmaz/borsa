@@ -37,8 +37,7 @@ public class InstrumentAlias {
 
     private Instant createdAt;
 
-    public static InstrumentAlias create(
-            UUID id, Instrument instrument, AliasType type, String value, String normalized, Instant createdAt) {
+    public static InstrumentAlias create(UUID id, Instrument instrument, AliasType type, String value, String normalized, Instant createdAt) {
         var alias = new InstrumentAlias();
         alias.id = Objects.requireNonNull(id, "id");
         alias.instrument = Objects.requireNonNull(instrument, "instrument");

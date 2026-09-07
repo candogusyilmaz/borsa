@@ -26,18 +26,10 @@ public class LocalLoginService {
         var refreshSession = refreshSessionIssuanceService.issue(userAccountId, deviceLabel);
         var accessToken = accessTokenIssuanceService.issue(refreshSession.sessionId());
 
-        securityEventRecorder.record(
-                userAccountId,
-                SecurityEventRecorder.LOCAL_LOGIN_SUCCEEDED,
-                Map.of(
-                        "sessionId", refreshSession.sessionId().toString(),
-                        "familyId", refreshSession.familyId().toString()));
+        securityEventRecorder.record(userAccountId, SecurityEventRecorder.LOCAL_LOGIN_SUCCEEDED,
+                Map.of("sessionId", refreshSession.sessionId().toString(), "familyId", refreshSession.familyId().toString()));
 
-        return new LocalLoginResult(
-                refreshSession.sessionId(),
-                accessToken.accessToken(),
-                accessToken.expiresAt(),
-                refreshSession.refreshToken(),
+        return new LocalLoginResult(refreshSession.sessionId(), accessToken.accessToken(), accessToken.expiresAt(), refreshSession.refreshToken(),
                 refreshSession.expiresAt());
     }
 }

@@ -50,12 +50,7 @@ public class DeviceSession {
 
     private UUID replacedBySessionId;
 
-    public static DeviceSession initialGeneration(
-            UUID id,
-            UserAccount userAccount,
-            String refreshTokenHash,
-            String deviceLabel,
-            Instant createdAt,
+    public static DeviceSession initialGeneration(UUID id, UserAccount userAccount, String refreshTokenHash, String deviceLabel, Instant createdAt,
             Instant expiresAt) {
         Objects.requireNonNull(id, "id");
         Objects.requireNonNull(userAccount, "userAccount");
@@ -147,13 +142,10 @@ public class DeviceSession {
     }
 
     private boolean isUserRevocationReason(String reason) {
-        return USER_LOGOUT_REVOKE_REASON.equals(reason)
-                || USER_LOGOUT_ALL_REVOKE_REASON.equals(reason)
-                || USER_REVOKED_REVOKE_REASON.equals(reason);
+        return USER_LOGOUT_REVOKE_REASON.equals(reason) || USER_LOGOUT_ALL_REVOKE_REASON.equals(reason) || USER_REVOKED_REVOKE_REASON.equals(reason);
     }
 
-    private DeviceSession replacementGeneration(
-            UUID replacementId, String replacementRefreshTokenHash, Instant createdAt) {
+    private DeviceSession replacementGeneration(UUID replacementId, String replacementRefreshTokenHash, Instant createdAt) {
         var replacement = new DeviceSession();
         replacement.id = replacementId;
         replacement.userAccount = userAccount;

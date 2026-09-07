@@ -9,11 +9,5 @@ import jakarta.validation.constraints.PositiveOrZero;
 import java.time.Instant;
 import java.util.UUID;
 
-public record CashActivityRequest(
-        @NotNull UUID clientRequestId,
-        @NotNull @JsonAlias("type") ActivityType activityType,
-        @NotBlank String amount,
-        @NotNull RecordingMode recordingMode,
-        @NotNull Instant effectiveAt,
-        boolean confirmPolicyBreach,
-        @PositiveOrZero Long expectedBalanceVersion) {}
+public record CashActivityRequest(@NotNull UUID clientRequestId, @NotNull @JsonAlias("type") ActivityType activityType, @NotBlank String amount,
+        @NotNull RecordingMode recordingMode, @NotNull Instant effectiveAt, boolean confirmPolicyBreach, @PositiveOrZero Long expectedBalanceVersion) {}

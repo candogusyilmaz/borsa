@@ -25,8 +25,7 @@ class DeviceSessionLifecycleTest {
     @Test
     void revokeTerminalSetsExactTimeAndReason() {
         var user = UserAccount.register(UUID.randomUUID(), "test@example.com", "test@example.com", createdAt);
-        var session =
-                DeviceSession.initialGeneration(UUID.randomUUID(), user, "hash1", "desktop", createdAt, expiresAt);
+        var session = DeviceSession.initialGeneration(UUID.randomUUID(), user, "hash1", "desktop", createdAt, expiresAt);
 
         var observedAt = Instant.parse("2026-08-15T12:00:00Z");
         session.revokeTerminal(DeviceSession.USER_LOGOUT_REVOKE_REASON, observedAt);
@@ -38,8 +37,7 @@ class DeviceSessionLifecycleTest {
     @Test
     void activeAndUserEnabledPredicateRejectsRevokedOrExpiredSessions() {
         var user = UserAccount.register(UUID.randomUUID(), "test@example.com", "test@example.com", createdAt);
-        var session =
-                DeviceSession.initialGeneration(UUID.randomUUID(), user, "hash1", "desktop", createdAt, expiresAt);
+        var session = DeviceSession.initialGeneration(UUID.randomUUID(), user, "hash1", "desktop", createdAt, expiresAt);
         var observedAt = Instant.parse("2026-08-15T12:00:00Z");
 
         assertThat(session.isActiveAndUserEnabled(observedAt)).isTrue();
@@ -47,16 +45,14 @@ class DeviceSessionLifecycleTest {
         session.revokeForReuse(observedAt);
         assertThat(session.isActiveAndUserEnabled(observedAt)).isFalse();
 
-        var expiredSession =
-                DeviceSession.initialGeneration(UUID.randomUUID(), user, "hash2", "desktop", createdAt, observedAt);
+        var expiredSession = DeviceSession.initialGeneration(UUID.randomUUID(), user, "hash2", "desktop", createdAt, observedAt);
         assertThat(expiredSession.isActiveAndUserEnabled(observedAt)).isFalse();
     }
 
     @Test
     void revokeTerminalIsIdempotentAndDoesNotOverwriteEarlierRevocation() {
         var user = UserAccount.register(UUID.randomUUID(), "test@example.com", "test@example.com", createdAt);
-        var session =
-                DeviceSession.initialGeneration(UUID.randomUUID(), user, "hash1", "desktop", createdAt, expiresAt);
+        var session = DeviceSession.initialGeneration(UUID.randomUUID(), user, "hash1", "desktop", createdAt, expiresAt);
 
         var firstTime = Instant.parse("2026-08-15T12:00:00Z");
         session.revokeTerminal(DeviceSession.USER_LOGOUT_REVOKE_REASON, firstTime);
@@ -71,16 +67,14 @@ class DeviceSessionLifecycleTest {
     @Test
     void revokeTerminalCannotOverwriteRotatedOrReuseDetectedReason() {
         var user = UserAccount.register(UUID.randomUUID(), "test@example.com", "test@example.com", createdAt);
-        var session =
-                DeviceSession.initialGeneration(UUID.randomUUID(), user, "hash1", "desktop", createdAt, expiresAt);
+        var session = DeviceSession.initialGeneration(UUID.randomUUID(), user, "hash1", "desktop", createdAt, expiresAt);
 
         var rotateTime = Instant.parse("2026-08-15T11:00:00Z");
         session.consumeForRotation(rotateTime);
         session.linkReplacement(UUID.randomUUID());
 
         var logoutTime = Instant.parse("2026-08-15T12:00:00Z");
-        assertThatThrownBy(() -> session.revokeTerminal(DeviceSession.USER_LOGOUT_REVOKE_REASON, logoutTime))
-                .isInstanceOf(IllegalStateException.class)
+        assertThatThrownBy(() -> session.revokeTerminal(DeviceSession.USER_LOGOUT_REVOKE_REASON, logoutTime)).isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("replaced generation");
     }
 
@@ -92,10 +86,8 @@ class DeviceSessionLifecycleTest {
         var queryService = new DeviceSessionQueryService(readRepository, clock);
 
         var familyId = UUID.randomUUID();
-        var record = new DeviceSessionFamilyRecord(
-                familyId, UUID.randomUUID(), "phone", createdAt, null, expiresAt, expiresAt, null, null, true);
-        Mockito.when(readRepository.findFamilyDetail(Mockito.any(), Mockito.any(), Mockito.eq(familyId)))
-                .thenReturn(Optional.of(record));
+        var record = new DeviceSessionFamilyRecord(familyId, UUID.randomUUID(), "phone", createdAt, null, expiresAt, expiresAt, null, null, true);
+        Mockito.when(readRepository.findFamilyDetail(Mockito.any(), Mockito.any(), Mockito.eq(familyId))).thenReturn(Optional.of(record));
 
         var response = queryService.getSessionDetail(UUID.randomUUID(), UUID.randomUUID(), familyId);
         assertThat(response.status()).isEqualTo(DeviceSessionStatus.ACTIVE);
@@ -111,10 +103,8 @@ class DeviceSessionLifecycleTest {
         var queryService = new DeviceSessionQueryService(readRepository, clock);
 
         var familyId = UUID.randomUUID();
-        var record = new DeviceSessionFamilyRecord(
-                familyId, UUID.randomUUID(), "phone", createdAt, null, expiresAt, expiresAt, null, null, false);
-        Mockito.when(readRepository.findFamilyDetail(Mockito.any(), Mockito.any(), Mockito.eq(familyId)))
-                .thenReturn(Optional.of(record));
+        var record = new DeviceSessionFamilyRecord(familyId, UUID.randomUUID(), "phone", createdAt, null, expiresAt, expiresAt, null, null, false);
+        Mockito.when(readRepository.findFamilyDetail(Mockito.any(), Mockito.any(), Mockito.eq(familyId))).thenReturn(Optional.of(record));
 
         var response = queryService.getSessionDetail(UUID.randomUUID(), UUID.randomUUID(), familyId);
         assertThat(response.status()).isEqualTo(DeviceSessionStatus.EXPIRED);
@@ -130,19 +120,9 @@ class DeviceSessionLifecycleTest {
         var queryService = new DeviceSessionQueryService(readRepository, clock);
 
         var familyId = UUID.randomUUID();
-        var record = new DeviceSessionFamilyRecord(
-                familyId,
-                UUID.randomUUID(),
-                "phone",
-                createdAt,
-                null,
-                expiresAt,
-                expiresAt,
-                revokedAt,
-                DeviceSession.USER_LOGOUT_REVOKE_REASON,
-                false);
-        Mockito.when(readRepository.findFamilyDetail(Mockito.any(), Mockito.any(), Mockito.eq(familyId)))
-                .thenReturn(Optional.of(record));
+        var record = new DeviceSessionFamilyRecord(familyId, UUID.randomUUID(), "phone", createdAt, null, expiresAt, expiresAt, revokedAt,
+                DeviceSession.USER_LOGOUT_REVOKE_REASON, false);
+        Mockito.when(readRepository.findFamilyDetail(Mockito.any(), Mockito.any(), Mockito.eq(familyId))).thenReturn(Optional.of(record));
 
         var response = queryService.getSessionDetail(UUID.randomUUID(), UUID.randomUUID(), familyId);
         assertThat(response.status()).isEqualTo(DeviceSessionStatus.REVOKED);
@@ -158,19 +138,9 @@ class DeviceSessionLifecycleTest {
         var queryService = new DeviceSessionQueryService(readRepository, clock);
 
         var familyId = UUID.randomUUID();
-        var record = new DeviceSessionFamilyRecord(
-                familyId,
-                UUID.randomUUID(),
-                "phone",
-                createdAt,
-                null,
-                expiresAt,
-                expiresAt,
-                revokedAt,
-                DeviceSession.REUSE_DETECTED_REVOKE_REASON,
-                false);
-        Mockito.when(readRepository.findFamilyDetail(Mockito.any(), Mockito.any(), Mockito.eq(familyId)))
-                .thenReturn(Optional.of(record));
+        var record = new DeviceSessionFamilyRecord(familyId, UUID.randomUUID(), "phone", createdAt, null, expiresAt, expiresAt, revokedAt,
+                DeviceSession.REUSE_DETECTED_REVOKE_REASON, false);
+        Mockito.when(readRepository.findFamilyDetail(Mockito.any(), Mockito.any(), Mockito.eq(familyId))).thenReturn(Optional.of(record));
 
         var response = queryService.getSessionDetail(UUID.randomUUID(), UUID.randomUUID(), familyId);
         assertThat(response.status()).isEqualTo(DeviceSessionStatus.COMPROMISED);
@@ -185,22 +155,11 @@ class DeviceSessionLifecycleTest {
         var queryService = new DeviceSessionQueryService(readRepository, clock);
 
         var familyId = UUID.randomUUID();
-        var record = new DeviceSessionFamilyRecord(
-                familyId,
-                UUID.randomUUID(),
-                "phone",
-                createdAt,
-                null,
-                expiresAt,
-                expiresAt.plusSeconds(3600), // Inconsistent
-                null,
-                null,
-                false);
-        Mockito.when(readRepository.findFamilyDetail(Mockito.any(), Mockito.any(), Mockito.eq(familyId)))
-                .thenReturn(Optional.of(record));
+        var record = new DeviceSessionFamilyRecord(familyId, UUID.randomUUID(), "phone", createdAt, null, expiresAt, expiresAt.plusSeconds(3600), // Inconsistent
+                null, null, false);
+        Mockito.when(readRepository.findFamilyDetail(Mockito.any(), Mockito.any(), Mockito.eq(familyId))).thenReturn(Optional.of(record));
 
-        assertThatThrownBy(() -> queryService.getSessionDetail(UUID.randomUUID(), UUID.randomUUID(), familyId))
-                .isInstanceOf(IllegalStateException.class)
+        assertThatThrownBy(() -> queryService.getSessionDetail(UUID.randomUUID(), UUID.randomUUID(), familyId)).isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("Inconsistent family expiry");
     }
 }

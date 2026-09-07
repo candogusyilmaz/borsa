@@ -4,7 +4,9 @@ import java.util.Locale;
 import java.util.Set;
 import org.springframework.http.HttpStatus;
 
-/** Describes a stable application error without coupling it to an HTTP response body. */
+/**
+ * Describes a stable application error without coupling it to an HTTP response body.
+ */
 public interface ErrorCode {
 
     HttpStatus getStatus();
@@ -22,9 +24,7 @@ public interface ErrorCode {
 
     default String getMessageKey() {
         var simpleName = getClass().getSimpleName();
-        var domainName = simpleName.endsWith("ErrorCode")
-                ? simpleName.substring(0, simpleName.length() - "ErrorCode".length())
-                : simpleName;
+        var domainName = simpleName.endsWith("ErrorCode") ? simpleName.substring(0, simpleName.length() - "ErrorCode".length()) : simpleName;
         return "error.%s.%s".formatted(toSnakeCase(domainName), getCode().toLowerCase(Locale.ROOT));
     }
 

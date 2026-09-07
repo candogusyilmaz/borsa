@@ -34,9 +34,7 @@ public class CashActivityController {
     private final CashActivityQueryService queryService;
 
     @PostMapping("/api/v1/accounts/{accountId}/activities")
-    public ResponseEntity<ActivityResponse> record(
-            @AuthenticationPrincipal AuthenticatedIdentity identity,
-            @PathVariable UUID accountId,
+    public ResponseEntity<ActivityResponse> record(@AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID accountId,
             @Valid @RequestBody CashActivityRequest request) {
         var response = commandService.recordCashActivity(identity.userAccountId(), accountId, request);
         var headers = CacheHeaders.noStore();
@@ -45,28 +43,19 @@ public class CashActivityController {
     }
 
     @GetMapping("/api/v1/activities")
-    public ResponseEntity<SliceResponse<ActivityResponse>> list(
-            @AuthenticationPrincipal AuthenticatedIdentity identity,
+    public ResponseEntity<SliceResponse<ActivityResponse>> list(@AuthenticationPrincipal AuthenticatedIdentity identity,
             @RequestParam(required = false) UUID accountId,
-            @PageableDefault(size = DEFAULT_LIMIT, sort = "recordedAt", direction = Sort.Direction.DESC)
-                    Pageable pageable) {
-        return new ResponseEntity<>(
-                queryService.list(identity.userAccountId(), accountId, pageable),
-                CacheHeaders.noStore(),
-                HttpStatus.OK);
+            @PageableDefault(size = DEFAULT_LIMIT, sort = "recordedAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return new ResponseEntity<>(queryService.list(identity.userAccountId(), accountId, pageable), CacheHeaders.noStore(), HttpStatus.OK);
     }
 
     @GetMapping("/api/v1/activities/{activityId}")
-    public ResponseEntity<ActivityResponse> get(
-            @AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID activityId) {
-        return new ResponseEntity<>(
-                queryService.get(identity.userAccountId(), activityId), CacheHeaders.noStore(), HttpStatus.OK);
+    public ResponseEntity<ActivityResponse> get(@AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID activityId) {
+        return new ResponseEntity<>(queryService.get(identity.userAccountId(), activityId), CacheHeaders.noStore(), HttpStatus.OK);
     }
 
     @PostMapping("/api/v1/activities/{activityId}/reversals")
-    public ResponseEntity<ActivityResponse> reverse(
-            @AuthenticationPrincipal AuthenticatedIdentity identity,
-            @PathVariable UUID activityId,
+    public ResponseEntity<ActivityResponse> reverse(@AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID activityId,
             @Valid @RequestBody ReversalRequest request) {
         var response = commandService.reverse(identity.userAccountId(), activityId, request);
         var headers = CacheHeaders.noStore();

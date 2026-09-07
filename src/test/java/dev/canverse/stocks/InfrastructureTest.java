@@ -22,9 +22,7 @@ class InfrastructureTest {
 
     @Test
     void idGeneratorFunctionalInterfaceSupportsLambdaOverride() {
-        var ids = List.of(
-                UUID.fromString("00000000-0000-0000-0000-000000000001"),
-                UUID.fromString("00000000-0000-0000-0000-000000000002"));
+        var ids = List.of(UUID.fromString("00000000-0000-0000-0000-000000000001"), UUID.fromString("00000000-0000-0000-0000-000000000002"));
         Iterator<UUID> iterator = ids.iterator();
         IdGenerator deterministic = iterator::next;
 

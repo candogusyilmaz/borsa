@@ -6,15 +6,10 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-public record MarketCalendarSessionResponse(
-        @NotNull LocalDate date,
-        @NotNull MarketSessionStatus sessionStatus,
-        LocalTime opensAt,
-        LocalTime closesAt,
+public record MarketCalendarSessionResponse(@NotNull LocalDate date, @NotNull MarketSessionStatus sessionStatus, LocalTime opensAt, LocalTime closesAt,
         @NotNull String sourceKind) {
 
     public static MarketCalendarSessionResponse from(ReferenceCatalogReadRepository.CalendarRow row) {
-        return new MarketCalendarSessionResponse(
-                row.date(), row.sessionStatus(), row.opensAt(), row.closesAt(), row.sourceKind());
+        return new MarketCalendarSessionResponse(row.date(), row.sessionStatus(), row.opensAt(), row.closesAt(), row.sourceKind());
     }
 }

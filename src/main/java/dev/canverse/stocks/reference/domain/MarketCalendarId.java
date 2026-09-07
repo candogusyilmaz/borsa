@@ -7,6 +7,4 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @Embeddable
-public record MarketCalendarId(
-        @Column(name = "market_id") UUID marketId,
-        @Column(name = "calendar_date") LocalDate calendarDate) implements Serializable {}
+public record MarketCalendarId(@Column(name = "market_id") UUID marketId, @Column(name = "calendar_date") LocalDate calendarDate) implements Serializable {}

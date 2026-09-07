@@ -31,26 +31,12 @@ class RefreshSessionRotationControlFlowTest {
         var securityEventRecorder = mock(dev.canverse.stocks.platform.application.SecurityEventRecorder.class);
         var clock = mock(Clock.class);
         var idGenerator = mock(dev.canverse.stocks.platform.id.IdGenerator.class);
-        var service = new RefreshSessionRotationService(
-                refreshTokenGenerator,
-                deviceSessionRepository,
-                userAccountRepository,
-                accessTokenIssuanceService,
-                securityEventRecorder,
-                clock,
-                idGenerator);
+        var service = new RefreshSessionRotationService(refreshTokenGenerator, deviceSessionRepository, userAccountRepository, accessTokenIssuanceService,
+                securityEventRecorder, clock, idGenerator);
 
-        assertThatThrownBy(() -> service.rotate(null))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessage("rawRefreshToken");
+        assertThatThrownBy(() -> service.rotate(null)).isInstanceOf(NullPointerException.class).hasMessage("rawRefreshToken");
 
-        verifyNoInteractions(
-                refreshTokenGenerator,
-                deviceSessionRepository,
-                userAccountRepository,
-                accessTokenIssuanceService,
-                securityEventRecorder,
-                clock,
+        verifyNoInteractions(refreshTokenGenerator, deviceSessionRepository, userAccountRepository, accessTokenIssuanceService, securityEventRecorder, clock,
                 idGenerator);
     }
 
@@ -64,30 +50,17 @@ class RefreshSessionRotationControlFlowTest {
         var clock = mock(Clock.class);
         var idGenerator = mock(dev.canverse.stocks.platform.id.IdGenerator.class);
         when(refreshTokenGenerator.hash("presented-token")).thenReturn("stored-hash");
-        when(deviceSessionRepository.findRefreshSessionOwnerByRefreshTokenHash("stored-hash"))
-                .thenReturn(Optional.empty());
-        var service = new RefreshSessionRotationService(
-                refreshTokenGenerator,
-                deviceSessionRepository,
-                userAccountRepository,
-                accessTokenIssuanceService,
-                securityEventRecorder,
-                clock,
-                idGenerator);
+        when(deviceSessionRepository.findRefreshSessionOwnerByRefreshTokenHash("stored-hash")).thenReturn(Optional.empty());
+        var service = new RefreshSessionRotationService(refreshTokenGenerator, deviceSessionRepository, userAccountRepository, accessTokenIssuanceService,
+                securityEventRecorder, clock, idGenerator);
 
         assertThat(service.rotate("presented-token")).isEmpty();
 
         var ordered = inOrder(refreshTokenGenerator, deviceSessionRepository);
         ordered.verify(refreshTokenGenerator).hash("presented-token");
         ordered.verify(deviceSessionRepository).findRefreshSessionOwnerByRefreshTokenHash("stored-hash");
-        verifyNoMoreInteractions(
-                refreshTokenGenerator,
-                deviceSessionRepository,
-                userAccountRepository,
-                accessTokenIssuanceService,
-                securityEventRecorder,
-                clock,
-                idGenerator);
+        verifyNoMoreInteractions(refreshTokenGenerator, deviceSessionRepository, userAccountRepository, accessTokenIssuanceService, securityEventRecorder,
+                clock, idGenerator);
     }
 
     @Test
@@ -107,14 +80,8 @@ class RefreshSessionRotationControlFlowTest {
         when(userAccountRepository.findByIdForUpdate(userId)).thenReturn(Optional.empty());
         when(deviceSessionRepository.findById(sessionId)).thenReturn(Optional.empty());
         when(clock.instant()).thenReturn(Instant.parse("2026-08-15T12:00:00Z"));
-        var service = new RefreshSessionRotationService(
-                refreshTokenGenerator,
-                deviceSessionRepository,
-                userAccountRepository,
-                accessTokenIssuanceService,
-                securityEventRecorder,
-                clock,
-                idGenerator);
+        var service = new RefreshSessionRotationService(refreshTokenGenerator, deviceSessionRepository, userAccountRepository, accessTokenIssuanceService,
+                securityEventRecorder, clock, idGenerator);
 
         assertThat(service.rotate("presented-token")).isEmpty();
 
@@ -124,13 +91,7 @@ class RefreshSessionRotationControlFlowTest {
         ordered.verify(userAccountRepository).findByIdForUpdate(userId);
         ordered.verify(deviceSessionRepository).findById(sessionId);
         ordered.verify(clock).instant();
-        verifyNoMoreInteractions(
-                refreshTokenGenerator,
-                deviceSessionRepository,
-                userAccountRepository,
-                accessTokenIssuanceService,
-                securityEventRecorder,
-                clock,
-                idGenerator);
+        verifyNoMoreInteractions(refreshTokenGenerator, deviceSessionRepository, userAccountRepository, accessTokenIssuanceService, securityEventRecorder,
+                clock, idGenerator);
     }
 }

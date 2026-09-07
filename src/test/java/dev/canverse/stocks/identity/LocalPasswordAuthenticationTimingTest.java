@@ -27,10 +27,8 @@ class LocalPasswordAuthenticationTimingTest {
     void unknownEmailUsesOneConstructedDummyHashForEachMatchAttempt() {
         var repository = mock(AuthIdentityRepository.class);
         var passwordEncoder = mock(PasswordEncoder.class);
-        when(repository.findByProviderAndProviderSubject("LOCAL", "missing@example.com"))
-                .thenReturn(Optional.empty());
-        when(repository.findByProviderAndProviderSubject("LOCAL", "another@example.com"))
-                .thenReturn(Optional.empty());
+        when(repository.findByProviderAndProviderSubject("LOCAL", "missing@example.com")).thenReturn(Optional.empty());
+        when(repository.findByProviderAndProviderSubject("LOCAL", "another@example.com")).thenReturn(Optional.empty());
         when(passwordEncoder.encode(DUMMY_PASSWORD)).thenReturn(DUMMY_HASH);
 
         var service = new LocalPasswordAuthenticationService(repository, passwordEncoder);
@@ -42,8 +40,7 @@ class LocalPasswordAuthenticationTimingTest {
         assertCredentialFailure(secondAttempt, "Another@Example.com", RAW_PASSWORD);
         assertThat(IdentityErrorCode.INVALID_CREDENTIALS.getStatus()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(IdentityErrorCode.INVALID_CREDENTIALS.getRequiredParams()).isEmpty();
-        assertThat(IdentityErrorCode.INVALID_CREDENTIALS.getMessageKey())
-                .isEqualTo("error.identity.invalid_credentials");
+        assertThat(IdentityErrorCode.INVALID_CREDENTIALS.getMessageKey()).isEqualTo("error.identity.invalid_credentials");
 
         verify(passwordEncoder, times(1)).encode(DUMMY_PASSWORD);
         verify(passwordEncoder, never()).encode(RAW_PASSWORD);

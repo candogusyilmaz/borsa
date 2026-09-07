@@ -25,16 +25,14 @@ public class LocalAccountRegistrationController {
 
     @PostMapping("register")
     @ResponseStatus(HttpStatus.CREATED)
-    public RegistrationResponse register(
-            @Valid @RequestBody RegistrationRequest request, HttpServletRequest servletRequest) {
+    public RegistrationResponse register(@Valid @RequestBody RegistrationRequest request, HttpServletRequest servletRequest) {
         var remoteAddr = servletRequest.getRemoteAddr();
         var traceId = (String) servletRequest.getAttribute(RequestTraceFilter.TRACE_ID_ATTRIBUTE);
         if (traceId == null) {
             traceId = "unknown";
         }
 
-        var userId = registrationAttemptService.attemptRegistration(
-                request.email(), request.password(), remoteAddr, traceId);
+        var userId = registrationAttemptService.attemptRegistration(request.email(), request.password(), remoteAddr, traceId);
         return new RegistrationResponse(userId);
     }
 }

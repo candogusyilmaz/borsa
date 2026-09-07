@@ -25,10 +25,7 @@ class LocalLoginServiceFamilyIdTest {
         var refreshSessionIssuanceService = mock(RefreshSessionIssuanceService.class);
         var accessTokenIssuanceService = mock(AccessTokenIssuanceService.class);
         var securityEventRecorder = mock(SecurityEventRecorder.class);
-        var loginService = new LocalLoginService(
-                passwordAuthenticationService,
-                refreshSessionIssuanceService,
-                accessTokenIssuanceService,
+        var loginService = new LocalLoginService(passwordAuthenticationService, refreshSessionIssuanceService, accessTokenIssuanceService,
                 securityEventRecorder);
 
         var userAccountId = UUID.randomUUID();
@@ -36,20 +33,15 @@ class LocalLoginServiceFamilyIdTest {
         var familyId = UUID.randomUUID();
         var accessTokenExpiresAt = Instant.parse("2026-08-16T14:00:00Z");
         var refreshTokenExpiresAt = Instant.parse("2026-08-16T15:00:00Z");
-        when(passwordAuthenticationService.authenticate("alice@example.com", "password"))
-                .thenReturn(userAccountId);
+        when(passwordAuthenticationService.authenticate("alice@example.com", "password")).thenReturn(userAccountId);
         when(refreshSessionIssuanceService.issue(userAccountId, "laptop"))
                 .thenReturn(new IssuedRefreshSession(sessionId, familyId, "refresh-token", refreshTokenExpiresAt));
-        when(accessTokenIssuanceService.issue(sessionId))
-                .thenReturn(new IssuedAccessToken("access-token", accessTokenExpiresAt));
+        when(accessTokenIssuanceService.issue(sessionId)).thenReturn(new IssuedAccessToken("access-token", accessTokenExpiresAt));
 
         var result = loginService.login("alice@example.com", "password", "laptop");
 
         assertThat(result.sessionId()).isEqualTo(sessionId);
-        verify(securityEventRecorder)
-                .record(
-                        userAccountId,
-                        SecurityEventRecorder.LOCAL_LOGIN_SUCCEEDED,
-                        Map.of("sessionId", sessionId.toString(), "familyId", familyId.toString()));
+        verify(securityEventRecorder).record(userAccountId, SecurityEventRecorder.LOCAL_LOGIN_SUCCEEDED,
+                Map.of("sessionId", sessionId.toString(), "familyId", familyId.toString()));
     }
 }

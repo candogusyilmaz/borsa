@@ -34,91 +34,69 @@ class AuthenticationAbuseProtectionPropertiesTest {
 
     @Test
     void rejectsZeroAndNegativeMaxTrackedKeys() {
-        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties(null, null, null, 0))
-                .isInstanceOf(IllegalArgumentException.class)
+        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties(null, null, null, 0)).isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("maxTrackedKeys must be positive");
 
-        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties(null, null, null, -1))
-                .isInstanceOf(IllegalArgumentException.class)
+        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties(null, null, null, -1)).isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("maxTrackedKeys must be positive");
     }
 
     @Test
     void rejectsZeroAndNegativeLoginProperties() {
-        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.LoginProperties(
-                        0, 25, Duration.ofMinutes(15), Duration.ofMinutes(15)))
+        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.LoginProperties(0, 25, Duration.ofMinutes(15), Duration.ofMinutes(15)))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.LoginProperties(
-                        -1, 25, Duration.ofMinutes(15), Duration.ofMinutes(15)))
+        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.LoginProperties(-1, 25, Duration.ofMinutes(15), Duration.ofMinutes(15)))
                 .isInstanceOf(IllegalArgumentException.class);
 
-        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.LoginProperties(
-                        5, 0, Duration.ofMinutes(15), Duration.ofMinutes(15)))
+        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.LoginProperties(5, 0, Duration.ofMinutes(15), Duration.ofMinutes(15)))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.LoginProperties(
-                        5, -1, Duration.ofMinutes(15), Duration.ofMinutes(15)))
+        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.LoginProperties(5, -1, Duration.ofMinutes(15), Duration.ofMinutes(15)))
                 .isInstanceOf(IllegalArgumentException.class);
 
-        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.LoginProperties(
-                        5, 25, Duration.ZERO, Duration.ofMinutes(15)))
+        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.LoginProperties(5, 25, Duration.ZERO, Duration.ofMinutes(15)))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.LoginProperties(
-                        5, 25, Duration.ofSeconds(-1), Duration.ofMinutes(15)))
+        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.LoginProperties(5, 25, Duration.ofSeconds(-1), Duration.ofMinutes(15)))
                 .isInstanceOf(IllegalArgumentException.class);
 
-        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.LoginProperties(
-                        5, 25, Duration.ofMinutes(15), Duration.ZERO))
+        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.LoginProperties(5, 25, Duration.ofMinutes(15), Duration.ZERO))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.LoginProperties(
-                        5, 25, Duration.ofMinutes(15), Duration.ofSeconds(-10)))
+        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.LoginProperties(5, 25, Duration.ofMinutes(15), Duration.ofSeconds(-10)))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void rejectsZeroAndNegativeRegistrationProperties() {
-        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.RegistrationProperties(
-                        0, Duration.ofHours(1), Duration.ofHours(1)))
+        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.RegistrationProperties(0, Duration.ofHours(1), Duration.ofHours(1)))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.RegistrationProperties(
-                        -1, Duration.ofHours(1), Duration.ofHours(1)))
+        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.RegistrationProperties(-1, Duration.ofHours(1), Duration.ofHours(1)))
                 .isInstanceOf(IllegalArgumentException.class);
 
-        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.RegistrationProperties(
-                        10, Duration.ZERO, Duration.ofHours(1)))
+        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.RegistrationProperties(10, Duration.ZERO, Duration.ofHours(1)))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.RegistrationProperties(
-                        10, Duration.ofSeconds(-1), Duration.ofHours(1)))
+        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.RegistrationProperties(10, Duration.ofSeconds(-1), Duration.ofHours(1)))
                 .isInstanceOf(IllegalArgumentException.class);
 
-        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.RegistrationProperties(
-                        10, Duration.ofHours(1), Duration.ZERO))
+        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.RegistrationProperties(10, Duration.ofHours(1), Duration.ZERO))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.RegistrationProperties(
-                        10, Duration.ofHours(1), Duration.ofSeconds(-1)))
+        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.RegistrationProperties(10, Duration.ofHours(1), Duration.ofSeconds(-1)))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void rejectsZeroAndNegativeRefreshProperties() {
-        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.RefreshProperties(
-                        0, Duration.ofMinutes(15), Duration.ofMinutes(15)))
+        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.RefreshProperties(0, Duration.ofMinutes(15), Duration.ofMinutes(15)))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.RefreshProperties(
-                        -1, Duration.ofMinutes(15), Duration.ofMinutes(15)))
+        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.RefreshProperties(-1, Duration.ofMinutes(15), Duration.ofMinutes(15)))
                 .isInstanceOf(IllegalArgumentException.class);
 
-        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.RefreshProperties(
-                        30, Duration.ZERO, Duration.ofMinutes(15)))
+        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.RefreshProperties(30, Duration.ZERO, Duration.ofMinutes(15)))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.RefreshProperties(
-                        30, Duration.ofSeconds(-1), Duration.ofMinutes(15)))
+        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.RefreshProperties(30, Duration.ofSeconds(-1), Duration.ofMinutes(15)))
                 .isInstanceOf(IllegalArgumentException.class);
 
-        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.RefreshProperties(
-                        30, Duration.ofMinutes(15), Duration.ZERO))
+        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.RefreshProperties(30, Duration.ofMinutes(15), Duration.ZERO))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.RefreshProperties(
-                        30, Duration.ofMinutes(15), Duration.ofSeconds(-5)))
+        assertThatThrownBy(() -> new AuthenticationAbuseProtectionProperties.RefreshProperties(30, Duration.ofMinutes(15), Duration.ofSeconds(-5)))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -143,9 +121,7 @@ class AuthenticationAbuseProtectionPropertiesTest {
     private void assertBindingFails(String key, String value) {
         var env = new MockEnvironment().withProperty(key, value);
         var binder = Binder.get(env);
-        assertThatThrownBy(() ->
-                        binder.bind("stocks.identity.abuse-protection", AuthenticationAbuseProtectionProperties.class))
-                .isInstanceOf(BindException.class)
-                .hasRootCauseInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> binder.bind("stocks.identity.abuse-protection", AuthenticationAbuseProtectionProperties.class))
+                .isInstanceOf(BindException.class).hasRootCauseInstanceOf(IllegalArgumentException.class);
     }
 }

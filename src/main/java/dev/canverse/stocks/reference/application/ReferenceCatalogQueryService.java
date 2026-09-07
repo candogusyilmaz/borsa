@@ -50,21 +50,15 @@ public class ReferenceCatalogQueryService {
     @Transactional(readOnly = true)
     public MarketCalendarResponse calendar(UUID marketId, LocalDate from, LocalDate to) {
         validateDateRange(from, to);
-        var header = readRepository
-                .findActiveMarket(Objects.requireNonNull(marketId, "marketId"))
+        var header = readRepository.findActiveMarket(Objects.requireNonNull(marketId, "marketId"))
                 .orElseThrow(() -> new AppException(ReferenceErrorCode.MARKET_NOT_FOUND));
         validateTimeZone(header.timeZone());
 
         var storedRows = readRepository.findCalendarRows(marketId, from, to);
-        var storedDates = storedRows.stream()
-                .map(ReferenceCatalogReadRepository.CalendarRow::date)
-                .toList();
+        var storedDates = storedRows.stream().map(ReferenceCatalogReadRepository.CalendarRow::date).toList();
         var storedDateSet = Set.copyOf(storedDates);
-        var missingDates = from.datesUntil(to.plusDays(1))
-                .filter(date -> !storedDateSet.contains(date))
-                .toList();
-        var coverage = storedRows.isEmpty()
-                ? CalendarCoverageStatus.NONE
+        var missingDates = from.datesUntil(to.plusDays(1)).filter(date -> !storedDateSet.contains(date)).toList();
+        var coverage = storedRows.isEmpty() ? CalendarCoverageStatus.NONE
                 : missingDates.isEmpty() ? CalendarCoverageStatus.COMPLETE : CalendarCoverageStatus.PARTIAL;
         return MarketCalendarResponse.from(header, from, to, coverage, storedRows, missingDates);
     }
@@ -73,9 +67,7 @@ public class ReferenceCatalogQueryService {
         Objects.requireNonNull(from, "from");
         Objects.requireNonNull(to, "to");
         if (from.isAfter(to) || ChronoUnit.DAYS.between(from, to) > MAX_CALENDAR_RANGE_DAYS) {
-            throw ValidationErrors.invalidField(
-                    "from/to",
-                    "error.fields.reference.invalid_value",
+            throw ValidationErrors.invalidField("from/to", "error.fields.reference.invalid_value",
                     "The calendar range must be ordered and contain at most " + MAX_CALENDAR_DATES + " dates.");
         }
     }

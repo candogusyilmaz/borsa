@@ -32,15 +32,10 @@ public class SecurityEventRecorder {
     public static final String ALL_SESSIONS_LOGGED_OUT = "ALL_SESSIONS_LOGGED_OUT";
     public static final String DEVICE_SESSION_REVOKED = "DEVICE_SESSION_REVOKED";
 
-    public static final Set<String> ANONYMOUS_EVENT_TYPES =
-            Set.of(LOCAL_LOGIN_FAILED, LOCAL_LOGIN_THROTTLED, REGISTRATION_THROTTLED, REFRESH_THROTTLED);
+    public static final Set<String> ANONYMOUS_EVENT_TYPES = Set.of(LOCAL_LOGIN_FAILED, LOCAL_LOGIN_THROTTLED, REGISTRATION_THROTTLED, REFRESH_THROTTLED);
 
-    public static final Set<String> USER_SCOPED_EVENT_TYPES = Set.of(
-            LOCAL_LOGIN_SUCCEEDED,
-            REFRESH_REUSE_DETECTED,
-            CURRENT_SESSION_LOGGED_OUT,
-            ALL_SESSIONS_LOGGED_OUT,
-            DEVICE_SESSION_REVOKED);
+    public static final Set<String> USER_SCOPED_EVENT_TYPES = Set.of(LOCAL_LOGIN_SUCCEEDED, REFRESH_REUSE_DETECTED, CURRENT_SESSION_LOGGED_OUT,
+            ALL_SESSIONS_LOGGED_OUT, DEVICE_SESSION_REVOKED);
 
     private final SecurityEventRepository securityEventRepository;
     private final EntityManager entityManager;
@@ -92,59 +87,56 @@ public class SecurityEventRecorder {
             throw new IllegalArgumentException("Event type " + eventType + " is not a user-scoped event type");
         }
 
-        Set<String> requiredKeys =
-                switch (eventType) {
-                    case LOCAL_LOGIN_SUCCEEDED -> {
-                        validateCanonicalUuidString(details, "sessionId");
-                        validateCanonicalUuidString(details, "familyId");
-                        yield Set.of("sessionId", "familyId");
-                    }
-                    case LOCAL_LOGIN_FAILED, LOCAL_LOGIN_THROTTLED -> {
-                        validateNonBlankString(details, "traceId");
-                        if (!"LOGIN".equals(details.get("operation"))) {
-                            throw new IllegalArgumentException("operation must be LOGIN");
-                        }
-                        yield Set.of("traceId", "operation");
-                    }
-                    case REGISTRATION_THROTTLED -> {
-                        validateNonBlankString(details, "traceId");
-                        if (!"REGISTER".equals(details.get("operation"))) {
-                            throw new IllegalArgumentException("operation must be REGISTER");
-                        }
-                        yield Set.of("traceId", "operation");
-                    }
-                    case REFRESH_REUSE_DETECTED -> {
-                        validateCanonicalUuidString(details, "familyId");
-                        validateCanonicalUuidString(details, "sessionId");
-                        yield Set.of("familyId", "sessionId");
-                    }
-                    case REFRESH_THROTTLED -> {
-                        validateNonBlankString(details, "traceId");
-                        if (!"REFRESH".equals(details.get("operation"))) {
-                            throw new IllegalArgumentException("operation must be REFRESH");
-                        }
-                        yield Set.of("traceId", "operation");
-                    }
-                    case CURRENT_SESSION_LOGGED_OUT, DEVICE_SESSION_REVOKED -> {
-                        validateCanonicalUuidString(details, "familyId");
-                        yield Set.of("familyId");
-                    }
-                    case ALL_SESSIONS_LOGGED_OUT -> {
-                        if (!(details.get("revokedFamilyCount") instanceof Byte
-                                        || details.get("revokedFamilyCount") instanceof Short
-                                        || details.get("revokedFamilyCount") instanceof Integer
-                                        || details.get("revokedFamilyCount") instanceof Long)
-                                || ((Number) details.get("revokedFamilyCount")).longValue() < 0) {
-                            throw new IllegalArgumentException("revokedFamilyCount must be a non-negative number");
-                        }
-                        yield Set.of("revokedFamilyCount");
-                    }
-                    default -> throw new IllegalArgumentException("Unknown security event type: " + eventType);
-                };
+        Set<String> requiredKeys = switch (eventType) {
+            case LOCAL_LOGIN_SUCCEEDED -> {
+                validateCanonicalUuidString(details, "sessionId");
+                validateCanonicalUuidString(details, "familyId");
+                yield Set.of("sessionId", "familyId");
+            }
+            case LOCAL_LOGIN_FAILED, LOCAL_LOGIN_THROTTLED -> {
+                validateNonBlankString(details, "traceId");
+                if (!"LOGIN".equals(details.get("operation"))) {
+                    throw new IllegalArgumentException("operation must be LOGIN");
+                }
+                yield Set.of("traceId", "operation");
+            }
+            case REGISTRATION_THROTTLED -> {
+                validateNonBlankString(details, "traceId");
+                if (!"REGISTER".equals(details.get("operation"))) {
+                    throw new IllegalArgumentException("operation must be REGISTER");
+                }
+                yield Set.of("traceId", "operation");
+            }
+            case REFRESH_REUSE_DETECTED -> {
+                validateCanonicalUuidString(details, "familyId");
+                validateCanonicalUuidString(details, "sessionId");
+                yield Set.of("familyId", "sessionId");
+            }
+            case REFRESH_THROTTLED -> {
+                validateNonBlankString(details, "traceId");
+                if (!"REFRESH".equals(details.get("operation"))) {
+                    throw new IllegalArgumentException("operation must be REFRESH");
+                }
+                yield Set.of("traceId", "operation");
+            }
+            case CURRENT_SESSION_LOGGED_OUT, DEVICE_SESSION_REVOKED -> {
+                validateCanonicalUuidString(details, "familyId");
+                yield Set.of("familyId");
+            }
+            case ALL_SESSIONS_LOGGED_OUT -> {
+                if (!(details.get("revokedFamilyCount") instanceof Byte || details.get("revokedFamilyCount") instanceof Short ||
+                        details.get("revokedFamilyCount") instanceof Integer || details.get("revokedFamilyCount") instanceof Long) ||
+                        ((Number) details.get("revokedFamilyCount")).longValue() < 0) {
+                    throw new IllegalArgumentException("revokedFamilyCount must be a non-negative number");
+                }
+                yield Set.of("revokedFamilyCount");
+            }
+            default -> throw new IllegalArgumentException("Unknown security event type: " + eventType);
+        };
 
         if (!details.keySet().equals(requiredKeys)) {
-            throw new IllegalArgumentException("Invalid details keys for event type " + eventType + ": expected "
-                    + requiredKeys + ", actual " + details.keySet());
+            throw new IllegalArgumentException(
+                    "Invalid details keys for event type " + eventType + ": expected " + requiredKeys + ", actual " + details.keySet());
         }
     }
 

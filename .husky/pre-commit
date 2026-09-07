@@ -1,25 +1,25 @@
 REPO_ROOT=$(git rev-parse --show-toplevel)
 
-# ── Java: Google Java Formatter ──────────────────────────────────────────────
-echo 'Running Google Java Formatter (fmt:format)...'
+# ── Java: Spotless ────────────────────────────────────────────────────────────
+echo 'Running Spotless (spotless:apply)...'
 cd "$REPO_ROOT" || exit 1
-./mvnw fmt:format -q
-FMT_EXIT=$?
+./mvnw spotless:apply -q
+SPOTLESS_EXIT=$?
 
-if [ $FMT_EXIT -ne 0 ]; then
+if [ $SPOTLESS_EXIT -ne 0 ]; then
   echo ''
-  echo 'FAILED: Google Java Formatter failed. Fix the errors above before committing.'
+  echo 'FAILED: Spotless formatting failed. Fix the errors above before committing.'
   exit 1
 fi
 
-# Stage any Java files that were reformatted
-git diff --name-only | grep '\.java$' | xargs -r git add
+# Stage any Java files that Spotless reformatted
+git diff --name-only -- '*.java' | xargs -r git add
 echo 'OK: Java formatting done.'
 
 # ── Frontend: TypeScript type check ──────────────────────────────────────────
 echo 'Running TypeScript type check (tsc -b)...'
 cd "$REPO_ROOT/src/main/web" || exit 1
-npx tsc -b
+npm run typecheck
 TSC_EXIT=$?
 
 if [ $TSC_EXIT -ne 0 ]; then
@@ -28,7 +28,7 @@ if [ $TSC_EXIT -ne 0 ]; then
   exit 1
 fi
 
-# ── Frontend: Biome check ─────────────────────────────────────────────────────
+# ── Frontend: Biome check ────────────────────────────────────────────────────
 echo 'Running Biome check...'
 
 # First do a dry-run to detect any unformatted/lint issues
@@ -40,7 +40,9 @@ if [ $BIOME_CHECK_EXIT -ne 0 ]; then
   npm run check
   echo ''
   echo 'Biome found and fixed issues. Staging the fixed files...'
-  git diff --name-only | xargs -r git add
+
+  git diff --name-only -- ./src | xargs -r git add
+
   echo 'Fixed files have been staged. Please review and commit again.'
   exit 1
 fi

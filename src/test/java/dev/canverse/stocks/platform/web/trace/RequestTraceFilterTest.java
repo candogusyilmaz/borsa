@@ -27,8 +27,7 @@ class RequestTraceFilterTest {
 
         filter.doFilter(request, response, (ignoredRequest, ignoredResponse) -> {
             assertThat(MDC.get(RequestTraceFilter.TRACE_ID_MDC_KEY)).isEqualTo(traceId.toString());
-            assertThat(request.getAttribute(RequestTraceFilter.TRACE_ID_ATTRIBUTE))
-                    .isEqualTo(traceId.toString());
+            assertThat(request.getAttribute(RequestTraceFilter.TRACE_ID_ATTRIBUTE)).isEqualTo(traceId.toString());
         });
 
         assertThat(response.getHeader(RequestTraceFilter.TRACE_ID_HEADER)).isEqualTo(traceId.toString());

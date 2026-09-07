@@ -36,17 +36,14 @@ class LocalAccessTokenAuthenticationConverterControlFlowTest {
         var clock = mock(Clock.class);
         var converter = new LocalAccessTokenAuthenticationConverter(repository, clock);
 
-        assertThatThrownBy(() -> converter.convert(null))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessage("jwt");
+        assertThatThrownBy(() -> converter.convert(null)).isInstanceOf(NullPointerException.class).hasMessage("jwt");
 
         verifyNoInteractions(clock, repository);
     }
 
     @Test
     void missingMalformedAndNonCanonicalIdentityClaimsFailSafelyBeforeTimeOrQueryWork() {
-        var invalidClaims = List.of(
-                new InvalidClaims("missing subject", claims("sid", SESSION_ID)),
+        var invalidClaims = List.of(new InvalidClaims("missing subject", claims("sid", SESSION_ID)),
                 new InvalidClaims("malformed subject", claims("sub", "not-a-uuid", "sid", SESSION_ID)),
                 new InvalidClaims("non-canonical subject", claims("sub", USER_ID.toUpperCase(), "sid", SESSION_ID)),
                 new InvalidClaims("missing session", claims("sub", USER_ID)),
@@ -102,9 +99,7 @@ class LocalAccessTokenAuthenticationConverterControlFlowTest {
         var exception = (InvalidBearerTokenException) thrown;
         assertThat(exception.getError().getErrorCode()).as(caseName).isEqualTo(OAuth2ErrorCodes.INVALID_TOKEN);
         assertThat(exception.getMessage()).as(caseName).isEqualTo(SAFE_MESSAGE);
-        assertThat(exception.toString())
-                .as(caseName)
-                .doesNotContain("direct-test-token", caseName, USER_ID, SESSION_ID, "not-a-uuid");
+        assertThat(exception.toString()).as(caseName).doesNotContain("direct-test-token", caseName, USER_ID, SESSION_ID, "not-a-uuid");
     }
 
     private record InvalidClaims(String name, Map<String, Object> claims) {}

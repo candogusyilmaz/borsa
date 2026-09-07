@@ -31,15 +31,10 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.NONE,
-        properties = {
-            "stocks.identity.refresh-session.lifetime=30d",
-            "stocks.identity.access-token.issuer=https://issuer.test",
-            "stocks.identity.access-token.audience=canverse-test-api",
-            "stocks.identity.access-token.lifetime=5m",
-            "stocks.identity.access-token.key-id=test-ephemeral"
-        })
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE,
+        properties = {"stocks.identity.refresh-session.lifetime=30d", "stocks.identity.access-token.issuer=https://issuer.test",
+                "stocks.identity.access-token.audience=canverse-test-api", "stocks.identity.access-token.lifetime=5m",
+                "stocks.identity.access-token.key-id=test-ephemeral"})
 @Testcontainers
 @Import(DeviceSessionRevocationServiceTest.TestOverrides.class)
 class DeviceSessionRevocationServiceTest {
@@ -79,8 +74,7 @@ class DeviceSessionRevocationServiceTest {
 
     @BeforeEach
     void cleanDatabase() {
-        jdbcTemplate.execute(
-                "TRUNCATE TABLE platform.security_event, identity.device_session, identity.auth_identity, identity.user_account CASCADE");
+        jdbcTemplate.execute("TRUNCATE TABLE platform.security_event, identity.device_session, identity.auth_identity, identity.user_account CASCADE");
     }
 
     @Test
@@ -123,12 +117,10 @@ class DeviceSessionRevocationServiceTest {
         var isCurrentAgain = revocationService.revokeSelectedFamily(user1, session1.sessionId(), session1.sessionId());
         assertThat(isCurrentAgain).isTrue();
 
-        // Cross-owner revocation throws SESSION_NOT_FOUND without mutating user2's session
-        assertThatThrownBy(
-                        () -> revocationService.revokeSelectedFamily(user1, session1.sessionId(), session2.sessionId()))
-                .isInstanceOf(AppException.class)
-                .satisfies(e ->
-                        assertThat(((AppException) e).getErrorCode()).isEqualTo(IdentityErrorCode.SESSION_NOT_FOUND));
+        // Cross-owner revocation throws SESSION_NOT_FOUND without mutating user2's
+        // session
+        assertThatThrownBy(() -> revocationService.revokeSelectedFamily(user1, session1.sessionId(), session2.sessionId())).isInstanceOf(AppException.class)
+                .satisfies(e -> assertThat(((AppException) e).getErrorCode()).isEqualTo(IdentityErrorCode.SESSION_NOT_FOUND));
 
         var user2Session = sessionRepository.findById(session2.sessionId()).orElseThrow();
         assertThat(user2Session.getRevokedAt()).isNull();

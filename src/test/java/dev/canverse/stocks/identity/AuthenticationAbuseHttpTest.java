@@ -28,18 +28,11 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        properties = {
-            "stocks.identity.refresh-session.lifetime=30d",
-            "stocks.identity.access-token.issuer=https://issuer.test",
-            "stocks.identity.access-token.audience=canverse-test-api",
-            "stocks.identity.access-token.lifetime=5m",
-            "stocks.identity.access-token.key-id=test-ephemeral",
-            "stocks.identity.abuse-protection.login.principal-max-failures=3",
-            "stocks.identity.abuse-protection.registration.source-max-attempts=3",
-            "stocks.identity.abuse-protection.refresh.source-max-failures=3"
-        })
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK,
+        properties = {"stocks.identity.refresh-session.lifetime=30d", "stocks.identity.access-token.issuer=https://issuer.test",
+                "stocks.identity.access-token.audience=canverse-test-api", "stocks.identity.access-token.lifetime=5m",
+                "stocks.identity.access-token.key-id=test-ephemeral", "stocks.identity.abuse-protection.login.principal-max-failures=3",
+                "stocks.identity.abuse-protection.registration.source-max-attempts=3", "stocks.identity.abuse-protection.refresh.source-max-failures=3"})
 @AutoConfigureMockMvc
 @Testcontainers
 @Import(AuthenticationAbuseHttpTest.TestOverrides.class)
@@ -65,8 +58,7 @@ class AuthenticationAbuseHttpTest {
 
     @BeforeEach
     void cleanDatabase() {
-        jdbcTemplate.execute(
-                "TRUNCATE TABLE platform.security_event, identity.device_session, identity.auth_identity, identity.user_account CASCADE");
+        jdbcTemplate.execute("TRUNCATE TABLE platform.security_event, identity.device_session, identity.auth_identity, identity.user_account CASCADE");
         mutableClock.set(T0);
     }
 
@@ -86,18 +78,12 @@ class AuthenticationAbuseHttpTest {
 
         // Failures 1, 2, 3 return 401
         for (int i = 0; i < 3; i++) {
-            mockMvc.perform(post("/api/v1/auth/login")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(badLoginJson))
-                    .andExpect(status().isUnauthorized())
+            mockMvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).content(badLoginJson)).andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.code", equalTo("INVALID_CREDENTIALS")));
         }
 
         // 4th attempt returns 429 AUTHENTICATION_THROTTLED
-        mockMvc.perform(post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(badLoginJson))
-                .andExpect(status().isTooManyRequests())
+        mockMvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).content(badLoginJson)).andExpect(status().isTooManyRequests())
                 .andExpect(jsonPath("$.code", equalTo("AUTHENTICATION_THROTTLED")));
 
         // Correct password while throttled also returns 429
@@ -110,20 +96,14 @@ class AuthenticationAbuseHttpTest {
                 }
                 """.formatted(email);
 
-        mockMvc.perform(post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(goodLoginJson))
-                .andExpect(status().isTooManyRequests())
+        mockMvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).content(goodLoginJson)).andExpect(status().isTooManyRequests())
                 .andExpect(jsonPath("$.code", equalTo("AUTHENTICATION_THROTTLED")));
 
         // Advance clock past block duration (15m default)
         mutableClock.advance(Duration.ofMinutes(15));
 
         // Now login with good password succeeds!
-        mockMvc.perform(post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(goodLoginJson))
-                .andExpect(status().isOk())
+        mockMvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).content(goodLoginJson)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.sessionId").exists());
     }
 
@@ -131,28 +111,21 @@ class AuthenticationAbuseHttpTest {
     void registrationThrottlesAfterMaxAttempts() throws Exception {
         // Attempts 1, 2, 3 succeed
         for (int i = 0; i < 3; i++) {
-            mockMvc.perform(post("/api/v1/auth/register")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content("""
-                                    {
-                                      "email": "reg%d@example.com",
-                                      "password": "correct horse battery staple"
-                                    }
-                                    """.formatted(i)))
-                    .andExpect(status().isCreated());
+            mockMvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON).content("""
+                    {
+                      "email": "reg%d@example.com",
+                      "password": "correct horse battery staple"
+                    }
+                    """.formatted(i))).andExpect(status().isCreated());
         }
 
         // Attempt 4 is throttled -> 429
-        mockMvc.perform(post("/api/v1/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "email": "reg4@example.com",
-                                  "password": "correct horse battery staple"
-                                }
-                                """))
-                .andExpect(status().isTooManyRequests())
-                .andExpect(jsonPath("$.code", equalTo("AUTHENTICATION_THROTTLED")));
+        mockMvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON).content("""
+                {
+                  "email": "reg4@example.com",
+                  "password": "correct horse battery staple"
+                }
+                """)).andExpect(status().isTooManyRequests()).andExpect(jsonPath("$.code", equalTo("AUTHENTICATION_THROTTLED")));
     }
 
     @Test
@@ -166,18 +139,12 @@ class AuthenticationAbuseHttpTest {
 
         // Failures 1, 2, 3 return 401
         for (int i = 0; i < 3; i++) {
-            mockMvc.perform(post("/api/v1/auth/refresh")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(badRefreshJson))
-                    .andExpect(status().isUnauthorized())
+            mockMvc.perform(post("/api/v1/auth/refresh").contentType(MediaType.APPLICATION_JSON).content(badRefreshJson)).andExpect(status().isUnauthorized())
                     .andExpect(jsonPath("$.code", equalTo("INVALID_CREDENTIALS")));
         }
 
         // 4th attempt returns 429
-        mockMvc.perform(post("/api/v1/auth/refresh")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(badRefreshJson))
-                .andExpect(status().isTooManyRequests())
+        mockMvc.perform(post("/api/v1/auth/refresh").contentType(MediaType.APPLICATION_JSON).content(badRefreshJson)).andExpect(status().isTooManyRequests())
                 .andExpect(jsonPath("$.code", equalTo("AUTHENTICATION_THROTTLED")));
     }
 

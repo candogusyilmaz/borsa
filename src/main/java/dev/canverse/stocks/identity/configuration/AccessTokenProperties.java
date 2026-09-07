@@ -6,12 +6,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 
 @ConfigurationProperties("stocks.identity.access-token")
-public record AccessTokenProperties(
-        @DefaultValue("https://canverse.dev") URI issuer,
-        @DefaultValue("canverse-api") String audience,
-        @DefaultValue("15m") Duration lifetime,
-        @DefaultValue("local-ephemeral") String keyId,
-        @DefaultValue(" ") String privateKeyPem,
+public record AccessTokenProperties(@DefaultValue("https://canverse.dev") URI issuer, @DefaultValue("canverse-api") String audience,
+        @DefaultValue("15m") Duration lifetime, @DefaultValue("local-ephemeral") String keyId, @DefaultValue(" ") String privateKeyPem,
         @DefaultValue(" ") String publicKeyPem) {
 
     public AccessTokenProperties {
@@ -43,8 +39,7 @@ public record AccessTokenProperties(
 
     @Override
     public String toString() {
-        return "AccessTokenProperties[issuer=" + issuer + ", audience=" + audience + ", lifetime=" + lifetime
-                + ", keyId=" + keyId + ", privateKeyPemConfigured=" + (privateKeyPem != null)
-                + ", publicKeyPemConfigured=" + (publicKeyPem != null) + "]";
+        return "AccessTokenProperties[issuer=" + issuer + ", audience=" + audience + ", lifetime=" + lifetime + ", keyId=" + keyId +
+                ", privateKeyPemConfigured=" + (privateKeyPem != null) + ", publicKeyPemConfigured=" + (publicKeyPem != null) + "]";
     }
 }

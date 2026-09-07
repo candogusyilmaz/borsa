@@ -44,7 +44,6 @@ public class CanonicalFingerprint {
     }
 
     private static String hashBytes(byte[] bytes) throws NoSuchAlgorithmException {
-        return java.util.HexFormat.of()
-                .formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
+        return java.util.HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
     }
 }

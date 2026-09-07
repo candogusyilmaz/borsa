@@ -3,7 +3,9 @@ package dev.canverse.stocks.reference.domain;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-/** Canonical ISO-3166 alpha-2 identity; callers must supply the canonical form. */
+/**
+ * Canonical ISO-3166 alpha-2 identity; callers must supply the canonical form.
+ */
 public record CountryCode(String value) {
 
     private static final Pattern FORMAT = Pattern.compile("[A-Z]{2}");

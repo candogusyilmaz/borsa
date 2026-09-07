@@ -80,14 +80,9 @@ class CashLedgerConcurrencyTest {
             var outcomes = List.of(first.get(15, TimeUnit.SECONDS), second.get(15, TimeUnit.SECONDS));
 
             assertThat(outcomes.stream().filter(Outcome::succeeded)).hasSize(1);
-            assertThat(outcomes.stream().map(Outcome::errorCode).filter(java.util.Objects::nonNull))
-                    .containsExactly(LedgerErrorCode.INSUFFICIENT_FUNDS);
-            assertThat(queryService.balance(ownerId, account.id(), null).ledgerBalance())
-                    .isEqualTo("25");
-            assertThat(jdbcTemplate.queryForObject(
-                            "SELECT COUNT(*) FROM ledger.activity WHERE owner_user_account_id = ?",
-                            Integer.class,
-                            ownerId))
+            assertThat(outcomes.stream().map(Outcome::errorCode).filter(java.util.Objects::nonNull)).containsExactly(LedgerErrorCode.INSUFFICIENT_FUNDS);
+            assertThat(queryService.balance(ownerId, account.id(), null).ledgerBalance()).isEqualTo("25");
+            assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ledger.activity WHERE owner_user_account_id = ?", Integer.class, ownerId))
                     .isEqualTo(2);
         } finally {
             executor.shutdownNow();
@@ -97,8 +92,7 @@ class CashLedgerConcurrencyTest {
     @Test
     void concurrentAuthorizedLimitWithdrawalsHaveOneBoundaryWinnerWithoutOverspend() throws Exception {
         var ownerId = insertUser("ledger-concurrent-authorized-limit@example.com");
-        var account = createAccount(
-                ownerId, "Concurrent authorized limit", "0", NegativeBalancePolicy.AUTHORIZED_LIMIT, "50");
+        var account = createAccount(ownerId, "Concurrent authorized limit", "0", NegativeBalancePolicy.AUTHORIZED_LIMIT, "50");
         var start = new CountDownLatch(1);
         var executor = Executors.newFixedThreadPool(2);
         try {
@@ -108,12 +102,9 @@ class CashLedgerConcurrencyTest {
             var outcomes = List.of(first.get(15, TimeUnit.SECONDS), second.get(15, TimeUnit.SECONDS));
 
             assertThat(outcomes.stream().filter(Outcome::succeeded)).hasSize(1);
-            assertThat(outcomes.stream().map(Outcome::errorCode).filter(java.util.Objects::nonNull))
-                    .containsExactly(LedgerErrorCode.ACCOUNT_LIMIT_EXCEEDED);
-            assertThat(queryService.balance(ownerId, account.id(), null).ledgerBalance())
-                    .isEqualTo("-50");
-            assertThat(queryService.balance(ownerId, account.id(), null).creditAvailable())
-                    .isEqualTo("0");
+            assertThat(outcomes.stream().map(Outcome::errorCode).filter(java.util.Objects::nonNull)).containsExactly(LedgerErrorCode.ACCOUNT_LIMIT_EXCEEDED);
+            assertThat(queryService.balance(ownerId, account.id(), null).ledgerBalance()).isEqualTo("-50");
+            assertThat(queryService.balance(ownerId, account.id(), null).creditAvailable()).isEqualTo("0");
         } finally {
             executor.shutdownNow();
         }
@@ -122,17 +113,9 @@ class CashLedgerConcurrencyTest {
     @Test
     void concurrentAccountCreationReplayCreatesOneAccountAndOneOpeningWorkflow() throws Exception {
         var ownerId = insertUser("ledger-concurrent-account-create@example.com");
-        var request = new CreateFinancialAccountRequest(
-                UUID.randomUUID(),
-                "Concurrent account",
-                AccountKind.CASH_CURRENT,
-                TrackingMode.FULL_LEDGER,
-                "USD",
-                "UTC",
-                NegativeBalancePolicy.HARD_FLOOR,
-                null,
-                new dev.canverse.stocks.ledger.web.request.OpeningStateRequest(
-                        "25", Instant.now().minusSeconds(10)));
+        var request = new CreateFinancialAccountRequest(UUID.randomUUID(), "Concurrent account", AccountKind.CASH_CURRENT, TrackingMode.FULL_LEDGER, "USD",
+                "UTC", NegativeBalancePolicy.HARD_FLOOR, null,
+                new dev.canverse.stocks.ledger.web.request.OpeningStateRequest("25", Instant.now().minusSeconds(10)));
         var start = new CountDownLatch(1);
         var executor = Executors.newFixedThreadPool(2);
         try {
@@ -143,20 +126,11 @@ class CashLedgerConcurrencyTest {
 
             assertThat(outcomes).allMatch(Outcome::succeeded);
             assertThat(outcomes.stream().map(Outcome::activityId).distinct()).hasSize(1);
-            assertThat(jdbcTemplate.queryForObject(
-                            "SELECT COUNT(*) FROM ledger.financial_account WHERE owner_user_account_id = ?",
-                            Integer.class,
-                            ownerId))
+            assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ledger.financial_account WHERE owner_user_account_id = ?", Integer.class, ownerId))
                     .isEqualTo(1);
-            assertThat(jdbcTemplate.queryForObject(
-                            "SELECT COUNT(*) FROM ledger.activity WHERE owner_user_account_id = ?",
-                            Integer.class,
-                            ownerId))
+            assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ledger.activity WHERE owner_user_account_id = ?", Integer.class, ownerId))
                     .isEqualTo(1);
-            assertThat(jdbcTemplate.queryForObject(
-                            "SELECT COUNT(*) FROM ledger.idempotency_record WHERE owner_user_account_id = ?",
-                            Integer.class,
-                            ownerId))
+            assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ledger.idempotency_record WHERE owner_user_account_id = ?", Integer.class, ownerId))
                     .isEqualTo(1);
         } finally {
             executor.shutdownNow();
@@ -167,14 +141,8 @@ class CashLedgerConcurrencyTest {
     void concurrentSameIdempotencyKeyReturnsOneActivityToBothCallers() throws Exception {
         var ownerId = insertUser("ledger-concurrent-retry@example.com");
         var account = createAccount(ownerId, "Concurrent retry", "100");
-        var request = new CashActivityRequest(
-                UUID.randomUUID(),
-                ActivityType.CASH_DEPOSIT,
-                "25.00",
-                RecordingMode.CURRENT_ACTION,
-                Instant.now().minusSeconds(1),
-                false,
-                null);
+        var request = new CashActivityRequest(UUID.randomUUID(), ActivityType.CASH_DEPOSIT, "25.00", RecordingMode.CURRENT_ACTION,
+                Instant.now().minusSeconds(1), false, null);
         var start = new CountDownLatch(1);
         var executor = Executors.newFixedThreadPool(2);
         try {
@@ -185,12 +153,8 @@ class CashLedgerConcurrencyTest {
 
             assertThat(outcomes).allMatch(Outcome::succeeded);
             assertThat(outcomes.stream().map(Outcome::activityId).distinct()).hasSize(1);
-            assertThat(queryService.balance(ownerId, account.id(), null).ledgerBalance())
-                    .isEqualTo("125");
-            assertThat(jdbcTemplate.queryForObject(
-                            "SELECT COUNT(*) FROM ledger.activity WHERE owner_user_account_id = ?",
-                            Integer.class,
-                            ownerId))
+            assertThat(queryService.balance(ownerId, account.id(), null).ledgerBalance()).isEqualTo("125");
+            assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ledger.activity WHERE owner_user_account_id = ?", Integer.class, ownerId))
                     .isEqualTo(2);
         } finally {
             executor.shutdownNow();
@@ -213,12 +177,9 @@ class CashLedgerConcurrencyTest {
             var outcomes = List.of(first.get(15, TimeUnit.SECONDS), second.get(15, TimeUnit.SECONDS));
 
             assertThat(outcomes).allMatch(Outcome::succeeded);
-            assertThat(outcomes.stream().map(Outcome::errorCode).filter(java.util.Objects::nonNull))
-                    .isEmpty();
-            assertThat(queryService.balance(ownerId, firstAccount.id(), null).ledgerBalance())
-                    .isEqualTo("100");
-            assertThat(queryService.balance(ownerId, secondAccount.id(), null).ledgerBalance())
-                    .isEqualTo("100");
+            assertThat(outcomes.stream().map(Outcome::errorCode).filter(java.util.Objects::nonNull)).isEmpty();
+            assertThat(queryService.balance(ownerId, firstAccount.id(), null).ledgerBalance()).isEqualTo("100");
+            assertThat(queryService.balance(ownerId, secondAccount.id(), null).ledgerBalance()).isEqualTo("100");
         } finally {
             executor.shutdownNow();
         }
@@ -240,10 +201,8 @@ class CashLedgerConcurrencyTest {
 
             assertThat(outcomes).allMatch(Outcome::succeeded);
             assertThat(outcomes.stream().map(Outcome::activityId).distinct()).hasSize(1);
-            assertThat(queryService.balance(ownerId, source.id(), null).ledgerBalance())
-                    .isEqualTo("90");
-            assertThat(queryService.balance(ownerId, destination.id(), null).ledgerBalance())
-                    .isEqualTo("20");
+            assertThat(queryService.balance(ownerId, source.id(), null).ledgerBalance()).isEqualTo("90");
+            assertThat(queryService.balance(ownerId, destination.id(), null).ledgerBalance()).isEqualTo("20");
         } finally {
             executor.shutdownNow();
         }
@@ -253,17 +212,8 @@ class CashLedgerConcurrencyTest {
     void concurrentSameReversalKeyReturnsOneReversalToBothCallers() throws Exception {
         var ownerId = insertUser("ledger-concurrent-reversal-retry@example.com");
         var account = createAccount(ownerId, "Reversal retry", "100");
-        var original = activityService.recordCashActivity(
-                ownerId,
-                account.id(),
-                new CashActivityRequest(
-                        UUID.randomUUID(),
-                        ActivityType.CASH_DEPOSIT,
-                        "10",
-                        RecordingMode.CURRENT_ACTION,
-                        Instant.now().minusSeconds(1),
-                        false,
-                        null));
+        var original = activityService.recordCashActivity(ownerId, account.id(), new CashActivityRequest(UUID.randomUUID(), ActivityType.CASH_DEPOSIT, "10",
+                RecordingMode.CURRENT_ACTION, Instant.now().minusSeconds(1), false, null));
         var request = new ReversalRequest(UUID.randomUUID(), "Concurrent reversal");
         var start = new CountDownLatch(1);
         var executor = Executors.newFixedThreadPool(2);
@@ -275,12 +225,8 @@ class CashLedgerConcurrencyTest {
 
             assertThat(outcomes).allMatch(Outcome::succeeded);
             assertThat(outcomes.stream().map(Outcome::activityId).distinct()).hasSize(1);
-            assertThat(queryService.balance(ownerId, account.id(), null).ledgerBalance())
-                    .isEqualTo("100");
-            assertThat(jdbcTemplate.queryForObject(
-                            "SELECT COUNT(*) FROM ledger.activity WHERE owner_user_account_id = ?",
-                            Integer.class,
-                            ownerId))
+            assertThat(queryService.balance(ownerId, account.id(), null).ledgerBalance()).isEqualTo("100");
+            assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ledger.activity WHERE owner_user_account_id = ?", Integer.class, ownerId))
                     .isEqualTo(3);
         } finally {
             executor.shutdownNow();
@@ -291,14 +237,10 @@ class CashLedgerConcurrencyTest {
     void concurrentSameOpeningCorrectionKeyReturnsOneCorrectionToBothCallers() throws Exception {
         var ownerId = insertUser("ledger-concurrent-opening-retry@example.com");
         var account = createAccount(ownerId, "Opening retry", "100");
-        var effectiveAt = jdbcTemplate
-                .queryForObject(
-                        "SELECT effective_at FROM ledger.activity WHERE id = (SELECT current_opening_activity_id FROM ledger.financial_account WHERE id = ?)",
-                        OffsetDateTime.class,
-                        account.id())
-                .toInstant();
-        var request = new OpeningCorrectionRequest(
-                UUID.randomUUID(), "125", effectiveAt, "Concurrent opening correction", account.version());
+        var effectiveAt = jdbcTemplate.queryForObject(
+                "SELECT effective_at FROM ledger.activity WHERE id = (SELECT current_opening_activity_id FROM ledger.financial_account WHERE id = ?)",
+                OffsetDateTime.class, account.id()).toInstant();
+        var request = new OpeningCorrectionRequest(UUID.randomUUID(), "125", effectiveAt, "Concurrent opening correction", account.version());
         var start = new CountDownLatch(1);
         var executor = Executors.newFixedThreadPool(2);
         try {
@@ -309,12 +251,8 @@ class CashLedgerConcurrencyTest {
 
             assertThat(outcomes).allMatch(Outcome::succeeded);
             assertThat(outcomes.stream().map(Outcome::activityId).distinct()).hasSize(1);
-            assertThat(queryService.balance(ownerId, account.id(), null).ledgerBalance())
-                    .isEqualTo("125");
-            assertThat(jdbcTemplate.queryForObject(
-                            "SELECT COUNT(*) FROM ledger.activity WHERE owner_user_account_id = ?",
-                            Integer.class,
-                            ownerId))
+            assertThat(queryService.balance(ownerId, account.id(), null).ledgerBalance()).isEqualTo("125");
+            assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ledger.activity WHERE owner_user_account_id = ?", Integer.class, ownerId))
                     .isEqualTo(3);
         } finally {
             executor.shutdownNow();
@@ -325,17 +263,8 @@ class CashLedgerConcurrencyTest {
         await(start);
         try {
             var response = new TransactionTemplate(transactionManager)
-                    .execute(status -> activityService.recordCashActivity(
-                            ownerId,
-                            accountId,
-                            new CashActivityRequest(
-                                    UUID.randomUUID(),
-                                    ActivityType.CASH_WITHDRAWAL,
-                                    amount,
-                                    RecordingMode.CURRENT_ACTION,
-                                    Instant.now().minusSeconds(1),
-                                    false,
-                                    null)));
+                    .execute(status -> activityService.recordCashActivity(ownerId, accountId, new CashActivityRequest(UUID.randomUUID(),
+                            ActivityType.CASH_WITHDRAWAL, amount, RecordingMode.CURRENT_ACTION, Instant.now().minusSeconds(1), false, null)));
             return Outcome.success(response.id());
         } catch (Throwable exception) {
             return Outcome.failure(errorCode(exception));
@@ -345,8 +274,7 @@ class CashLedgerConcurrencyTest {
     private Outcome runSameRequest(CountDownLatch start, UUID ownerId, UUID accountId, CashActivityRequest request) {
         await(start);
         try {
-            var response = new TransactionTemplate(transactionManager)
-                    .execute(status -> activityService.recordCashActivity(ownerId, accountId, request));
+            var response = new TransactionTemplate(transactionManager).execute(status -> activityService.recordCashActivity(ownerId, accountId, request));
             return Outcome.success(response.id());
         } catch (Throwable exception) {
             return Outcome.failure(errorCode(exception));
@@ -356,8 +284,7 @@ class CashLedgerConcurrencyTest {
     private Outcome runAccountCreate(CountDownLatch start, UUID ownerId, CreateFinancialAccountRequest request) {
         await(start);
         try {
-            var response = new TransactionTemplate(transactionManager)
-                    .execute(status -> accountService.create(ownerId, request));
+            var response = new TransactionTemplate(transactionManager).execute(status -> accountService.create(ownerId, request));
             return Outcome.success(response.id());
         } catch (Throwable exception) {
             return Outcome.failure(errorCode(exception));
@@ -367,8 +294,7 @@ class CashLedgerConcurrencyTest {
     private Outcome runTransfer(CountDownLatch start, UUID ownerId, TransferRequest request) {
         await(start);
         try {
-            var response = new TransactionTemplate(transactionManager)
-                    .execute(status -> transferService.transfer(ownerId, request));
+            var response = new TransactionTemplate(transactionManager).execute(status -> transferService.transfer(ownerId, request));
             return Outcome.success(response.id());
         } catch (Throwable exception) {
             return Outcome.failure(errorCode(exception));
@@ -378,20 +304,17 @@ class CashLedgerConcurrencyTest {
     private Outcome runReversal(CountDownLatch start, UUID ownerId, UUID activityId, ReversalRequest request) {
         await(start);
         try {
-            var response = new TransactionTemplate(transactionManager)
-                    .execute(status -> activityService.reverse(ownerId, activityId, request));
+            var response = new TransactionTemplate(transactionManager).execute(status -> activityService.reverse(ownerId, activityId, request));
             return Outcome.success(response.id());
         } catch (Throwable exception) {
             return Outcome.failure(errorCode(exception));
         }
     }
 
-    private Outcome runOpeningCorrection(
-            CountDownLatch start, UUID ownerId, UUID accountId, OpeningCorrectionRequest request) {
+    private Outcome runOpeningCorrection(CountDownLatch start, UUID ownerId, UUID accountId, OpeningCorrectionRequest request) {
         await(start);
         try {
-            var response = new TransactionTemplate(transactionManager)
-                    .execute(status -> lifecycleService.correctOpening(ownerId, accountId, request));
+            var response = new TransactionTemplate(transactionManager).execute(status -> lifecycleService.correctOpening(ownerId, accountId, request));
             return Outcome.success(response.id());
         } catch (Throwable exception) {
             return Outcome.failure(errorCode(exception));
@@ -399,50 +322,25 @@ class CashLedgerConcurrencyTest {
     }
 
     private static TransferRequest transferRequest(UUID sourceAccountId, UUID destinationAccountId) {
-        return new TransferRequest(
-                UUID.randomUUID(),
-                sourceAccountId,
-                destinationAccountId,
-                "10",
-                RecordingMode.CURRENT_ACTION,
-                Instant.now().minusSeconds(1),
-                false,
-                null,
-                null);
+        return new TransferRequest(UUID.randomUUID(), sourceAccountId, destinationAccountId, "10", RecordingMode.CURRENT_ACTION, Instant.now().minusSeconds(1),
+                false, null, null);
     }
 
     private FinancialAccountResponse createAccount(UUID ownerId, String name, String openingAmount) {
         return createAccount(ownerId, name, openingAmount, NegativeBalancePolicy.HARD_FLOOR, null);
     }
 
-    private FinancialAccountResponse createAccount(
-            UUID ownerId, String name, String openingAmount, NegativeBalancePolicy policy, String authorizedLimit) {
-        return accountService.create(
-                ownerId,
-                new CreateFinancialAccountRequest(
-                        UUID.randomUUID(),
-                        name,
-                        AccountKind.CASH_CURRENT,
-                        TrackingMode.FULL_LEDGER,
-                        "USD",
-                        "UTC",
-                        policy,
-                        authorizedLimit,
-                        new dev.canverse.stocks.ledger.web.request.OpeningStateRequest(
-                                openingAmount, Instant.now().minusSeconds(10))));
+    private FinancialAccountResponse createAccount(UUID ownerId, String name, String openingAmount, NegativeBalancePolicy policy, String authorizedLimit) {
+        return accountService.create(ownerId,
+                new CreateFinancialAccountRequest(UUID.randomUUID(), name, AccountKind.CASH_CURRENT, TrackingMode.FULL_LEDGER, "USD", "UTC", policy,
+                        authorizedLimit, new dev.canverse.stocks.ledger.web.request.OpeningStateRequest(openingAmount, Instant.now().minusSeconds(10))));
     }
 
     private UUID insertUser(String email) {
         var id = UUID.randomUUID();
         var now = OffsetDateTime.now(ZoneOffset.UTC);
-        new TransactionTemplate(transactionManager)
-                .executeWithoutResult(status -> jdbcTemplate.update(
-                        "INSERT INTO identity.user_account (id, email, email_normalized, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
-                        id,
-                        email,
-                        email,
-                        now,
-                        now));
+        new TransactionTemplate(transactionManager).executeWithoutResult(status -> jdbcTemplate.update(
+                "INSERT INTO identity.user_account (id, email, email_normalized, created_at, updated_at) VALUES (?, ?, ?, ?, ?)", id, email, email, now, now));
         return id;
     }
 
@@ -459,8 +357,8 @@ class CashLedgerConcurrencyTest {
 
     private static LedgerErrorCode errorCode(Throwable exception) {
         for (Throwable cause = exception; cause != null; cause = cause.getCause()) {
-            if (cause instanceof dev.canverse.stocks.platform.error.AppException appException
-                    && appException.getErrorCode() instanceof LedgerErrorCode ledgerErrorCode) {
+            if (cause instanceof dev.canverse.stocks.platform.error.AppException appException &&
+                    appException.getErrorCode() instanceof LedgerErrorCode ledgerErrorCode) {
                 return ledgerErrorCode;
             }
         }

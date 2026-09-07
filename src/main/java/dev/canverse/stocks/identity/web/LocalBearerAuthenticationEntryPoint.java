@@ -21,12 +21,9 @@ public class LocalBearerAuthenticationEntryPoint implements AuthenticationEntryP
     }
 
     @Override
-    public void commence(
-            HttpServletRequest request, HttpServletResponse response, AuthenticationException authenticationException)
-            throws ServletException {
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authenticationException) throws ServletException {
         response.setHeader(HttpHeaders.WWW_AUTHENTICATE, "Bearer");
-        var resolved = handlerExceptionResolver.resolveException(
-                request, response, null, new AppException(IdentityErrorCode.INVALID_CREDENTIALS));
+        var resolved = handlerExceptionResolver.resolveException(request, response, null, new AppException(IdentityErrorCode.INVALID_CREDENTIALS));
         if (resolved == null) {
             throw new ServletException(UNRESOLVED_MESSAGE);
         }

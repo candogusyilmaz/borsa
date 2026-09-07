@@ -43,12 +43,7 @@ public class AccountCashPocket {
     @Version
     private long version;
 
-    public static AccountCashPocket create(
-            UUID id,
-            UUID ownerUserAccountId,
-            FinancialAccount financialAccount,
-            String currencyCode,
-            Instant coverageFrom,
+    public static AccountCashPocket create(UUID id, UUID ownerUserAccountId, FinancialAccount financialAccount, String currencyCode, Instant coverageFrom,
             Instant observedAt) {
         var pocket = new AccountCashPocket();
         pocket.id = Objects.requireNonNull(id, "id");

@@ -12,8 +12,7 @@ final class LedgerAmountParser {
         try {
             return FinancialAmount.parse(text);
         } catch (IllegalArgumentException exception) {
-            throw ValidationErrors.invalidField(
-                    field, "error.fields.ledger.invalid_amount", "The amount must be an exact plain decimal.");
+            throw ValidationErrors.invalidField(field, "error.fields.ledger.invalid_amount", "The amount must be an exact plain decimal.");
         }
     }
 
@@ -29,8 +28,7 @@ final class LedgerAmountParser {
             }
             return amount;
         } catch (IllegalArgumentException exception) {
-            throw ValidationErrors.invalidField(
-                    field, "error.fields.ledger.invalid_amount", "The amount must be positive and exact.");
+            throw ValidationErrors.invalidField(field, "error.fields.ledger.invalid_amount", "The amount must be positive and exact.");
         }
     }
 }

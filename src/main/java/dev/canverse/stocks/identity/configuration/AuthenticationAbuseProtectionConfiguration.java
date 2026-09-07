@@ -5,4 +5,5 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(AuthenticationAbuseProtectionProperties.class)
-public class AuthenticationAbuseProtectionConfiguration {}
+public class AuthenticationAbuseProtectionConfiguration {
+}

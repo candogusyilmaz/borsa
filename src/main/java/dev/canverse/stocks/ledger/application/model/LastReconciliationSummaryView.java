@@ -5,10 +5,5 @@ import dev.canverse.stocks.ledger.domain.ReconciliationResolution;
 import java.time.Instant;
 import java.util.UUID;
 
-public record LastReconciliationSummaryView(
-        UUID reconciliationId,
-        Instant statementClosingAt,
-        String statementClosingBalance,
-        ReconciliationResolution resolution,
-        ReconciliationLifecycleStatus lifecycleStatus,
-        Instant createdAt) {}
+public record LastReconciliationSummaryView(UUID reconciliationId, Instant statementClosingAt, String statementClosingBalance,
+        ReconciliationResolution resolution, ReconciliationLifecycleStatus lifecycleStatus, Instant createdAt) {}

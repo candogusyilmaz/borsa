@@ -5,8 +5,5 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import java.util.UUID;
 
-public record AccountPolicyRequest(
-        @NotNull UUID clientRequestId,
-        NegativeBalancePolicy policy,
-        String authorizedLimit,
+public record AccountPolicyRequest(@NotNull UUID clientRequestId, NegativeBalancePolicy policy, String authorizedLimit,
         @NotNull @PositiveOrZero Long version) {}

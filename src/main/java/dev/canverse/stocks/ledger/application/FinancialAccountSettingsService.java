@@ -31,21 +31,13 @@ public class FinancialAccountSettingsService {
     private final CanonicalFingerprint fingerprint;
 
     @Transactional
-    public FinancialAccountResponse updateMetadata(
-            UUID ownerUserAccountId, UUID accountId, AccountMetadataRequest request) {
+    public FinancialAccountResponse updateMetadata(UUID ownerUserAccountId, UUID accountId, AccountMetadataRequest request) {
         var observedAt = clock.instant();
         validateTimeZone(request.timeZone());
-        var hash = fingerprint.hash(fingerprint.values(
-                "accountId", accountId.toString(),
-                "name", request.name().trim(),
-                "timeZone", request.timeZone().trim(),
+        var hash = fingerprint.hash(fingerprint.values("accountId", accountId.toString(), "name", request.name().trim(), "timeZone", request.timeZone().trim(),
                 "version", request.version()));
         commandLockRepository.lock(ownerUserAccountId, LedgerCommandScopes.ACCOUNT_METADATA, request.clientRequestId());
-        var replay = idempotencyStore.replay(
-                request.clientRequestId(),
-                ownerUserAccountId,
-                LedgerCommandScopes.ACCOUNT_METADATA,
-                hash,
+        var replay = idempotencyStore.replay(request.clientRequestId(), ownerUserAccountId, LedgerCommandScopes.ACCOUNT_METADATA, hash,
                 FinancialAccountResponse.class);
         if (replay != null) {
             return replay;
@@ -54,35 +46,17 @@ public class FinancialAccountSettingsService {
         var account = accountAccess.ownedForUpdate(ownerUserAccountId, accountId);
         requireVersion(account, request.version());
         account.updateMetadata(request.name(), request.timeZone().trim(), observedAt);
-        return saveResult(
-                ownerUserAccountId,
-                account,
-                LedgerCommandScopes.ACCOUNT_METADATA,
-                request.clientRequestId(),
-                hash,
-                observedAt);
+        return saveResult(ownerUserAccountId, account, LedgerCommandScopes.ACCOUNT_METADATA, request.clientRequestId(), hash, observedAt);
     }
 
     @Transactional
-    public FinancialAccountResponse updatePolicy(
-            UUID ownerUserAccountId, UUID accountId, AccountPolicyRequest request) {
+    public FinancialAccountResponse updatePolicy(UUID ownerUserAccountId, UUID accountId, AccountPolicyRequest request) {
         var observedAt = clock.instant();
         var authorizedLimit = LedgerAmountParser.optional(request.authorizedLimit(), "authorizedLimit");
-        var hash = fingerprint.hash(fingerprint.values(
-                "accountId",
-                accountId.toString(),
-                "policy",
-                request.policy() == null ? null : request.policy().name(),
-                "authorizedLimit",
-                authorizedLimit == null ? null : authorizedLimit.canonical(),
-                "version",
-                request.version()));
+        var hash = fingerprint.hash(fingerprint.values("accountId", accountId.toString(), "policy", request.policy() == null ? null : request.policy().name(),
+                "authorizedLimit", authorizedLimit == null ? null : authorizedLimit.canonical(), "version", request.version()));
         commandLockRepository.lock(ownerUserAccountId, LedgerCommandScopes.ACCOUNT_POLICY, request.clientRequestId());
-        var replay = idempotencyStore.replay(
-                request.clientRequestId(),
-                ownerUserAccountId,
-                LedgerCommandScopes.ACCOUNT_POLICY,
-                hash,
+        var replay = idempotencyStore.replay(request.clientRequestId(), ownerUserAccountId, LedgerCommandScopes.ACCOUNT_POLICY, hash,
                 FinancialAccountResponse.class);
         if (replay != null) {
             return replay;
@@ -95,36 +69,15 @@ public class FinancialAccountSettingsService {
         } catch (IllegalArgumentException exception) {
             throw new AppException(LedgerErrorCode.ACCOUNT_ACTION_NOT_SUPPORTED, exception);
         }
-        return saveResult(
-                ownerUserAccountId,
-                account,
-                LedgerCommandScopes.ACCOUNT_POLICY,
-                request.clientRequestId(),
-                hash,
-                observedAt);
+        return saveResult(ownerUserAccountId, account, LedgerCommandScopes.ACCOUNT_POLICY, request.clientRequestId(), hash, observedAt);
     }
 
-    private FinancialAccountResponse saveResult(
-            UUID ownerUserAccountId,
-            FinancialAccount account,
-            String scope,
-            UUID clientRequestId,
-            String hash,
+    private FinancialAccountResponse saveResult(UUID ownerUserAccountId, FinancialAccount account, String scope, UUID clientRequestId, String hash,
             Instant observedAt) {
         entityManager.flush();
-        var response = readRepository
-                .findAccount(ownerUserAccountId, account.getId())
-                .map(FinancialAccountResponse::from)
+        var response = readRepository.findAccount(ownerUserAccountId, account.getId()).map(FinancialAccountResponse::from)
                 .orElseThrow(() -> new AppException(LedgerErrorCode.ACCOUNT_NOT_FOUND));
-        idempotencyStore.save(
-                ownerUserAccountId,
-                scope,
-                clientRequestId,
-                hash,
-                "FINANCIAL_ACCOUNT",
-                account.getId(),
-                response,
-                observedAt);
+        idempotencyStore.save(ownerUserAccountId, scope, clientRequestId, hash, "FINANCIAL_ACCOUNT", account.getId(), response, observedAt);
         return response;
     }
 
@@ -138,8 +91,7 @@ public class FinancialAccountSettingsService {
         try {
             FinancialAccount.requireIanaTimeZone(timeZone);
         } catch (IllegalArgumentException exception) {
-            throw ValidationErrors.invalidField(
-                    "timeZone", "error.fields.ledger.invalid_timezone", "The time zone must be an IANA zone.");
+            throw ValidationErrors.invalidField("timeZone", "error.fields.ledger.invalid_timezone", "The time zone must be an IANA zone.");
         }
     }
 }

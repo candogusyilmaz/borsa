@@ -38,8 +38,7 @@ public class ManualInstrumentController {
     private final InstrumentSearchService searchService;
 
     @PostMapping
-    public ResponseEntity<InstrumentResponse> create(
-            @AuthenticationPrincipal AuthenticatedIdentity identity,
+    public ResponseEntity<InstrumentResponse> create(@AuthenticationPrincipal AuthenticatedIdentity identity,
             @Valid @RequestBody ManualInstrumentCreateRequest request) {
         request.validate();
         var response = manualInstrumentService.create(identity.userAccountId(), request);
@@ -47,9 +46,7 @@ public class ManualInstrumentController {
     }
 
     @PutMapping("{instrumentId}")
-    public ResponseEntity<InstrumentResponse> update(
-            @AuthenticationPrincipal AuthenticatedIdentity identity,
-            @PathVariable UUID instrumentId,
+    public ResponseEntity<InstrumentResponse> update(@AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID instrumentId,
             @Valid @RequestBody ManualInstrumentUpdateRequest request) {
         request.validate();
         var response = manualInstrumentService.update(identity.userAccountId(), instrumentId, request);
@@ -57,20 +54,13 @@ public class ManualInstrumentController {
     }
 
     @GetMapping("{instrumentId}")
-    public ResponseEntity<InstrumentResponse> get(
-            @AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID instrumentId) {
-        return new ResponseEntity<>(
-                manualInstrumentService.get(identity.userAccountId(), instrumentId),
-                CacheHeaders.noStore(),
-                HttpStatus.OK);
+    public ResponseEntity<InstrumentResponse> get(@AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID instrumentId) {
+        return new ResponseEntity<>(manualInstrumentService.get(identity.userAccountId(), instrumentId), CacheHeaders.noStore(), HttpStatus.OK);
     }
 
     @GetMapping
-    public ResponseEntity<SliceResponse<InstrumentSummaryResponse>> search(
-            @AuthenticationPrincipal AuthenticatedIdentity identity,
-            @RequestParam(required = false) String query,
-            @RequestParam(required = false) UUID marketId,
-            @RequestParam(required = false) InstrumentType type,
+    public ResponseEntity<SliceResponse<InstrumentSummaryResponse>> search(@AuthenticationPrincipal AuthenticatedIdentity identity,
+            @RequestParam(required = false) String query, @RequestParam(required = false) UUID marketId, @RequestParam(required = false) InstrumentType type,
             @RequestParam(defaultValue = "false") boolean includeInactive,
             @PageableDefault(size = 25, sort = "name", direction = Sort.Direction.ASC) Pageable pageable) {
         var criteria = new InstrumentSearchCriteria(query, marketId, type, includeInactive);

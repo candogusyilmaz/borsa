@@ -36,15 +36,10 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        properties = {
-            "stocks.identity.refresh-session.lifetime=30d",
-            "stocks.identity.access-token.issuer=https://issuer.test",
-            "stocks.identity.access-token.audience=canverse-test-api",
-            "stocks.identity.access-token.lifetime=5m",
-            "stocks.identity.access-token.key-id=test-ephemeral"
-        })
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK,
+        properties = {"stocks.identity.refresh-session.lifetime=30d", "stocks.identity.access-token.issuer=https://issuer.test",
+                "stocks.identity.access-token.audience=canverse-test-api", "stocks.identity.access-token.lifetime=5m",
+                "stocks.identity.access-token.key-id=test-ephemeral"})
 @AutoConfigureMockMvc
 @Testcontainers
 @Import(DeviceSessionHttpTest.TestOverrides.class)
@@ -73,8 +68,7 @@ class DeviceSessionHttpTest {
 
     @BeforeEach
     void cleanDatabase() {
-        jdbcTemplate.execute(
-                "TRUNCATE TABLE platform.security_event, identity.device_session, identity.auth_identity, identity.user_account CASCADE");
+        jdbcTemplate.execute("TRUNCATE TABLE platform.security_event, identity.device_session, identity.auth_identity, identity.user_account CASCADE");
     }
 
     @Test
@@ -84,50 +78,27 @@ class DeviceSessionHttpTest {
         var session1 = sessionIssuanceService.issue(userId, "laptop");
         var session2 = sessionIssuanceService.issue(userId, "phone");
         var accessToken = tokenIssuanceService.issue(session1.sessionId()).accessToken();
-        var expectedFamilyIds = List.of(session1.sessionId(), session2.sessionId()).stream()
-                .sorted(Comparator.comparing(UUID::toString).reversed())
-                .toList();
+        var expectedFamilyIds = List.of(session1.sessionId(), session2.sessionId()).stream().sorted(Comparator.comparing(UUID::toString).reversed()).toList();
         var legacyCursorField = "next" + "Cursor";
 
-        mockMvc.perform(get("/api/v1/auth/sessions").header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
-                .andExpect(status().isOk())
-                .andExpect(header().string("Cache-Control", "no-store"))
-                .andExpect(header().string("Pragma", "no-cache"))
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$.sessions").doesNotExist())
-                .andExpect(jsonPath(
-                        "$[0].familyId", equalTo(expectedFamilyIds.get(0).toString())))
-                .andExpect(jsonPath(
-                        "$[1].familyId", equalTo(expectedFamilyIds.get(1).toString())))
-                .andExpect(jsonPath("$[0].createdAt", equalTo(T0.toString())))
-                .andExpect(jsonPath("$[1].createdAt", equalTo(T0.toString())))
-                .andExpect(jsonPath("$[0].status", equalTo("ACTIVE")))
-                .andExpect(jsonPath("$[1].status", equalTo("ACTIVE")))
-                .andExpect(jsonPath(
-                        "$[0].current", equalTo(expectedFamilyIds.get(0).equals(session1.sessionId()))))
-                .andExpect(jsonPath(
-                        "$[1].current", equalTo(expectedFamilyIds.get(1).equals(session1.sessionId()))))
-                .andExpect(jsonPath("$[0]." + legacyCursorField).doesNotExist())
-                .andExpect(jsonPath("$[0].page").doesNotExist())
-                .andExpect(jsonPath("$[0].size").doesNotExist())
-                .andExpect(jsonPath("$[0].hasNext").doesNotExist())
-                .andExpect(jsonPath("$." + legacyCursorField).doesNotExist())
-                .andExpect(jsonPath("$.page").doesNotExist())
-                .andExpect(jsonPath("$.size").doesNotExist())
-                .andExpect(jsonPath("$.hasNext").doesNotExist())
-                .andExpect(result ->
-                        assertThat(result.getRequest().getSession(false)).isNull());
+        mockMvc.perform(get("/api/v1/auth/sessions").header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)).andExpect(status().isOk())
+                .andExpect(header().string("Cache-Control", "no-store")).andExpect(header().string("Pragma", "no-cache")).andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$.sessions").doesNotExist()).andExpect(jsonPath("$[0].familyId", equalTo(expectedFamilyIds.get(0).toString())))
+                .andExpect(jsonPath("$[1].familyId", equalTo(expectedFamilyIds.get(1).toString())))
+                .andExpect(jsonPath("$[0].createdAt", equalTo(T0.toString()))).andExpect(jsonPath("$[1].createdAt", equalTo(T0.toString())))
+                .andExpect(jsonPath("$[0].status", equalTo("ACTIVE"))).andExpect(jsonPath("$[1].status", equalTo("ACTIVE")))
+                .andExpect(jsonPath("$[0].current", equalTo(expectedFamilyIds.get(0).equals(session1.sessionId()))))
+                .andExpect(jsonPath("$[1].current", equalTo(expectedFamilyIds.get(1).equals(session1.sessionId()))))
+                .andExpect(jsonPath("$[0]." + legacyCursorField).doesNotExist()).andExpect(jsonPath("$[0].page").doesNotExist())
+                .andExpect(jsonPath("$[0].size").doesNotExist()).andExpect(jsonPath("$[0].hasNext").doesNotExist())
+                .andExpect(jsonPath("$." + legacyCursorField).doesNotExist()).andExpect(jsonPath("$.page").doesNotExist())
+                .andExpect(jsonPath("$.size").doesNotExist()).andExpect(jsonPath("$.hasNext").doesNotExist())
+                .andExpect(result -> assertThat(result.getRequest().getSession(false)).isNull());
 
-        mockMvc.perform(get("/api/v1/auth/sessions/" + session1.sessionId())
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
-                .andExpect(status().isOk())
-                .andExpect(header().string("Cache-Control", "no-store"))
-                .andExpect(header().string("Pragma", "no-cache"))
-                .andExpect(jsonPath("$.familyId", equalTo(session1.sessionId().toString())))
-                .andExpect(jsonPath("$.current", equalTo(true)))
-                .andExpect(jsonPath("$.status", equalTo("ACTIVE")))
-                .andExpect(result ->
-                        assertThat(result.getRequest().getSession(false)).isNull());
+        mockMvc.perform(get("/api/v1/auth/sessions/" + session1.sessionId()).header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
+                .andExpect(status().isOk()).andExpect(header().string("Cache-Control", "no-store")).andExpect(header().string("Pragma", "no-cache"))
+                .andExpect(jsonPath("$.familyId", equalTo(session1.sessionId().toString()))).andExpect(jsonPath("$.current", equalTo(true)))
+                .andExpect(jsonPath("$.status", equalTo("ACTIVE"))).andExpect(result -> assertThat(result.getRequest().getSession(false)).isNull());
     }
 
     @Test
@@ -140,9 +111,7 @@ class DeviceSessionHttpTest {
 
         var token1 = tokenIssuanceService.issue(s1.sessionId()).accessToken();
 
-        mockMvc.perform(get("/api/v1/auth/sessions/" + s2.sessionId())
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token1))
-                .andExpect(status().isNotFound())
+        mockMvc.perform(get("/api/v1/auth/sessions/" + s2.sessionId()).header(HttpHeaders.AUTHORIZATION, "Bearer " + token1)).andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code", equalTo("SESSION_NOT_FOUND")));
     }
 
@@ -152,15 +121,10 @@ class DeviceSessionHttpTest {
         var session = sessionIssuanceService.issue(userId, "laptop");
         var accessToken = tokenIssuanceService.issue(session.sessionId()).accessToken();
 
-        mockMvc.perform(delete("/api/v1/auth/sessions/" + session.sessionId())
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
-                .andExpect(status().isNoContent())
-                .andExpect(header().string("Cache-Control", "no-store"))
-                .andExpect(header().string("Pragma", "no-cache"))
-                .andExpect(header().exists(HttpHeaders.SET_COOKIE))
-                .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("Max-Age=0")))
-                .andExpect(result ->
-                        assertThat(result.getRequest().getSession(false)).isNull());
+        mockMvc.perform(delete("/api/v1/auth/sessions/" + session.sessionId()).header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
+                .andExpect(status().isNoContent()).andExpect(header().string("Cache-Control", "no-store")).andExpect(header().string("Pragma", "no-cache"))
+                .andExpect(header().exists(HttpHeaders.SET_COOKIE)).andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("Max-Age=0")))
+                .andExpect(result -> assertThat(result.getRequest().getSession(false)).isNull());
     }
 
     @Test
@@ -170,14 +134,9 @@ class DeviceSessionHttpTest {
         var session2 = sessionIssuanceService.issue(userId, "phone");
         var accessToken = tokenIssuanceService.issue(session1.sessionId()).accessToken();
 
-        mockMvc.perform(delete("/api/v1/auth/sessions/" + session2.sessionId())
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
-                .andExpect(status().isNoContent())
-                .andExpect(header().string("Cache-Control", "no-store"))
-                .andExpect(header().string("Pragma", "no-cache"))
-                .andExpect(header().doesNotExist(HttpHeaders.SET_COOKIE))
-                .andExpect(result ->
-                        assertThat(result.getRequest().getSession(false)).isNull());
+        mockMvc.perform(delete("/api/v1/auth/sessions/" + session2.sessionId()).header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
+                .andExpect(status().isNoContent()).andExpect(header().string("Cache-Control", "no-store")).andExpect(header().string("Pragma", "no-cache"))
+                .andExpect(header().doesNotExist(HttpHeaders.SET_COOKIE)).andExpect(result -> assertThat(result.getRequest().getSession(false)).isNull());
     }
 
     @Test
@@ -190,10 +149,8 @@ class DeviceSessionHttpTest {
 
         var token1 = tokenIssuanceService.issue(s1.sessionId()).accessToken();
 
-        mockMvc.perform(delete("/api/v1/auth/sessions/" + s2.sessionId())
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token1))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code", equalTo("SESSION_NOT_FOUND")));
+        mockMvc.perform(delete("/api/v1/auth/sessions/" + s2.sessionId()).header(HttpHeaders.AUTHORIZATION, "Bearer " + token1))
+                .andExpect(status().isNotFound()).andExpect(jsonPath("$.code", equalTo("SESSION_NOT_FOUND")));
     }
 
     @Test
@@ -204,13 +161,11 @@ class DeviceSessionHttpTest {
         var token1 = tokenIssuanceService.issue(session1.sessionId()).accessToken();
 
         // First deletion
-        mockMvc.perform(delete("/api/v1/auth/sessions/" + session2.sessionId())
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token1))
+        mockMvc.perform(delete("/api/v1/auth/sessions/" + session2.sessionId()).header(HttpHeaders.AUTHORIZATION, "Bearer " + token1))
                 .andExpect(status().isNoContent());
 
         // Repeated deletion of already ended owned family is idempotent 204
-        mockMvc.perform(delete("/api/v1/auth/sessions/" + session2.sessionId())
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token1))
+        mockMvc.perform(delete("/api/v1/auth/sessions/" + session2.sessionId()).header(HttpHeaders.AUTHORIZATION, "Bearer " + token1))
                 .andExpect(status().isNoContent());
     }
 

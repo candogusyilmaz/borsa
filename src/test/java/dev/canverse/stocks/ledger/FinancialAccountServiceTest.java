@@ -61,14 +61,8 @@ class FinancialAccountServiceTest {
     void fullLedgerOnboardingCreatesOpeningPostingPocketAndProjection() {
         var ownerId = insertUser("ledger-service-owner@example.com");
         var openingAt = Instant.now().minusSeconds(10).truncatedTo(ChronoUnit.MICROS);
-        var request = createRequest(
-                UUID.randomUUID(),
-                "Operating cash",
-                AccountKind.CASH_CURRENT,
-                TrackingMode.FULL_LEDGER,
-                NegativeBalancePolicy.HARD_FLOOR,
-                "100.00",
-                openingAt);
+        var request = createRequest(UUID.randomUUID(), "Operating cash", AccountKind.CASH_CURRENT, TrackingMode.FULL_LEDGER, NegativeBalancePolicy.HARD_FLOOR,
+                "100.00", openingAt);
 
         var response = accountService.create(ownerId, request);
         var balance = queryService.balance(ownerId, response.id(), null);
@@ -84,89 +78,43 @@ class FinancialAccountServiceTest {
         assertThat(historicalBalance.projectionStatus().name()).isEqualTo("NOT_APPLICABLE");
         assertThat(historicalBalance.watermarkRecordedAt()).isNull();
         assertThat(historicalBalance.watermarkActivityId()).isNull();
-        assertThat(jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM ledger.activity WHERE owner_user_account_id = ?", Integer.class, ownerId))
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ledger.activity WHERE owner_user_account_id = ?", Integer.class, ownerId)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ledger.money_posting WHERE owner_user_account_id = ?", Integer.class, ownerId))
                 .isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM ledger.money_posting WHERE owner_user_account_id = ?",
-                        Integer.class,
-                        ownerId))
+        assertThat(
+                jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ledger.account_balance_projection WHERE owner_user_account_id = ?", Integer.class, ownerId))
                 .isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM ledger.account_balance_projection WHERE owner_user_account_id = ?",
-                        Integer.class,
-                        ownerId))
-                .isEqualTo(1);
-        assertThat(jdbcTemplate.queryForObject(
-                        "SELECT p.last_applied_recorded_at = a.recorded_at"
-                                + " FROM ledger.account_balance_projection p"
-                                + " JOIN ledger.activity a ON a.id = p.last_applied_activity_id"
-                                + " WHERE p.financial_account_id = ?",
-                        Boolean.class,
-                        response.id()))
-                .isTrue();
-        assertThat(jdbcTemplate.queryForObject(
-                        "SELECT p.last_applied_recorded_at <> a.effective_at"
-                                + " FROM ledger.account_balance_projection p"
-                                + " JOIN ledger.activity a ON a.id = p.last_applied_activity_id"
-                                + " WHERE p.financial_account_id = ?",
-                        Boolean.class,
-                        response.id()))
-                .isTrue();
+        assertThat(jdbcTemplate.queryForObject("SELECT p.last_applied_recorded_at = a.recorded_at" + " FROM ledger.account_balance_projection p" +
+                " JOIN ledger.activity a ON a.id = p.last_applied_activity_id" + " WHERE p.financial_account_id = ?", Boolean.class, response.id())).isTrue();
+        assertThat(jdbcTemplate.queryForObject("SELECT p.last_applied_recorded_at <> a.effective_at" + " FROM ledger.account_balance_projection p" +
+                " JOIN ledger.activity a ON a.id = p.last_applied_activity_id" + " WHERE p.financial_account_id = ?", Boolean.class, response.id())).isTrue();
     }
 
     @Test
     void exactCreateRetryReturnsOriginalAndChangedReuseIsRejected() {
         var ownerId = insertUser("ledger-idempotency-owner@example.com");
-        var request = createRequest(
-                UUID.randomUUID(),
-                "Savings",
-                AccountKind.CASH_SAVINGS,
-                TrackingMode.FULL_LEDGER,
-                NegativeBalancePolicy.HARD_FLOOR,
-                "0.00",
+        var request = createRequest(UUID.randomUUID(), "Savings", AccountKind.CASH_SAVINGS, TrackingMode.FULL_LEDGER, NegativeBalancePolicy.HARD_FLOOR, "0.00",
                 Instant.now().minusSeconds(10));
 
         var first = accountService.create(ownerId, request);
 
-        assertThat(jdbcTemplate.update("UPDATE reference.currency SET active = false WHERE code = 'USD'"))
-                .isEqualTo(1);
+        assertThat(jdbcTemplate.update("UPDATE reference.currency SET active = false WHERE code = 'USD'")).isEqualTo(1);
         var replay = accountService.create(ownerId, request);
 
         assertThat(replay.id()).isEqualTo(first.id());
-        assertThat(jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM ledger.financial_account WHERE owner_user_account_id = ?",
-                        Integer.class,
-                        ownerId))
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ledger.financial_account WHERE owner_user_account_id = ?", Integer.class, ownerId))
                 .isEqualTo(1);
 
-        var changed = new CreateFinancialAccountRequest(
-                request.clientRequestId(),
-                "Changed name",
-                request.kind(),
-                request.trackingMode(),
-                request.currency(),
-                request.timeZone(),
-                request.policy(),
-                request.authorizedLimit(),
-                request.openingState());
-        assertThatThrownBy(() -> accountService.create(ownerId, changed))
-                .hasMessageContaining(LedgerErrorCode.IDEMPOTENCY_CONFLICT.getDescription());
+        var changed = new CreateFinancialAccountRequest(request.clientRequestId(), "Changed name", request.kind(), request.trackingMode(), request.currency(),
+                request.timeZone(), request.policy(), request.authorizedLimit(), request.openingState());
+        assertThatThrownBy(() -> accountService.create(ownerId, changed)).hasMessageContaining(LedgerErrorCode.IDEMPOTENCY_CONFLICT.getDescription());
     }
 
     @Test
     void holdingsOnlyBrokerageHasExplicitUntrackedCashAndNoLedgerRows() {
         var ownerId = insertUser("ledger-holdings-owner@example.com");
-        var request = new CreateFinancialAccountRequest(
-                UUID.randomUUID(),
-                "Brokerage holdings",
-                AccountKind.BROKERAGE,
-                TrackingMode.HOLDINGS_ONLY,
-                "USD",
-                "UTC",
-                null,
-                null,
-                null);
+        var request = new CreateFinancialAccountRequest(UUID.randomUUID(), "Brokerage holdings", AccountKind.BROKERAGE, TrackingMode.HOLDINGS_ONLY, "USD",
+                "UTC", null, null, null);
 
         var response = accountService.create(ownerId, request);
         var balance = queryService.balance(ownerId, response.id(), null);
@@ -174,46 +122,19 @@ class FinancialAccountServiceTest {
         assertThat(response.cashCoverageStatus().name()).isEqualTo("UNTRACKED");
         assertThat(balance.coverageStatus().name()).isEqualTo("UNTRACKED");
         assertThat(balance.ledgerBalance()).isNull();
-        assertThat(jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM ledger.account_cash_pocket WHERE financial_account_id = ?",
-                        Integer.class,
-                        response.id()))
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ledger.account_cash_pocket WHERE financial_account_id = ?", Integer.class, response.id()))
                 .isZero();
     }
 
     @Test
     void onboardingPreservesZeroNegativeAssetAndLiabilityOpeningSemantics() {
         var ownerId = insertUser("ledger-opening-boundaries@example.com");
-        var zero = accountService.create(
-                ownerId,
-                createRequest(
-                        UUID.randomUUID(),
-                        "Zero cash",
-                        AccountKind.CASH_CURRENT,
-                        TrackingMode.FULL_LEDGER,
-                        NegativeBalancePolicy.HARD_FLOOR,
-                        "0.00",
-                        Instant.now().minusSeconds(10)));
-        var negative = accountService.create(
-                ownerId,
-                createRequest(
-                        UUID.randomUUID(),
-                        "Historical overdraft",
-                        AccountKind.CASH_CURRENT,
-                        TrackingMode.FULL_LEDGER,
-                        NegativeBalancePolicy.TRACK_REALITY,
-                        "-25.50",
-                        Instant.now().minusSeconds(10)));
-        var liability = accountService.create(
-                ownerId,
-                createRequest(
-                        UUID.randomUUID(),
-                        "Card balance",
-                        AccountKind.CREDIT_CARD,
-                        TrackingMode.FULL_LEDGER,
-                        null,
-                        "250",
-                        Instant.now().minusSeconds(10)));
+        var zero = accountService.create(ownerId, createRequest(UUID.randomUUID(), "Zero cash", AccountKind.CASH_CURRENT, TrackingMode.FULL_LEDGER,
+                NegativeBalancePolicy.HARD_FLOOR, "0.00", Instant.now().minusSeconds(10)));
+        var negative = accountService.create(ownerId, createRequest(UUID.randomUUID(), "Historical overdraft", AccountKind.CASH_CURRENT,
+                TrackingMode.FULL_LEDGER, NegativeBalancePolicy.TRACK_REALITY, "-25.50", Instant.now().minusSeconds(10)));
+        var liability = accountService.create(ownerId, createRequest(UUID.randomUUID(), "Card balance", AccountKind.CREDIT_CARD, TrackingMode.FULL_LEDGER, null,
+                "250", Instant.now().minusSeconds(10)));
 
         var zeroBalance = queryService.balance(ownerId, zero.id(), null);
         assertThat(zeroBalance.ledgerBalance()).isEqualTo("0");
@@ -240,34 +161,14 @@ class FinancialAccountServiceTest {
     void exceptionalLiabilityAndAuthorizedLimitRealityExposeWarningsSafely() {
         var ownerId = insertUser("ledger-warning-boundaries@example.com");
         var effectiveAt = Instant.now().minusSeconds(10);
-        var negativeLiability = accountService.create(
-                ownerId,
-                new CreateFinancialAccountRequest(
-                        UUID.randomUUID(),
-                        "Negative card reality",
-                        AccountKind.CREDIT_CARD,
-                        TrackingMode.FULL_LEDGER,
-                        "USD",
-                        "UTC",
-                        null,
-                        null,
-                        new OpeningStateRequest("-75", effectiveAt)));
-        var authorizedLimit = accountService.create(
-                ownerId,
-                new CreateFinancialAccountRequest(
-                        UUID.randomUUID(),
-                        "Over limit reality",
-                        AccountKind.CASH_CURRENT,
-                        TrackingMode.FULL_LEDGER,
-                        "USD",
-                        "UTC",
-                        NegativeBalancePolicy.AUTHORIZED_LIMIT,
-                        "50",
-                        new OpeningStateRequest("-75", effectiveAt)));
+        var negativeLiability = accountService.create(ownerId, new CreateFinancialAccountRequest(UUID.randomUUID(), "Negative card reality",
+                AccountKind.CREDIT_CARD, TrackingMode.FULL_LEDGER, "USD", "UTC", null, null, new OpeningStateRequest("-75", effectiveAt)));
+        var authorizedLimit = accountService.create(ownerId,
+                new CreateFinancialAccountRequest(UUID.randomUUID(), "Over limit reality", AccountKind.CASH_CURRENT, TrackingMode.FULL_LEDGER, "USD", "UTC",
+                        NegativeBalancePolicy.AUTHORIZED_LIMIT, "50", new OpeningStateRequest("-75", effectiveAt)));
 
         assertThat(negativeLiability.policyBreach()).isTrue();
-        assertThat(queryService.balance(ownerId, negativeLiability.id(), null).policyBreach())
-                .isTrue();
+        assertThat(queryService.balance(ownerId, negativeLiability.id(), null).policyBreach()).isTrue();
 
         var authorizedBalance = queryService.balance(ownerId, authorizedLimit.id(), null);
         assertThat(authorizedLimit.policyBreach()).isTrue();
@@ -279,20 +180,10 @@ class FinancialAccountServiceTest {
     void unknownCurrencyIsRejectedBeforeAnyLedgerRowsAreWritten() {
         var ownerId = insertUser("ledger-unknown-currency@example.com");
 
-        assertThatThrownBy(() -> accountService.create(
-                        ownerId,
-                        createRequest(
-                                UUID.randomUUID(),
-                                "Unknown currency",
-                                AccountKind.CASH_CURRENT,
-                                TrackingMode.FULL_LEDGER,
-                                NegativeBalancePolicy.HARD_FLOOR,
-                                "10",
-                                Instant.now().minusSeconds(10),
-                                "ZZZ",
-                                "UTC")))
-                .extracting(exception -> ((AppException) exception).getErrorCode())
-                .isEqualTo(LedgerErrorCode.ACCOUNT_CURRENCY_UNSUPPORTED);
+        assertThatThrownBy(() -> accountService.create(ownerId,
+                createRequest(UUID.randomUUID(), "Unknown currency", AccountKind.CASH_CURRENT, TrackingMode.FULL_LEDGER, NegativeBalancePolicy.HARD_FLOOR, "10",
+                        Instant.now().minusSeconds(10), "ZZZ", "UTC")))
+                .extracting(exception -> ((AppException) exception).getErrorCode()).isEqualTo(LedgerErrorCode.ACCOUNT_CURRENCY_UNSUPPORTED);
 
         assertNoLedgerRows(ownerId);
     }
@@ -300,23 +191,12 @@ class FinancialAccountServiceTest {
     @Test
     void inactiveCurrencyIsRejectedBeforeAnyLedgerRowsAreWritten() {
         var ownerId = insertUser("ledger-inactive-currency@example.com");
-        assertThat(jdbcTemplate.update("UPDATE reference.currency SET active = false WHERE code = 'EUR'"))
-                .isEqualTo(1);
+        assertThat(jdbcTemplate.update("UPDATE reference.currency SET active = false WHERE code = 'EUR'")).isEqualTo(1);
 
-        assertThatThrownBy(() -> accountService.create(
-                        ownerId,
-                        createRequest(
-                                UUID.randomUUID(),
-                                "Inactive currency",
-                                AccountKind.CASH_CURRENT,
-                                TrackingMode.FULL_LEDGER,
-                                NegativeBalancePolicy.HARD_FLOOR,
-                                "10",
-                                Instant.now().minusSeconds(10),
-                                "EUR",
-                                "UTC")))
-                .extracting(exception -> ((AppException) exception).getErrorCode())
-                .isEqualTo(LedgerErrorCode.ACCOUNT_CURRENCY_UNSUPPORTED);
+        assertThatThrownBy(() -> accountService.create(ownerId,
+                createRequest(UUID.randomUUID(), "Inactive currency", AccountKind.CASH_CURRENT, TrackingMode.FULL_LEDGER, NegativeBalancePolicy.HARD_FLOOR,
+                        "10", Instant.now().minusSeconds(10), "EUR", "UTC")))
+                .extracting(exception -> ((AppException) exception).getErrorCode()).isEqualTo(LedgerErrorCode.ACCOUNT_CURRENCY_UNSUPPORTED);
 
         assertNoLedgerRows(ownerId);
     }
@@ -325,18 +205,10 @@ class FinancialAccountServiceTest {
     void futureOpeningIsRejectedBeforeAnyLedgerRowsAreWritten() {
         var ownerId = insertUser("ledger-future-opening@example.com");
 
-        assertThatThrownBy(() -> accountService.create(
-                        ownerId,
-                        createRequest(
-                                UUID.randomUUID(),
-                                "Future opening",
-                                AccountKind.CASH_CURRENT,
-                                TrackingMode.FULL_LEDGER,
-                                NegativeBalancePolicy.HARD_FLOOR,
-                                "10",
-                                Instant.now().plusSeconds(60))))
-                .isInstanceOf(AppException.class)
-                .extracting(exception -> ((AppException) exception).getErrorCode())
+        assertThatThrownBy(() -> accountService.create(ownerId,
+                createRequest(UUID.randomUUID(), "Future opening", AccountKind.CASH_CURRENT, TrackingMode.FULL_LEDGER, NegativeBalancePolicy.HARD_FLOOR, "10",
+                        Instant.now().plusSeconds(60))))
+                .isInstanceOf(AppException.class).extracting(exception -> ((AppException) exception).getErrorCode())
                 .isEqualTo(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
 
         assertNoLedgerRows(ownerId);
@@ -346,66 +218,33 @@ class FinancialAccountServiceTest {
     void futureOpeningCorrectionUsesCapabilityError() {
         var ownerId = insertUser("ledger-future-opening-correction@example.com");
         var openingAt = Instant.now().minusSeconds(10).truncatedTo(ChronoUnit.MICROS);
-        var account = accountService.create(
-                ownerId,
-                createRequest(
-                        UUID.randomUUID(),
-                        "Future opening correction",
-                        AccountKind.CASH_CURRENT,
-                        TrackingMode.FULL_LEDGER,
-                        NegativeBalancePolicy.HARD_FLOOR,
-                        "10",
-                        openingAt));
+        var account = accountService.create(ownerId, createRequest(UUID.randomUUID(), "Future opening correction", AccountKind.CASH_CURRENT,
+                TrackingMode.FULL_LEDGER, NegativeBalancePolicy.HARD_FLOOR, "10", openingAt));
 
-        assertThatThrownBy(() -> lifecycleService.correctOpening(
-                        ownerId,
-                        account.id(),
-                        new OpeningCorrectionRequest(
-                                UUID.randomUUID(),
-                                "20",
-                                Instant.now().plusSeconds(60),
-                                "Future correction",
-                                account.version())))
-                .extracting(exception -> ((AppException) exception).getErrorCode())
-                .isEqualTo(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
+        assertThatThrownBy(() -> lifecycleService.correctOpening(ownerId, account.id(),
+                new OpeningCorrectionRequest(UUID.randomUUID(), "20", Instant.now().plusSeconds(60), "Future correction", account.version())))
+                .extracting(exception -> ((AppException) exception).getErrorCode()).isEqualTo(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
     }
 
     @Test
     void futureBalanceAsOfUsesCapabilityError() {
         var ownerId = insertUser("ledger-future-balance@example.com");
-        var account = accountService.create(
-                ownerId,
-                createRequest(
-                        UUID.randomUUID(),
-                        "Future balance",
-                        AccountKind.CASH_CURRENT,
-                        TrackingMode.FULL_LEDGER,
-                        NegativeBalancePolicy.HARD_FLOOR,
-                        "10",
-                        Instant.now().minusSeconds(10)));
+        var account = accountService.create(ownerId, createRequest(UUID.randomUUID(), "Future balance", AccountKind.CASH_CURRENT, TrackingMode.FULL_LEDGER,
+                NegativeBalancePolicy.HARD_FLOOR, "10", Instant.now().minusSeconds(10)));
 
-        assertThatThrownBy(() -> queryService.balance(
-                        ownerId, account.id(), Instant.now().plusSeconds(60)))
-                .extracting(exception -> ((AppException) exception).getErrorCode())
-                .isEqualTo(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
+        assertThatThrownBy(() -> queryService.balance(ownerId, account.id(), Instant.now().plusSeconds(60)))
+                .extracting(exception -> ((AppException) exception).getErrorCode()).isEqualTo(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
     }
 
     @Test
     void domainTimeZoneInvariantRejectsOffsetAndUnknownZones() {
         var ownerId = insertUser("ledger-time-zone@example.com");
-        for (var timeZone : new String[] {"+02:00", "Not/AZone"}) {
-            assertThatThrownBy(() -> accountService.create(
-                            ownerId,
-                            createRequest(
-                                    UUID.randomUUID(),
-                                    "Invalid " + timeZone,
-                                    AccountKind.CASH_CURRENT,
-                                    TrackingMode.FULL_LEDGER,
-                                    NegativeBalancePolicy.HARD_FLOOR,
-                                    "10",
-                                    Instant.now().minusSeconds(10),
-                                    "USD",
-                                    timeZone)))
+        for (var timeZone : new String[]{"+02:00", "Not/AZone"}) {
+            assertThatThrownBy(
+                    () -> accountService
+                            .create(ownerId,
+                                    createRequest(UUID.randomUUID(), "Invalid " + timeZone, AccountKind.CASH_CURRENT, TrackingMode.FULL_LEDGER,
+                                            NegativeBalancePolicy.HARD_FLOOR, "10", Instant.now().minusSeconds(10), "USD", timeZone)))
                     .isInstanceOf(AppException.class);
         }
         assertNoLedgerRows(ownerId);
@@ -415,35 +254,16 @@ class FinancialAccountServiceTest {
     void openingCorrectionAppendsInverseAndReplacementFacts() {
         var ownerId = insertUser("ledger-correction-owner@example.com");
         var openingAt = Instant.now().minusSeconds(10).truncatedTo(ChronoUnit.MICROS);
-        var request = createRequest(
-                UUID.randomUUID(),
-                "Correction account",
-                AccountKind.CASH_CURRENT,
-                TrackingMode.FULL_LEDGER,
-                NegativeBalancePolicy.TRACK_REALITY,
-                "10",
-                openingAt);
+        var request = createRequest(UUID.randomUUID(), "Correction account", AccountKind.CASH_CURRENT, TrackingMode.FULL_LEDGER,
+                NegativeBalancePolicy.TRACK_REALITY, "10", openingAt);
         var account = accountService.create(ownerId, request);
-        assertThat(jdbcTemplate.queryForObject(
-                        "SELECT current_opening_activity_id FROM ledger.financial_account WHERE id = ?",
-                        UUID.class,
-                        account.id()))
+        assertThat(jdbcTemplate.queryForObject("SELECT current_opening_activity_id FROM ledger.financial_account WHERE id = ?", UUID.class, account.id()))
                 .isNotNull();
 
-        var correction = new OpeningCorrectionRequest(
-                UUID.randomUUID(), "25.50", openingAt, "Bank statement correction", account.version());
+        var correction = new OpeningCorrectionRequest(UUID.randomUUID(), "25.50", openingAt, "Bank statement correction", account.version());
         var corrected = lifecycleService.correctOpening(ownerId, account.id(), correction);
-        activityService.recordCashActivity(
-                ownerId,
-                account.id(),
-                new CashActivityRequest(
-                        UUID.randomUUID(),
-                        ActivityType.CASH_DEPOSIT,
-                        "1",
-                        RecordingMode.CURRENT_ACTION,
-                        Instant.now().minusSeconds(1),
-                        false,
-                        null));
+        activityService.recordCashActivity(ownerId, account.id(), new CashActivityRequest(UUID.randomUUID(), ActivityType.CASH_DEPOSIT, "1",
+                RecordingMode.CURRENT_ACTION, Instant.now().minusSeconds(1), false, null));
         var replay = lifecycleService.correctOpening(ownerId, account.id(), correction);
         var balance = queryService.balance(ownerId, account.id(), null);
 
@@ -452,118 +272,56 @@ class FinancialAccountServiceTest {
         assertThat(corrected.policyBreach()).isFalse();
         assertThat(balance.ledgerBalance()).isEqualTo("26.5");
         assertThat(balance.policyBreach()).isFalse();
-        assertThat(jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM ledger.activity WHERE owner_user_account_id = ?", Integer.class, ownerId))
-                .isEqualTo(4);
-        assertThat(jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM ledger.money_posting WHERE owner_user_account_id = ?",
-                        Integer.class,
-                        ownerId))
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ledger.activity WHERE owner_user_account_id = ?", Integer.class, ownerId)).isEqualTo(4);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ledger.money_posting WHERE owner_user_account_id = ?", Integer.class, ownerId))
                 .isEqualTo(4);
 
-        var changed = new OpeningCorrectionRequest(
-                correction.clientRequestId(),
-                "26.50",
-                correction.effectiveAt(),
-                correction.correctionReason(),
+        var changed = new OpeningCorrectionRequest(correction.clientRequestId(), "26.50", correction.effectiveAt(), correction.correctionReason(),
                 correction.version());
         assertThatThrownBy(() -> lifecycleService.correctOpening(ownerId, account.id(), changed))
-                .extracting(exception -> ((AppException) exception).getErrorCode())
-                .isEqualTo(LedgerErrorCode.IDEMPOTENCY_CONFLICT);
-        assertThat(queryService.balance(ownerId, account.id(), null).ledgerBalance())
-                .isEqualTo("26.5");
-        assertThat(jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM ledger.activity WHERE owner_user_account_id = ?", Integer.class, ownerId))
-                .isEqualTo(4);
+                .extracting(exception -> ((AppException) exception).getErrorCode()).isEqualTo(LedgerErrorCode.IDEMPOTENCY_CONFLICT);
+        assertThat(queryService.balance(ownerId, account.id(), null).ledgerBalance()).isEqualTo("26.5");
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ledger.activity WHERE owner_user_account_id = ?", Integer.class, ownerId)).isEqualTo(4);
     }
 
     @Test
     void openingCorrectionExposesAResultingNegativePolicyBreach() {
         var ownerId = insertUser("ledger-correction-breach-owner@example.com");
         var openingAt = Instant.now().minusSeconds(10).truncatedTo(ChronoUnit.MICROS);
-        var account = accountService.create(
-                ownerId,
-                createRequest(
-                        UUID.randomUUID(),
-                        "Correction breach",
-                        AccountKind.CASH_CURRENT,
-                        TrackingMode.FULL_LEDGER,
-                        NegativeBalancePolicy.HARD_FLOOR,
-                        "10",
-                        openingAt));
+        var account = accountService.create(ownerId, createRequest(UUID.randomUUID(), "Correction breach", AccountKind.CASH_CURRENT, TrackingMode.FULL_LEDGER,
+                NegativeBalancePolicy.HARD_FLOOR, "10", openingAt));
 
-        var corrected = lifecycleService.correctOpening(
-                ownerId,
-                account.id(),
-                new OpeningCorrectionRequest(
-                        UUID.randomUUID(), "-1", openingAt, "Historical negative correction", account.version()));
+        var corrected = lifecycleService.correctOpening(ownerId, account.id(),
+                new OpeningCorrectionRequest(UUID.randomUUID(), "-1", openingAt, "Historical negative correction", account.version()));
 
         assertThat(corrected.policyBreach()).isTrue();
-        assertThat(queryService.balance(ownerId, account.id(), null).policyBreach())
-                .isTrue();
+        assertThat(queryService.balance(ownerId, account.id(), null).policyBreach()).isTrue();
     }
 
     private UUID insertUser(String email) {
         var id = UUID.randomUUID();
         var now = OffsetDateTime.now(ZoneOffset.UTC);
-        jdbcTemplate.update(
-                "INSERT INTO identity.user_account (id, email, email_normalized, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
-                id,
-                email,
-                email,
-                now,
-                now);
+        jdbcTemplate.update("INSERT INTO identity.user_account (id, email, email_normalized, created_at, updated_at) VALUES (?, ?, ?, ?, ?)", id, email, email,
+                now, now);
         return id;
     }
 
-    private static CreateFinancialAccountRequest createRequest(
-            UUID clientRequestId,
-            String name,
-            AccountKind kind,
-            TrackingMode trackingMode,
-            NegativeBalancePolicy policy,
-            String amount,
-            Instant effectiveAt) {
+    private static CreateFinancialAccountRequest createRequest(UUID clientRequestId, String name, AccountKind kind, TrackingMode trackingMode,
+            NegativeBalancePolicy policy, String amount, Instant effectiveAt) {
         return createRequest(clientRequestId, name, kind, trackingMode, policy, amount, effectiveAt, "USD", "UTC");
     }
 
-    private static CreateFinancialAccountRequest createRequest(
-            UUID clientRequestId,
-            String name,
-            AccountKind kind,
-            TrackingMode trackingMode,
-            NegativeBalancePolicy policy,
-            String amount,
-            Instant effectiveAt,
-            String currency,
-            String timeZone) {
-        return new CreateFinancialAccountRequest(
-                clientRequestId,
-                name,
-                kind,
-                trackingMode,
-                currency,
-                timeZone,
-                policy,
-                null,
+    private static CreateFinancialAccountRequest createRequest(UUID clientRequestId, String name, AccountKind kind, TrackingMode trackingMode,
+            NegativeBalancePolicy policy, String amount, Instant effectiveAt, String currency, String timeZone) {
+        return new CreateFinancialAccountRequest(clientRequestId, name, kind, trackingMode, currency, timeZone, policy, null,
                 new OpeningStateRequest(amount, effectiveAt));
     }
 
     private void assertNoLedgerRows(UUID ownerId) {
-        for (var table : new String[] {
-            "financial_account",
-            "account_cash_pocket",
-            "activity",
-            "money_posting",
-            "account_balance_projection",
-            "idempotency_record"
-        }) {
-            assertThat(jdbcTemplate.queryForObject(
-                            "SELECT COUNT(*) FROM ledger." + table + " WHERE owner_user_account_id = ?",
-                            Integer.class,
-                            ownerId))
-                    .as(table)
-                    .isZero();
+        for (var table : new String[]{"financial_account", "account_cash_pocket", "activity", "money_posting", "account_balance_projection",
+                "idempotency_record"}) {
+            assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ledger." + table + " WHERE owner_user_account_id = ?", Integer.class, ownerId))
+                    .as(table).isZero();
         }
     }
 }

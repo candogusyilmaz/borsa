@@ -23,12 +23,8 @@ public class LocalAccountRegistrationService {
     private final Clock clock;
     private final IdGenerator idGenerator;
 
-    public LocalAccountRegistrationService(
-            UserAccountRepository userAccountRepository,
-            AuthIdentityRepository authIdentityRepository,
-            PasswordEncoder passwordEncoder,
-            Clock clock,
-            IdGenerator idGenerator) {
+    public LocalAccountRegistrationService(UserAccountRepository userAccountRepository, AuthIdentityRepository authIdentityRepository,
+            PasswordEncoder passwordEncoder, Clock clock, IdGenerator idGenerator) {
         this.userAccountRepository = userAccountRepository;
         this.authIdentityRepository = authIdentityRepository;
         this.passwordEncoder = passwordEncoder;
@@ -49,11 +45,9 @@ public class LocalAccountRegistrationService {
         var userAccountId = idGenerator.next();
         var authIdentityId = idGenerator.next();
 
-        var savedUserAccount = userAccountRepository.save(
-                UserAccount.register(userAccountId, email, emailNormalized, registrationTime));
+        var savedUserAccount = userAccountRepository.save(UserAccount.register(userAccountId, email, emailNormalized, registrationTime));
 
-        authIdentityRepository.save(AuthIdentity.local(
-                authIdentityId, savedUserAccount, emailNormalized, encodedPasswordHash, registrationTime));
+        authIdentityRepository.save(AuthIdentity.local(authIdentityId, savedUserAccount, emailNormalized, encodedPasswordHash, registrationTime));
 
         return savedUserAccount.getId();
     }

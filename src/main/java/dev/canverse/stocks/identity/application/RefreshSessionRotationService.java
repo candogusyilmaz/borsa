@@ -35,41 +35,28 @@ public class RefreshSessionRotationService {
         Objects.requireNonNull(rawRefreshToken, "rawRefreshToken");
 
         var refreshTokenHash = refreshTokenGenerator.hash(rawRefreshToken);
-        return deviceSessionRepository
-                .findRefreshSessionOwnerByRefreshTokenHash(refreshTokenHash)
-                .flatMap(this::rotateKnownSession);
+        return deviceSessionRepository.findRefreshSessionOwnerByRefreshTokenHash(refreshTokenHash).flatMap(this::rotateKnownSession);
     }
 
     private Optional<LocalRefreshResult> rotateKnownSession(RefreshSessionOwnerProjection ownerProjection) {
         var owner = userAccountRepository.findByIdForUpdate(ownerProjection.userAccountId());
         var session = deviceSessionRepository.findById(ownerProjection.sessionId());
         var observedAt = clock.instant();
-        return owner.flatMap(user ->
-                session.flatMap(deviceSession -> rotateLocked(ownerProjection, user, deviceSession, observedAt)));
+        return owner.flatMap(user -> session.flatMap(deviceSession -> rotateLocked(ownerProjection, user, deviceSession, observedAt)));
     }
 
-    private Optional<LocalRefreshResult> rotateLocked(
-            RefreshSessionOwnerProjection ownerProjection,
-            UserAccount owner,
-            DeviceSession session,
+    private Optional<LocalRefreshResult> rotateLocked(RefreshSessionOwnerProjection ownerProjection, UserAccount owner, DeviceSession session,
             Instant observedAt) {
         if (owner.getDisabledAt() != null || session.getUserAccount().getDisabledAt() != null) {
             return Optional.empty();
         }
         if (session.getReplacedBySessionId() != null) {
-            deviceSessionRepository
-                    .findByFamilyIdAndRevokedAtIsNull(session.getFamilyId())
-                    .ifPresent(activeSession -> {
-                        activeSession.revokeForReuse(observedAt);
-                        deviceSessionRepository.saveAndFlush(activeSession);
-                        securityEventRecorder.recordAt(
-                                ownerProjection.userAccountId(),
-                                SecurityEventRecorder.REFRESH_REUSE_DETECTED,
-                                Map.of(
-                                        "familyId", session.getFamilyId().toString(),
-                                        "sessionId", session.getId().toString()),
-                                observedAt);
-                    });
+            deviceSessionRepository.findByFamilyIdAndRevokedAtIsNull(session.getFamilyId()).ifPresent(activeSession -> {
+                activeSession.revokeForReuse(observedAt);
+                deviceSessionRepository.saveAndFlush(activeSession);
+                securityEventRecorder.recordAt(ownerProjection.userAccountId(), SecurityEventRecorder.REFRESH_REUSE_DETECTED,
+                        Map.of("familyId", session.getFamilyId().toString(), "sessionId", session.getId().toString()), observedAt);
+            });
             return Optional.empty();
         }
         if (session.getRevokedAt() != null || !session.getExpiresAt().isAfter(observedAt)) {
@@ -80,18 +67,16 @@ public class RefreshSessionRotationService {
         var replacementId = idGenerator.next();
         var replacement = session.createReplacement(replacementId, replacementToken.hash(), observedAt);
         session.consumeForRotation(observedAt);
-        // The predecessor must release the active-family index before the replacement is inserted.
+        // The predecessor must release the active-family index before the replacement
+        // is inserted.
         deviceSessionRepository.saveAndFlush(session);
         deviceSessionRepository.saveAndFlush(replacement);
-        // Link only after the replacement exists because the database enforces this foreign key.
+        // Link only after the replacement exists because the database enforces this
+        // foreign key.
         session.linkReplacement(replacementId);
 
         var accessToken = accessTokenIssuanceService.issue(replacementId);
-        return Optional.of(new LocalRefreshResult(
-                replacementId,
-                accessToken.accessToken(),
-                accessToken.expiresAt(),
-                replacement.getExpiresAt(),
+        return Optional.of(new LocalRefreshResult(replacementId, accessToken.accessToken(), accessToken.expiresAt(), replacement.getExpiresAt(),
                 replacementToken.rawToken()));
     }
 }

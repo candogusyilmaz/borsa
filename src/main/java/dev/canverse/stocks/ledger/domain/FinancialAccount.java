@@ -56,17 +56,8 @@ public class FinancialAccount {
     @Version
     private long version;
 
-    public static FinancialAccount create(
-            UUID id,
-            UserAccount owner,
-            String name,
-            AccountKind accountKind,
-            TrackingMode trackingMode,
-            String currencyCode,
-            String timeZone,
-            NegativeBalancePolicy negativeBalancePolicy,
-            FinancialAmount authorizedLimit,
-            Instant observedAt) {
+    public static FinancialAccount create(UUID id, UserAccount owner, String name, AccountKind accountKind, TrackingMode trackingMode, String currencyCode,
+            String timeZone, NegativeBalancePolicy negativeBalancePolicy, FinancialAmount authorizedLimit, Instant observedAt) {
         Objects.requireNonNull(id, "id");
         Objects.requireNonNull(owner, "owner");
         Objects.requireNonNull(accountKind, "accountKind");
@@ -116,8 +107,7 @@ public class FinancialAccount {
         this.updatedAt = Objects.requireNonNull(observedAt, "observedAt");
     }
 
-    public void updatePolicy(
-            NegativeBalancePolicy negativeBalancePolicy, FinancialAmount authorizedLimit, Instant observedAt) {
+    public void updatePolicy(NegativeBalancePolicy negativeBalancePolicy, FinancialAmount authorizedLimit, Instant observedAt) {
         validateCapability(accountKind, trackingMode, negativeBalancePolicy, authorizedLimit);
         this.negativeBalancePolicy = negativeBalancePolicy;
         this.authorizedLimit = authorizedLimit == null ? null : authorizedLimit.value();
@@ -151,8 +141,7 @@ public class FinancialAccount {
         return displayName;
     }
 
-    private static void validateCapability(
-            AccountKind kind, TrackingMode mode, NegativeBalancePolicy policy, FinancialAmount limit) {
+    private static void validateCapability(AccountKind kind, TrackingMode mode, NegativeBalancePolicy policy, FinancialAmount limit) {
         if (mode == TrackingMode.HOLDINGS_ONLY && !kind.supportsHoldingsOnly()) {
             throw new IllegalArgumentException("Only brokerage accounts support holdings-only tracking");
         }
@@ -165,10 +154,7 @@ public class FinancialAccount {
         if (kind.isLiability() && (policy != null || limit != null)) {
             throw new IllegalArgumentException("Liability accounts do not support asset cash policies");
         }
-        if (limit != null
-                && (kind != AccountKind.CASH_CURRENT
-                        || policy != NegativeBalancePolicy.AUTHORIZED_LIMIT
-                        || !limit.isPositive())) {
+        if (limit != null && (kind != AccountKind.CASH_CURRENT || policy != NegativeBalancePolicy.AUTHORIZED_LIMIT || !limit.isPositive())) {
             throw new IllegalArgumentException("Authorized limit is supported only for current cash accounts");
         }
         if (limit == null && policy == NegativeBalancePolicy.AUTHORIZED_LIMIT) {

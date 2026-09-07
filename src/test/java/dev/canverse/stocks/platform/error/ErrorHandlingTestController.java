@@ -22,9 +22,7 @@ class ErrorHandlingTestController {
 
     @GetMapping("/application")
     void applicationError() {
-        throw new AppException(
-                CommonErrorCode.ENTITY_NOT_FOUND,
-                Map.of("entity", "Example", "id", "00000000-0000-0000-0000-000000000001"));
+        throw new AppException(CommonErrorCode.ENTITY_NOT_FOUND, Map.of("entity", "Example", "id", "00000000-0000-0000-0000-000000000001"));
     }
 
     @GetMapping("/internal")
@@ -53,8 +51,7 @@ class ErrorHandlingTestController {
 
     @GetMapping("/known-conflict")
     void knownPersistenceConflict() {
-        var cause = new ConstraintViolationException(
-                "duplicate key detail=secret", new SQLException("secret sql"), "uq_user_account_email_normalized");
+        var cause = new ConstraintViolationException("duplicate key detail=secret", new SQLException("secret sql"), "uq_user_account_email_normalized");
         throw new DataIntegrityViolationException("database failure", cause);
     }
 

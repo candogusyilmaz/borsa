@@ -45,11 +45,9 @@ public class LocalAccessTokenConfiguration {
     private KeyPair parseConfiguredKeyPair(String privateKeyPem, String publicKeyPem) {
         try {
             var keyFactory = KeyFactory.getInstance("RSA");
-            var privateKey =
-                    keyFactory.generatePrivate(new PKCS8EncodedKeySpec(decodePem(privateKeyPem, "PRIVATE KEY")));
+            var privateKey = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(decodePem(privateKeyPem, "PRIVATE KEY")));
             var publicKey = keyFactory.generatePublic(new X509EncodedKeySpec(decodePem(publicKeyPem, "PUBLIC KEY")));
-            if (!(privateKey instanceof RSAPrivateKey rsaPrivateKey)
-                    || !(publicKey instanceof RSAPublicKey rsaPublicKey)) {
+            if (!(privateKey instanceof RSAPrivateKey rsaPrivateKey) || !(publicKey instanceof RSAPublicKey rsaPublicKey)) {
                 throw new IllegalArgumentException("Configured access-token keys must be RSA keys");
             }
             if (!rsaPrivateKey.getModulus().equals(rsaPublicKey.getModulus())) {
@@ -78,19 +76,14 @@ public class LocalAccessTokenConfiguration {
 
     @Bean
     JwtEncoder localAccessTokenEncoder(KeyPair localAccessTokenKeyPair, AccessTokenProperties properties) {
-        return NimbusJwtEncoder.withKeyPair((RSAPublicKey) localAccessTokenKeyPair.getPublic(), (RSAPrivateKey)
-                        localAccessTokenKeyPair.getPrivate())
-                .algorithm(SignatureAlgorithm.RS256)
-                .jwkPostProcessor(builder -> builder.keyID(properties.keyId()))
-                .build();
+        return NimbusJwtEncoder.withKeyPair((RSAPublicKey) localAccessTokenKeyPair.getPublic(), (RSAPrivateKey) localAccessTokenKeyPair.getPrivate())
+                .algorithm(SignatureAlgorithm.RS256).jwkPostProcessor(builder -> builder.keyID(properties.keyId())).build();
     }
 
     @Bean
     JwtDecoder localAccessTokenDecoder(KeyPair localAccessTokenKeyPair, AccessTokenProperties properties, Clock clock) {
-        var decoder = NimbusJwtDecoder.withPublicKey((RSAPublicKey) localAccessTokenKeyPair.getPublic())
-                .signatureAlgorithm(SignatureAlgorithm.RS256)
-                .validateType(false)
-                .build();
+        var decoder = NimbusJwtDecoder.withPublicKey((RSAPublicKey) localAccessTokenKeyPair.getPublic()).signatureAlgorithm(SignatureAlgorithm.RS256)
+                .validateType(false).build();
         decoder.setJwtValidator(new LocalAccessTokenValidator(properties, clock));
         return decoder;
     }

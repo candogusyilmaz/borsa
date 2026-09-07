@@ -30,28 +30,21 @@ public class LocalLoginController {
     }
 
     @PostMapping("login")
-    public ResponseEntity<LocalLoginResponse> login(
-            @Valid @RequestBody LocalLoginRequest request, HttpServletRequest servletRequest) {
+    public ResponseEntity<LocalLoginResponse> login(@Valid @RequestBody LocalLoginRequest request, HttpServletRequest servletRequest) {
         var remoteAddr = servletRequest.getRemoteAddr();
         var traceId = (String) servletRequest.getAttribute(RequestTraceFilter.TRACE_ID_ATTRIBUTE);
         if (traceId == null) {
             traceId = "unknown";
         }
 
-        var loginResult = loginAttemptService.attemptLogin(
-                request.email(), request.password(), request.deviceLabel(), remoteAddr, traceId);
+        var loginResult = loginAttemptService.attemptLogin(request.email(), request.password(), request.deviceLabel(), remoteAddr, traceId);
         var serverTime = clock.instant();
-        var refreshToken = request.refreshTokenDelivery() == RefreshTokenDelivery.RESPONSE_BODY
-                ? loginResult.refreshToken()
-                : null;
+        var refreshToken = request.refreshTokenDelivery() == RefreshTokenDelivery.RESPONSE_BODY ? loginResult.refreshToken() : null;
         var response = LocalLoginResponse.from(loginResult, serverTime, refreshToken);
 
         var headers = CacheHeaders.noStore();
         if (request.refreshTokenDelivery() == RefreshTokenDelivery.HTTP_ONLY_COOKIE) {
-            headers.add(
-                    HttpHeaders.SET_COOKIE,
-                    RefreshTokenCookieHeader.create(
-                            loginResult.refreshToken(), loginResult.refreshTokenExpiresAt(), serverTime));
+            headers.add(HttpHeaders.SET_COOKIE, RefreshTokenCookieHeader.create(loginResult.refreshToken(), loginResult.refreshTokenExpiresAt(), serverTime));
         }
         return new ResponseEntity<>(response, headers, HttpStatus.OK);
     }

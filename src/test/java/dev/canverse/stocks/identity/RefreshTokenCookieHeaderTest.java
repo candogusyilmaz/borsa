@@ -42,8 +42,7 @@ class RefreshTokenCookieHeaderTest {
     @Test
     void createRejectsPastOrEqualExpiry() {
         var serverTime = Instant.parse("2026-08-15T12:00:00Z");
-        assertThatThrownBy(() -> RefreshTokenCookieHeader.create("token", serverTime, serverTime))
-                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> RefreshTokenCookieHeader.create("token", serverTime, serverTime)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> RefreshTokenCookieHeader.create("token", serverTime.minusSeconds(10), serverTime))
                 .isInstanceOf(IllegalArgumentException.class);
     }

@@ -7,7 +7,9 @@ import java.util.Map;
 import java.util.Optional;
 import org.hibernate.exception.ConstraintViolationException;
 
-/** Static lookup for the small set of migration-owned database constraints with public error contracts. */
+/**
+ * Static lookup for the small set of migration-owned database constraints with public error contracts.
+ */
 public final class DatabaseConstraintRegistry {
 
     private static final Map<String, ErrorCode> MAPPINGS = Map.ofEntries(

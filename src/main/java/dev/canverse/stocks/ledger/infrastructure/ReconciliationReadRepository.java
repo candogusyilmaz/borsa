@@ -25,86 +25,63 @@ import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
-/** Explicit SQL read models for reconciliation comparisons and lifecycle state. */
+/**
+ * Explicit SQL read models for reconciliation comparisons and lifecycle state.
+ */
 @Repository
 @RequiredArgsConstructor
 public class ReconciliationReadRepository {
 
     private final JdbcClient jdbcClient;
 
-    public Optional<ReconciliationPreviewView> findPreview(
-            UUID ownerUserAccountId,
-            UUID accountId,
-            String statementReference,
-            Instant statementOpeningAt,
-            Instant statementClosingAt,
-            FinancialAmount statementOpeningBalance,
-            FinancialAmount statementClosingBalance) {
-        return jdbcClient
-                .sql("""
-                        SELECT a.id,
-                               p.id AS cash_pocket_id,
-                               a.currency_code,
-                               COALESCE(p.coverage_status, 'UNTRACKED') AS coverage_status,
-                               p.coverage_from,
-                               bp.version AS projection_version,
-                               COALESCE(SUM(mp.amount) FILTER (WHERE act.effective_at <= :statementOpeningAt), 0) AS ledger_opening_balance,
-                               COALESCE(SUM(mp.amount) FILTER (WHERE act.effective_at <= :statementClosingAt), 0) AS ledger_closing_balance,
-                               COALESCE(SUM(mp.amount) FILTER (WHERE act.effective_at > :statementOpeningAt
-                                                                  AND act.effective_at <= :statementClosingAt), 0) AS period_net_posted_amount,
-                               COUNT(mp.id) FILTER (WHERE act.effective_at > :statementOpeningAt
-                                                     AND act.effective_at <= :statementClosingAt) AS period_posting_count,
-                               COUNT(mp.id) FILTER (WHERE act.effective_at <= :statementClosingAt) AS total_posting_count
-                        FROM ledger.financial_account a
-                        LEFT JOIN ledger.account_cash_pocket p
-                          ON p.owner_user_account_id = a.owner_user_account_id
-                         AND p.financial_account_id = a.id
-                        LEFT JOIN ledger.account_balance_projection bp
-                          ON bp.owner_user_account_id = a.owner_user_account_id
-                         AND bp.financial_account_id = a.id
-                        LEFT JOIN ledger.money_posting mp
-                          ON mp.owner_user_account_id = a.owner_user_account_id
-                         AND mp.financial_account_id = a.id
-                        LEFT JOIN ledger.activity act
-                          ON act.owner_user_account_id = mp.owner_user_account_id
-                         AND act.id = mp.activity_id
-                        WHERE a.owner_user_account_id = :ownerUserAccountId
-                          AND a.id = :accountId
-                        GROUP BY a.id, p.id, p.coverage_status, p.coverage_from, bp.version
-                        """)
-                .param("ownerUserAccountId", Objects.requireNonNull(ownerUserAccountId, "ownerUserAccountId"))
-                .param("accountId", Objects.requireNonNull(accountId, "accountId"))
-                .param("statementOpeningAt", timestamp(statementOpeningAt))
-                .param("statementClosingAt", timestamp(statementClosingAt))
-                .query((resultSet, rowNumber) -> mapPreview(
-                        resultSet,
-                        statementReference,
-                        statementOpeningAt,
-                        statementClosingAt,
-                        statementOpeningBalance,
-                        statementClosingBalance))
+    public Optional<ReconciliationPreviewView> findPreview(UUID ownerUserAccountId, UUID accountId, String statementReference, Instant statementOpeningAt,
+            Instant statementClosingAt, FinancialAmount statementOpeningBalance, FinancialAmount statementClosingBalance) {
+        return jdbcClient.sql("""
+                SELECT a.id,
+                       p.id AS cash_pocket_id,
+                       a.currency_code,
+                       COALESCE(p.coverage_status, 'UNTRACKED') AS coverage_status,
+                       p.coverage_from,
+                       bp.version AS projection_version,
+                       COALESCE(SUM(mp.amount) FILTER (WHERE act.effective_at <= :statementOpeningAt), 0) AS ledger_opening_balance,
+                       COALESCE(SUM(mp.amount) FILTER (WHERE act.effective_at <= :statementClosingAt), 0) AS ledger_closing_balance,
+                       COALESCE(SUM(mp.amount) FILTER (WHERE act.effective_at > :statementOpeningAt
+                                                          AND act.effective_at <= :statementClosingAt), 0) AS period_net_posted_amount,
+                       COUNT(mp.id) FILTER (WHERE act.effective_at > :statementOpeningAt
+                                             AND act.effective_at <= :statementClosingAt) AS period_posting_count,
+                       COUNT(mp.id) FILTER (WHERE act.effective_at <= :statementClosingAt) AS total_posting_count
+                FROM ledger.financial_account a
+                LEFT JOIN ledger.account_cash_pocket p
+                  ON p.owner_user_account_id = a.owner_user_account_id
+                 AND p.financial_account_id = a.id
+                LEFT JOIN ledger.account_balance_projection bp
+                  ON bp.owner_user_account_id = a.owner_user_account_id
+                 AND bp.financial_account_id = a.id
+                LEFT JOIN ledger.money_posting mp
+                  ON mp.owner_user_account_id = a.owner_user_account_id
+                 AND mp.financial_account_id = a.id
+                LEFT JOIN ledger.activity act
+                  ON act.owner_user_account_id = mp.owner_user_account_id
+                 AND act.id = mp.activity_id
+                WHERE a.owner_user_account_id = :ownerUserAccountId
+                  AND a.id = :accountId
+                GROUP BY a.id, p.id, p.coverage_status, p.coverage_from, bp.version
+                """).param("ownerUserAccountId", Objects.requireNonNull(ownerUserAccountId, "ownerUserAccountId"))
+                .param("accountId", Objects.requireNonNull(accountId, "accountId")).param("statementOpeningAt", timestamp(statementOpeningAt))
+                .param("statementClosingAt", timestamp(statementClosingAt)).query((resultSet, rowNumber) -> mapPreview(resultSet, statementReference,
+                        statementOpeningAt, statementClosingAt, statementOpeningBalance, statementClosingBalance))
                 .optional();
     }
 
     public Optional<ReconciliationResponse> findDetail(UUID ownerUserAccountId, UUID reconciliationId) {
-        return jdbcClient
-                .sql(detailSql("r.id = :reconciliationId"))
-                .param("ownerUserAccountId", ownerUserAccountId)
-                .param("reconciliationId", reconciliationId)
-                .query(this::mapDetail)
-                .optional();
+        return jdbcClient.sql(detailSql("r.id = :reconciliationId")).param("ownerUserAccountId", ownerUserAccountId).param("reconciliationId", reconciliationId)
+                .query(this::mapDetail).optional();
     }
 
-    public SliceResponse<ReconciliationResponse> findReconciliations(
-            UUID ownerUserAccountId, UUID accountId, Pageable pageable) {
+    public SliceResponse<ReconciliationResponse> findReconciliations(UUID ownerUserAccountId, UUID accountId, Pageable pageable) {
         var pageSize = Objects.requireNonNull(pageable, "pageable").getPageSize();
-        var statement = jdbcClient
-                .sql(detailSql("r.financial_account_id = :accountId")
-                        + reconciliationOrderBy(pageable)
-                        + " LIMIT :fetchLimit OFFSET :offset")
-                .param("ownerUserAccountId", ownerUserAccountId)
-                .param("accountId", accountId)
-                .param("fetchLimit", pageSize + 1)
+        var statement = jdbcClient.sql(detailSql("r.financial_account_id = :accountId") + reconciliationOrderBy(pageable) + " LIMIT :fetchLimit OFFSET :offset")
+                .param("ownerUserAccountId", ownerUserAccountId).param("accountId", accountId).param("fetchLimit", pageSize + 1)
                 .param("offset", pageable.getOffset());
         var rows = statement.query(this::mapDetail).list();
         var hasNext = rows.size() > pageSize;
@@ -118,37 +95,26 @@ public class ReconciliationReadRepository {
             throw invalidSort();
         }
         var order = orders.getFirst();
-        if ((order.getDirection() != Sort.Direction.ASC && order.getDirection() != Sort.Direction.DESC)
-                || order.isIgnoreCase()
-                || order.getNullHandling() != Sort.NullHandling.NATIVE) {
+        if ((order.getDirection() != Sort.Direction.ASC && order.getDirection() != Sort.Direction.DESC) || order.isIgnoreCase() ||
+                order.getNullHandling() != Sort.NullHandling.NATIVE) {
             throw invalidSort();
         }
         if (!"statementClosingAt".equals(order.getProperty())) {
             throw invalidSort();
         }
-        return order.isAscending()
-                ? " ORDER BY r.statement_closing_at ASC, r.id ASC"
-                : " ORDER BY r.statement_closing_at DESC, r.id DESC";
+        return order.isAscending() ? " ORDER BY r.statement_closing_at ASC, r.id ASC" : " ORDER BY r.statement_closing_at DESC, r.id DESC";
     }
 
     private static AppException invalidSort() {
-        return ValidationErrors.invalidField(
-                "sort",
-                "error.fields.ledger.invalid_sort",
-                "The sort must contain exactly one supported property and direction.");
+        return ValidationErrors.invalidField("sort", "error.fields.ledger.invalid_sort", "The sort must contain exactly one supported property and direction.");
     }
 
     public Optional<LastReconciliationSummaryView> findLatestSummary(UUID ownerUserAccountId, UUID accountId) {
         return jdbcClient
-                .sql(detailSql("r.financial_account_id = :accountId"
-                                + " AND NOT EXISTS (SELECT 1 FROM ledger.reconciliation replacement"
-                                + " WHERE replacement.owner_user_account_id = r.owner_user_account_id"
-                                + " AND replacement.supersedes_reconciliation_id = r.id)")
-                        + " ORDER BY r.statement_closing_at DESC, r.created_at DESC, r.id DESC LIMIT 1")
-                .param("ownerUserAccountId", ownerUserAccountId)
-                .param("accountId", accountId)
-                .query(this::mapSummary)
-                .optional();
+                .sql(detailSql("r.financial_account_id = :accountId" + " AND NOT EXISTS (SELECT 1 FROM ledger.reconciliation replacement" +
+                        " WHERE replacement.owner_user_account_id = r.owner_user_account_id" + " AND replacement.supersedes_reconciliation_id = r.id)") +
+                        " ORDER BY r.statement_closing_at DESC, r.created_at DESC, r.id DESC LIMIT 1")
+                .param("ownerUserAccountId", ownerUserAccountId).param("accountId", accountId).query(this::mapSummary).optional();
     }
 
     private String detailSql(String predicate) {
@@ -198,82 +164,41 @@ public class ReconciliationReadRepository {
                 WHERE r.owner_user_account_id = :ownerUserAccountId""" + " AND " + predicate;
     }
 
-    private ReconciliationPreviewView mapPreview(
-            ResultSet resultSet,
-            String statementReference,
-            Instant statementOpeningAt,
-            Instant statementClosingAt,
-            FinancialAmount statementOpeningBalance,
-            FinancialAmount statementClosingBalance)
-            throws SQLException {
+    private ReconciliationPreviewView mapPreview(ResultSet resultSet, String statementReference, Instant statementOpeningAt, Instant statementClosingAt,
+            FinancialAmount statementOpeningBalance, FinancialAmount statementClosingBalance) throws SQLException {
         var ledgerOpening = amount(resultSet, "ledger_opening_balance");
         var ledgerClosing = amount(resultSet, "ledger_closing_balance");
         var openingDifference = statementOpeningBalance.subtract(ledgerOpening);
         var closingDifference = statementClosingBalance.subtract(ledgerClosing);
-        var admissible = openingDifference.isZero()
-                ? closingDifference.isZero() ? List.of("CONFIRM_BALANCED") : List.of("CREATE_ADJUSTMENT")
+        var admissible = openingDifference.isZero() ? closingDifference.isZero() ? List.of("CONFIRM_BALANCED") : List.of("CREATE_ADJUSTMENT")
                 : List.<String>of();
         var warnings = openingDifference.isZero() ? List.<String>of() : List.of("RECONCILIATION_OPENING_MISMATCH");
         var version = resultSet.getObject("projection_version", Long.class);
-        return new ReconciliationPreviewView(
-                resultSet.getObject("id", UUID.class),
-                resultSet.getObject("cash_pocket_id", UUID.class),
-                resultSet.getString("currency_code"),
-                CoverageStatus.valueOf(resultSet.getString("coverage_status")),
-                instant(resultSet, "coverage_from"),
-                statementReference,
-                statementOpeningAt,
-                statementClosingAt,
-                statementOpeningBalance,
-                statementClosingBalance,
-                ledgerOpening,
-                ledgerClosing,
-                openingDifference,
-                amount(resultSet, "period_net_posted_amount"),
-                closingDifference,
-                resultSet.getLong("period_posting_count"),
-                resultSet.getLong("total_posting_count"),
-                version == null ? 0 : version,
-                admissible,
-                warnings);
+        return new ReconciliationPreviewView(resultSet.getObject("id", UUID.class), resultSet.getObject("cash_pocket_id", UUID.class),
+                resultSet.getString("currency_code"), CoverageStatus.valueOf(resultSet.getString("coverage_status")), instant(resultSet, "coverage_from"),
+                statementReference, statementOpeningAt, statementClosingAt, statementOpeningBalance, statementClosingBalance, ledgerOpening, ledgerClosing,
+                openingDifference, amount(resultSet, "period_net_posted_amount"), closingDifference, resultSet.getLong("period_posting_count"),
+                resultSet.getLong("total_posting_count"), version == null ? 0 : version, admissible, warnings);
     }
 
     private ReconciliationResponse mapDetail(ResultSet resultSet, int rowNumber) throws SQLException {
-        return new ReconciliationResponse(
-                resultSet.getObject("id", UUID.class),
-                resultSet.getObject("financial_account_id", UUID.class),
-                resultSet.getObject("cash_pocket_id", UUID.class),
-                resultSet.getString("currency_code"),
-                resultSet.getString("statement_reference"),
-                instant(resultSet, "statement_opening_at"),
-                instant(resultSet, "statement_closing_at"),
-                canonical(resultSet, "statement_opening_balance"),
-                canonical(resultSet, "statement_closing_balance"),
-                canonical(resultSet, "ledger_opening_balance"),
-                canonical(resultSet, "ledger_closing_balance_before_adjustment"),
-                difference(resultSet, "statement_opening_balance", "ledger_opening_balance"),
-                canonical(resultSet, "period_net_posted_amount"),
-                canonical(resultSet, "closing_difference"),
-                nullableCanonical(resultSet, "adjustment_amount"),
-                resultSet.getLong("period_posting_count"),
-                resultSet.getLong("total_posting_count_through_closing"),
-                ReconciliationResolution.valueOf(resultSet.getString("resolution")),
-                resultSet.getObject("adjustment_activity_id", UUID.class),
-                resultSet.getString("adjustment_reason"),
-                resultSet.getObject("supersedes_reconciliation_id", UUID.class),
-                ReconciliationLifecycleStatus.valueOf(resultSet.getString("lifecycle_status")),
-                resultSet.getString("source_kind"),
+        return new ReconciliationResponse(resultSet.getObject("id", UUID.class), resultSet.getObject("financial_account_id", UUID.class),
+                resultSet.getObject("cash_pocket_id", UUID.class), resultSet.getString("currency_code"), resultSet.getString("statement_reference"),
+                instant(resultSet, "statement_opening_at"), instant(resultSet, "statement_closing_at"), canonical(resultSet, "statement_opening_balance"),
+                canonical(resultSet, "statement_closing_balance"), canonical(resultSet, "ledger_opening_balance"),
+                canonical(resultSet, "ledger_closing_balance_before_adjustment"), difference(resultSet, "statement_opening_balance", "ledger_opening_balance"),
+                canonical(resultSet, "period_net_posted_amount"), canonical(resultSet, "closing_difference"), nullableCanonical(resultSet, "adjustment_amount"),
+                resultSet.getLong("period_posting_count"), resultSet.getLong("total_posting_count_through_closing"),
+                ReconciliationResolution.valueOf(resultSet.getString("resolution")), resultSet.getObject("adjustment_activity_id", UUID.class),
+                resultSet.getString("adjustment_reason"), resultSet.getObject("supersedes_reconciliation_id", UUID.class),
+                ReconciliationLifecycleStatus.valueOf(resultSet.getString("lifecycle_status")), resultSet.getString("source_kind"),
                 instant(resultSet, "created_at"));
     }
 
     private LastReconciliationSummaryView mapSummary(ResultSet resultSet, int rowNumber) throws SQLException {
-        return new LastReconciliationSummaryView(
-                resultSet.getObject("id", UUID.class),
-                instant(resultSet, "statement_closing_at"),
-                canonical(resultSet, "statement_closing_balance"),
-                ReconciliationResolution.valueOf(resultSet.getString("resolution")),
-                ReconciliationLifecycleStatus.valueOf(resultSet.getString("lifecycle_status")),
-                instant(resultSet, "created_at"));
+        return new LastReconciliationSummaryView(resultSet.getObject("id", UUID.class), instant(resultSet, "statement_closing_at"),
+                canonical(resultSet, "statement_closing_balance"), ReconciliationResolution.valueOf(resultSet.getString("resolution")),
+                ReconciliationLifecycleStatus.valueOf(resultSet.getString("lifecycle_status")), instant(resultSet, "created_at"));
     }
 
     private static OffsetDateTime timestamp(Instant instant) {
@@ -299,8 +224,6 @@ public class ReconciliationReadRepository {
     }
 
     private static String difference(ResultSet resultSet, String left, String right) throws SQLException {
-        return FinancialAmount.of(resultSet.getBigDecimal(left))
-                .subtract(FinancialAmount.of(resultSet.getBigDecimal(right)))
-                .canonical();
+        return FinancialAmount.of(resultSet.getBigDecimal(left)).subtract(FinancialAmount.of(resultSet.getBigDecimal(right))).canonical();
     }
 }

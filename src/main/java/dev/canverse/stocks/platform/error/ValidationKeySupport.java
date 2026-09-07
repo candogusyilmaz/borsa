@@ -7,27 +7,17 @@ final class ValidationKeySupport {
 
     static final String FALLBACK_KEY = "error.fields.common.unmapped_constraint";
 
-    private static final Pattern APPLICATION_KEY = Pattern.compile(
-            "^error\\.(?:fields\\.)?[a-z][a-z0-9]*(?:_[a-z0-9]+)*(?:\\.[a-z][a-z0-9]*(?:_[a-z0-9]+)*)+$");
+    private static final Pattern APPLICATION_KEY = Pattern
+            .compile("^error\\.(?:fields\\.)?[a-z][a-z0-9]*(?:_[a-z0-9]+)*(?:\\.[a-z][a-z0-9]*(?:_[a-z0-9]+)*)+$");
 
-    private static final Map<String, String> BUILT_IN_KEYS = Map.ofEntries(
-            Map.entry("NotNull", "error.fields.common.not_null"),
-            Map.entry("NotBlank", "error.fields.common.not_blank"),
-            Map.entry("NotEmpty", "error.fields.common.not_empty"),
-            Map.entry("Size", "error.fields.common.size"),
-            Map.entry("Min", "error.fields.common.min"),
-            Map.entry("Max", "error.fields.common.max"),
-            Map.entry("DecimalMin", "error.fields.common.decimal_min"),
-            Map.entry("DecimalMax", "error.fields.common.decimal_max"),
-            Map.entry("Positive", "error.fields.common.positive"),
-            Map.entry("PositiveOrZero", "error.fields.common.positive_or_zero"),
-            Map.entry("Negative", "error.fields.common.negative"),
-            Map.entry("NegativeOrZero", "error.fields.common.negative_or_zero"),
-            Map.entry("Email", "error.fields.common.email"),
-            Map.entry("Pattern", "error.fields.common.pattern"),
-            Map.entry("Past", "error.fields.common.past"),
-            Map.entry("Future", "error.fields.common.future"),
-            Map.entry("Digits", "error.fields.common.digits"));
+    private static final Map<String, String> BUILT_IN_KEYS = Map.ofEntries(Map.entry("NotNull", "error.fields.common.not_null"),
+            Map.entry("NotBlank", "error.fields.common.not_blank"), Map.entry("NotEmpty", "error.fields.common.not_empty"),
+            Map.entry("Size", "error.fields.common.size"), Map.entry("Min", "error.fields.common.min"), Map.entry("Max", "error.fields.common.max"),
+            Map.entry("DecimalMin", "error.fields.common.decimal_min"), Map.entry("DecimalMax", "error.fields.common.decimal_max"),
+            Map.entry("Positive", "error.fields.common.positive"), Map.entry("PositiveOrZero", "error.fields.common.positive_or_zero"),
+            Map.entry("Negative", "error.fields.common.negative"), Map.entry("NegativeOrZero", "error.fields.common.negative_or_zero"),
+            Map.entry("Email", "error.fields.common.email"), Map.entry("Pattern", "error.fields.common.pattern"), Map.entry("Past", "error.fields.common.past"),
+            Map.entry("Future", "error.fields.common.future"), Map.entry("Digits", "error.fields.common.digits"));
 
     private ValidationKeySupport() {}
 

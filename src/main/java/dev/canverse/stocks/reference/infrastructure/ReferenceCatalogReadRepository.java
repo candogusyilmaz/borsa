@@ -34,7 +34,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
-/** Explicit SQL read model for bounded reference and instrument response shapes. */
+/**
+ * Explicit SQL read model for bounded reference and instrument response shapes.
+ */
 @Repository
 @RequiredArgsConstructor
 public class ReferenceCatalogReadRepository {
@@ -42,107 +44,78 @@ public class ReferenceCatalogReadRepository {
     private final JdbcClient jdbcClient;
 
     public List<CountryResponse> findActiveCountries() {
-        return List.copyOf(jdbcClient
-                .sql("SELECT code, name, active FROM reference.country WHERE active ORDER BY code")
-                .query(CountryResponse.class)
-                .list());
+        return List.copyOf(jdbcClient.sql("SELECT code, name, active FROM reference.country WHERE active ORDER BY code").query(CountryResponse.class).list());
     }
 
     public List<CurrencyResponse> findActiveCurrencies() {
-        return List.copyOf(jdbcClient
-                .sql("SELECT code, name, symbol, minor_unit, active FROM reference.currency WHERE active ORDER BY code")
-                .query((rs, rowNum) -> new CurrencyResponse(
-                        rs.getString("code"),
-                        rs.getString("name"),
-                        rs.getString("symbol"),
-                        rs.getInt("minor_unit"),
+        return List.copyOf(jdbcClient.sql("SELECT code, name, symbol, minor_unit, active FROM reference.currency WHERE active ORDER BY code")
+                .query((rs, rowNum) -> new CurrencyResponse(rs.getString("code"), rs.getString("name"), rs.getString("symbol"), rs.getInt("minor_unit"),
                         rs.getBoolean("active")))
                 .list());
     }
 
     public List<MarketResponse> findActiveMarkets() {
         return List.copyOf(jdbcClient.sql("""
-                        SELECT m.id, m.code, m.name, m.market_type, m.country_code, m.time_zone,
-                               m.active, m.source_kind,
-                               array_remove(array_agg(mc.currency_code ORDER BY mc.currency_code), NULL)
-                                   AS quotation_currencies,
-                               max(CASE WHEN mc.primary_quote THEN mc.currency_code END)
-                                   AS primary_quotation_currency
-                        FROM reference.market m
-                        LEFT JOIN reference.market_currency mc ON mc.market_id = m.id
-                        WHERE m.active
-                        GROUP BY m.id, m.code, m.name, m.market_type, m.country_code, m.time_zone,
-                                 m.active, m.source_kind, m.code_normalized
-                        ORDER BY m.code_normalized
-                        """).query(this::mapMarketResponse).list());
+                SELECT m.id, m.code, m.name, m.market_type, m.country_code, m.time_zone,
+                       m.active, m.source_kind,
+                       array_remove(array_agg(mc.currency_code ORDER BY mc.currency_code), NULL)
+                           AS quotation_currencies,
+                       max(CASE WHEN mc.primary_quote THEN mc.currency_code END)
+                           AS primary_quotation_currency
+                FROM reference.market m
+                LEFT JOIN reference.market_currency mc ON mc.market_id = m.id
+                WHERE m.active
+                GROUP BY m.id, m.code, m.name, m.market_type, m.country_code, m.time_zone,
+                         m.active, m.source_kind, m.code_normalized
+                ORDER BY m.code_normalized
+                """).query(this::mapMarketResponse).list());
     }
 
     public Optional<MarketCalendarHeader> findActiveMarket(UUID marketId) {
-        return jdbcClient
-                .sql("""
-                        SELECT id, code, time_zone
-                        FROM reference.market
-                        WHERE id = :marketId AND active
-                        """)
-                .param("marketId", Objects.requireNonNull(marketId, "marketId"))
-                .query((rs, rowNum) -> new MarketCalendarHeader(
-                        rs.getObject("id", UUID.class), rs.getString("code"), rs.getString("time_zone")))
-                .optional();
+        return jdbcClient.sql("""
+                SELECT id, code, time_zone
+                FROM reference.market
+                WHERE id = :marketId AND active
+                """).param("marketId", Objects.requireNonNull(marketId, "marketId"))
+                .query((rs, rowNum) -> new MarketCalendarHeader(rs.getObject("id", UUID.class), rs.getString("code"), rs.getString("time_zone"))).optional();
     }
 
     public List<CalendarRow> findCalendarRows(UUID marketId, LocalDate from, LocalDate to) {
-        return jdbcClient
-                .sql("""
-                        SELECT calendar_date, session_status, opens_at, closes_at, source_kind
-                        FROM reference.market_calendar
-                        WHERE market_id = :marketId
-                          AND calendar_date BETWEEN :fromDate AND :toDate
-                        ORDER BY calendar_date
-                        """)
-                .param("marketId", Objects.requireNonNull(marketId, "marketId"))
-                .param("fromDate", Objects.requireNonNull(from, "from"))
+        return jdbcClient.sql("""
+                SELECT calendar_date, session_status, opens_at, closes_at, source_kind
+                FROM reference.market_calendar
+                WHERE market_id = :marketId
+                  AND calendar_date BETWEEN :fromDate AND :toDate
+                ORDER BY calendar_date
+                """).param("marketId", Objects.requireNonNull(marketId, "marketId")).param("fromDate", Objects.requireNonNull(from, "from"))
                 .param("toDate", Objects.requireNonNull(to, "to"))
-                .query((rs, rowNum) -> new CalendarRow(
-                        rs.getObject("calendar_date", LocalDate.class),
-                        MarketSessionStatus.valueOf(rs.getString("session_status")),
-                        rs.getObject("opens_at", LocalTime.class),
-                        rs.getObject("closes_at", LocalTime.class),
-                        rs.getString("source_kind")))
+                .query((rs, rowNum) -> new CalendarRow(rs.getObject("calendar_date", LocalDate.class),
+                        MarketSessionStatus.valueOf(rs.getString("session_status")), rs.getObject("opens_at", LocalTime.class),
+                        rs.getObject("closes_at", LocalTime.class), rs.getString("source_kind")))
                 .list();
     }
 
     public Optional<InstrumentView> findVisibleInstrument(UUID ownerUserAccountId, UUID instrumentId) {
-        var row = findInstrumentRow(
-                """
+        var row = findInstrumentRow("""
                 AND ((i.owner_user_account_id IS NULL AND i.active) OR i.owner_user_account_id = :ownerUserAccountId)
                 AND i.id = :instrumentId
-                """,
-                statement -> statement
-                        .param("ownerUserAccountId", Objects.requireNonNull(ownerUserAccountId, "ownerUserAccountId"))
-                        .param("instrumentId", Objects.requireNonNull(instrumentId, "instrumentId")));
-        return row.map(instrumentRow -> new InstrumentView(
-                instrumentRow, aliasesFor(List.of(instrumentRow.id())).getOrDefault(instrumentRow.id(), List.of())));
+                """, statement -> statement.param("ownerUserAccountId", Objects.requireNonNull(ownerUserAccountId, "ownerUserAccountId")).param("instrumentId",
+                Objects.requireNonNull(instrumentId, "instrumentId")));
+        return row.map(instrumentRow -> new InstrumentView(instrumentRow, aliasesFor(List.of(instrumentRow.id())).getOrDefault(instrumentRow.id(), List.of())));
     }
 
-    public SliceResponse<InstrumentSummaryResponse> searchInstruments(
-            UUID ownerUserAccountId,
-            String queryNormalized,
-            UUID marketId,
-            InstrumentType type,
-            boolean includeInactive,
-            Pageable pageable) {
+    public SliceResponse<InstrumentSummaryResponse> searchInstruments(UUID ownerUserAccountId, String queryNormalized, UUID marketId, InstrumentType type,
+            boolean includeInactive, Pageable pageable) {
         Objects.requireNonNull(ownerUserAccountId, "ownerUserAccountId");
         Objects.requireNonNull(pageable, "pageable");
         var pageSize = pageable.getPageSize();
         var predicates = new ArrayList<String>();
-        predicates.add("((i.owner_user_account_id IS NULL AND i.active)"
-                + " OR (i.owner_user_account_id = :ownerUserAccountId"
-                + " AND (:includeInactive OR i.active)))");
+        predicates.add("((i.owner_user_account_id IS NULL AND i.active)" + " OR (i.owner_user_account_id = :ownerUserAccountId" +
+                " AND (:includeInactive OR i.active)))");
         if (queryNormalized != null) {
-            predicates.add("(i.symbol_normalized LIKE :queryPrefix ESCAPE E'\\\\'"
-                    + " OR i.name_normalized LIKE :queryPrefix ESCAPE E'\\\\'"
-                    + " OR EXISTS (SELECT 1 FROM reference.instrument_alias qa"
-                    + " WHERE qa.instrument_id = i.id AND qa.alias_normalized LIKE :queryPrefix ESCAPE E'\\\\'))");
+            predicates.add("(i.symbol_normalized LIKE :queryPrefix ESCAPE E'\\\\'" + " OR i.name_normalized LIKE :queryPrefix ESCAPE E'\\\\'" +
+                    " OR EXISTS (SELECT 1 FROM reference.instrument_alias qa" +
+                    " WHERE qa.instrument_id = i.id AND qa.alias_normalized LIKE :queryPrefix ESCAPE E'\\\\'))");
         }
         if (marketId != null) {
             predicates.add("i.market_id = :marketId");
@@ -159,15 +132,9 @@ public class ReferenceCatalogReadRepository {
                 FROM reference.instrument i
                 JOIN reference.market m ON m.id = i.market_id
                 WHERE %s
-                """.formatted(String.join(" AND ", predicates))
-                + instrumentOrderBy(pageable)
-                + " LIMIT :fetchLimit OFFSET :offset";
-        var statement = jdbcClient
-                .sql(sql)
-                .param("ownerUserAccountId", ownerUserAccountId)
-                .param("includeInactive", includeInactive)
-                .param("fetchLimit", pageSize + 1)
-                .param("offset", pageable.getOffset());
+                """.formatted(String.join(" AND ", predicates)) + instrumentOrderBy(pageable) + " LIMIT :fetchLimit OFFSET :offset";
+        var statement = jdbcClient.sql(sql).param("ownerUserAccountId", ownerUserAccountId).param("includeInactive", includeInactive)
+                .param("fetchLimit", pageSize + 1).param("offset", pageable.getOffset());
         if (queryNormalized != null) {
             statement = statement.param("queryPrefix", escapeLikePrefix(queryNormalized) + "%");
         }
@@ -184,9 +151,7 @@ public class ReferenceCatalogReadRepository {
             return new SliceResponse<>(List.of(), pageable.getPageNumber(), pageSize, hasNext);
         }
         var aliases = aliasesFor(pageRows.stream().map(InstrumentRow::id).toList());
-        var summaries = pageRows.stream()
-                .map(row -> new InstrumentView(row, aliases.getOrDefault(row.id(), List.of())))
-                .map(InstrumentSummaryResponse::from)
+        var summaries = pageRows.stream().map(row -> new InstrumentView(row, aliases.getOrDefault(row.id(), List.of()))).map(InstrumentSummaryResponse::from)
                 .toList();
         return new SliceResponse<>(summaries, pageable.getPageNumber(), pageSize, hasNext);
     }
@@ -197,33 +162,24 @@ public class ReferenceCatalogReadRepository {
             throw invalidSort();
         }
         var order = orders.getFirst();
-        if ((order.getDirection() != Sort.Direction.ASC && order.getDirection() != Sort.Direction.DESC)
-                || order.isIgnoreCase()
-                || order.getNullHandling() != Sort.NullHandling.NATIVE) {
+        if ((order.getDirection() != Sort.Direction.ASC && order.getDirection() != Sort.Direction.DESC) || order.isIgnoreCase() ||
+                order.getNullHandling() != Sort.NullHandling.NATIVE) {
             throw invalidSort();
         }
         return switch (order.getProperty()) {
-            case "name" ->
-                order.isAscending()
-                        ? " ORDER BY i.name_normalized ASC, i.id ASC"
-                        : " ORDER BY i.name_normalized DESC, i.id DESC";
-            case "symbol" ->
-                order.isAscending()
-                        ? " ORDER BY i.symbol_normalized ASC, m.code_normalized ASC, i.id ASC"
-                        : " ORDER BY i.symbol_normalized DESC, m.code_normalized DESC, i.id DESC";
+            case "name" -> order.isAscending() ? " ORDER BY i.name_normalized ASC, i.id ASC" : " ORDER BY i.name_normalized DESC, i.id DESC";
+            case "symbol" -> order.isAscending() ? " ORDER BY i.symbol_normalized ASC, m.code_normalized ASC, i.id ASC"
+                    : " ORDER BY i.symbol_normalized DESC, m.code_normalized DESC, i.id DESC";
             default -> throw invalidSort();
         };
     }
 
     private static AppException invalidSort() {
-        return ValidationErrors.invalidField(
-                "sort",
-                "error.fields.reference.invalid_sort",
+        return ValidationErrors.invalidField("sort", "error.fields.reference.invalid_sort",
                 "The sort must contain exactly one supported property and direction.");
     }
 
-    private Optional<InstrumentRow> findInstrumentRow(
-            String additionalPredicate, UnaryOperator<JdbcClient.StatementSpec> parameters) {
+    private Optional<InstrumentRow> findInstrumentRow(String additionalPredicate, UnaryOperator<JdbcClient.StatementSpec> parameters) {
         var statement = jdbcClient.sql("""
                 SELECT i.id, i.owner_user_account_id, i.market_id, m.code AS market_code,
                        i.symbol, i.name,
@@ -240,21 +196,14 @@ public class ReferenceCatalogReadRepository {
         if (instrumentIds.isEmpty()) {
             return Map.of();
         }
-        var rows = jdbcClient
-                .sql("""
-                        SELECT id, instrument_id, alias_type, alias_value
-                        FROM reference.instrument_alias
-                        WHERE instrument_id IN (:instrumentIds)
-                        ORDER BY instrument_id, alias_type, alias_normalized, id
-                        """)
-                .param("instrumentIds", instrumentIds)
-                .query(this::mapAliasRow)
-                .list();
+        var rows = jdbcClient.sql("""
+                SELECT id, instrument_id, alias_type, alias_value
+                FROM reference.instrument_alias
+                WHERE instrument_id IN (:instrumentIds)
+                ORDER BY instrument_id, alias_type, alias_normalized, id
+                """).param("instrumentIds", instrumentIds).query(this::mapAliasRow).list();
         var grouped = rows.stream()
-                .collect(Collectors.groupingBy(
-                        AliasRow::instrumentId,
-                        LinkedHashMap::new,
-                        Collectors.collectingAndThen(Collectors.toList(), List::copyOf)));
+                .collect(Collectors.groupingBy(AliasRow::instrumentId, LinkedHashMap::new, Collectors.collectingAndThen(Collectors.toList(), List::copyOf)));
         return Collections.unmodifiableMap(grouped);
     }
 
@@ -263,17 +212,9 @@ public class ReferenceCatalogReadRepository {
     }
 
     private MarketResponse mapMarketResponse(ResultSet rs, int rowNum) throws SQLException {
-        return new MarketResponse(
-                rs.getObject("id", UUID.class),
-                rs.getString("code"),
-                rs.getString("name"),
-                rs.getString("market_type"),
-                rs.getString("country_code"),
-                rs.getString("time_zone"),
-                arrayValues(rs.getArray("quotation_currencies")),
-                rs.getString("primary_quotation_currency"),
-                rs.getBoolean("active"),
-                rs.getString("source_kind"));
+        return new MarketResponse(rs.getObject("id", UUID.class), rs.getString("code"), rs.getString("name"), rs.getString("market_type"),
+                rs.getString("country_code"), rs.getString("time_zone"), arrayValues(rs.getArray("quotation_currencies")),
+                rs.getString("primary_quotation_currency"), rs.getBoolean("active"), rs.getString("source_kind"));
     }
 
     private static List<String> arrayValues(java.sql.Array sqlArray) throws SQLException {
@@ -281,37 +222,22 @@ public class ReferenceCatalogReadRepository {
             return List.of();
         }
         try {
-            return Arrays.stream((Object[]) sqlArray.getArray())
-                    .map(String.class::cast)
-                    .toList();
+            return Arrays.stream((Object[]) sqlArray.getArray()).map(String.class::cast).toList();
         } finally {
             sqlArray.free();
         }
     }
 
     private InstrumentRow mapInstrumentRow(ResultSet rs, int rowNum) throws SQLException {
-        return new InstrumentRow(
-                rs.getObject("id", UUID.class),
-                rs.getObject("owner_user_account_id", UUID.class),
-                rs.getObject("market_id", UUID.class),
-                rs.getString("market_code"),
-                rs.getString("symbol"),
-                rs.getString("name"),
-                InstrumentType.valueOf(rs.getString("instrument_type")),
-                rs.getString("quotation_currency_code"),
-                ValuationMethod.valueOf(rs.getString("valuation_method")),
-                rs.getBoolean("active"),
-                rs.getString("source_kind"),
-                rs.getLong("version"),
-                instant(rs.getObject("created_at", OffsetDateTime.class)),
+        return new InstrumentRow(rs.getObject("id", UUID.class), rs.getObject("owner_user_account_id", UUID.class), rs.getObject("market_id", UUID.class),
+                rs.getString("market_code"), rs.getString("symbol"), rs.getString("name"), InstrumentType.valueOf(rs.getString("instrument_type")),
+                rs.getString("quotation_currency_code"), ValuationMethod.valueOf(rs.getString("valuation_method")), rs.getBoolean("active"),
+                rs.getString("source_kind"), rs.getLong("version"), instant(rs.getObject("created_at", OffsetDateTime.class)),
                 instant(rs.getObject("updated_at", OffsetDateTime.class)));
     }
 
     private AliasRow mapAliasRow(ResultSet rs, int rowNum) throws SQLException {
-        return new AliasRow(
-                rs.getObject("id", UUID.class),
-                rs.getObject("instrument_id", UUID.class),
-                AliasType.valueOf(rs.getString("alias_type")),
+        return new AliasRow(rs.getObject("id", UUID.class), rs.getObject("instrument_id", UUID.class), AliasType.valueOf(rs.getString("alias_type")),
                 rs.getString("alias_value"));
     }
 
@@ -321,28 +247,10 @@ public class ReferenceCatalogReadRepository {
 
     public record MarketCalendarHeader(UUID id, String code, String timeZone) {}
 
-    public record CalendarRow(
-            LocalDate date,
-            MarketSessionStatus sessionStatus,
-            LocalTime opensAt,
-            LocalTime closesAt,
-            String sourceKind) {}
+    public record CalendarRow(LocalDate date, MarketSessionStatus sessionStatus, LocalTime opensAt, LocalTime closesAt, String sourceKind) {}
 
-    public record InstrumentRow(
-            UUID id,
-            UUID ownerId,
-            UUID marketId,
-            String marketCode,
-            String symbol,
-            String name,
-            InstrumentType instrumentType,
-            String quotationCurrency,
-            ValuationMethod valuationMethod,
-            boolean active,
-            String sourceKind,
-            long version,
-            Instant createdAt,
-            Instant updatedAt) {}
+    public record InstrumentRow(UUID id, UUID ownerId, UUID marketId, String marketCode, String symbol, String name, InstrumentType instrumentType,
+            String quotationCurrency, ValuationMethod valuationMethod, boolean active, String sourceKind, long version, Instant createdAt, Instant updatedAt) {}
 
     public record AliasRow(UUID id, UUID instrumentId, AliasType type, String value) {}
 

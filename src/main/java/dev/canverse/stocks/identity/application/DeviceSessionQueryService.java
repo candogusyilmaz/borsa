@@ -25,9 +25,7 @@ public class DeviceSessionQueryService {
         Objects.requireNonNull(currentSessionId, "currentSessionId");
 
         var observedAt = clock.instant();
-        return readRepository.findFamilies(userAccountId, currentSessionId).stream()
-                .map(record -> DeviceSessionResponse.from(record, observedAt))
-                .toList();
+        return readRepository.findFamilies(userAccountId, currentSessionId).stream().map(record -> DeviceSessionResponse.from(record, observedAt)).toList();
     }
 
     @Transactional(readOnly = true)
@@ -37,8 +35,7 @@ public class DeviceSessionQueryService {
         Objects.requireNonNull(familyId, "familyId");
 
         var observedAt = clock.instant();
-        var record = readRepository
-                .findFamilyDetail(userAccountId, currentSessionId, familyId)
+        var record = readRepository.findFamilyDetail(userAccountId, currentSessionId, familyId)
                 .orElseThrow(() -> new AppException(IdentityErrorCode.SESSION_NOT_FOUND));
 
         return DeviceSessionResponse.from(record, observedAt);

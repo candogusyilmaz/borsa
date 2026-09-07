@@ -55,57 +55,43 @@ class AuthenticationAbuseProtectionTest {
     void loginPrincipalFailuresBlockAfterConfiguredThreshold() {
         var clock = new MutableClock(T0);
         var props = new AuthenticationAbuseProtectionProperties(
-                new AuthenticationAbuseProtectionProperties.LoginProperties(
-                        3, 10, Duration.ofMinutes(15), Duration.ofMinutes(15)),
-                null,
-                null,
-                1000);
+                new AuthenticationAbuseProtectionProperties.LoginProperties(3, 10, Duration.ofMinutes(15), Duration.ofMinutes(15)), null, null, 1000);
         var limiter = new AuthenticationAbuseProtection(props, clock);
 
         var email = "user@example.com";
         var source = "192.168.1.100";
 
-        assertThat(limiter.checkLoginAllowed(email, source))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.ALLOWED);
+        assertThat(limiter.checkLoginAllowed(email, source)).isEqualTo(AuthenticationAbuseProtection.CheckResult.ALLOWED);
 
         // Failure 1
         assertThat(limiter.recordLoginFailure(email, source)).isEmpty();
-        assertThat(limiter.checkLoginAllowed(email, source))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.ALLOWED);
+        assertThat(limiter.checkLoginAllowed(email, source)).isEqualTo(AuthenticationAbuseProtection.CheckResult.ALLOWED);
 
         // Failure 2
         assertThat(limiter.recordLoginFailure(email, source)).isEmpty();
-        assertThat(limiter.checkLoginAllowed(email, source))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.ALLOWED);
+        assertThat(limiter.checkLoginAllowed(email, source)).isEqualTo(AuthenticationAbuseProtection.CheckResult.ALLOWED);
 
         // Failure 3 - reaches threshold (3), should transition to blocked!
         assertThat(limiter.recordLoginFailure(email, source)).isPresent();
-        assertThat(limiter.checkLoginAllowed(email, source))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
+        assertThat(limiter.checkLoginAllowed(email, source)).isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
 
         // Subsequent check remains blocked
-        assertThat(limiter.checkLoginAllowed(email, source))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
+        assertThat(limiter.checkLoginAllowed(email, source)).isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
 
-        // Unrelated email on same source is not blocked by principal threshold (source threshold is 10)
-        assertThat(limiter.checkLoginAllowed("other@example.com", source))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.ALLOWED);
+        // Unrelated email on same source is not blocked by principal threshold (source
+        // threshold is 10)
+        assertThat(limiter.checkLoginAllowed("other@example.com", source)).isEqualTo(AuthenticationAbuseProtection.CheckResult.ALLOWED);
 
         // Advance clock to block expiry (exact equality is unblocked)
         clock.advance(Duration.ofMinutes(15));
-        assertThat(limiter.checkLoginAllowed(email, source))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.ALLOWED);
+        assertThat(limiter.checkLoginAllowed(email, source)).isEqualTo(AuthenticationAbuseProtection.CheckResult.ALLOWED);
     }
 
     @Test
     void loginSourceFailuresBlockAcrossRotatingEmails() {
         var clock = new MutableClock(T0);
         var props = new AuthenticationAbuseProtectionProperties(
-                new AuthenticationAbuseProtectionProperties.LoginProperties(
-                        5, 3, Duration.ofMinutes(15), Duration.ofMinutes(15)),
-                null,
-                null,
-                1000);
+                new AuthenticationAbuseProtectionProperties.LoginProperties(5, 3, Duration.ofMinutes(15), Duration.ofMinutes(15)), null, null, 1000);
         var limiter = new AuthenticationAbuseProtection(props, clock);
 
         var source = "10.0.0.1";
@@ -117,19 +103,14 @@ class AuthenticationAbuseProtectionTest {
         assertThat(limiter.recordLoginFailure("email3@example.com", source)).isPresent();
 
         // Now all emails on that source are blocked
-        assertThat(limiter.checkLoginAllowed("brand-new@example.com", source))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
+        assertThat(limiter.checkLoginAllowed("brand-new@example.com", source)).isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
     }
 
     @Test
     void loginSuccessResetsPrincipalBucketOnly() {
         var clock = new MutableClock(T0);
         var props = new AuthenticationAbuseProtectionProperties(
-                new AuthenticationAbuseProtectionProperties.LoginProperties(
-                        3, 5, Duration.ofMinutes(15), Duration.ofMinutes(15)),
-                null,
-                null,
-                1000);
+                new AuthenticationAbuseProtectionProperties.LoginProperties(3, 5, Duration.ofMinutes(15), Duration.ofMinutes(15)), null, null, 1000);
         var limiter = new AuthenticationAbuseProtection(props, clock);
 
         var email = "user@example.com";
@@ -145,30 +126,24 @@ class AuthenticationAbuseProtectionTest {
         // Email can now fail 2 more times without triggering 3-failure threshold
         assertThat(limiter.recordLoginFailure(email, source)).isEmpty();
         assertThat(limiter.recordLoginFailure(email, source)).isEmpty();
-        // But source bucket has now accumulated 2 (before) + 2 (after) + 1 (next) = 5 -> reaches source limit!
+        // But source bucket has now accumulated 2 (before) + 2 (after) + 1 (next) = 5
+        // -> reaches source limit!
         assertThat(limiter.recordLoginFailure(email, source)).isPresent();
     }
 
     @Test
     void registrationConsumesAttemptsAndBlocksBeyondMax() {
         var clock = new MutableClock(T0);
-        var props = new AuthenticationAbuseProtectionProperties(
-                null,
-                new AuthenticationAbuseProtectionProperties.RegistrationProperties(
-                        3, Duration.ofHours(1), Duration.ofHours(1)),
-                null,
-                1000);
+        var props = new AuthenticationAbuseProtectionProperties(null,
+                new AuthenticationAbuseProtectionProperties.RegistrationProperties(3, Duration.ofHours(1), Duration.ofHours(1)), null, 1000);
         var limiter = new AuthenticationAbuseProtection(props, clock);
 
         var source = "192.168.1.50";
 
         // Attempts 1, 2, 3 are allowed
-        assertThat(limiter.consumeRegistrationAttempt(source).status())
-                .isEqualTo(AuthenticationAbuseProtection.AttemptStatus.ALLOWED);
-        assertThat(limiter.consumeRegistrationAttempt(source).status())
-                .isEqualTo(AuthenticationAbuseProtection.AttemptStatus.ALLOWED);
-        assertThat(limiter.consumeRegistrationAttempt(source).status())
-                .isEqualTo(AuthenticationAbuseProtection.AttemptStatus.ALLOWED);
+        assertThat(limiter.consumeRegistrationAttempt(source).status()).isEqualTo(AuthenticationAbuseProtection.AttemptStatus.ALLOWED);
+        assertThat(limiter.consumeRegistrationAttempt(source).status()).isEqualTo(AuthenticationAbuseProtection.AttemptStatus.ALLOWED);
+        assertThat(limiter.consumeRegistrationAttempt(source).status()).isEqualTo(AuthenticationAbuseProtection.AttemptStatus.ALLOWED);
 
         // Attempt 4 is beyond max (3) -> enters blocked state
         var result4 = limiter.consumeRegistrationAttempt(source);
@@ -176,24 +151,18 @@ class AuthenticationAbuseProtectionTest {
         assertThat(result4.transition()).isNotNull();
 
         // Attempt 5 while blocked -> BLOCKED
-        assertThat(limiter.consumeRegistrationAttempt(source).status())
-                .isEqualTo(AuthenticationAbuseProtection.AttemptStatus.BLOCKED);
+        assertThat(limiter.consumeRegistrationAttempt(source).status()).isEqualTo(AuthenticationAbuseProtection.AttemptStatus.BLOCKED);
 
         // Advancing clock by 1 hour unblocks
         clock.advance(Duration.ofHours(1));
-        assertThat(limiter.consumeRegistrationAttempt(source).status())
-                .isEqualTo(AuthenticationAbuseProtection.AttemptStatus.ALLOWED);
+        assertThat(limiter.consumeRegistrationAttempt(source).status()).isEqualTo(AuthenticationAbuseProtection.AttemptStatus.ALLOWED);
     }
 
     @Test
     void refreshFailuresBlockAndSuccessResets() {
         var clock = new MutableClock(T0);
-        var props = new AuthenticationAbuseProtectionProperties(
-                null,
-                null,
-                new AuthenticationAbuseProtectionProperties.RefreshProperties(
-                        2, Duration.ofMinutes(15), Duration.ofMinutes(15)),
-                1000);
+        var props = new AuthenticationAbuseProtectionProperties(null, null,
+                new AuthenticationAbuseProtectionProperties.RefreshProperties(2, Duration.ofMinutes(15), Duration.ofMinutes(15)), 1000);
         var limiter = new AuthenticationAbuseProtection(props, clock);
 
         var source = "172.16.0.1";
@@ -217,13 +186,9 @@ class AuthenticationAbuseProtectionTest {
     void capacityPruningRemovesExpiredEntries() {
         var clock = new MutableClock(T0);
         var props = new AuthenticationAbuseProtectionProperties(
-                new AuthenticationAbuseProtectionProperties.LoginProperties(
-                        2, 2, Duration.ofMinutes(10), Duration.ofMinutes(10)),
-                new AuthenticationAbuseProtectionProperties.RegistrationProperties(
-                        2, Duration.ofMinutes(10), Duration.ofMinutes(10)),
-                new AuthenticationAbuseProtectionProperties.RefreshProperties(
-                        2, Duration.ofMinutes(10), Duration.ofMinutes(10)),
-                2); // max 2 tracked keys
+                new AuthenticationAbuseProtectionProperties.LoginProperties(2, 2, Duration.ofMinutes(10), Duration.ofMinutes(10)),
+                new AuthenticationAbuseProtectionProperties.RegistrationProperties(2, Duration.ofMinutes(10), Duration.ofMinutes(10)),
+                new AuthenticationAbuseProtectionProperties.RefreshProperties(2, Duration.ofMinutes(10), Duration.ofMinutes(10)), 2); // max 2 tracked keys
         var limiter = new AuthenticationAbuseProtection(props, clock);
 
         limiter.recordLoginFailure("u1@example.com", "1.1.1.1");
@@ -235,8 +200,7 @@ class AuthenticationAbuseProtectionTest {
         // Adding a new key triggers pruning of expired entries
         limiter.recordLoginFailure("u3@example.com", "3.3.3.3");
 
-        assertThat(limiter.checkLoginAllowed("u3@example.com", "3.3.3.3"))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.ALLOWED);
+        assertThat(limiter.checkLoginAllowed("u3@example.com", "3.3.3.3")).isEqualTo(AuthenticationAbuseProtection.CheckResult.ALLOWED);
     }
 
     @Test
@@ -246,10 +210,7 @@ class AuthenticationAbuseProtectionTest {
         var iterationsPerThread = 20;
         var totalAttempts = threads * iterationsPerThread;
         var props = new AuthenticationAbuseProtectionProperties(
-                new AuthenticationAbuseProtectionProperties.LoginProperties(
-                        totalAttempts, 10_000, Duration.ofMinutes(15), Duration.ofMinutes(15)),
-                null,
-                null,
+                new AuthenticationAbuseProtectionProperties.LoginProperties(totalAttempts, 10_000, Duration.ofMinutes(15), Duration.ofMinutes(15)), null, null,
                 1000);
         var limiter = new AuthenticationAbuseProtection(props, clock);
 
@@ -283,22 +244,16 @@ class AuthenticationAbuseProtectionTest {
         executor.shutdown();
 
         assertThat(transitions).hasValue(1);
-        assertThat(limiter.checkLoginAllowed(email, source))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
+        assertThat(limiter.checkLoginAllowed(email, source)).isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
     }
 
     @Test
     void concurrentAdmissionNeverExceedsTheConfiguredCapacity() throws Exception {
         var clock = new MutableClock(T0);
-        var props = new AuthenticationAbuseProtectionProperties(
-                null,
-                null,
-                new AuthenticationAbuseProtectionProperties.RefreshProperties(
-                        100, Duration.ofMinutes(15), Duration.ofMinutes(15)),
-                1);
+        var props = new AuthenticationAbuseProtectionProperties(null, null,
+                new AuthenticationAbuseProtectionProperties.RefreshProperties(100, Duration.ofMinutes(15), Duration.ofMinutes(15)), 1);
         var limiter = new AuthenticationAbuseProtection(props, clock);
-        var sources =
-                IntStream.range(0, 16).mapToObj(index -> "source-" + index).toList();
+        var sources = IntStream.range(0, 16).mapToObj(index -> "source-" + index).toList();
         var start = new CountDownLatch(1);
         var done = new CountDownLatch(sources.size());
         var executor = Executors.newFixedThreadPool(sources.size());
@@ -318,10 +273,7 @@ class AuthenticationAbuseProtectionTest {
 
             start.countDown();
             assertThat(done.await(10, TimeUnit.SECONDS)).isTrue();
-            assertThat(sources.stream()
-                            .filter(source -> limiter.checkRefreshAllowed(source)
-                                    == AuthenticationAbuseProtection.CheckResult.ALLOWED)
-                            .count())
+            assertThat(sources.stream().filter(source -> limiter.checkRefreshAllowed(source) == AuthenticationAbuseProtection.CheckResult.ALLOWED).count())
                     .isEqualTo(1);
         } finally {
             executor.shutdownNow();
@@ -332,114 +284,86 @@ class AuthenticationAbuseProtectionTest {
     void nullAndBlankSourceNormalizesToUnknown() {
         var clock = new MutableClock(T0);
         var props = new AuthenticationAbuseProtectionProperties(
-                new AuthenticationAbuseProtectionProperties.LoginProperties(
-                        10, 2, Duration.ofMinutes(15), Duration.ofMinutes(15)),
-                null,
-                null,
-                1000);
+                new AuthenticationAbuseProtectionProperties.LoginProperties(10, 2, Duration.ofMinutes(15), Duration.ofMinutes(15)), null, null, 1000);
         var limiter = new AuthenticationAbuseProtection(props, clock);
 
         limiter.recordLoginFailure("user1@example.com", null);
         limiter.recordLoginFailure("user2@example.com", "   ");
 
         // Both normalized to unknown, so source limit (2) is reached
-        assertThat(limiter.checkLoginAllowed("user3@example.com", ""))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
+        assertThat(limiter.checkLoginAllowed("user3@example.com", "")).isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
     }
 
     @Test
     void exhaustedCapacityFailsClosedForUntrackedKeysAndRecoversAfterPruning() {
         var clock = new MutableClock(T0);
         var props = new AuthenticationAbuseProtectionProperties(
-                new AuthenticationAbuseProtectionProperties.LoginProperties(
-                        5, 5, Duration.ofMinutes(15), Duration.ofMinutes(15)),
-                new AuthenticationAbuseProtectionProperties.RegistrationProperties(
-                        5, Duration.ofMinutes(15), Duration.ofMinutes(15)),
-                new AuthenticationAbuseProtectionProperties.RefreshProperties(
-                        30, Duration.ofMinutes(15), Duration.ofMinutes(15)),
-                2);
+                new AuthenticationAbuseProtectionProperties.LoginProperties(5, 5, Duration.ofMinutes(15), Duration.ofMinutes(15)),
+                new AuthenticationAbuseProtectionProperties.RegistrationProperties(5, Duration.ofMinutes(15), Duration.ofMinutes(15)),
+                new AuthenticationAbuseProtectionProperties.RefreshProperties(30, Duration.ofMinutes(15), Duration.ofMinutes(15)), 2);
         var limiter = new AuthenticationAbuseProtection(props, clock);
 
         // Fill capacity with 2 entries
         limiter.recordLoginFailure("user1@example.com", "10.0.0.1"); // creates principal + source keys (2 keys)
 
         // Untracked keys beyond capacity must fail closed
-        assertThat(limiter.checkLoginAllowed("untracked@example.com", "10.0.0.2"))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
-        assertThat(limiter.checkRefreshAllowed("10.0.0.2"))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
-        assertThat(limiter.consumeRegistrationAttempt("10.0.0.2").status())
-                .isEqualTo(AuthenticationAbuseProtection.AttemptStatus.BLOCKED);
-        assertThat(limiter.recordLoginFailure("untracked@example.com", "10.0.0.2"))
-                .isEmpty();
+        assertThat(limiter.checkLoginAllowed("untracked@example.com", "10.0.0.2")).isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
+        assertThat(limiter.checkRefreshAllowed("10.0.0.2")).isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
+        assertThat(limiter.consumeRegistrationAttempt("10.0.0.2").status()).isEqualTo(AuthenticationAbuseProtection.AttemptStatus.BLOCKED);
+        assertThat(limiter.recordLoginFailure("untracked@example.com", "10.0.0.2")).isEmpty();
 
         // Advance clock past the window duration so existing keys become stale
         clock.advance(Duration.ofHours(2));
 
         // Capacity pruning on access removes stale keys and allows new untracked keys
-        assertThat(limiter.checkLoginAllowed("untracked@example.com", "10.0.0.2"))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.ALLOWED);
-        assertThat(limiter.checkRefreshAllowed("10.0.0.2"))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.ALLOWED);
-        assertThat(limiter.consumeRegistrationAttempt("10.0.0.2").status())
-                .isEqualTo(AuthenticationAbuseProtection.AttemptStatus.ALLOWED);
+        assertThat(limiter.checkLoginAllowed("untracked@example.com", "10.0.0.2")).isEqualTo(AuthenticationAbuseProtection.CheckResult.ALLOWED);
+        assertThat(limiter.checkRefreshAllowed("10.0.0.2")).isEqualTo(AuthenticationAbuseProtection.CheckResult.ALLOWED);
+        assertThat(limiter.consumeRegistrationAttempt("10.0.0.2").status()).isEqualTo(AuthenticationAbuseProtection.AttemptStatus.ALLOWED);
     }
 
     @Test
     void mixedWindowConfigurationDoesNotPruneLongerWindowsEarly() {
         var clock = new MutableClock(T0);
         var props = new AuthenticationAbuseProtectionProperties(
-                new AuthenticationAbuseProtectionProperties.LoginProperties(
-                        3, 10, Duration.ofHours(2), Duration.ofHours(2)),
-                new AuthenticationAbuseProtectionProperties.RegistrationProperties(
-                        5, Duration.ofMinutes(5), Duration.ofMinutes(5)),
-                new AuthenticationAbuseProtectionProperties.RefreshProperties(
-                        5, Duration.ofHours(3), Duration.ofHours(3)),
-                2);
+                new AuthenticationAbuseProtectionProperties.LoginProperties(3, 10, Duration.ofHours(2), Duration.ofHours(2)),
+                new AuthenticationAbuseProtectionProperties.RegistrationProperties(5, Duration.ofMinutes(5), Duration.ofMinutes(5)),
+                new AuthenticationAbuseProtectionProperties.RefreshProperties(5, Duration.ofHours(3), Duration.ofHours(3)), 2);
         var limiter = new AuthenticationAbuseProtection(props, clock);
 
         // Record 2 failures on login (fills capacity with 2 keys: principal and source)
         limiter.recordLoginFailure("loginuser@example.com", "192.168.1.1");
         limiter.recordLoginFailure("loginuser@example.com", "192.168.1.1");
 
-        // Advance 30 minutes: past registration window (5m), but within login window (2h)
+        // Advance 30 minutes: past registration window (5m), but within login window
+        // (2h)
         clock.advance(Duration.ofMinutes(30));
 
         // Capacity check should NOT prune active login buckets
-        assertThat(limiter.checkLoginAllowed("other@example.com", "10.0.0.99"))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
+        assertThat(limiter.checkLoginAllowed("other@example.com", "10.0.0.99")).isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
 
         // 3rd failure on existing user reaches principal limit of 3 -> blocks
         var justBlocked = limiter.recordLoginFailure("loginuser@example.com", "192.168.1.1");
         assertThat(justBlocked).isPresent();
-        assertThat(limiter.checkLoginAllowed("loginuser@example.com", "192.168.1.1"))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
+        assertThat(limiter.checkLoginAllowed("loginuser@example.com", "192.168.1.1")).isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
     }
 
     @Test
     void throttleRollbackRestoresAllowedState() {
         var clock = new MutableClock(T0);
         var props = new AuthenticationAbuseProtectionProperties(
-                new AuthenticationAbuseProtectionProperties.LoginProperties(
-                        2, 10, Duration.ofMinutes(15), Duration.ofMinutes(15)),
-                new AuthenticationAbuseProtectionProperties.RegistrationProperties(
-                        2, Duration.ofHours(1), Duration.ofHours(1)),
-                new AuthenticationAbuseProtectionProperties.RefreshProperties(
-                        2, Duration.ofMinutes(15), Duration.ofMinutes(15)),
-                100);
+                new AuthenticationAbuseProtectionProperties.LoginProperties(2, 10, Duration.ofMinutes(15), Duration.ofMinutes(15)),
+                new AuthenticationAbuseProtectionProperties.RegistrationProperties(2, Duration.ofHours(1), Duration.ofHours(1)),
+                new AuthenticationAbuseProtectionProperties.RefreshProperties(2, Duration.ofMinutes(15), Duration.ofMinutes(15)), 100);
         var limiter = new AuthenticationAbuseProtection(props, clock);
 
         // Trigger login block
         limiter.recordLoginFailure("test@example.com", "1.1.1.1");
-        var loginTransition =
-                limiter.recordLoginFailure("test@example.com", "1.1.1.1").orElseThrow();
-        assertThat(limiter.checkLoginAllowed("test@example.com", "1.1.1.1"))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
+        var loginTransition = limiter.recordLoginFailure("test@example.com", "1.1.1.1").orElseThrow();
+        assertThat(limiter.checkLoginAllowed("test@example.com", "1.1.1.1")).isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
 
         // Rollback login throttle using transition handle
         limiter.rollbackThrottle(loginTransition);
-        assertThat(limiter.checkLoginAllowed("test@example.com", "1.1.1.1"))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.ALLOWED);
+        assertThat(limiter.checkLoginAllowed("test@example.com", "1.1.1.1")).isEqualTo(AuthenticationAbuseProtection.CheckResult.ALLOWED);
 
         // Trigger registration block
         limiter.consumeRegistrationAttempt("2.2.2.2");
@@ -450,93 +374,81 @@ class AuthenticationAbuseProtectionTest {
 
         // Rollback registration throttle using transition handle
         limiter.rollbackThrottle(regResult.transition());
-        assertThat(limiter.consumeRegistrationAttempt("2.2.2.2").status())
-                .isEqualTo(AuthenticationAbuseProtection.AttemptStatus.JUST_BLOCKED);
+        assertThat(limiter.consumeRegistrationAttempt("2.2.2.2").status()).isEqualTo(AuthenticationAbuseProtection.AttemptStatus.JUST_BLOCKED);
     }
 
     @Test
     void supersededThrottleRollbackDoesNotClearNewerBlock() {
         var clock = new MutableClock(T0);
         var props = new AuthenticationAbuseProtectionProperties(
-                new AuthenticationAbuseProtectionProperties.LoginProperties(
-                        2, 10, Duration.ofMinutes(15), Duration.ofMinutes(15)),
-                null,
-                null,
-                100);
+                new AuthenticationAbuseProtectionProperties.LoginProperties(2, 10, Duration.ofMinutes(15), Duration.ofMinutes(15)), null, null, 100);
         var limiter = new AuthenticationAbuseProtection(props, clock);
 
         // 1. Establish Block 1 (transitions at T0 -> blockedUntil = T0 + 15m)
         limiter.recordLoginFailure("user@example.com", "1.2.3.4");
-        var transition1 =
-                limiter.recordLoginFailure("user@example.com", "1.2.3.4").orElseThrow();
-        assertThat(limiter.checkLoginAllowed("user@example.com", "1.2.3.4"))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
+        var transition1 = limiter.recordLoginFailure("user@example.com", "1.2.3.4").orElseThrow();
+        assertThat(limiter.checkLoginAllowed("user@example.com", "1.2.3.4")).isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
 
         // 2. Block 1 expires after 20 minutes
         clock.advance(Duration.ofMinutes(20));
-        assertThat(limiter.checkLoginAllowed("user@example.com", "1.2.3.4"))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.ALLOWED);
+        assertThat(limiter.checkLoginAllowed("user@example.com", "1.2.3.4")).isEqualTo(AuthenticationAbuseProtection.CheckResult.ALLOWED);
 
-        // 3. New activity establishes Block 2 (transitions at T0 + 20m -> blockedUntil = T0 + 35m)
+        // 3. New activity establishes Block 2 (transitions at T0 + 20m -> blockedUntil
+        // = T0 + 35m)
         limiter.recordLoginFailure("user@example.com", "1.2.3.4");
-        var transition2 =
-                limiter.recordLoginFailure("user@example.com", "1.2.3.4").orElseThrow();
-        assertThat(limiter.checkLoginAllowed("user@example.com", "1.2.3.4"))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
+        var transition2 = limiter.recordLoginFailure("user@example.com", "1.2.3.4").orElseThrow();
+        assertThat(limiter.checkLoginAllowed("user@example.com", "1.2.3.4")).isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
 
-        // 4. Stalled event write from earlier Block 1 finally fails and calls rollback with transition1
+        // 4. Stalled event write from earlier Block 1 finally fails and calls rollback
+        // with transition1
         limiter.rollbackThrottle(transition1);
 
-        // Compare-and-set CAS mismatch: transition1 version != current version (Block 2)
+        // Compare-and-set CAS mismatch: transition1 version != current version (Block
+        // 2)
         // Block 2 must remain ACTIVE and NOT cleared!
-        assertThat(limiter.checkLoginAllowed("user@example.com", "1.2.3.4"))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
+        assertThat(limiter.checkLoginAllowed("user@example.com", "1.2.3.4")).isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
 
-        // 5. When Block 2's event write fails and calls rollback with transition2, it clears Block 2
+        // 5. When Block 2's event write fails and calls rollback with transition2, it
+        // clears Block 2
         limiter.rollbackThrottle(transition2);
-        assertThat(limiter.checkLoginAllowed("user@example.com", "1.2.3.4"))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.ALLOWED);
+        assertThat(limiter.checkLoginAllowed("user@example.com", "1.2.3.4")).isEqualTo(AuthenticationAbuseProtection.CheckResult.ALLOWED);
     }
 
     @Test
     void sameClockReplacementThrottleRollbackDoesNotClearRecreatedBlock() {
         var clock = new MutableClock(T0); // Clock stays fixed at T0
         var props = new AuthenticationAbuseProtectionProperties(
-                new AuthenticationAbuseProtectionProperties.LoginProperties(
-                        1, 10, Duration.ofMinutes(15), Duration.ofMinutes(15)),
-                null,
-                null,
-                100);
+                new AuthenticationAbuseProtectionProperties.LoginProperties(1, 10, Duration.ofMinutes(15), Duration.ofMinutes(15)), null, null, 100);
         var limiter = new AuthenticationAbuseProtection(props, clock);
 
         var email = "user@example.com";
         var source = "1.2.3.4";
 
-        // 1. Establish Block 1 at T0 (threshold is 1, so 1 failure triggers block at T0 -> blockedUntil = T0 + 15m)
+        // 1. Establish Block 1 at T0 (threshold is 1, so 1 failure triggers block at T0
+        // -> blockedUntil = T0 + 15m)
         var transition1 = limiter.recordLoginFailure(email, source).orElseThrow();
-        assertThat(limiter.checkLoginAllowed(email, source))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
+        assertThat(limiter.checkLoginAllowed(email, source)).isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
 
         // 2. State is reset at the EXACT SAME clock instant T0 (e.g. success or reset)
         limiter.recordLoginSuccess(email, source);
-        assertThat(limiter.checkLoginAllowed(email, source))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.ALLOWED);
+        assertThat(limiter.checkLoginAllowed(email, source)).isEqualTo(AuthenticationAbuseProtection.CheckResult.ALLOWED);
 
-        // 3. New failure at the EXACT SAME clock instant T0 establishes Block 2 with IDENTICAL blockedUntil (T0 + 15m)
+        // 3. New failure at the EXACT SAME clock instant T0 establishes Block 2 with
+        // IDENTICAL blockedUntil (T0 + 15m)
         var transition2 = limiter.recordLoginFailure(email, source).orElseThrow();
-        assertThat(limiter.checkLoginAllowed(email, source))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
+        assertThat(limiter.checkLoginAllowed(email, source)).isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
 
-        // 4. Stalled event write from earlier Block 1 fails and calls rollback with transition1 (version V1)
+        // 4. Stalled event write from earlier Block 1 fails and calls rollback with
+        // transition1 (version V1)
         limiter.rollbackThrottle(transition1);
 
-        // Block 2 must remain ACTIVE because monotonic blockVersion V2 != V1 (even though blockedUntil is identical)
-        assertThat(limiter.checkLoginAllowed(email, source))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
+        // Block 2 must remain ACTIVE because monotonic blockVersion V2 != V1 (even
+        // though blockedUntil is identical)
+        assertThat(limiter.checkLoginAllowed(email, source)).isEqualTo(AuthenticationAbuseProtection.CheckResult.BLOCKED);
 
-        // 5. When Block 2's event write fails and calls rollback with transition2 (version V2), it clears Block 2
+        // 5. When Block 2's event write fails and calls rollback with transition2
+        // (version V2), it clears Block 2
         limiter.rollbackThrottle(transition2);
-        assertThat(limiter.checkLoginAllowed(email, source))
-                .isEqualTo(AuthenticationAbuseProtection.CheckResult.ALLOWED);
+        assertThat(limiter.checkLoginAllowed(email, source)).isEqualTo(AuthenticationAbuseProtection.CheckResult.ALLOWED);
     }
 }

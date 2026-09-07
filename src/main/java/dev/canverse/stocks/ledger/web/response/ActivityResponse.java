@@ -10,16 +10,8 @@ import java.util.List;
 import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record ActivityResponse(
-        @NotNull UUID id,
-        @NotNull ActivityType activityType,
-        @NotNull RecordingMode recordingMode,
-        @NotNull Instant effectiveAt,
-        @NotNull Instant recordedAt,
-        @NotNull PolicyDecision policyDecision,
-        @NotNull String sourceKind,
-        UUID reversesActivityId,
-        UUID supersedesActivityId,
+public record ActivityResponse(@NotNull UUID id, @NotNull ActivityType activityType, @NotNull RecordingMode recordingMode, @NotNull Instant effectiveAt,
+        @NotNull Instant recordedAt, @NotNull PolicyDecision policyDecision, @NotNull String sourceKind, UUID reversesActivityId, UUID supersedesActivityId,
         @NotNull List<PostingResponse> postings) {
 
     public ActivityResponse {

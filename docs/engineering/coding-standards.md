@@ -247,7 +247,8 @@ Additional rules:
 
 ## 12. Formatting and static quality
 
-- Keep formatting deterministic and automate it in the build once PR-001 chooses/configures the formatter. Do not hand-format around a configured formatter.
+- Java formatting is enforced by Spotless using the repository's configured Eclipse formatter profile. Formatting favors readability on modern wide displays with an approximate 160-character line width. Avoid manual formatting conventions that fight the formatter.
+- Formatting should normalize style without creating unnecessary vertical code.
 - Compiler warnings, static-analysis rules and formatter configuration belong in the build so agents and humans receive the same result.
 - Generated sources are not manually edited.
 - Do not suppress warnings broadly; suppress the narrow case with a reason.

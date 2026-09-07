@@ -56,20 +56,14 @@ public class ReconciliationCommandService {
     private final IdGenerator idGenerator;
 
     @Transactional(readOnly = true)
-    public ReconciliationPreviewResponse preview(
-            UUID ownerUserAccountId, UUID accountId, ReconciliationPreviewRequest request) {
-        var statement = statementValues(
-                request.statementReference(),
-                request.statementOpeningAt(),
-                request.statementClosingAt(),
-                request.statementOpeningBalance(),
-                request.statementClosingBalance());
+    public ReconciliationPreviewResponse preview(UUID ownerUserAccountId, UUID accountId, ReconciliationPreviewRequest request) {
+        var statement = statementValues(request.statementReference(), request.statementOpeningAt(), request.statementClosingAt(),
+                request.statementOpeningBalance(), request.statementClosingBalance());
         if (!statement.statementOpeningAt().isBefore(statement.statementClosingAt())) {
             throw new IllegalArgumentException("Statement opening must precede closing");
         }
         var observedAt = clock.instant();
-        if (statement.statementOpeningAt().isAfter(observedAt)
-                || statement.statementClosingAt().isAfter(observedAt)) {
+        if (statement.statementOpeningAt().isAfter(observedAt) || statement.statementClosingAt().isAfter(observedAt)) {
             throw new AppException(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
         }
         var comparison = comparison(ownerUserAccountId, accountId, statement);
@@ -82,30 +76,15 @@ public class ReconciliationCommandService {
 
     @Transactional
     public ReconciliationResponse commit(UUID ownerUserAccountId, UUID accountId, ReconciliationCommitRequest request) {
-        var statement = statementValues(
-                request.statementReference(),
-                request.statementOpeningAt(),
-                request.statementClosingAt(),
-                request.statementOpeningBalance(),
-                request.statementClosingBalance());
+        var statement = statementValues(request.statementReference(), request.statementOpeningAt(), request.statementClosingAt(),
+                request.statementOpeningBalance(), request.statementClosingBalance());
         var observedAt = clock.instant();
-        if (statement.statementOpeningAt().isAfter(observedAt)
-                || statement.statementClosingAt().isAfter(observedAt)) {
+        if (statement.statementOpeningAt().isAfter(observedAt) || statement.statementClosingAt().isAfter(observedAt)) {
             throw new AppException(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
         }
-        var hash = reconciliationCommitFingerprint(
-                accountId,
-                statement,
-                request.expectedBalanceVersion(),
-                request.resolution(),
-                request.adjustmentReason());
-        commandLockRepository.lock(
-                ownerUserAccountId, LedgerCommandScopes.RECONCILIATION_COMMIT, request.clientRequestId());
-        var replay = idempotencyStore.replay(
-                request.clientRequestId(),
-                ownerUserAccountId,
-                LedgerCommandScopes.RECONCILIATION_COMMIT,
-                hash,
+        var hash = reconciliationCommitFingerprint(accountId, statement, request.expectedBalanceVersion(), request.resolution(), request.adjustmentReason());
+        commandLockRepository.lock(ownerUserAccountId, LedgerCommandScopes.RECONCILIATION_COMMIT, request.clientRequestId());
+        var replay = idempotencyStore.replay(request.clientRequestId(), ownerUserAccountId, LedgerCommandScopes.RECONCILIATION_COMMIT, hash,
                 ReconciliationResponse.class);
         if (replay != null) {
             return replay;
@@ -123,66 +102,31 @@ public class ReconciliationCommandService {
         requireCoverage(comparison);
         requireOpeningContinuity(comparison);
         requireResolution(request.resolution().resolution(), comparison);
-        var reconciliation = writeReconciliation(
-                ownerUserAccountId,
-                account,
-                projection,
-                statement,
-                comparison,
-                request.resolution().resolution(),
-                request.adjustmentReason(),
-                request.clientRequestId(),
-                0,
-                null,
-                observedAt);
-        return saveResult(
-                ownerUserAccountId,
-                reconciliation,
-                hash,
-                request.clientRequestId(),
-                observedAt,
-                LedgerCommandScopes.RECONCILIATION_COMMIT);
+        var reconciliation = writeReconciliation(ownerUserAccountId, account, projection, statement, comparison, request.resolution().resolution(),
+                request.adjustmentReason(), request.clientRequestId(), 0, null, observedAt);
+        return saveResult(ownerUserAccountId, reconciliation, hash, request.clientRequestId(), observedAt, LedgerCommandScopes.RECONCILIATION_COMMIT);
     }
 
     @Transactional
-    public ReconciliationResponse correct(
-            UUID ownerUserAccountId, UUID reconciliationId, ReconciliationCorrectionRequest request) {
-        var statement = statementValues(
-                request.statementReference(),
-                request.statementOpeningAt(),
-                request.statementClosingAt(),
-                request.statementOpeningBalance(),
-                request.statementClosingBalance());
+    public ReconciliationResponse correct(UUID ownerUserAccountId, UUID reconciliationId, ReconciliationCorrectionRequest request) {
+        var statement = statementValues(request.statementReference(), request.statementOpeningAt(), request.statementClosingAt(),
+                request.statementOpeningBalance(), request.statementClosingBalance());
         var observedAt = clock.instant();
-        if (statement.statementOpeningAt().isAfter(observedAt)
-                || statement.statementClosingAt().isAfter(observedAt)) {
+        if (statement.statementOpeningAt().isAfter(observedAt) || statement.statementClosingAt().isAfter(observedAt)) {
             throw new AppException(LedgerErrorCode.FUTURE_TIME_NOT_ALLOWED);
         }
-        var hash = reconciliationCorrectionFingerprint(
-                reconciliationId,
-                statement,
-                request.expectedBalanceVersion(),
-                request.resolution(),
-                request.adjustmentReason(),
-                request.correctionReason().trim());
-        commandLockRepository.lock(
-                ownerUserAccountId, LedgerCommandScopes.RECONCILIATION_CORRECTION, request.clientRequestId());
-        var replay = idempotencyStore.replay(
-                request.clientRequestId(),
-                ownerUserAccountId,
-                LedgerCommandScopes.RECONCILIATION_CORRECTION,
-                hash,
+        var hash = reconciliationCorrectionFingerprint(reconciliationId, statement, request.expectedBalanceVersion(), request.resolution(),
+                request.adjustmentReason(), request.correctionReason().trim());
+        commandLockRepository.lock(ownerUserAccountId, LedgerCommandScopes.RECONCILIATION_CORRECTION, request.clientRequestId());
+        var replay = idempotencyStore.replay(request.clientRequestId(), ownerUserAccountId, LedgerCommandScopes.RECONCILIATION_CORRECTION, hash,
                 ReconciliationResponse.class);
         if (replay != null) {
             return replay;
         }
 
-        var target = reconciliationRepository
-                .findOwnedForUpdate(ownerUserAccountId, reconciliationId)
+        var target = reconciliationRepository.findOwnedForUpdate(ownerUserAccountId, reconciliationId)
                 .orElseThrow(() -> new AppException(LedgerErrorCode.RECONCILIATION_NOT_FOUND));
-        if (reconciliationRepository
-                .findDirectReplacement(ownerUserAccountId, reconciliationId)
-                .isPresent()) {
+        if (reconciliationRepository.findDirectReplacement(ownerUserAccountId, reconciliationId).isPresent()) {
             throw new AppException(LedgerErrorCode.RECONCILIATION_ALREADY_SUPERSEDED);
         }
 
@@ -199,19 +143,12 @@ public class ReconciliationCommandService {
 
         var commandSequence = 0L;
         if (target.getAdjustmentActivityId() != null) {
-            var originalAdjustment = activityRepository
-                    .findOwnedForUpdate(target.getAdjustmentActivityId(), ownerUserAccountId)
+            var originalAdjustment = activityRepository.findOwnedForUpdate(target.getAdjustmentActivityId(), ownerUserAccountId)
                     .orElseThrow(() -> new AppException(LedgerErrorCode.RECONCILIATION_NOT_FOUND));
             if (originalAdjustment.getActivityType() != ActivityType.RECONCILIATION_ADJUSTMENT) {
                 throw new AppException(LedgerErrorCode.RECONCILIATION_NOT_FOUND);
             }
-            reverseAdjustment(
-                    ownerUserAccountId,
-                    originalAdjustment,
-                    projection,
-                    request.clientRequestId(),
-                    request.correctionReason().trim(),
-                    observedAt,
+            reverseAdjustment(ownerUserAccountId, originalAdjustment, projection, request.clientRequestId(), request.correctionReason().trim(), observedAt,
                     commandSequence++);
             entityManager.flush();
         }
@@ -219,186 +156,76 @@ public class ReconciliationCommandService {
         var comparison = comparison(ownerUserAccountId, target.getFinancialAccountId(), statement);
         requireOpeningContinuity(comparison);
         requireResolution(request.resolution().resolution(), comparison);
-        var reconciliation = writeReconciliation(
-                ownerUserAccountId,
-                account,
-                projection,
-                statement,
-                comparison,
-                request.resolution().resolution(),
-                request.adjustmentReason(),
-                request.clientRequestId(),
-                commandSequence,
-                target.getId(),
-                observedAt);
-        return saveResult(
-                ownerUserAccountId,
-                reconciliation,
-                hash,
-                request.clientRequestId(),
-                observedAt,
-                LedgerCommandScopes.RECONCILIATION_CORRECTION);
+        var reconciliation = writeReconciliation(ownerUserAccountId, account, projection, statement, comparison, request.resolution().resolution(),
+                request.adjustmentReason(), request.clientRequestId(), commandSequence, target.getId(), observedAt);
+        return saveResult(ownerUserAccountId, reconciliation, hash, request.clientRequestId(), observedAt, LedgerCommandScopes.RECONCILIATION_CORRECTION);
     }
 
-    private Reconciliation writeReconciliation(
-            UUID ownerUserAccountId,
-            FinancialAccount account,
-            AccountBalanceProjection projection,
-            StatementValues statement,
-            ReconciliationPreviewView comparison,
-            ReconciliationResolution resolution,
-            String adjustmentReason,
-            UUID clientRequestId,
-            long commandSequence,
-            UUID supersedesReconciliationId,
-            Instant observedAt) {
+    private Reconciliation writeReconciliation(UUID ownerUserAccountId, FinancialAccount account, AccountBalanceProjection projection,
+            StatementValues statement, ReconciliationPreviewView comparison, ReconciliationResolution resolution, String adjustmentReason, UUID clientRequestId,
+            long commandSequence, UUID supersedesReconciliationId, Instant observedAt) {
         UUID adjustmentActivityId = null;
         FinancialAmount adjustmentAmount = null;
         if (resolution == ReconciliationResolution.ADJUSTED) {
-            var evaluation = LedgerPolicyEvaluator.evaluate(
-                    account,
-                    projection.balance(),
-                    comparison.closingDifference(),
-                    RecordingMode.HISTORICAL_FACT,
+            var evaluation = LedgerPolicyEvaluator.evaluate(account, projection.balance(), comparison.closingDifference(), RecordingMode.HISTORICAL_FACT,
                     false);
-            var activity = Activity.reconciliationAdjustment(
-                    idGenerator.next(),
-                    ownerUserAccountId,
-                    clientRequestId,
-                    supersedesReconciliationId == null
-                            ? LedgerCommandScopes.RECONCILIATION_COMMIT
-                            : LedgerCommandScopes.RECONCILIATION_CORRECTION,
-                    commandSequence,
-                    statement.statementClosingAt(),
-                    observedAt,
-                    evaluation.decision(),
-                    adjustmentReason.trim());
+            var activity = Activity.reconciliationAdjustment(idGenerator.next(), ownerUserAccountId, clientRequestId,
+                    supersedesReconciliationId == null ? LedgerCommandScopes.RECONCILIATION_COMMIT : LedgerCommandScopes.RECONCILIATION_CORRECTION,
+                    commandSequence, statement.statementClosingAt(), observedAt, evaluation.decision(), adjustmentReason.trim());
             activityRepository.save(activity);
-            postingRepository.save(MoneyPosting.adjustment(
-                    idGenerator.next(),
-                    ownerUserAccountId,
-                    activity.getId(),
-                    account.getId(),
-                    projection.getCashPocket().getId(),
-                    account.getCurrencyCode(),
-                    comparison.closingDifference(),
-                    observedAt));
+            postingRepository.save(MoneyPosting.adjustment(idGenerator.next(), ownerUserAccountId, activity.getId(), account.getId(),
+                    projection.getCashPocket().getId(), account.getCurrencyCode(), comparison.closingDifference(), observedAt));
             projection.apply(comparison.closingDifference(), observedAt, activity.getId(), observedAt);
             projectionRepository.save(projection);
             adjustmentActivityId = activity.getId();
             adjustmentAmount = comparison.closingDifference();
             entityManager.flush();
         }
-        var totalPostingCount = comparison.totalPostingCountThroughClosing()
-                + (resolution == ReconciliationResolution.ADJUSTED ? 1 : 0);
-        var reconciliation = Reconciliation.create(
-                idGenerator.next(),
-                ownerUserAccountId,
-                account.getId(),
-                projection.getCashPocket().getId(),
-                account.getCurrencyCode(),
-                statement.statementReference(),
-                statement.statementOpeningAt(),
-                statement.statementClosingAt(),
-                statement.statementOpeningBalance(),
-                statement.statementClosingBalance(),
-                comparison.ledgerOpeningBalance(),
-                comparison.ledgerClosingBalanceBeforeAdjustment(),
-                comparison.periodNetPostedAmount(),
-                comparison.closingDifference(),
-                adjustmentAmount,
-                comparison.periodPostingCount(),
-                totalPostingCount,
-                resolution,
-                adjustmentActivityId,
-                supersedesReconciliationId,
-                resolution == ReconciliationResolution.ADJUSTED ? adjustmentReason.trim() : null,
-                observedAt);
+        var totalPostingCount = comparison.totalPostingCountThroughClosing() + (resolution == ReconciliationResolution.ADJUSTED ? 1 : 0);
+        var reconciliation = Reconciliation.create(idGenerator.next(), ownerUserAccountId, account.getId(), projection.getCashPocket().getId(),
+                account.getCurrencyCode(), statement.statementReference(), statement.statementOpeningAt(), statement.statementClosingAt(),
+                statement.statementOpeningBalance(), statement.statementClosingBalance(), comparison.ledgerOpeningBalance(),
+                comparison.ledgerClosingBalanceBeforeAdjustment(), comparison.periodNetPostedAmount(), comparison.closingDifference(), adjustmentAmount,
+                comparison.periodPostingCount(), totalPostingCount, resolution, adjustmentActivityId, supersedesReconciliationId,
+                resolution == ReconciliationResolution.ADJUSTED ? adjustmentReason.trim() : null, observedAt);
         reconciliationRepository.save(reconciliation);
         return reconciliation;
     }
 
-    private void reverseAdjustment(
-            UUID ownerUserAccountId,
-            Activity original,
-            AccountBalanceProjection projection,
-            UUID clientRequestId,
-            String correctionReason,
-            Instant observedAt,
-            long commandSequence) {
-        var reversal = Activity.reversal(
-                idGenerator.next(),
-                ownerUserAccountId,
-                clientRequestId,
-                LedgerCommandScopes.RECONCILIATION_CORRECTION,
-                commandSequence,
-                original.getEffectiveAt(),
-                observedAt,
-                correctionReason,
-                original.getId());
+    private void reverseAdjustment(UUID ownerUserAccountId, Activity original, AccountBalanceProjection projection, UUID clientRequestId,
+            String correctionReason, Instant observedAt, long commandSequence) {
+        var reversal = Activity.reversal(idGenerator.next(), ownerUserAccountId, clientRequestId, LedgerCommandScopes.RECONCILIATION_CORRECTION,
+                commandSequence, original.getEffectiveAt(), observedAt, correctionReason, original.getId());
         activityRepository.save(reversal);
         var postings = postingRepository.findOwnedActivity(ownerUserAccountId, original.getId());
         if (postings.size() != 1 || postings.getFirst().getPostingRole() != PostingRole.ADJUSTMENT) {
             throw new AppException(LedgerErrorCode.RECONCILIATION_NOT_FOUND);
         }
         var originalPosting = postings.getFirst();
-        if (!originalPosting
-                        .getFinancialAccountId()
-                        .equals(projection.getFinancialAccount().getId())
-                || !originalPosting
-                        .getCashPocketId()
-                        .equals(projection.getCashPocket().getId())
-                || !originalPosting
-                        .getCurrencyCode()
-                        .equals(projection.getFinancialAccount().getCurrencyCode())) {
+        if (!originalPosting.getFinancialAccountId().equals(projection.getFinancialAccount().getId()) ||
+                !originalPosting.getCashPocketId().equals(projection.getCashPocket().getId()) ||
+                !originalPosting.getCurrencyCode().equals(projection.getFinancialAccount().getCurrencyCode())) {
             throw new AppException(LedgerErrorCode.RECONCILIATION_NOT_FOUND);
         }
         var inverse = FinancialAmount.of(originalPosting.getAmount()).negate();
-        postingRepository.save(MoneyPosting.reversal(
-                idGenerator.next(),
-                ownerUserAccountId,
-                reversal.getId(),
-                originalPosting.getFinancialAccountId(),
-                originalPosting.getCashPocketId(),
-                originalPosting.getCurrencyCode(),
-                inverse,
-                observedAt));
+        postingRepository.save(MoneyPosting.reversal(idGenerator.next(), ownerUserAccountId, reversal.getId(), originalPosting.getFinancialAccountId(),
+                originalPosting.getCashPocketId(), originalPosting.getCurrencyCode(), inverse, observedAt));
         projection.apply(inverse, observedAt, reversal.getId(), observedAt);
     }
 
-    private ReconciliationResponse saveResult(
-            UUID ownerUserAccountId,
-            Reconciliation reconciliation,
-            String hash,
-            UUID clientRequestId,
-            Instant observedAt,
+    private ReconciliationResponse saveResult(UUID ownerUserAccountId, Reconciliation reconciliation, String hash, UUID clientRequestId, Instant observedAt,
             String scope) {
         entityManager.flush();
-        var response = reconciliationReadRepository
-                .findDetail(ownerUserAccountId, reconciliation.getId())
+        var response = reconciliationReadRepository.findDetail(ownerUserAccountId, reconciliation.getId())
                 .orElseThrow(() -> new AppException(LedgerErrorCode.RECONCILIATION_NOT_FOUND));
-        idempotencyStore.save(
-                ownerUserAccountId,
-                scope,
-                clientRequestId,
-                hash,
-                "RECONCILIATION",
-                reconciliation.getId(),
-                response,
-                observedAt);
+        idempotencyStore.save(ownerUserAccountId, scope, clientRequestId, hash, "RECONCILIATION", reconciliation.getId(), response, observedAt);
         return response;
     }
 
     private ReconciliationPreviewView comparison(UUID ownerUserAccountId, UUID accountId, StatementValues statement) {
         return reconciliationReadRepository
-                .findPreview(
-                        ownerUserAccountId,
-                        accountId,
-                        statement.statementReference(),
-                        statement.statementOpeningAt(),
-                        statement.statementClosingAt(),
-                        statement.statementOpeningBalance(),
-                        statement.statementClosingBalance())
+                .findPreview(ownerUserAccountId, accountId, statement.statementReference(), statement.statementOpeningAt(), statement.statementClosingAt(),
+                        statement.statementOpeningBalance(), statement.statementClosingBalance())
                 .orElseThrow(() -> new AppException(LedgerErrorCode.ACCOUNT_NOT_FOUND));
     }
 
@@ -415,75 +242,41 @@ public class ReconciliationCommandService {
     }
 
     private static void requireResolution(ReconciliationResolution resolution, ReconciliationPreviewView comparison) {
-        var balanced = comparison.openingDifference().isZero()
-                && comparison.closingDifference().isZero();
-        var adjusted = comparison.openingDifference().isZero()
-                && !comparison.closingDifference().isZero();
-        if ((balanced && resolution != ReconciliationResolution.BALANCED)
-                || (adjusted && resolution != ReconciliationResolution.ADJUSTED)
-                || (!balanced && !adjusted)) {
+        var balanced = comparison.openingDifference().isZero() && comparison.closingDifference().isZero();
+        var adjusted = comparison.openingDifference().isZero() && !comparison.closingDifference().isZero();
+        if ((balanced && resolution != ReconciliationResolution.BALANCED) || (adjusted && resolution != ReconciliationResolution.ADJUSTED) ||
+                (!balanced && !adjusted)) {
             throw new AppException(LedgerErrorCode.RECONCILIATION_RESOLUTION_REQUIRED);
         }
     }
 
-    private String reconciliationCommitFingerprint(
-            UUID accountId,
-            StatementValues statement,
-            Long expectedBalanceVersion,
-            ReconciliationAction resolution,
+    private String reconciliationCommitFingerprint(UUID accountId, StatementValues statement, Long expectedBalanceVersion, ReconciliationAction resolution,
             String adjustmentReason) {
-        return fingerprint.hash(fingerprint.values(
-                "accountId", accountId.toString(),
-                "statementReference", statement.statementReference(),
-                "statementOpeningAt", statement.statementOpeningAt().toString(),
-                "statementClosingAt", statement.statementClosingAt().toString(),
-                "statementOpeningBalance", statement.statementOpeningBalance().canonical(),
-                "statementClosingBalance", statement.statementClosingBalance().canonical(),
-                "expectedBalanceVersion", expectedBalanceVersion,
-                "resolution", resolution.name(),
+        return fingerprint.hash(fingerprint.values("accountId", accountId.toString(), "statementReference", statement.statementReference(),
+                "statementOpeningAt", statement.statementOpeningAt().toString(), "statementClosingAt", statement.statementClosingAt().toString(),
+                "statementOpeningBalance", statement.statementOpeningBalance().canonical(), "statementClosingBalance",
+                statement.statementClosingBalance().canonical(), "expectedBalanceVersion", expectedBalanceVersion, "resolution", resolution.name(),
                 "adjustmentReason", adjustmentReason == null ? null : adjustmentReason.trim()));
     }
 
-    private String reconciliationCorrectionFingerprint(
-            UUID reconciliationId,
-            StatementValues statement,
-            Long expectedBalanceVersion,
-            ReconciliationAction resolution,
-            String adjustmentReason,
-            String correctionReason) {
-        return fingerprint.hash(fingerprint.values(
-                "reconciliationId", reconciliationId.toString(),
-                "statementReference", statement.statementReference(),
-                "statementOpeningAt", statement.statementOpeningAt().toString(),
-                "statementClosingAt", statement.statementClosingAt().toString(),
-                "statementOpeningBalance", statement.statementOpeningBalance().canonical(),
-                "statementClosingBalance", statement.statementClosingBalance().canonical(),
-                "expectedBalanceVersion", expectedBalanceVersion,
-                "resolution", resolution.name(),
-                "adjustmentReason", adjustmentReason == null ? null : adjustmentReason.trim(),
-                "correctionReason", correctionReason));
+    private String reconciliationCorrectionFingerprint(UUID reconciliationId, StatementValues statement, Long expectedBalanceVersion,
+            ReconciliationAction resolution, String adjustmentReason, String correctionReason) {
+        return fingerprint.hash(fingerprint.values("reconciliationId", reconciliationId.toString(), "statementReference", statement.statementReference(),
+                "statementOpeningAt", statement.statementOpeningAt().toString(), "statementClosingAt", statement.statementClosingAt().toString(),
+                "statementOpeningBalance", statement.statementOpeningBalance().canonical(), "statementClosingBalance",
+                statement.statementClosingBalance().canonical(), "expectedBalanceVersion", expectedBalanceVersion, "resolution", resolution.name(),
+                "adjustmentReason", adjustmentReason == null ? null : adjustmentReason.trim(), "correctionReason", correctionReason));
     }
 
-    private static StatementValues statementValues(
-            String statementReference,
-            Instant statementOpeningAt,
-            Instant statementClosingAt,
-            String statementOpeningBalance,
-            String statementClosingBalance) {
+    private static StatementValues statementValues(String statementReference, Instant statementOpeningAt, Instant statementClosingAt,
+            String statementOpeningBalance, String statementClosingBalance) {
         var opening = Objects.requireNonNull(statementOpeningAt, "statementOpeningAt");
         var closing = Objects.requireNonNull(statementClosingAt, "statementClosingAt");
-        return new StatementValues(
-                Objects.requireNonNull(statementReference, "statementReference").trim(),
-                opening,
-                closing,
+        return new StatementValues(Objects.requireNonNull(statementReference, "statementReference").trim(), opening, closing,
                 LedgerAmountParser.exact(statementOpeningBalance, "statementOpeningBalance"),
                 LedgerAmountParser.exact(statementClosingBalance, "statementClosingBalance"));
     }
 
-    private record StatementValues(
-            String statementReference,
-            Instant statementOpeningAt,
-            Instant statementClosingAt,
-            FinancialAmount statementOpeningBalance,
+    private record StatementValues(String statementReference, Instant statementOpeningAt, Instant statementClosingAt, FinancialAmount statementOpeningBalance,
             FinancialAmount statementClosingBalance) {}
 }

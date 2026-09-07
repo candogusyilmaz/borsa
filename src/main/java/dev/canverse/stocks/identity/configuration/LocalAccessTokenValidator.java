@@ -24,8 +24,7 @@ final class LocalAccessTokenValidator implements OAuth2TokenValidator<Jwt> {
 
     static final String INVALID_TOKEN_DESCRIPTION = "The access token is invalid.";
 
-    private static final OAuth2Error INVALID_TOKEN =
-            new OAuth2Error(OAuth2ErrorCodes.INVALID_TOKEN, INVALID_TOKEN_DESCRIPTION, null);
+    private static final OAuth2Error INVALID_TOKEN = new OAuth2Error(OAuth2ErrorCodes.INVALID_TOKEN, INVALID_TOKEN_DESCRIPTION, null);
 
     private final AccessTokenProperties properties;
     private final Clock clock;
@@ -44,8 +43,7 @@ final class LocalAccessTokenValidator implements OAuth2TokenValidator<Jwt> {
         var observedAt = clock.instant();
         var timestampValidator = new JwtTimestampValidator(Duration.ZERO);
         timestampValidator.setClock(Clock.fixed(observedAt, clock.getZone()));
-        var standardValidators =
-                new DelegatingOAuth2TokenValidator<>(issuerValidator, audienceValidator, timestampValidator);
+        var standardValidators = new DelegatingOAuth2TokenValidator<>(issuerValidator, audienceValidator, timestampValidator);
         if (!standardValidators.validate(token).hasErrors() && hasValidEnvelope(token, observedAt)) {
             return OAuth2TokenValidatorResult.success();
         }
@@ -56,26 +54,18 @@ final class LocalAccessTokenValidator implements OAuth2TokenValidator<Jwt> {
         var issuedAt = token.getIssuedAt();
         var notBefore = token.getNotBefore();
         var expiresAt = token.getExpiresAt();
-        return hasExpectedHeaders(token)
-                && hasCanonicalUuidClaim(token, "sub")
-                && hasCanonicalUuidClaim(token, "jti")
-                && hasCanonicalUuidClaim(token, "sid")
-                && hasWholeSecondNumericDates(token)
-                && isWholeSecond(issuedAt)
-                && isWholeSecond(notBefore)
-                && isWholeSecond(expiresAt)
-                && Objects.equals(issuedAt, notBefore)
-                // Preserve the existing strict boundary contract; standard timestamp validators allow equality.
-                && !notBefore.isAfter(observedAt)
-                && expiresAt.isAfter(observedAt)
-                && expiresAt.isAfter(issuedAt)
-                && Duration.between(issuedAt, expiresAt).compareTo(properties.lifetime()) <= 0;
+        return hasExpectedHeaders(token) && hasCanonicalUuidClaim(token, "sub") && hasCanonicalUuidClaim(token, "jti") && hasCanonicalUuidClaim(token, "sid") &&
+                hasWholeSecondNumericDates(token) && isWholeSecond(issuedAt) && isWholeSecond(notBefore) && isWholeSecond(expiresAt) &&
+                Objects.equals(issuedAt, notBefore)
+                // Preserve the existing strict boundary contract; standard timestamp validators
+                // allow equality.
+                && !notBefore.isAfter(observedAt) && expiresAt.isAfter(observedAt) && expiresAt.isAfter(issuedAt) &&
+                Duration.between(issuedAt, expiresAt).compareTo(properties.lifetime()) <= 0;
     }
 
     private boolean hasExpectedHeaders(Jwt token) {
-        return "RS256".equals(token.getHeaders().get("alg"))
-                && properties.keyId().equals(token.getHeaders().get("kid"))
-                && "access".equals(token.getHeaders().get("typ"));
+        return "RS256".equals(token.getHeaders().get("alg")) && properties.keyId().equals(token.getHeaders().get("kid")) &&
+                "access".equals(token.getHeaders().get("typ"));
     }
 
     private boolean hasExpectedAudience(Object claim) {
@@ -104,9 +94,8 @@ final class LocalAccessTokenValidator implements OAuth2TokenValidator<Jwt> {
         }
         try {
             var rawClaims = JSONObjectUtils.parse(new Base64URL(tokenParts[1]).decodeToString());
-            return isWholeSecondNumericDate(rawClaims.get("iat"))
-                    && isWholeSecondNumericDate(rawClaims.get("nbf"))
-                    && isWholeSecondNumericDate(rawClaims.get("exp"));
+            return isWholeSecondNumericDate(rawClaims.get("iat")) && isWholeSecondNumericDate(rawClaims.get("nbf")) &&
+                    isWholeSecondNumericDate(rawClaims.get("exp"));
         } catch (ParseException exception) {
             return false;
         }

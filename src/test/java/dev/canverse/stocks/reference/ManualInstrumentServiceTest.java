@@ -84,8 +84,8 @@ class ManualInstrumentServiceTest {
         idGenerator.fail.set(false);
         clock.stopCoordinating();
         clock.setInstant(T0);
-        jdbcTemplate.execute("TRUNCATE TABLE reference.instrument_alias, reference.instrument, platform.security_event,"
-                + " identity.device_session, identity.auth_identity, identity.user_account CASCADE");
+        jdbcTemplate.execute("TRUNCATE TABLE reference.instrument_alias, reference.instrument, platform.security_event," +
+                " identity.device_session, identity.auth_identity, identity.user_account CASCADE");
         jdbcTemplate.update("UPDATE reference.market SET active = true");
         jdbcTemplate.update("UPDATE reference.currency SET active = true");
     }
@@ -93,12 +93,8 @@ class ManualInstrumentServiceTest {
     @Test
     void createsOwnerInstrumentWithNormalizedIdentityAndAliases() {
         var ownerId = register("manual-create@example.com");
-        var response = instrumentService.create(
-                ownerId,
-                createRequest(
-                        " my-fund ",
-                        " My manually valued fund ",
-                        List.of(new InstrumentAliasInput(AliasType.USER, " Pension Fund "))));
+        var response = instrumentService.create(ownerId,
+                createRequest(" my-fund ", " My manually valued fund ", List.of(new InstrumentAliasInput(AliasType.USER, " Pension Fund "))));
 
         assertThat(response.ownerId()).isEqualTo(ownerId);
         assertThat(response.marketId()).isEqualTo(MANUAL_MARKET);
@@ -110,11 +106,9 @@ class ManualInstrumentServiceTest {
         assertThat(response.sourceKind()).isEqualTo("USER_ENTERED");
         assertThat(response.version()).isZero();
         assertThat(response.aliases()).extracting(alias -> alias.value()).containsExactly("Pension Fund");
-        assertThat(jdbcTemplate.queryForObject(
-                        "SELECT symbol_normalized FROM reference.instrument WHERE id = ?", String.class, response.id()))
+        assertThat(jdbcTemplate.queryForObject("SELECT symbol_normalized FROM reference.instrument WHERE id = ?", String.class, response.id()))
                 .isEqualTo("MY-FUND");
-        assertThat(jdbcTemplate.queryForObject(
-                        "SELECT name_normalized FROM reference.instrument WHERE id = ?", String.class, response.id()))
+        assertThat(jdbcTemplate.queryForObject("SELECT name_normalized FROM reference.instrument WHERE id = ?", String.class, response.id()))
                 .isEqualTo("MY MANUALLY VALUED FUND");
     }
 
@@ -122,41 +116,23 @@ class ManualInstrumentServiceTest {
     void aliasesAreBoundedSortedAndImmutableAtTheResponseBoundary() {
         var ownerId = register("manual-alias-contract@example.com");
         var maximumAliases = IntStream.range(0, ManualInstrumentConstraints.MAX_ALIASES_PER_INSTRUMENT)
-                .mapToObj(index -> new InstrumentAliasInput(AliasType.USER, "alias-%02d".formatted(index)))
-                .toList();
+                .mapToObj(index -> new InstrumentAliasInput(AliasType.USER, "alias-%02d".formatted(index))).toList();
 
-        var maximum =
-                instrumentService.create(ownerId, createRequest("MAX-ALIASES", "Maximum aliases", maximumAliases));
+        var maximum = instrumentService.create(ownerId, createRequest("MAX-ALIASES", "Maximum aliases", maximumAliases));
         assertThat(maximum.aliases()).hasSize(ManualInstrumentConstraints.MAX_ALIASES_PER_INSTRUMENT);
 
-        var ordered = instrumentService.create(
-                ownerId,
-                createRequest(
-                        "ORDERED-ALIASES",
-                        "Ordered aliases",
-                        List.of(
-                                new InstrumentAliasInput(AliasType.USER, "zeta"),
-                                new InstrumentAliasInput(AliasType.TICKER, "beta"),
-                                new InstrumentAliasInput(AliasType.USER, "alpha"))));
-        assertThat(ordered.aliases())
-                .extracting(alias -> alias.type() + ":" + alias.value())
-                .containsExactly("TICKER:beta", "USER:alpha", "USER:zeta");
-        assertThatThrownBy(() -> ordered.aliases().add(ordered.aliases().getFirst()))
-                .isInstanceOf(UnsupportedOperationException.class);
+        var ordered = instrumentService.create(ownerId,
+                createRequest("ORDERED-ALIASES", "Ordered aliases", List.of(new InstrumentAliasInput(AliasType.USER, "zeta"),
+                        new InstrumentAliasInput(AliasType.TICKER, "beta"), new InstrumentAliasInput(AliasType.USER, "alpha"))));
+        assertThat(ordered.aliases()).extracting(alias -> alias.type() + ":" + alias.value()).containsExactly("TICKER:beta", "USER:alpha", "USER:zeta");
+        assertThatThrownBy(() -> ordered.aliases().add(ordered.aliases().getFirst())).isInstanceOf(UnsupportedOperationException.class);
 
         var tooManyAliases = IntStream.range(0, ManualInstrumentConstraints.MAX_ALIASES_PER_INSTRUMENT + 1)
-                .mapToObj(index -> new InstrumentAliasInput(AliasType.USER, "too-many-%02d".formatted(index)))
-                .toList();
+                .mapToObj(index -> new InstrumentAliasInput(AliasType.USER, "too-many-%02d".formatted(index))).toList();
         var tooManyAliasesRequest = createRequest("TOO-MANY-ALIASES", "Too many aliases", tooManyAliases);
-        assertThat(validator.validate(tooManyAliasesRequest))
-                .extracting(violation -> violation.getPropertyPath().toString())
-                .contains("aliases");
-        assertThat(jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM reference.instrument WHERE owner_user_account_id = ? AND symbol = ?",
-                        Integer.class,
-                        ownerId,
-                        "TOO-MANY-ALIASES"))
-                .isZero();
+        assertThat(validator.validate(tooManyAliasesRequest)).extracting(violation -> violation.getPropertyPath().toString()).contains("aliases");
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM reference.instrument WHERE owner_user_account_id = ? AND symbol = ?", Integer.class,
+                ownerId, "TOO-MANY-ALIASES")).isZero();
     }
 
     @Test
@@ -165,15 +141,8 @@ class ManualInstrumentServiceTest {
         var otherOwnerId = register("manual-other@example.com");
         var created = instrumentService.create(ownerId, createRequest("UPDATE-ME", "Before", List.of()));
 
-        var updated = instrumentService.update(
-                ownerId,
-                created.id(),
-                new ManualInstrumentUpdateRequest(
-                        created.version(),
-                        " After ",
-                        ValuationMethod.NOT_VALUED,
-                        false,
-                        List.of(new InstrumentAliasInput(AliasType.TICKER, "after"))));
+        var updated = instrumentService.update(ownerId, created.id(), new ManualInstrumentUpdateRequest(created.version(), " After ",
+                ValuationMethod.NOT_VALUED, false, List.of(new InstrumentAliasInput(AliasType.TICKER, "after"))));
 
         assertThat(updated.name()).isEqualTo("After");
         assertThat(updated.valuationMethod()).isEqualTo(ValuationMethod.NOT_VALUED);
@@ -181,38 +150,21 @@ class ManualInstrumentServiceTest {
         assertThat(updated.version()).isEqualTo(1);
         assertThat(updated.aliases()).extracting(alias -> alias.value()).containsExactly("after");
         assertThat(instrumentService.get(ownerId, created.id()).active()).isFalse();
-        assertThatThrownBy(() -> instrumentService.get(otherOwnerId, created.id()))
-                .isInstanceOf(AppException.class)
-                .satisfies(exception -> assertThat(((AppException) exception).getErrorCode())
-                        .isEqualTo(ReferenceErrorCode.INSTRUMENT_NOT_FOUND));
-        assertThatThrownBy(() -> instrumentService.update(
-                        otherOwnerId,
-                        created.id(),
-                        new ManualInstrumentUpdateRequest(1, "leak", ValuationMethod.NOT_VALUED, true, List.of())))
-                .isInstanceOf(AppException.class)
-                .satisfies(exception -> assertThat(((AppException) exception).getErrorCode())
-                        .isEqualTo(ReferenceErrorCode.INSTRUMENT_NOT_FOUND));
+        assertThatThrownBy(() -> instrumentService.get(otherOwnerId, created.id())).isInstanceOf(AppException.class)
+                .satisfies(exception -> assertThat(((AppException) exception).getErrorCode()).isEqualTo(ReferenceErrorCode.INSTRUMENT_NOT_FOUND));
+        assertThatThrownBy(() -> instrumentService.update(otherOwnerId, created.id(),
+                new ManualInstrumentUpdateRequest(1, "leak", ValuationMethod.NOT_VALUED, true, List.of()))).isInstanceOf(AppException.class)
+                .satisfies(exception -> assertThat(((AppException) exception).getErrorCode()).isEqualTo(ReferenceErrorCode.INSTRUMENT_NOT_FOUND));
     }
 
     @Test
     void aliasOnlyReplacementForcesParentVersionEvenWhenMetadataAndClockAreUnchanged() {
         var ownerId = register("manual-alias-only@example.com");
-        var created = instrumentService.create(
-                ownerId,
-                createRequest(
-                        "ALIAS-ONLY",
-                        "Unchanged metadata",
-                        List.of(new InstrumentAliasInput(AliasType.USER, "before"))));
+        var created = instrumentService.create(ownerId,
+                createRequest("ALIAS-ONLY", "Unchanged metadata", List.of(new InstrumentAliasInput(AliasType.USER, "before"))));
 
-        var updated = instrumentService.update(
-                ownerId,
-                created.id(),
-                new ManualInstrumentUpdateRequest(
-                        0,
-                        "Unchanged metadata",
-                        ValuationMethod.MANUAL_VALUE,
-                        true,
-                        List.of(new InstrumentAliasInput(AliasType.USER, "after"))));
+        var updated = instrumentService.update(ownerId, created.id(), new ManualInstrumentUpdateRequest(0, "Unchanged metadata", ValuationMethod.MANUAL_VALUE,
+                true, List.of(new InstrumentAliasInput(AliasType.USER, "after"))));
 
         assertThat(updated.version()).isEqualTo(1);
         assertThat(updated.name()).isEqualTo(created.name());
@@ -223,24 +175,13 @@ class ManualInstrumentServiceTest {
     @Test
     void aliasOnlyReplacementUsesOrdinaryVersionCheckWhenClockMoves() {
         var ownerId = register("manual-alias-clock-moved@example.com");
-        var created = instrumentService.create(
-                ownerId,
-                createRequest(
-                        "ALIAS-CLOCK",
-                        "Unchanged metadata",
-                        List.of(new InstrumentAliasInput(AliasType.USER, "before"))));
+        var created = instrumentService.create(ownerId,
+                createRequest("ALIAS-CLOCK", "Unchanged metadata", List.of(new InstrumentAliasInput(AliasType.USER, "before"))));
         var nextInstant = T0.plusSeconds(1);
         clock.setInstant(nextInstant);
 
-        var updated = instrumentService.update(
-                ownerId,
-                created.id(),
-                new ManualInstrumentUpdateRequest(
-                        0,
-                        "Unchanged metadata",
-                        ValuationMethod.MANUAL_VALUE,
-                        true,
-                        List.of(new InstrumentAliasInput(AliasType.USER, "after"))));
+        var updated = instrumentService.update(ownerId, created.id(), new ManualInstrumentUpdateRequest(0, "Unchanged metadata", ValuationMethod.MANUAL_VALUE,
+                true, List.of(new InstrumentAliasInput(AliasType.USER, "after"))));
 
         assertThat(updated.version()).isEqualTo(1);
         assertThat(updated.updatedAt()).isEqualTo(nextInstant);
@@ -253,41 +194,22 @@ class ManualInstrumentServiceTest {
         var expandingName = "ß".repeat(81);
         var expandingAlias = "ß".repeat(65);
 
-        var expandingNameRequest =
-                createRequest("EXPANDING", expandingName, List.of(new InstrumentAliasInput(AliasType.USER, "safe")));
-        assertThatThrownBy(expandingNameRequest::validate)
-                .isInstanceOf(AppException.class)
-                .satisfies(exception ->
-                        assertThat(((AppException) exception).getCode()).isEqualTo("VALIDATION_FAILED"));
-        var expandingAliasRequest = createRequest(
-                "EXPANDING-ALIAS", "Safe name", List.of(new InstrumentAliasInput(AliasType.USER, expandingAlias)));
-        assertThatThrownBy(expandingAliasRequest::validate)
-                .isInstanceOf(AppException.class)
-                .satisfies(exception ->
-                        assertThat(((AppException) exception).getCode()).isEqualTo("VALIDATION_FAILED"));
-        assertThat(jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM reference.instrument WHERE owner_user_account_id = ?",
-                        Integer.class,
-                        ownerId))
-                .isZero();
+        var expandingNameRequest = createRequest("EXPANDING", expandingName, List.of(new InstrumentAliasInput(AliasType.USER, "safe")));
+        assertThatThrownBy(expandingNameRequest::validate).isInstanceOf(AppException.class)
+                .satisfies(exception -> assertThat(((AppException) exception).getCode()).isEqualTo("VALIDATION_FAILED"));
+        var expandingAliasRequest = createRequest("EXPANDING-ALIAS", "Safe name", List.of(new InstrumentAliasInput(AliasType.USER, expandingAlias)));
+        assertThatThrownBy(expandingAliasRequest::validate).isInstanceOf(AppException.class)
+                .satisfies(exception -> assertThat(((AppException) exception).getCode()).isEqualTo("VALIDATION_FAILED"));
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM reference.instrument WHERE owner_user_account_id = ?", Integer.class, ownerId)).isZero();
 
         var created = instrumentService.create(ownerId, createRequest("EXPANSION-UPDATE", "Stable name", List.of()));
-        var expandingUpdateNameRequest =
-                new ManualInstrumentUpdateRequest(0, expandingName, ValuationMethod.MANUAL_VALUE, true, List.of());
-        assertThatThrownBy(expandingUpdateNameRequest::validate)
-                .isInstanceOf(AppException.class)
-                .satisfies(exception ->
-                        assertThat(((AppException) exception).getCode()).isEqualTo("VALIDATION_FAILED"));
-        var expandingUpdateAliasRequest = new ManualInstrumentUpdateRequest(
-                0,
-                "Stable name",
-                ValuationMethod.MANUAL_VALUE,
-                true,
+        var expandingUpdateNameRequest = new ManualInstrumentUpdateRequest(0, expandingName, ValuationMethod.MANUAL_VALUE, true, List.of());
+        assertThatThrownBy(expandingUpdateNameRequest::validate).isInstanceOf(AppException.class)
+                .satisfies(exception -> assertThat(((AppException) exception).getCode()).isEqualTo("VALIDATION_FAILED"));
+        var expandingUpdateAliasRequest = new ManualInstrumentUpdateRequest(0, "Stable name", ValuationMethod.MANUAL_VALUE, true,
                 List.of(new InstrumentAliasInput(AliasType.USER, expandingAlias)));
-        assertThatThrownBy(expandingUpdateAliasRequest::validate)
-                .isInstanceOf(AppException.class)
-                .satisfies(exception ->
-                        assertThat(((AppException) exception).getCode()).isEqualTo("VALIDATION_FAILED"));
+        assertThatThrownBy(expandingUpdateAliasRequest::validate).isInstanceOf(AppException.class)
+                .satisfies(exception -> assertThat(((AppException) exception).getCode()).isEqualTo("VALIDATION_FAILED"));
         assertThat(instrumentService.get(ownerId, created.id()).version()).isZero();
     }
 
@@ -298,30 +220,16 @@ class ManualInstrumentServiceTest {
         var name = " " + "N".repeat(ManualInstrumentConstraints.MAX_NAME_LENGTH) + " ";
         var alias = " " + "A".repeat(ManualInstrumentConstraints.MAX_ALIAS_VALUE_LENGTH) + " ";
 
-        var created = instrumentService.create(
-                ownerId,
-                new ManualInstrumentCreateRequest(
-                        MANUAL_MARKET,
-                        symbol,
-                        name,
-                        dev.canverse.stocks.reference.domain.InstrumentType.FUND,
-                        "GBP",
-                        ValuationMethod.MANUAL_VALUE,
-                        List.of(new InstrumentAliasInput(AliasType.USER, alias))));
+        var created = instrumentService.create(ownerId,
+                new ManualInstrumentCreateRequest(MANUAL_MARKET, symbol, name, dev.canverse.stocks.reference.domain.InstrumentType.FUND, "GBP",
+                        ValuationMethod.MANUAL_VALUE, List.of(new InstrumentAliasInput(AliasType.USER, alias))));
 
         assertThat(created.symbol()).hasSize(ManualInstrumentConstraints.MAX_SYMBOL_LENGTH);
         assertThat(created.name()).hasSize(ManualInstrumentConstraints.MAX_NAME_LENGTH);
         assertThat(created.aliases().getFirst().value()).hasSize(ManualInstrumentConstraints.MAX_ALIAS_VALUE_LENGTH);
 
-        var updated = instrumentService.update(
-                ownerId,
-                created.id(),
-                new ManualInstrumentUpdateRequest(
-                        0,
-                        name,
-                        ValuationMethod.NOT_VALUED,
-                        true,
-                        List.of(new InstrumentAliasInput(AliasType.USER, alias))));
+        var updated = instrumentService.update(ownerId, created.id(),
+                new ManualInstrumentUpdateRequest(0, name, ValuationMethod.NOT_VALUED, true, List.of(new InstrumentAliasInput(AliasType.USER, alias))));
         assertThat(updated.name()).hasSize(ManualInstrumentConstraints.MAX_NAME_LENGTH);
         assertThat(updated.aliases().getFirst().value()).hasSize(ManualInstrumentConstraints.MAX_ALIAS_VALUE_LENGTH);
     }
@@ -333,23 +241,12 @@ class ManualInstrumentServiceTest {
 
         assertThatThrownBy(() -> instrumentService.create(ownerId, createRequest("same", "Same two", List.of())))
                 .isInstanceOf(DataIntegrityViolationException.class);
-        assertThatThrownBy(() -> instrumentService.create(
-                        ownerId,
-                        new ManualInstrumentCreateRequest(
-                                UUID.fromString("10000000-0000-0000-0000-000000000001"),
-                                "UNSUPPORTED",
-                                "Unsupported",
-                                dev.canverse.stocks.reference.domain.InstrumentType.FUND,
-                                "USD",
-                                ValuationMethod.MANUAL_VALUE,
-                                List.of())))
+        assertThatThrownBy(() -> instrumentService.create(ownerId,
+                new ManualInstrumentCreateRequest(UUID.fromString("10000000-0000-0000-0000-000000000001"), "UNSUPPORTED", "Unsupported",
+                        dev.canverse.stocks.reference.domain.InstrumentType.FUND, "USD", ValuationMethod.MANUAL_VALUE, List.of())))
                 .isInstanceOf(AppException.class)
-                .satisfies(exception -> assertThat(((AppException) exception).getErrorCode())
-                        .isEqualTo(ReferenceErrorCode.UNSUPPORTED_MARKET_CURRENCY));
-        assertThat(jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM reference.instrument WHERE owner_user_account_id = ?",
-                        Integer.class,
-                        ownerId))
+                .satisfies(exception -> assertThat(((AppException) exception).getErrorCode()).isEqualTo(ReferenceErrorCode.UNSUPPORTED_MARKET_CURRENCY));
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM reference.instrument WHERE owner_user_account_id = ?", Integer.class, ownerId))
                 .isEqualTo(1);
     }
 
@@ -358,68 +255,37 @@ class ManualInstrumentServiceTest {
         var ownerId = register("manual-reference-errors@example.com");
 
         assertReferenceError(
-                () -> instrumentService.create(
-                        ownerId,
-                        new ManualInstrumentCreateRequest(
-                                UUID.randomUUID(),
-                                "UNKNOWN-MARKET",
-                                "Unknown market",
-                                dev.canverse.stocks.reference.domain.InstrumentType.FUND,
-                                "GBP",
-                                ValuationMethod.MANUAL_VALUE,
-                                List.of())),
+                () -> instrumentService.create(ownerId,
+                        new ManualInstrumentCreateRequest(UUID.randomUUID(), "UNKNOWN-MARKET", "Unknown market",
+                                dev.canverse.stocks.reference.domain.InstrumentType.FUND, "GBP", ValuationMethod.MANUAL_VALUE, List.of())),
                 ReferenceErrorCode.MARKET_NOT_FOUND);
         assertReferenceError(
-                () -> instrumentService.create(
-                        ownerId,
-                        new ManualInstrumentCreateRequest(
-                                MANUAL_MARKET,
-                                "UNKNOWN-CURRENCY",
-                                "Unknown currency",
-                                dev.canverse.stocks.reference.domain.InstrumentType.FUND,
-                                "ZZZ",
-                                ValuationMethod.MANUAL_VALUE,
-                                List.of())),
+                () -> instrumentService.create(ownerId,
+                        new ManualInstrumentCreateRequest(MANUAL_MARKET, "UNKNOWN-CURRENCY", "Unknown currency",
+                                dev.canverse.stocks.reference.domain.InstrumentType.FUND, "ZZZ", ValuationMethod.MANUAL_VALUE, List.of())),
                 ReferenceErrorCode.CURRENCY_NOT_FOUND);
 
         updateReference("UPDATE reference.market SET active = false WHERE id = ?", MANUAL_MARKET);
-        assertReferenceError(
-                () -> instrumentService.create(ownerId, createRequest("INACTIVE-MARKET", "Inactive market", List.of())),
+        assertReferenceError(() -> instrumentService.create(ownerId, createRequest("INACTIVE-MARKET", "Inactive market", List.of())),
                 ReferenceErrorCode.INACTIVE_REFERENCE);
         updateReference("UPDATE reference.market SET active = true WHERE id = ?", MANUAL_MARKET);
 
         updateReference("UPDATE reference.currency SET active = false WHERE code = 'GBP'");
-        assertReferenceError(
-                () -> instrumentService.create(
-                        ownerId, createRequest("INACTIVE-CURRENCY", "Inactive currency", List.of())),
+        assertReferenceError(() -> instrumentService.create(ownerId, createRequest("INACTIVE-CURRENCY", "Inactive currency", List.of())),
                 ReferenceErrorCode.INACTIVE_REFERENCE);
         updateReference("UPDATE reference.currency SET active = true WHERE code = 'GBP'");
 
-        assertThat(jdbcTemplate.queryForObject(
-                        "SELECT COUNT(*) FROM reference.instrument WHERE owner_user_account_id = ?",
-                        Integer.class,
-                        ownerId))
-                .isZero();
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM reference.instrument WHERE owner_user_account_id = ?", Integer.class, ownerId)).isZero();
     }
 
     @Test
     void aliasReplacementFailureRollsBackPreviousVersionAndAliasSet() {
         var ownerId = register("manual-atomic@example.com");
-        var created = instrumentService.create(
-                ownerId,
-                createRequest("ATOMIC", "Original", List.of(new InstrumentAliasInput(AliasType.USER, "original"))));
+        var created = instrumentService.create(ownerId, createRequest("ATOMIC", "Original", List.of(new InstrumentAliasInput(AliasType.USER, "original"))));
         idGenerator.fail.set(true);
 
-        assertThatThrownBy(() -> instrumentService.update(
-                        ownerId,
-                        created.id(),
-                        new ManualInstrumentUpdateRequest(
-                                0,
-                                "Changed",
-                                ValuationMethod.NOT_VALUED,
-                                false,
-                                List.of(new InstrumentAliasInput(AliasType.USER, "changed")))))
-                .isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> instrumentService.update(ownerId, created.id(), new ManualInstrumentUpdateRequest(0, "Changed", ValuationMethod.NOT_VALUED,
+                false, List.of(new InstrumentAliasInput(AliasType.USER, "changed"))))).isInstanceOf(IllegalStateException.class);
 
         idGenerator.fail.set(false);
         var unchanged = instrumentService.get(ownerId, created.id());
@@ -433,19 +299,11 @@ class ManualInstrumentServiceTest {
     void staleVersionIsRejectedWithoutChangingMetadata() {
         var ownerId = register("manual-version@example.com");
         var created = instrumentService.create(ownerId, createRequest("VERSION", "Version one", List.of()));
-        instrumentService.update(
-                ownerId,
-                created.id(),
-                new ManualInstrumentUpdateRequest(0, "Version two", ValuationMethod.NOT_VALUED, true, List.of()));
+        instrumentService.update(ownerId, created.id(), new ManualInstrumentUpdateRequest(0, "Version two", ValuationMethod.NOT_VALUED, true, List.of()));
 
-        assertThatThrownBy(() -> instrumentService.update(
-                        ownerId,
-                        created.id(),
-                        new ManualInstrumentUpdateRequest(
-                                0, "Lost update", ValuationMethod.MANUAL_VALUE, false, List.of())))
-                .isInstanceOf(AppException.class)
-                .satisfies(exception -> assertThat(((AppException) exception).getErrorCode())
-                        .isEqualTo(ReferenceErrorCode.INSTRUMENT_VERSION_CONFLICT));
+        assertThatThrownBy(() -> instrumentService.update(ownerId, created.id(),
+                new ManualInstrumentUpdateRequest(0, "Lost update", ValuationMethod.MANUAL_VALUE, false, List.of()))).isInstanceOf(AppException.class)
+                .satisfies(exception -> assertThat(((AppException) exception).getErrorCode()).isEqualTo(ReferenceErrorCode.INSTRUMENT_VERSION_CONFLICT));
         assertThat(instrumentService.get(ownerId, created.id()).name()).isEqualTo("Version two");
     }
 
@@ -464,11 +322,8 @@ class ManualInstrumentServiceTest {
             start.countDown();
             var outcomes = List.of(first.get(10, TimeUnit.SECONDS), second.get(10, TimeUnit.SECONDS));
 
-            assertThat(outcomes)
-                    .extracting(UpdateOutcome::errorCode)
-                    .containsExactlyInAnyOrder(null, ReferenceErrorCode.INSTRUMENT_VERSION_CONFLICT);
-            var successful =
-                    outcomes.stream().filter(UpdateOutcome::success).findFirst().orElseThrow();
+            assertThat(outcomes).extracting(UpdateOutcome::errorCode).containsExactlyInAnyOrder(null, ReferenceErrorCode.INSTRUMENT_VERSION_CONFLICT);
+            var successful = outcomes.stream().filter(UpdateOutcome::success).findFirst().orElseThrow();
             var finalInstrument = instrumentService.get(ownerId, created.id());
             assertThat(finalInstrument.version()).isEqualTo(1);
             assertThat(finalInstrument.name()).isEqualTo(successful.name());
@@ -480,12 +335,8 @@ class ManualInstrumentServiceTest {
     @Test
     void concurrentAliasOnlyUpdatesThatLoadedVersionZeroHaveOneOptimisticWinner() throws Exception {
         var ownerId = register("manual-alias-concurrent@example.com");
-        var created = instrumentService.create(
-                ownerId,
-                createRequest(
-                        "ALIAS-CONCURRENT",
-                        "Stable metadata",
-                        List.of(new InstrumentAliasInput(AliasType.USER, "initial"))));
+        var created = instrumentService.create(ownerId,
+                createRequest("ALIAS-CONCURRENT", "Stable metadata", List.of(new InstrumentAliasInput(AliasType.USER, "initial"))));
         clock.coordinateNextTwoCalls();
         var executor = Executors.newFixedThreadPool(2);
         try {
@@ -496,9 +347,7 @@ class ManualInstrumentServiceTest {
             clock.release();
             var outcomes = List.of(first.get(10, TimeUnit.SECONDS), second.get(10, TimeUnit.SECONDS));
 
-            assertThat(outcomes)
-                    .extracting(UpdateOutcome::errorCode)
-                    .containsExactlyInAnyOrder(null, ReferenceErrorCode.INSTRUMENT_VERSION_CONFLICT);
+            assertThat(outcomes).extracting(UpdateOutcome::errorCode).containsExactlyInAnyOrder(null, ReferenceErrorCode.INSTRUMENT_VERSION_CONFLICT);
             assertThat(instrumentService.get(ownerId, created.id()).version()).isEqualTo(1);
         } finally {
             clock.release();
@@ -507,16 +356,13 @@ class ManualInstrumentServiceTest {
         }
     }
 
-    private UpdateOutcome concurrentUpdate(
-            UUID ownerId, UUID instrumentId, String name, CountDownLatch ready, CountDownLatch start) {
+    private UpdateOutcome concurrentUpdate(UUID ownerId, UUID instrumentId, String name, CountDownLatch ready, CountDownLatch start) {
         try {
             ready.countDown();
             if (!start.await(10, TimeUnit.SECONDS)) {
                 throw new IllegalStateException("Concurrent update test did not start");
             }
-            var response = instrumentService.update(
-                    ownerId,
-                    instrumentId,
+            var response = instrumentService.update(ownerId, instrumentId,
                     new ManualInstrumentUpdateRequest(0, name, ValuationMethod.MANUAL_VALUE, true, List.of()));
             return new UpdateOutcome(response.name(), null);
         } catch (AppException exception) {
@@ -531,15 +377,8 @@ class ManualInstrumentServiceTest {
 
     private UpdateOutcome concurrentAliasOnlyUpdate(UUID ownerId, UUID instrumentId, String alias) {
         try {
-            var response = instrumentService.update(
-                    ownerId,
-                    instrumentId,
-                    new ManualInstrumentUpdateRequest(
-                            0,
-                            "Stable metadata",
-                            ValuationMethod.MANUAL_VALUE,
-                            true,
-                            List.of(new InstrumentAliasInput(AliasType.USER, alias))));
+            var response = instrumentService.update(ownerId, instrumentId, new ManualInstrumentUpdateRequest(0, "Stable metadata", ValuationMethod.MANUAL_VALUE,
+                    true, List.of(new InstrumentAliasInput(AliasType.USER, alias))));
             return new UpdateOutcome(response.aliases().getFirst().value(), null);
         } catch (AppException exception) {
             return new UpdateOutcome(null, exception.getErrorCode());
@@ -551,27 +390,17 @@ class ManualInstrumentServiceTest {
     }
 
     private static void assertReferenceError(Runnable action, ReferenceErrorCode expected) {
-        assertThatThrownBy(action::run)
-                .isInstanceOf(AppException.class)
-                .satisfies(exception ->
-                        assertThat(((AppException) exception).getErrorCode()).isEqualTo(expected));
+        assertThatThrownBy(action::run).isInstanceOf(AppException.class)
+                .satisfies(exception -> assertThat(((AppException) exception).getErrorCode()).isEqualTo(expected));
     }
 
     private void updateReference(String sql, Object... parameters) {
-        new TransactionTemplate(transactionManager)
-                .executeWithoutResult(status -> jdbcTemplate.update(sql, parameters));
+        new TransactionTemplate(transactionManager).executeWithoutResult(status -> jdbcTemplate.update(sql, parameters));
     }
 
-    private static ManualInstrumentCreateRequest createRequest(
-            String symbol, String name, List<InstrumentAliasInput> aliases) {
-        return new ManualInstrumentCreateRequest(
-                MANUAL_MARKET,
-                symbol,
-                name,
-                dev.canverse.stocks.reference.domain.InstrumentType.FUND,
-                "GBP",
-                ValuationMethod.MANUAL_VALUE,
-                aliases);
+    private static ManualInstrumentCreateRequest createRequest(String symbol, String name, List<InstrumentAliasInput> aliases) {
+        return new ManualInstrumentCreateRequest(MANUAL_MARKET, symbol, name, dev.canverse.stocks.reference.domain.InstrumentType.FUND, "GBP",
+                ValuationMethod.MANUAL_VALUE, aliases);
     }
 
     @TestConfiguration(proxyBeanMethods = false)

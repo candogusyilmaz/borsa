@@ -36,30 +36,13 @@ final class LedgerIdempotencyStore {
         }
     }
 
-    void save(
-            UUID ownerId,
-            String scope,
-            UUID clientRequestId,
-            String hash,
-            String resourceKind,
-            UUID resourceId,
-            Object response,
-            Instant createdAt) {
+    void save(UUID ownerId, String scope, UUID clientRequestId, String hash, String resourceKind, UUID resourceId, Object response, Instant createdAt) {
         String snapshot;
         try {
             snapshot = objectMapper.writeValueAsString(response);
         } catch (JacksonException exception) {
             throw new IllegalStateException("Unable to store ledger idempotency result", exception);
         }
-        repository.save(IdempotencyRecord.create(
-                idGenerator.next(),
-                ownerId,
-                scope,
-                clientRequestId,
-                hash,
-                resourceKind,
-                resourceId,
-                snapshot,
-                createdAt));
+        repository.save(IdempotencyRecord.create(idGenerator.next(), ownerId, scope, clientRequestId, hash, resourceKind, resourceId, snapshot, createdAt));
     }
 }

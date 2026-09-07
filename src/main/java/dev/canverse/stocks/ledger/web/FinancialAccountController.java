@@ -43,84 +43,53 @@ public class FinancialAccountController {
     private final FinancialAccountLifecycleService lifecycleService;
 
     @PostMapping
-    public ResponseEntity<FinancialAccountResponse> create(
-            @AuthenticationPrincipal AuthenticatedIdentity identity,
+    public ResponseEntity<FinancialAccountResponse> create(@AuthenticationPrincipal AuthenticatedIdentity identity,
             @Valid @RequestBody CreateFinancialAccountRequest request) {
         request.validate();
         var response = onboardingService.create(identity.userAccountId(), request);
         var headers = CacheHeaders.noStore();
-        headers.setLocation(URI.create(ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{accountId}")
-                .buildAndExpand(response.id())
-                .toUriString()));
+        headers.setLocation(URI.create(ServletUriComponentsBuilder.fromCurrentRequest().path("/{accountId}").buildAndExpand(response.id()).toUriString()));
         return new ResponseEntity<>(response, headers, HttpStatus.CREATED);
     }
 
     @GetMapping
-    public ResponseEntity<List<FinancialAccountResponse>> list(
-            @AuthenticationPrincipal AuthenticatedIdentity identity,
+    public ResponseEntity<List<FinancialAccountResponse>> list(@AuthenticationPrincipal AuthenticatedIdentity identity,
             @RequestParam(defaultValue = "false") boolean includeArchived) {
-        return new ResponseEntity<>(
-                queryService.list(identity.userAccountId(), includeArchived), CacheHeaders.noStore(), HttpStatus.OK);
+        return new ResponseEntity<>(queryService.list(identity.userAccountId(), includeArchived), CacheHeaders.noStore(), HttpStatus.OK);
     }
 
     @GetMapping("/{accountId}")
-    public ResponseEntity<FinancialAccountResponse> get(
-            @AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID accountId) {
-        return new ResponseEntity<>(
-                queryService.get(identity.userAccountId(), accountId), CacheHeaders.noStore(), HttpStatus.OK);
+    public ResponseEntity<FinancialAccountResponse> get(@AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID accountId) {
+        return new ResponseEntity<>(queryService.get(identity.userAccountId(), accountId), CacheHeaders.noStore(), HttpStatus.OK);
     }
 
     @PutMapping("/{accountId}")
-    public ResponseEntity<FinancialAccountResponse> updateMetadata(
-            @AuthenticationPrincipal AuthenticatedIdentity identity,
-            @PathVariable UUID accountId,
+    public ResponseEntity<FinancialAccountResponse> updateMetadata(@AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID accountId,
             @Valid @RequestBody AccountMetadataRequest request) {
-        return new ResponseEntity<>(
-                settingsService.updateMetadata(identity.userAccountId(), accountId, request),
-                CacheHeaders.noStore(),
-                HttpStatus.OK);
+        return new ResponseEntity<>(settingsService.updateMetadata(identity.userAccountId(), accountId, request), CacheHeaders.noStore(), HttpStatus.OK);
     }
 
     @PutMapping("/{accountId}/policy")
-    public ResponseEntity<FinancialAccountResponse> updatePolicy(
-            @AuthenticationPrincipal AuthenticatedIdentity identity,
-            @PathVariable UUID accountId,
+    public ResponseEntity<FinancialAccountResponse> updatePolicy(@AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID accountId,
             @Valid @RequestBody AccountPolicyRequest request) {
-        return new ResponseEntity<>(
-                settingsService.updatePolicy(identity.userAccountId(), accountId, request),
-                CacheHeaders.noStore(),
-                HttpStatus.OK);
+        return new ResponseEntity<>(settingsService.updatePolicy(identity.userAccountId(), accountId, request), CacheHeaders.noStore(), HttpStatus.OK);
     }
 
     @PostMapping("/{accountId}/archive")
-    public ResponseEntity<FinancialAccountResponse> archive(
-            @AuthenticationPrincipal AuthenticatedIdentity identity,
-            @PathVariable UUID accountId,
+    public ResponseEntity<FinancialAccountResponse> archive(@AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID accountId,
             @Valid @RequestBody ArchiveAccountRequest request) {
-        return new ResponseEntity<>(
-                lifecycleService.archive(identity.userAccountId(), accountId, request),
-                CacheHeaders.noStore(),
-                HttpStatus.OK);
+        return new ResponseEntity<>(lifecycleService.archive(identity.userAccountId(), accountId, request), CacheHeaders.noStore(), HttpStatus.OK);
     }
 
     @GetMapping("/{accountId}/balance")
-    public ResponseEntity<BalanceResponse> balance(
-            @AuthenticationPrincipal AuthenticatedIdentity identity,
-            @PathVariable UUID accountId,
+    public ResponseEntity<BalanceResponse> balance(@AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID accountId,
             @RequestParam(required = false) Instant asOf) {
-        return new ResponseEntity<>(
-                queryService.balance(identity.userAccountId(), accountId, asOf), CacheHeaders.noStore(), HttpStatus.OK);
+        return new ResponseEntity<>(queryService.balance(identity.userAccountId(), accountId, asOf), CacheHeaders.noStore(), HttpStatus.OK);
     }
 
     @PutMapping("/{accountId}/opening-state")
-    public ResponseEntity<FinancialAccountResponse> correctOpening(
-            @AuthenticationPrincipal AuthenticatedIdentity identity,
-            @PathVariable UUID accountId,
+    public ResponseEntity<FinancialAccountResponse> correctOpening(@AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID accountId,
             @Valid @RequestBody OpeningCorrectionRequest request) {
-        return new ResponseEntity<>(
-                lifecycleService.correctOpening(identity.userAccountId(), accountId, request),
-                CacheHeaders.noStore(),
-                HttpStatus.OK);
+        return new ResponseEntity<>(lifecycleService.correctOpening(identity.userAccountId(), accountId, request), CacheHeaders.noStore(), HttpStatus.OK);
     }
 }

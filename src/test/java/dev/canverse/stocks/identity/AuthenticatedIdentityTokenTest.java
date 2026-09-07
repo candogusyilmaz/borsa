@@ -15,11 +15,7 @@ class AuthenticatedIdentityTokenTest {
     void exposesTypedIdentityJwtCredentialsAndStableName() {
         var userAccountId = UUID.fromString("11111111-1111-4111-8111-111111111111");
         var sessionId = UUID.fromString("22222222-2222-4222-8222-222222222222");
-        var jwt = Jwt.withTokenValue("valid-token")
-                .header("alg", "RS256")
-                .claim("sub", userAccountId.toString())
-                .claim("sid", sessionId.toString())
-                .build();
+        var jwt = Jwt.withTokenValue("valid-token").header("alg", "RS256").claim("sub", userAccountId.toString()).claim("sid", sessionId.toString()).build();
 
         var token = new AuthenticatedIdentityToken(new AuthenticatedIdentity(userAccountId, sessionId), jwt);
 
@@ -32,17 +28,10 @@ class AuthenticatedIdentityTokenTest {
 
     @Test
     void requiresIdentityAndJwtCredentials() {
-        var jwt = Jwt.withTokenValue("valid-token")
-                .header("alg", "RS256")
-                .claim("sub", "subject")
-                .build();
+        var jwt = Jwt.withTokenValue("valid-token").header("alg", "RS256").claim("sub", "subject").build();
         var identity = new AuthenticatedIdentity(UUID.randomUUID(), UUID.randomUUID());
 
-        assertThatThrownBy(() -> new AuthenticatedIdentityToken(null, jwt))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessage("principal");
-        assertThatThrownBy(() -> new AuthenticatedIdentityToken(identity, null))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessage("credentials");
+        assertThatThrownBy(() -> new AuthenticatedIdentityToken(null, jwt)).isInstanceOf(NullPointerException.class).hasMessage("principal");
+        assertThatThrownBy(() -> new AuthenticatedIdentityToken(identity, null)).isInstanceOf(NullPointerException.class).hasMessage("credentials");
     }
 }

@@ -26,8 +26,6 @@ public class ReconciliationReadService {
 
     @Transactional(readOnly = true)
     public ReconciliationResponse detail(UUID ownerUserAccountId, UUID reconciliationId) {
-        return readRepository
-                .findDetail(ownerUserAccountId, reconciliationId)
-                .orElseThrow(() -> new AppException(LedgerErrorCode.RECONCILIATION_NOT_FOUND));
+        return readRepository.findDetail(ownerUserAccountId, reconciliationId).orElseThrow(() -> new AppException(LedgerErrorCode.RECONCILIATION_NOT_FOUND));
     }
 }

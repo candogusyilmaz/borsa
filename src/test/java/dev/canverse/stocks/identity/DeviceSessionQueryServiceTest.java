@@ -34,15 +34,10 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.NONE,
-        properties = {
-            "stocks.identity.refresh-session.lifetime=30d",
-            "stocks.identity.access-token.issuer=https://issuer.test",
-            "stocks.identity.access-token.audience=canverse-test-api",
-            "stocks.identity.access-token.lifetime=5m",
-            "stocks.identity.access-token.key-id=test-ephemeral"
-        })
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE,
+        properties = {"stocks.identity.refresh-session.lifetime=30d", "stocks.identity.access-token.issuer=https://issuer.test",
+                "stocks.identity.access-token.audience=canverse-test-api", "stocks.identity.access-token.lifetime=5m",
+                "stocks.identity.access-token.key-id=test-ephemeral"})
 @Testcontainers
 @Import(DeviceSessionQueryServiceTest.TestOverrides.class)
 class DeviceSessionQueryServiceTest {
@@ -76,8 +71,7 @@ class DeviceSessionQueryServiceTest {
 
     @BeforeEach
     void cleanDatabase() {
-        jdbcTemplate.execute(
-                "TRUNCATE TABLE platform.security_event, identity.device_session, identity.auth_identity, identity.user_account CASCADE");
+        jdbcTemplate.execute("TRUNCATE TABLE platform.security_event, identity.device_session, identity.auth_identity, identity.user_account CASCADE");
     }
 
     @Test
@@ -125,46 +119,19 @@ class DeviceSessionQueryServiceTest {
         insertSession(oldSessionId, userId, oldFamilyId, oldToken.hash(), "old-device", oldCreatedAt);
         var rotatedSession = rotationService.rotate(oldToken.rawToken()).orElseThrow();
 
-        insertSession(
-                UUID.fromString("40000000-0000-4000-8000-000000000002"),
-                userId,
-                tieLowFamilyId,
-                "tie-low-hash",
-                "tie-low-device",
-                tieCreatedAt);
-        insertSession(
-                UUID.fromString("40000000-0000-4000-8000-000000000003"),
-                userId,
-                tieHighFamilyId,
-                "tie-high-hash",
-                "tie-high-device",
-                tieCreatedAt);
-        insertSession(
-                UUID.fromString("40000000-0000-4000-8000-000000000004"),
-                userId,
-                latestFamilyId,
-                "latest-hash",
-                "latest-device",
-                latestCreatedAt);
+        insertSession(UUID.fromString("40000000-0000-4000-8000-000000000002"), userId, tieLowFamilyId, "tie-low-hash", "tie-low-device", tieCreatedAt);
+        insertSession(UUID.fromString("40000000-0000-4000-8000-000000000003"), userId, tieHighFamilyId, "tie-high-hash", "tie-high-device", tieCreatedAt);
+        insertSession(UUID.fromString("40000000-0000-4000-8000-000000000004"), userId, latestFamilyId, "latest-hash", "latest-device", latestCreatedAt);
 
         var sessions = queryService.listSessions(userId, rotatedSession.sessionId());
 
         assertThat(sessions).hasSize(4);
         assertThat(sessions).extracting(session -> session.familyId()).doesNotHaveDuplicates();
-        assertThat(sessions)
-                .extracting(session -> session.familyId())
-                .containsExactly(latestFamilyId, tieHighFamilyId, tieLowFamilyId, oldFamilyId);
-        assertThat(sessions)
-                .extracting(session -> session.createdAt())
-                .containsExactly(latestCreatedAt, tieCreatedAt, tieCreatedAt, oldCreatedAt);
+        assertThat(sessions).extracting(session -> session.familyId()).containsExactly(latestFamilyId, tieHighFamilyId, tieLowFamilyId, oldFamilyId);
+        assertThat(sessions).extracting(session -> session.createdAt()).containsExactly(latestCreatedAt, tieCreatedAt, tieCreatedAt, oldCreatedAt);
         assertThat(sessions).extracting(session -> session.current()).containsExactly(false, false, false, true);
-        assertThat(sessions)
-                .extracting(session -> session.status())
-                .containsExactly(
-                        DeviceSessionStatus.ACTIVE,
-                        DeviceSessionStatus.ACTIVE,
-                        DeviceSessionStatus.ACTIVE,
-                        DeviceSessionStatus.ACTIVE);
+        assertThat(sessions).extracting(session -> session.status()).containsExactly(DeviceSessionStatus.ACTIVE, DeviceSessionStatus.ACTIVE,
+                DeviceSessionStatus.ACTIVE, DeviceSessionStatus.ACTIVE);
         assertThat(sessions.getLast().latestGenerationId()).isEqualTo(rotatedSession.sessionId());
         assertThat(sessions.getLast().deviceLabel()).isEqualTo("old-device");
     }
@@ -183,10 +150,8 @@ class DeviceSessionQueryServiceTest {
         assertThat(sessions1.getFirst().familyId()).isEqualTo(session1.sessionId());
 
         // User 1 attempts detail of user 2's session -> 404
-        assertThatThrownBy(() -> queryService.getSessionDetail(user1, session1.sessionId(), session2.sessionId()))
-                .isInstanceOf(AppException.class)
-                .satisfies(e ->
-                        assertThat(((AppException) e).getErrorCode()).isEqualTo(IdentityErrorCode.SESSION_NOT_FOUND));
+        assertThatThrownBy(() -> queryService.getSessionDetail(user1, session1.sessionId(), session2.sessionId())).isInstanceOf(AppException.class)
+                .satisfies(e -> assertThat(((AppException) e).getErrorCode()).isEqualTo(IdentityErrorCode.SESSION_NOT_FOUND));
     }
 
     @Test
@@ -219,25 +184,12 @@ class DeviceSessionQueryServiceTest {
 
     private static final AtomicLong executedStatements = new AtomicLong();
 
-    private void insertSession(
-            UUID sessionId,
-            UUID userId,
-            UUID familyId,
-            String refreshTokenHash,
-            String deviceLabel,
-            Instant createdAt) {
-        new TransactionTemplate(transactionManager)
-                .executeWithoutResult(status -> jdbcTemplate.update(
-                        "INSERT INTO identity.device_session"
-                                + " (id, user_account_id, family_id, refresh_token_hash, device_label, created_at, expires_at)"
-                                + " VALUES (?, ?, ?, ?, ?, ?, ?)",
-                        sessionId,
-                        userId,
-                        familyId,
-                        refreshTokenHash,
-                        deviceLabel,
-                        OffsetDateTime.ofInstant(createdAt, ZoneOffset.UTC),
-                        OffsetDateTime.ofInstant(T0.plus(Duration.ofDays(30)), ZoneOffset.UTC)));
+    private void insertSession(UUID sessionId, UUID userId, UUID familyId, String refreshTokenHash, String deviceLabel, Instant createdAt) {
+        new TransactionTemplate(transactionManager).executeWithoutResult(status -> jdbcTemplate.update(
+                "INSERT INTO identity.device_session" + " (id, user_account_id, family_id, refresh_token_hash, device_label, created_at, expires_at)" +
+                        " VALUES (?, ?, ?, ?, ?, ?, ?)",
+                sessionId, userId, familyId, refreshTokenHash, deviceLabel, OffsetDateTime.ofInstant(createdAt, ZoneOffset.UTC),
+                OffsetDateTime.ofInstant(T0.plus(Duration.ofDays(30)), ZoneOffset.UTC)));
     }
 
     @TestConfiguration(proxyBeanMethods = false)
@@ -254,18 +206,13 @@ class DeviceSessionQueryServiceTest {
                 @Override
                 public Object postProcessAfterInitialization(Object bean, String beanName) {
                     if (bean instanceof javax.sql.DataSource dataSource) {
-                        return java.lang.reflect.Proxy.newProxyInstance(
-                                javax.sql.DataSource.class.getClassLoader(),
-                                new Class<?>[] {javax.sql.DataSource.class},
+                        return java.lang.reflect.Proxy.newProxyInstance(javax.sql.DataSource.class.getClassLoader(), new Class<?>[]{javax.sql.DataSource.class},
                                 (proxy, method, args) -> {
                                     if ("getConnection".equals(method.getName())) {
                                         var connection = (java.sql.Connection) method.invoke(dataSource, args);
-                                        return java.lang.reflect.Proxy.newProxyInstance(
-                                                java.sql.Connection.class.getClassLoader(),
-                                                new Class<?>[] {java.sql.Connection.class},
-                                                (connProxy, connMethod, connArgs) -> {
-                                                    if ("prepareStatement".equals(connMethod.getName())
-                                                            || "createStatement".equals(connMethod.getName())) {
+                                        return java.lang.reflect.Proxy.newProxyInstance(java.sql.Connection.class.getClassLoader(),
+                                                new Class<?>[]{java.sql.Connection.class}, (connProxy, connMethod, connArgs) -> {
+                                                    if ("prepareStatement".equals(connMethod.getName()) || "createStatement".equals(connMethod.getName())) {
                                                         executedStatements.incrementAndGet();
                                                     }
                                                     return connMethod.invoke(connection, connArgs);

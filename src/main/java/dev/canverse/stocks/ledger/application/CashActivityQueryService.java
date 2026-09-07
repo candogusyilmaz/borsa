@@ -24,8 +24,6 @@ public class CashActivityQueryService {
 
     @Transactional(readOnly = true)
     public ActivityResponse get(UUID ownerUserAccountId, UUID activityId) {
-        return readRepository
-                .findActivity(ownerUserAccountId, activityId)
-                .orElseThrow(() -> new AppException(LedgerErrorCode.ACTIVITY_NOT_FOUND));
+        return readRepository.findActivity(ownerUserAccountId, activityId).orElseThrow(() -> new AppException(LedgerErrorCode.ACTIVITY_NOT_FOUND));
     }
 }

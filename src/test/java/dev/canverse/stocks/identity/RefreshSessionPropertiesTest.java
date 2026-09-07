@@ -12,29 +12,23 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 class RefreshSessionPropertiesTest {
 
-    private final ApplicationContextRunner contextRunner =
-            new ApplicationContextRunner().withUserConfiguration(RefreshSessionConfiguration.class);
+    private final ApplicationContextRunner contextRunner = new ApplicationContextRunner().withUserConfiguration(RefreshSessionConfiguration.class);
 
     @Test
     void absentLifetimeBindsToThirtyDayDefault() {
         contextRunner.run(context -> {
             assertThat(context.getStartupFailure()).isNull();
-            assertThat(context.getBean(RefreshSessionProperties.class).lifetime())
-                    .isEqualTo(Duration.ofDays(30));
+            assertThat(context.getBean(RefreshSessionProperties.class).lifetime()).isEqualTo(Duration.ofDays(30));
         });
     }
 
     @Test
     void nullAndNonPositiveLifetimesAreRejected() {
-        assertThatThrownBy(() -> new RefreshSessionProperties(null))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("lifetime must be positive");
+        assertThatThrownBy(() -> new RefreshSessionProperties(null)).isInstanceOf(IllegalArgumentException.class).hasMessage("lifetime must be positive");
 
         for (var invalidValue : List.of("0s", "-1s")) {
-            contextRunner
-                    .withPropertyValues("stocks.identity.refresh-session.lifetime=" + invalidValue)
-                    .run(context -> assertThat(rootCause(context.getStartupFailure()))
-                            .isInstanceOf(IllegalArgumentException.class)
+            contextRunner.withPropertyValues("stocks.identity.refresh-session.lifetime=" + invalidValue)
+                    .run(context -> assertThat(rootCause(context.getStartupFailure())).isInstanceOf(IllegalArgumentException.class)
                             .hasMessage("lifetime must be positive"));
         }
     }

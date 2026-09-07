@@ -30,9 +30,7 @@ public class LocalAccessTokenAuthenticationConverter implements Converter<Jwt, A
         var userAccountId = parseCanonicalUuid(jwt.getClaims().get("sub"));
         var sessionId = parseCanonicalUuid(jwt.getClaims().get("sid"));
         var observedAt = clock.instant();
-        deviceSessionRepository
-                .findOwnedById(sessionId, userAccountId)
-                .filter(session -> session.isActiveAndUserEnabled(observedAt))
+        deviceSessionRepository.findOwnedById(sessionId, userAccountId).filter(session -> session.isActiveAndUserEnabled(observedAt))
                 .orElseThrow(this::invalidBearerToken);
 
         return new AuthenticatedIdentityToken(new AuthenticatedIdentity(userAccountId, sessionId), jwt);

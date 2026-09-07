@@ -64,16 +64,8 @@ public class Instrument {
 
     private Instant updatedAt;
 
-    public static Instrument manual(
-            UUID id,
-            UserAccount owner,
-            Market market,
-            InstrumentSymbol symbol,
-            String name,
-            InstrumentType instrumentType,
-            CurrencyCode quotationCurrency,
-            ValuationMethod valuationMethod,
-            Instant observedAt) {
+    public static Instrument manual(UUID id, UserAccount owner, Market market, InstrumentSymbol symbol, String name, InstrumentType instrumentType,
+            CurrencyCode quotationCurrency, ValuationMethod valuationMethod, Instant observedAt) {
         Objects.requireNonNull(id, "id");
         Objects.requireNonNull(owner, "owner");
         Objects.requireNonNull(market, "market");
@@ -91,8 +83,7 @@ public class Instrument {
         instrument.symbol = symbol.value();
         instrument.symbolNormalized = symbol.normalized();
         var displayName = name.trim();
-        if (!ManualInstrumentConstraints.fitsDisplayAndNormalizedBounds(
-                displayName, ManualInstrumentConstraints.MAX_NAME_LENGTH)) {
+        if (!ManualInstrumentConstraints.fitsDisplayAndNormalizedBounds(displayName, ManualInstrumentConstraints.MAX_NAME_LENGTH)) {
             throw new IllegalArgumentException("Instrument name exceeds its display or normalized length bound");
         }
         instrument.name = displayName;
@@ -112,8 +103,7 @@ public class Instrument {
             throw new IllegalStateException("Only owner-entered instruments can be updated");
         }
         var displayName = Objects.requireNonNull(name, "name").trim();
-        if (!ManualInstrumentConstraints.fitsDisplayAndNormalizedBounds(
-                displayName, ManualInstrumentConstraints.MAX_NAME_LENGTH)) {
+        if (!ManualInstrumentConstraints.fitsDisplayAndNormalizedBounds(displayName, ManualInstrumentConstraints.MAX_NAME_LENGTH)) {
             throw new IllegalArgumentException("Instrument name exceeds its display or normalized length bound");
         }
         this.name = displayName;

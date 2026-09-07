@@ -36,21 +36,14 @@ public class ReconciliationController {
     private final ReconciliationReadService readService;
 
     @PostMapping("/api/v1/accounts/{accountId}/reconciliation-previews")
-    public ResponseEntity<ReconciliationPreviewResponse> preview(
-            @AuthenticationPrincipal AuthenticatedIdentity identity,
-            @PathVariable UUID accountId,
+    public ResponseEntity<ReconciliationPreviewResponse> preview(@AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID accountId,
             @Valid @RequestBody ReconciliationPreviewRequest request) {
         request.validate();
-        return new ResponseEntity<>(
-                commandService.preview(identity.userAccountId(), accountId, request),
-                CacheHeaders.noStore(),
-                HttpStatus.OK);
+        return new ResponseEntity<>(commandService.preview(identity.userAccountId(), accountId, request), CacheHeaders.noStore(), HttpStatus.OK);
     }
 
     @PostMapping("/api/v1/accounts/{accountId}/reconciliations")
-    public ResponseEntity<ReconciliationResponse> commit(
-            @AuthenticationPrincipal AuthenticatedIdentity identity,
-            @PathVariable UUID accountId,
+    public ResponseEntity<ReconciliationResponse> commit(@AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID accountId,
             @Valid @RequestBody ReconciliationCommitRequest request) {
         request.validate();
         var response = commandService.commit(identity.userAccountId(), accountId, request);
@@ -60,26 +53,18 @@ public class ReconciliationController {
     }
 
     @GetMapping("/api/v1/accounts/{accountId}/reconciliations")
-    public ResponseEntity<SliceResponse<ReconciliationResponse>> list(
-            @AuthenticationPrincipal AuthenticatedIdentity identity,
-            @PathVariable UUID accountId,
-            @PageableDefault(size = DEFAULT_LIMIT, sort = "statementClosingAt", direction = Sort.Direction.DESC)
-                    Pageable pageable) {
-        return new ResponseEntity<>(
-                readService.list(identity.userAccountId(), accountId, pageable), CacheHeaders.noStore(), HttpStatus.OK);
+    public ResponseEntity<SliceResponse<ReconciliationResponse>> list(@AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID accountId,
+            @PageableDefault(size = DEFAULT_LIMIT, sort = "statementClosingAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return new ResponseEntity<>(readService.list(identity.userAccountId(), accountId, pageable), CacheHeaders.noStore(), HttpStatus.OK);
     }
 
     @GetMapping("/api/v1/reconciliations/{reconciliationId}")
-    public ResponseEntity<ReconciliationResponse> detail(
-            @AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID reconciliationId) {
-        return new ResponseEntity<>(
-                readService.detail(identity.userAccountId(), reconciliationId), CacheHeaders.noStore(), HttpStatus.OK);
+    public ResponseEntity<ReconciliationResponse> detail(@AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID reconciliationId) {
+        return new ResponseEntity<>(readService.detail(identity.userAccountId(), reconciliationId), CacheHeaders.noStore(), HttpStatus.OK);
     }
 
     @PostMapping("/api/v1/reconciliations/{reconciliationId}/corrections")
-    public ResponseEntity<ReconciliationResponse> correct(
-            @AuthenticationPrincipal AuthenticatedIdentity identity,
-            @PathVariable UUID reconciliationId,
+    public ResponseEntity<ReconciliationResponse> correct(@AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID reconciliationId,
             @Valid @RequestBody ReconciliationCorrectionRequest request) {
         request.validate();
         var response = commandService.correct(identity.userAccountId(), reconciliationId, request);

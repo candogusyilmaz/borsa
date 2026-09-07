@@ -10,12 +10,10 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface AccountBalanceProjectionRepository extends JpaRepository<AccountBalanceProjection, UUID> {
 
-    @Query("select p from AccountBalanceProjection p where p.ownerUserAccountId = :ownerUserAccountId"
-            + " and p.financialAccount.id = :accountId")
+    @Query("select p from AccountBalanceProjection p where p.ownerUserAccountId = :ownerUserAccountId" + " and p.financialAccount.id = :accountId")
     Optional<AccountBalanceProjection> findOwned(UUID ownerUserAccountId, UUID accountId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select p from AccountBalanceProjection p where p.ownerUserAccountId = :ownerUserAccountId"
-            + " and p.financialAccount.id = :accountId")
+    @Query("select p from AccountBalanceProjection p where p.ownerUserAccountId = :ownerUserAccountId" + " and p.financialAccount.id = :accountId")
     Optional<AccountBalanceProjection> findOwnedForUpdate(UUID ownerUserAccountId, UUID accountId);
 }

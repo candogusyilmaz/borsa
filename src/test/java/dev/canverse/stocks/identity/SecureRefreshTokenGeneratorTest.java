@@ -47,15 +47,11 @@ class SecureRefreshTokenGeneratorTest {
     void nullPresentedTokenFailsTheInternalCallerContract() {
         var generator = new SecureRefreshTokenGenerator();
 
-        assertThatThrownBy(() -> generator.hash(null))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessage("rawToken");
+        assertThatThrownBy(() -> generator.hash(null)).isInstanceOf(NullPointerException.class).hasMessage("rawToken");
     }
 
     private String independentHash(String rawToken) throws NoSuchAlgorithmException {
         var digest = MessageDigest.getInstance("SHA-256");
-        return Base64.getUrlEncoder()
-                .withoutPadding()
-                .encodeToString(digest.digest(rawToken.getBytes(StandardCharsets.UTF_8)));
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(digest.digest(rawToken.getBytes(StandardCharsets.UTF_8)));
     }
 }

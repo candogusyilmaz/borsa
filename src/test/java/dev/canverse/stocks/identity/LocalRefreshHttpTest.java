@@ -56,15 +56,10 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        properties = {
-            "stocks.identity.refresh-session.lifetime=2h",
-            "stocks.identity.access-token.issuer=https://issuer.test",
-            "stocks.identity.access-token.audience=canverse-test-api",
-            "stocks.identity.access-token.lifetime=5m",
-            "stocks.identity.access-token.key-id=test-ephemeral"
-        })
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK,
+        properties = {"stocks.identity.refresh-session.lifetime=2h", "stocks.identity.access-token.issuer=https://issuer.test",
+                "stocks.identity.access-token.audience=canverse-test-api", "stocks.identity.access-token.lifetime=5m",
+                "stocks.identity.access-token.key-id=test-ephemeral"})
 @AutoConfigureMockMvc
 @Testcontainers
 @Import(LocalRefreshHttpTest.TestOverrides.class)
@@ -126,34 +121,20 @@ class LocalRefreshHttpTest {
         var refreshTrace = uuid("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa2");
         idGenerator.setNextIds(refreshTrace, replacementId, uuid("50000000-0000-4000-8000-000000000005"));
 
-        var result = mockMvc.perform(post("/api/v1/auth/refresh")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"refreshToken\":\"%s\",\"refreshTokenDelivery\":\"RESPONSE_BODY\"}"
-                                .formatted(login.refreshToken())))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-store"))
-                .andExpect(header().string(HttpHeaders.PRAGMA, "no-cache"))
+        var result = mockMvc
+                .perform(post("/api/v1/auth/refresh").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)
+                        .content("{\"refreshToken\":\"%s\",\"refreshTokenDelivery\":\"RESPONSE_BODY\"}".formatted(login.refreshToken())))
+                .andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-store")).andExpect(header().string(HttpHeaders.PRAGMA, "no-cache"))
                 .andExpect(header().string(RequestTraceFilter.TRACE_ID_HEADER, refreshTrace.toString()))
-                .andExpect(header().doesNotExist(HttpHeaders.SET_COOKIE))
-                .andReturn();
+                .andExpect(header().doesNotExist(HttpHeaders.SET_COOKIE)).andReturn();
 
         var response = JsonPath.<Map<String, Object>>read(result.getResponse().getContentAsString(), "$");
-        assertThat(response.keySet())
-                .containsExactlyInAnyOrder(
-                        "sessionId",
-                        "accessToken",
-                        "accessTokenExpiresAt",
-                        "refreshTokenExpiresAt",
-                        "serverTime",
-                        "refreshToken");
+        assertThat(response.keySet()).containsExactlyInAnyOrder("sessionId", "accessToken", "accessTokenExpiresAt", "refreshTokenExpiresAt", "serverTime",
+                "refreshToken");
         assertThat(response.get("sessionId")).isEqualTo(replacementId.toString());
-        assertThat((String) response.get("refreshToken"))
-                .isNotEqualTo(login.refreshToken())
-                .isNotBlank();
-        assertThat(response.get("refreshTokenExpiresAt"))
-                .isEqualTo(LOGIN_TIME.plus(Duration.ofHours(2)).toString());
+        assertThat((String) response.get("refreshToken")).isNotEqualTo(login.refreshToken()).isNotBlank();
+        assertThat(response.get("refreshTokenExpiresAt")).isEqualTo(LOGIN_TIME.plus(Duration.ofHours(2)).toString());
         assertThat(response.get("serverTime")).isEqualTo(LOGIN_TIME.toString());
         assertThat(result.getRequest().getSession(false)).isNull();
         assertThat(deviceSessionRepository.count()).isEqualTo(2);
@@ -168,34 +149,21 @@ class LocalRefreshHttpTest {
         var replacementId = uuid("60000000-0000-4000-8000-000000000006");
         idGenerator.setNextIds(refreshTrace, replacementId, uuid("70000000-0000-4000-8000-000000000007"));
 
-        var result = mockMvc.perform(post("/api/v1/auth/refresh")
-                        .cookie(new Cookie("refresh-token", loginCookie.getValue()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content("{\"refreshTokenDelivery\":\"HTTP_ONLY_COOKIE\"}"))
-                .andExpect(status().isOk())
-                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-store"))
+        var result = mockMvc
+                .perform(post("/api/v1/auth/refresh").cookie(new Cookie("refresh-token", loginCookie.getValue())).contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON).content("{\"refreshTokenDelivery\":\"HTTP_ONLY_COOKIE\"}"))
+                .andExpect(status().isOk()).andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-store"))
                 .andExpect(header().string(HttpHeaders.PRAGMA, "no-cache"))
-                .andExpect(header().string(RequestTraceFilter.TRACE_ID_HEADER, refreshTrace.toString()))
-                .andReturn();
+                .andExpect(header().string(RequestTraceFilter.TRACE_ID_HEADER, refreshTrace.toString())).andReturn();
 
         var body = result.getResponse().getContentAsString();
-        assertThat(JsonPath.<Map<String, Object>>read(body, "$").keySet())
-                .containsExactlyInAnyOrder(
-                        "sessionId", "accessToken", "accessTokenExpiresAt", "refreshTokenExpiresAt", "serverTime");
+        assertThat(JsonPath.<Map<String, Object>>read(body, "$").keySet()).containsExactlyInAnyOrder("sessionId", "accessToken", "accessTokenExpiresAt",
+                "refreshTokenExpiresAt", "serverTime");
         var replacementCookie = result.getResponse().getHeaders(HttpHeaders.SET_COOKIE);
         assertThat(replacementCookie).hasSize(1);
-        assertThat(replacementCookie.getFirst())
-                .contains("refresh-token=")
-                .contains("Path=/api/v1/auth")
-                .contains("HttpOnly")
-                .contains("Secure")
-                .contains("SameSite=Strict")
-                .contains("Expires="
-                        + DateTimeFormatter.RFC_1123_DATE_TIME.format(LOGIN_TIME
-                                .plus(Duration.ofHours(2))
-                                .truncatedTo(ChronoUnit.SECONDS)
-                                .atZone(ZoneOffset.UTC)))
+        assertThat(replacementCookie.getFirst()).contains("refresh-token=").contains("Path=/api/v1/auth").contains("HttpOnly").contains("Secure")
+                .contains("SameSite=Strict").contains("Expires=" + DateTimeFormatter.RFC_1123_DATE_TIME
+                        .format(LOGIN_TIME.plus(Duration.ofHours(2)).truncatedTo(ChronoUnit.SECONDS).atZone(ZoneOffset.UTC)))
                 .doesNotContain("Domain=");
         assertThat(cookieMaxAge(replacementCookie.getFirst())).isLessThan(cookieMaxAge(login.setCookieHeader()));
         assertThat(result.getRequest().getSession(false)).isNull();
@@ -209,15 +177,11 @@ class LocalRefreshHttpTest {
         var trace = uuid("cccccccc-cccc-4ccc-8ccc-ccccccccccc3");
         idGenerator.setNextIds(trace);
 
-        var result = mockMvc.perform(post("/api/v1/auth/refresh")
-                        .cookie(new Cookie("refresh-token", login.refreshToken()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"refreshToken\":\"%s\",\"refreshTokenDelivery\":\"RESPONSE_BODY\"}"
-                                .formatted(login.refreshToken())))
-                .andExpect(status().isUnauthorized())
-                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-                .andExpect(header().string(RequestTraceFilter.TRACE_ID_HEADER, trace.toString()))
-                .andExpect(header().doesNotExist(HttpHeaders.WWW_AUTHENTICATE))
+        var result = mockMvc
+                .perform(post("/api/v1/auth/refresh").cookie(new Cookie("refresh-token", login.refreshToken())).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"refreshToken\":\"%s\",\"refreshTokenDelivery\":\"RESPONSE_BODY\"}".formatted(login.refreshToken())))
+                .andExpect(status().isUnauthorized()).andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(header().string(RequestTraceFilter.TRACE_ID_HEADER, trace.toString())).andExpect(header().doesNotExist(HttpHeaders.WWW_AUTHENTICATE))
                 .andReturn();
         assertThat(result.getResponse().getContentAsString()).doesNotContain(login.refreshToken());
         assertThat(persistedState()).isEqualTo(before);
@@ -228,43 +192,22 @@ class LocalRefreshHttpTest {
     void missingBlankWrongChannelAndDuplicateCredentialsFailBeforeRotation() throws Exception {
         var login = login("30100000-0000-4000-8000-000000000003", "credential-matrix@example.com", "RESPONSE_BODY");
         var before = persistedState();
-        var requests = List.of(
-                post("/api/v1/auth/refresh")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"refreshTokenDelivery\":\"RESPONSE_BODY\"}"),
-                post("/api/v1/auth/refresh")
-                        .contentType(MediaType.APPLICATION_JSON)
+        var requests = List.of(post("/api/v1/auth/refresh").contentType(MediaType.APPLICATION_JSON).content("{\"refreshTokenDelivery\":\"RESPONSE_BODY\"}"),
+                post("/api/v1/auth/refresh").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"refreshToken\":\" \",\"refreshTokenDelivery\":\"RESPONSE_BODY\"}"),
-                post("/api/v1/auth/refresh")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"refreshToken\":\"%s\",\"refreshTokenDelivery\":\"HTTP_ONLY_COOKIE\"}"
-                                .formatted(login.refreshToken())),
-                post("/api/v1/auth/refresh")
-                        .cookie(new Cookie("refresh-token", login.refreshToken()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"refreshToken\":\"%s\",\"refreshTokenDelivery\":\"HTTP_ONLY_COOKIE\"}"
-                                .formatted(login.refreshToken())),
-                post("/api/v1/auth/refresh")
-                        .cookie(
-                                new Cookie("refresh-token", login.refreshToken()),
-                                new Cookie("refresh-token", login.refreshToken()))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"refreshTokenDelivery\":\"HTTP_ONLY_COOKIE\"}"));
-        var traces = List.of(
-                uuid("c1000000-0000-4000-8000-000000000001"),
-                uuid("c1000000-0000-4000-8000-000000000002"),
-                uuid("c1000000-0000-4000-8000-000000000003"),
-                uuid("c1000000-0000-4000-8000-000000000004"),
-                uuid("c1000000-0000-4000-8000-000000000005"));
+                post("/api/v1/auth/refresh").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"refreshToken\":\"%s\",\"refreshTokenDelivery\":\"HTTP_ONLY_COOKIE\"}".formatted(login.refreshToken())),
+                post("/api/v1/auth/refresh").cookie(new Cookie("refresh-token", login.refreshToken())).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"refreshToken\":\"%s\",\"refreshTokenDelivery\":\"HTTP_ONLY_COOKIE\"}".formatted(login.refreshToken())),
+                post("/api/v1/auth/refresh").cookie(new Cookie("refresh-token", login.refreshToken()), new Cookie("refresh-token", login.refreshToken()))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"refreshTokenDelivery\":\"HTTP_ONLY_COOKIE\"}"));
+        var traces = List.of(uuid("c1000000-0000-4000-8000-000000000001"), uuid("c1000000-0000-4000-8000-000000000002"),
+                uuid("c1000000-0000-4000-8000-000000000003"), uuid("c1000000-0000-4000-8000-000000000004"), uuid("c1000000-0000-4000-8000-000000000005"));
         for (var index = 0; index < requests.size(); index++) {
             var trace = traces.get(index);
             idGenerator.setNextIds(trace);
-            var result = mockMvc.perform(requests.get(index)
-                            .header(RequestTraceFilter.TRACE_ID_HEADER, trace)
-                            .accept(MediaType.APPLICATION_JSON))
-                    .andExpect(status().isUnauthorized())
-                    .andExpect(header().doesNotExist(HttpHeaders.SET_COOKIE))
-                    .andReturn();
+            var result = mockMvc.perform(requests.get(index).header(RequestTraceFilter.TRACE_ID_HEADER, trace).accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isUnauthorized()).andExpect(header().doesNotExist(HttpHeaders.SET_COOKIE)).andReturn();
             assertThat(result.getResponse().getContentAsString()).doesNotContain(login.refreshToken());
             assertThat(persistedState()).isEqualTo(before);
             assertThat(idGenerator.consumedIds()).startsWith(trace);
@@ -276,18 +219,14 @@ class LocalRefreshHttpTest {
         var login = login("30200000-0000-4000-8000-000000000003", "delivery-matrix@example.com", "RESPONSE_BODY");
         var before = persistedState();
         idGenerator.setNextIds(uuid("c2000000-0000-4000-8000-000000000001"));
-        mockMvc.perform(post("/api/v1/auth/refresh")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"refreshToken\":\"%s\"}".formatted(login.refreshToken())))
+        mockMvc.perform(
+                post("/api/v1/auth/refresh").contentType(MediaType.APPLICATION_JSON).content("{\"refreshToken\":\"%s\"}".formatted(login.refreshToken())))
                 .andExpect(status().isUnprocessableEntity());
         assertThat(persistedState()).isEqualTo(before);
 
         idGenerator.setNextIds(uuid("c2000000-0000-4000-8000-000000000002"));
-        mockMvc.perform(post("/api/v1/auth/refresh")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"refreshToken\":\"%s\",\"refreshTokenDelivery\":\"UNKNOWN\"}"
-                                .formatted(login.refreshToken())))
-                .andExpect(status().isBadRequest());
+        mockMvc.perform(post("/api/v1/auth/refresh").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"refreshToken\":\"%s\",\"refreshTokenDelivery\":\"UNKNOWN\"}".formatted(login.refreshToken()))).andExpect(status().isBadRequest());
         assertThat(persistedState()).isEqualTo(before);
     }
 
@@ -295,99 +234,58 @@ class LocalRefreshHttpTest {
     void reusedPredecessorReturnsSafe401AndCommitsFamilyRevocation() throws Exception {
         var login = login("80000000-0000-4000-8000-000000000008", "reuse-http@example.com", "RESPONSE_BODY");
         var replacementId = uuid("a0000000-0000-4000-8000-00000000000a");
-        idGenerator.setNextIds(
-                uuid("dddddddd-dddd-4ddd-8ddd-ddddddddddd4"),
-                replacementId,
-                uuid("b0000000-0000-4000-8000-00000000000b"));
-        var first = mockMvc.perform(post("/api/v1/auth/refresh")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"refreshToken\":\"%s\",\"refreshTokenDelivery\":\"RESPONSE_BODY\"}"
-                                .formatted(login.refreshToken())))
-                .andExpect(status().isOk())
-                .andReturn();
+        idGenerator.setNextIds(uuid("dddddddd-dddd-4ddd-8ddd-ddddddddddd4"), replacementId, uuid("b0000000-0000-4000-8000-00000000000b"));
+        var first = mockMvc
+                .perform(post("/api/v1/auth/refresh").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"refreshToken\":\"%s\",\"refreshTokenDelivery\":\"RESPONSE_BODY\"}".formatted(login.refreshToken())))
+                .andExpect(status().isOk()).andReturn();
         var firstBody = JsonPath.<Map<String, Object>>read(first.getResponse().getContentAsString(), "$");
         var reuseTrace = uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee5");
         idGenerator.setNextIds(reuseTrace);
 
-        var reused = mockMvc.perform(post("/api/v1/auth/refresh")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"refreshToken\":\"%s\",\"refreshTokenDelivery\":\"RESPONSE_BODY\"}"
-                                .formatted(login.refreshToken())))
-                .andExpect(status().isUnauthorized())
-                .andExpect(header().string(RequestTraceFilter.TRACE_ID_HEADER, reuseTrace.toString()))
-                .andExpect(header().doesNotExist(HttpHeaders.SET_COOKIE))
-                .andReturn();
+        var reused = mockMvc
+                .perform(post("/api/v1/auth/refresh").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"refreshToken\":\"%s\",\"refreshTokenDelivery\":\"RESPONSE_BODY\"}".formatted(login.refreshToken())))
+                .andExpect(status().isUnauthorized()).andExpect(header().string(RequestTraceFilter.TRACE_ID_HEADER, reuseTrace.toString()))
+                .andExpect(header().doesNotExist(HttpHeaders.SET_COOKIE)).andReturn();
         assertThat(reused.getResponse().getContentAsString()).doesNotContain(login.refreshToken());
         assertThat(persistedState().get(1).get("revoke_reason")).isEqualTo("REUSE_DETECTED");
         assertThat(firstBody.get("accessToken")).isNotNull();
-        assertThatThrownBy(() -> accessTokenConverter.convert(jwtDecoder.decode((String) firstBody.get("accessToken"))))
-                .isInstanceOf(RuntimeException.class);
+        assertThatThrownBy(() -> accessTokenConverter.convert(jwtDecoder.decode((String) firstBody.get("accessToken")))).isInstanceOf(RuntimeException.class);
     }
 
     @Test
     void malformedFormAndPreflightRequestsStopBeforeRotation() throws Exception {
         var login = login("c0000000-0000-4000-8000-00000000000c", "boundary@example.com", "RESPONSE_BODY");
         var before = persistedState();
-        idGenerator.setNextIds(
-                uuid("ffffffff-ffff-4fff-8fff-fffffffffff6"),
-                uuid("ffffffff-ffff-4fff-8fff-fffffffffff7"),
-                uuid("ffffffff-ffff-4fff-8fff-fffffffffff8"),
-                uuid("ffffffff-ffff-4fff-8fff-fffffffffff9"),
-                uuid("ffffffff-ffff-4fff-8fff-ffffffffffa0"));
+        idGenerator.setNextIds(uuid("ffffffff-ffff-4fff-8fff-fffffffffff6"), uuid("ffffffff-ffff-4fff-8fff-fffffffffff7"),
+                uuid("ffffffff-ffff-4fff-8fff-fffffffffff8"), uuid("ffffffff-ffff-4fff-8fff-fffffffffff9"), uuid("ffffffff-ffff-4fff-8fff-ffffffffffa0"));
 
-        mockMvc.perform(post("/api/v1/auth/refresh")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("refreshToken", login.refreshToken())
-                        .param("refreshTokenDelivery", "RESPONSE_BODY"))
+        mockMvc.perform(post("/api/v1/auth/refresh").contentType(MediaType.APPLICATION_FORM_URLENCODED).param("refreshToken", login.refreshToken())
+                .param("refreshTokenDelivery", "RESPONSE_BODY")).andExpect(status().isUnsupportedMediaType());
+        mockMvc.perform(post("/api/v1/auth/refresh").contentType(MediaType.TEXT_PLAIN).content(login.refreshToken()))
                 .andExpect(status().isUnsupportedMediaType());
-        mockMvc.perform(post("/api/v1/auth/refresh")
-                        .contentType(MediaType.TEXT_PLAIN)
-                        .content(login.refreshToken()))
+        mockMvc.perform(multipart("/api/v1/auth/refresh").param("refreshToken", login.refreshToken()).param("refreshTokenDelivery", "RESPONSE_BODY"))
                 .andExpect(status().isUnsupportedMediaType());
-        mockMvc.perform(multipart("/api/v1/auth/refresh")
-                        .param("refreshToken", login.refreshToken())
-                        .param("refreshTokenDelivery", "RESPONSE_BODY"))
-                .andExpect(status().isUnsupportedMediaType());
-        mockMvc.perform(post("/api/v1/auth/refresh")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{not-json"))
-                .andExpect(status().isBadRequest());
-        var preflight = mockMvc.perform(options("/api/v1/auth/refresh")
-                        .header("Origin", "https://cross-origin.example")
-                        .header("Access-Control-Request-Method", "POST"))
-                .andExpect(status().isUnauthorized())
-                .andReturn();
-        assertThat(preflight.getResponse().getHeader("Access-Control-Allow-Origin"))
-                .isNull();
+        mockMvc.perform(post("/api/v1/auth/refresh").contentType(MediaType.APPLICATION_JSON).content("{not-json")).andExpect(status().isBadRequest());
+        var preflight = mockMvc
+                .perform(options("/api/v1/auth/refresh").header("Origin", "https://cross-origin.example").header("Access-Control-Request-Method", "POST"))
+                .andExpect(status().isUnauthorized()).andReturn();
+        assertThat(preflight.getResponse().getHeader("Access-Control-Allow-Origin")).isNull();
         assertThat(persistedState()).isEqualTo(before);
     }
 
     @Test
     void onlyExactRefreshPostIsPublicAndThereIsOneProductionChain() throws Exception {
-        idGenerator.setNextIds(
-                uuid("ffffffff-ffff-4fff-8fff-fffffffffff9"),
-                uuid("ffffffff-ffff-4fff-8fff-ffffffffffa0"),
-                uuid("ffffffff-ffff-4fff-8fff-ffffffffffa1"),
-                uuid("ffffffff-ffff-4fff-8fff-ffffffffffa2"),
-                uuid("ffffffff-ffff-4fff-8fff-ffffffffffa3"),
+        idGenerator.setNextIds(uuid("ffffffff-ffff-4fff-8fff-fffffffffff9"), uuid("ffffffff-ffff-4fff-8fff-ffffffffffa0"),
+                uuid("ffffffff-ffff-4fff-8fff-ffffffffffa1"), uuid("ffffffff-ffff-4fff-8fff-ffffffffffa2"), uuid("ffffffff-ffff-4fff-8fff-ffffffffffa3"),
                 uuid("ffffffff-ffff-4fff-8fff-ffffffffffa4"));
-        mockMvc.perform(get("/api/v1/auth/refresh"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(header().string(HttpHeaders.WWW_AUTHENTICATE, "Bearer"));
-        mockMvc.perform(post("/api/v1/auth/refresh/"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(header().string(HttpHeaders.WWW_AUTHENTICATE, "Bearer"));
-        mockMvc.perform(put("/api/v1/auth/refresh"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(header().string(HttpHeaders.WWW_AUTHENTICATE, "Bearer"));
-        mockMvc.perform(patch("/api/v1/auth/refresh"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(header().string(HttpHeaders.WWW_AUTHENTICATE, "Bearer"));
-        mockMvc.perform(delete("/api/v1/auth/refresh"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(header().string(HttpHeaders.WWW_AUTHENTICATE, "Bearer"));
-        mockMvc.perform(get("/api/v1/unprotected-looking-route"))
-                .andExpect(status().isUnauthorized())
+        mockMvc.perform(get("/api/v1/auth/refresh")).andExpect(status().isUnauthorized()).andExpect(header().string(HttpHeaders.WWW_AUTHENTICATE, "Bearer"));
+        mockMvc.perform(post("/api/v1/auth/refresh/")).andExpect(status().isUnauthorized()).andExpect(header().string(HttpHeaders.WWW_AUTHENTICATE, "Bearer"));
+        mockMvc.perform(put("/api/v1/auth/refresh")).andExpect(status().isUnauthorized()).andExpect(header().string(HttpHeaders.WWW_AUTHENTICATE, "Bearer"));
+        mockMvc.perform(patch("/api/v1/auth/refresh")).andExpect(status().isUnauthorized()).andExpect(header().string(HttpHeaders.WWW_AUTHENTICATE, "Bearer"));
+        mockMvc.perform(delete("/api/v1/auth/refresh")).andExpect(status().isUnauthorized()).andExpect(header().string(HttpHeaders.WWW_AUTHENTICATE, "Bearer"));
+        mockMvc.perform(get("/api/v1/unprotected-looking-route")).andExpect(status().isUnauthorized())
                 .andExpect(header().string(HttpHeaders.WWW_AUTHENTICATE, "Bearer"));
         assertThat(applicationContext.getBeansOfType(SecurityFilterChain.class)).hasSize(1);
     }
@@ -401,23 +299,13 @@ class LocalRefreshHttpTest {
         idGenerator.setNextIds(user, auth);
         registrationService.register(email, PASSWORD);
         idGenerator.setNextIds(trace, session, access);
-        var result = mockMvc.perform(post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content(
-                                "{\"email\":\"%s\",\"password\":\"%s\",\"deviceLabel\":\"phone\",\"refreshTokenDelivery\":\"%s\"}"
-                                        .formatted(email, PASSWORD, delivery)))
-                .andExpect(status().isOk())
-                .andReturn();
+        var result = mockMvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content(
+                "{\"email\":\"%s\",\"password\":\"%s\",\"deviceLabel\":\"phone\",\"refreshTokenDelivery\":\"%s\"}".formatted(email, PASSWORD, delivery)))
+                .andExpect(status().isOk()).andReturn();
         var response = JsonPath.<Map<String, Object>>read(result.getResponse().getContentAsString(), "$");
         var setCookieHeader = result.getResponse().getHeader(HttpHeaders.SET_COOKIE);
-        var setCookie = setCookieHeader == null
-                ? null
-                : HttpCookie.parse(setCookieHeader).getFirst();
-        return new LoginResult(
-                response.get("refreshToken") == null ? setCookie.getValue() : (String) response.get("refreshToken"),
-                setCookie,
-                setCookieHeader);
+        var setCookie = setCookieHeader == null ? null : HttpCookie.parse(setCookieHeader).getFirst();
+        return new LoginResult(response.get("refreshToken") == null ? setCookie.getValue() : (String) response.get("refreshToken"), setCookie, setCookieHeader);
     }
 
     private long cookieMaxAge(String value) {
@@ -426,8 +314,7 @@ class LocalRefreshHttpTest {
 
     private List<Map<String, Object>> persistedState() {
         return List.copyOf(
-                jdbcTemplate.queryForList(
-                        "SELECT revoked_at, revoke_reason, replaced_by_session_id FROM identity.device_session ORDER BY created_at, id"));
+                jdbcTemplate.queryForList("SELECT revoked_at, revoke_reason, replaced_by_session_id FROM identity.device_session ORDER BY created_at, id"));
     }
 
     private static UUID uuid(String value) {

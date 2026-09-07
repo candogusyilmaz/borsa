@@ -80,10 +80,8 @@ class LocalPasswordAuthenticationServiceTest {
         registrationService.register("alice@example.com", RAW_PASSWORD);
         var beforeAuthentication = snapshot();
 
-        var wrongPassword =
-                catchThrowable(() -> authenticationService.authenticate("alice@example.com", WRONG_PASSWORD));
-        var unknownEmail =
-                catchThrowable(() -> authenticationService.authenticate("unknown@example.com", RAW_PASSWORD));
+        var wrongPassword = catchThrowable(() -> authenticationService.authenticate("alice@example.com", WRONG_PASSWORD));
+        var unknownEmail = catchThrowable(() -> authenticationService.authenticate("unknown@example.com", RAW_PASSWORD));
 
         assertCredentialFailure(wrongPassword, "alice@example.com", WRONG_PASSWORD);
         assertCredentialFailure(unknownEmail, "unknown@example.com", RAW_PASSWORD);
@@ -94,10 +92,8 @@ class LocalPasswordAuthenticationServiceTest {
     @Test
     void disabledAccountFailsClosedWithoutChangingPersistedIdentityState() {
         var userId = registrationService.register("disabled@example.com", RAW_PASSWORD);
-        runInTransaction(() -> jdbcTemplate.update(
-                "UPDATE identity.user_account SET disabled_at = ? WHERE id = ?",
-                DISABLED_AT.atOffset(ZoneOffset.UTC),
-                userId));
+        runInTransaction(
+                () -> jdbcTemplate.update("UPDATE identity.user_account SET disabled_at = ? WHERE id = ?", DISABLED_AT.atOffset(ZoneOffset.UTC), userId));
         var beforeAuthentication = snapshot();
 
         var thrown = catchThrowable(() -> authenticationService.authenticate("disabled@example.com", RAW_PASSWORD));
@@ -110,9 +106,7 @@ class LocalPasswordAuthenticationServiceTest {
     void nullLocalPasswordHashFailsClosedWithoutChangingPersistedIdentityState() {
         registrationService.register("unusable@example.com", RAW_PASSWORD);
         runInTransaction(() -> jdbcTemplate.update(
-                "UPDATE identity.auth_identity SET password_hash = NULL WHERE provider = 'LOCAL'"
-                        + " AND provider_subject = ?",
-                "unusable@example.com"));
+                "UPDATE identity.auth_identity SET password_hash = NULL WHERE provider = 'LOCAL'" + " AND provider_subject = ?", "unusable@example.com"));
         var beforeAuthentication = snapshot();
 
         var thrown = catchThrowable(() -> authenticationService.authenticate("unusable@example.com", RAW_PASSWORD));
@@ -135,40 +129,18 @@ class LocalPasswordAuthenticationServiceTest {
         var identities = authIdentityRepository.findAll();
         UserAccount user = users.isEmpty() ? null : users.getFirst();
         AuthIdentity identity = identities.isEmpty() ? null : identities.getFirst();
-        return new PersistedIdentityState(
-                users.size(),
-                identities.size(),
-                user == null ? null : user.getId(),
-                user == null ? null : user.getEmail(),
-                user == null ? null : user.getEmailNormalized(),
-                user == null ? null : user.getDisabledAt(),
-                user == null ? null : user.getCreatedAt(),
-                user == null ? null : user.getUpdatedAt(),
-                identity == null ? null : identity.getId(),
-                identity == null ? null : identity.getProvider(),
-                identity == null ? null : identity.getProviderSubject(),
-                identity == null ? null : identity.getPasswordHash(),
-                identity == null ? null : identity.getCreatedAt(),
-                identity == null ? null : identity.getUpdatedAt());
+        return new PersistedIdentityState(users.size(), identities.size(), user == null ? null : user.getId(), user == null ? null : user.getEmail(),
+                user == null ? null : user.getEmailNormalized(), user == null ? null : user.getDisabledAt(), user == null ? null : user.getCreatedAt(),
+                user == null ? null : user.getUpdatedAt(), identity == null ? null : identity.getId(), identity == null ? null : identity.getProvider(),
+                identity == null ? null : identity.getProviderSubject(), identity == null ? null : identity.getPasswordHash(),
+                identity == null ? null : identity.getCreatedAt(), identity == null ? null : identity.getUpdatedAt());
     }
 
     private void runInTransaction(Runnable action) {
         new TransactionTemplate(transactionManager).executeWithoutResult(status -> action.run());
     }
 
-    private record PersistedIdentityState(
-            int userCount,
-            int identityCount,
-            UUID userId,
-            String email,
-            String emailNormalized,
-            Instant disabledAt,
-            Instant userCreatedAt,
-            Instant userUpdatedAt,
-            UUID identityId,
-            String provider,
-            String providerSubject,
-            String passwordHash,
-            Instant identityCreatedAt,
-            Instant identityUpdatedAt) {}
+    private record PersistedIdentityState(int userCount, int identityCount, UUID userId, String email, String emailNormalized, Instant disabledAt,
+            Instant userCreatedAt, Instant userUpdatedAt, UUID identityId, String provider, String providerSubject, String passwordHash,
+            Instant identityCreatedAt, Instant identityUpdatedAt) {}
 }

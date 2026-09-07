@@ -4,8 +4,8 @@ import java.time.Duration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "stocks.identity.abuse-protection")
-public record AuthenticationAbuseProtectionProperties(
-        LoginProperties login, RegistrationProperties registration, RefreshProperties refresh, Integer maxTrackedKeys) {
+public record AuthenticationAbuseProtectionProperties(LoginProperties login, RegistrationProperties registration, RefreshProperties refresh,
+        Integer maxTrackedKeys) {
 
     public static final int DEFAULT_MAX_TRACKED_KEYS = 10000;
 
@@ -26,8 +26,7 @@ public record AuthenticationAbuseProtectionProperties(
         }
     }
 
-    public record LoginProperties(
-            Integer principalMaxFailures, Integer sourceMaxFailures, Duration window, Duration blockDuration) {
+    public record LoginProperties(Integer principalMaxFailures, Integer sourceMaxFailures, Duration window, Duration blockDuration) {
 
         public static final int DEFAULT_PRINCIPAL_MAX_FAILURES = 5;
         public static final int DEFAULT_SOURCE_MAX_FAILURES = 25;

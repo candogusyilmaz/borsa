@@ -37,33 +37,20 @@ public class AccessTokenIssuanceService {
 
         var observedAt = clock.instant();
         var issuedAt = observedAt.truncatedTo(ChronoUnit.SECONDS);
-        var deviceSession = deviceSessionRepository
-                .findById(sessionId)
-                .filter(session -> session.isActiveAndUserEnabled(observedAt))
+        var deviceSession = deviceSessionRepository.findById(sessionId).filter(session -> session.isActiveAndUserEnabled(observedAt))
                 .orElseThrow(() -> new AppException(IdentityErrorCode.INVALID_CREDENTIALS));
 
         var configuredExpiresAt = observedAt.plus(accessTokenProperties.lifetime());
-        var expiresAt =
-                earlier(configuredExpiresAt, deviceSession.getExpiresAt()).truncatedTo(ChronoUnit.SECONDS);
+        var expiresAt = earlier(configuredExpiresAt, deviceSession.getExpiresAt()).truncatedTo(ChronoUnit.SECONDS);
         if (!expiresAt.isAfter(issuedAt)) {
             throw new AppException(IdentityErrorCode.INVALID_CREDENTIALS);
         }
 
         var tokenId = idGenerator.next();
-        var headers = JwsHeader.with(SignatureAlgorithm.RS256)
-                .keyId(accessTokenProperties.keyId())
-                .type("access")
-                .build();
-        var claims = JwtClaimsSet.builder()
-                .issuer(accessTokenProperties.issuer().toString())
-                .subject(deviceSession.getUserAccount().getId().toString())
-                .audience(List.of(accessTokenProperties.audience()))
-                .issuedAt(issuedAt)
-                .notBefore(issuedAt)
-                .expiresAt(expiresAt)
-                .id(tokenId.toString())
-                .claim("sid", deviceSession.getId().toString())
-                .build();
+        var headers = JwsHeader.with(SignatureAlgorithm.RS256).keyId(accessTokenProperties.keyId()).type("access").build();
+        var claims = JwtClaimsSet.builder().issuer(accessTokenProperties.issuer().toString()).subject(deviceSession.getUserAccount().getId().toString())
+                .audience(List.of(accessTokenProperties.audience())).issuedAt(issuedAt).notBefore(issuedAt).expiresAt(expiresAt).id(tokenId.toString())
+                .claim("sid", deviceSession.getId().toString()).build();
         var encodedToken = jwtEncoder.encode(JwtEncoderParameters.from(headers, claims));
 
         return new IssuedAccessToken(encodedToken.getTokenValue(), expiresAt);

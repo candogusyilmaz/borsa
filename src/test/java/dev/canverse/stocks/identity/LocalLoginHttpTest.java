@@ -52,15 +52,10 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        properties = {
-            "stocks.identity.refresh-session.lifetime=2h",
-            "stocks.identity.access-token.issuer=https://issuer.test",
-            "stocks.identity.access-token.audience=canverse-test-api",
-            "stocks.identity.access-token.lifetime=5m",
-            "stocks.identity.access-token.key-id=test-ephemeral"
-        })
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK,
+        properties = {"stocks.identity.refresh-session.lifetime=2h", "stocks.identity.access-token.issuer=https://issuer.test",
+                "stocks.identity.access-token.audience=canverse-test-api", "stocks.identity.access-token.lifetime=5m",
+                "stocks.identity.access-token.key-id=test-ephemeral"})
 @AutoConfigureMockMvc
 @Testcontainers
 @Import(LocalLoginHttpTest.TestOverrides.class)
@@ -133,36 +128,20 @@ class LocalLoginHttpTest {
         var identityBeforeLogin = identitySnapshot();
         idGenerator.setNextIds(traceId, sessionId, tokenId);
 
-        var result = mockMvc.perform(post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
+        var result = mockMvc
+                .perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)
                         .content(loginJson(email, RAW_PASSWORD, deviceLabel, "RESPONSE_BODY")))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-store"))
-                .andExpect(header().string(HttpHeaders.PRAGMA, "no-cache"))
-                .andExpect(header().string(RequestTraceFilter.TRACE_ID_HEADER, traceId.toString()))
-                .andExpect(header().doesNotExist(HttpHeaders.SET_COOKIE))
+                .andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-store")).andExpect(header().string(HttpHeaders.PRAGMA, "no-cache"))
+                .andExpect(header().string(RequestTraceFilter.TRACE_ID_HEADER, traceId.toString())).andExpect(header().doesNotExist(HttpHeaders.SET_COOKIE))
                 .andReturn();
 
         var response = result.getResponse().getContentAsString();
         var responseJson = JsonPath.<Map<String, Object>>read(response, "$");
-        assertThat(responseJson)
-                .containsOnlyKeys(
-                        "sessionId",
-                        "accessToken",
-                        "accessTokenExpiresAt",
-                        "refreshTokenExpiresAt",
-                        "serverTime",
-                        "refreshToken");
+        assertThat(responseJson).containsOnlyKeys("sessionId", "accessToken", "accessTokenExpiresAt", "refreshTokenExpiresAt", "serverTime", "refreshToken");
         assertThat(responseJson.get("sessionId")).isEqualTo(sessionId.toString());
-        assertThat(responseJson.get("accessTokenExpiresAt"))
-                .isEqualTo(OBSERVED_AT
-                        .plus(ACCESS_TOKEN_LIFETIME)
-                        .truncatedTo(ChronoUnit.SECONDS)
-                        .toString());
-        assertThat(responseJson.get("refreshTokenExpiresAt"))
-                .isEqualTo(OBSERVED_AT.plus(REFRESH_SESSION_LIFETIME).toString());
+        assertThat(responseJson.get("accessTokenExpiresAt")).isEqualTo(OBSERVED_AT.plus(ACCESS_TOKEN_LIFETIME).truncatedTo(ChronoUnit.SECONDS).toString());
+        assertThat(responseJson.get("refreshTokenExpiresAt")).isEqualTo(OBSERVED_AT.plus(REFRESH_SESSION_LIFETIME).toString());
         assertThat(responseJson.get("serverTime")).isEqualTo(OBSERVED_AT.toString());
         var accessToken = (String) responseJson.get("accessToken");
         var refreshToken = (String) responseJson.get("refreshToken");
@@ -187,9 +166,7 @@ class LocalLoginHttpTest {
         assertThat(persistedSession.revokedAt()).isNull();
         assertThat(persistedSession.revokeReason()).isNull();
         assertThat(persistedSession.replacedBySessionId()).isNull();
-        assertThat(persistedSession.refreshTokenHash())
-                .isEqualTo(refreshTokenGenerator.hash(refreshToken))
-                .isNotEqualTo(refreshToken);
+        assertThat(persistedSession.refreshTokenHash()).isEqualTo(refreshTokenGenerator.hash(refreshToken)).isNotEqualTo(refreshToken);
         assertThat(rawTokenTextColumnOccurrences(refreshToken)).isZero();
         assertThat(identitySnapshot()).isEqualTo(identityBeforeLogin);
         assertThat(userAccountRepository.count()).isOne();
@@ -208,39 +185,26 @@ class LocalLoginHttpTest {
         var identityBeforeLogin = identitySnapshot();
         idGenerator.setNextIds(traceId, sessionId, tokenId);
 
-        var result = mockMvc.perform(post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
+        var result = mockMvc
+                .perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)
                         .content(loginJson(email, RAW_PASSWORD, null, "HTTP_ONLY_COOKIE")))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-store"))
-                .andExpect(header().string(HttpHeaders.PRAGMA, "no-cache"))
-                .andExpect(header().string(RequestTraceFilter.TRACE_ID_HEADER, traceId.toString()))
-                .andReturn();
+                .andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-store")).andExpect(header().string(HttpHeaders.PRAGMA, "no-cache"))
+                .andExpect(header().string(RequestTraceFilter.TRACE_ID_HEADER, traceId.toString())).andReturn();
 
         var response = result.getResponse().getContentAsString();
         var responseJson = JsonPath.<Map<String, Object>>read(response, "$");
-        assertThat(responseJson)
-                .containsOnlyKeys(
-                        "sessionId", "accessToken", "accessTokenExpiresAt", "refreshTokenExpiresAt", "serverTime");
+        assertThat(responseJson).containsOnlyKeys("sessionId", "accessToken", "accessTokenExpiresAt", "refreshTokenExpiresAt", "serverTime");
         assertThat(responseJson).doesNotContainKey("refreshToken");
         assertThat(responseJson.get("sessionId")).isEqualTo(sessionId.toString());
-        assertThat(responseJson.get("accessTokenExpiresAt"))
-                .isEqualTo(OBSERVED_AT
-                        .plus(ACCESS_TOKEN_LIFETIME)
-                        .truncatedTo(ChronoUnit.SECONDS)
-                        .toString());
-        assertThat(responseJson.get("refreshTokenExpiresAt"))
-                .isEqualTo(OBSERVED_AT.plus(REFRESH_SESSION_LIFETIME).toString());
+        assertThat(responseJson.get("accessTokenExpiresAt")).isEqualTo(OBSERVED_AT.plus(ACCESS_TOKEN_LIFETIME).truncatedTo(ChronoUnit.SECONDS).toString());
+        assertThat(responseJson.get("refreshTokenExpiresAt")).isEqualTo(OBSERVED_AT.plus(REFRESH_SESSION_LIFETIME).toString());
         assertThat(responseJson.get("serverTime")).isEqualTo(OBSERVED_AT.toString());
         assertThat(response).doesNotContain(RAW_PASSWORD, email);
         var setCookieHeaders = result.getResponse().getHeaders(HttpHeaders.SET_COOKIE);
         assertThat(setCookieHeaders).hasSize(1);
         var setCookie = setCookieHeaders.getFirst();
-        assertThat(setCookie)
-                .contains("Path=/api/v1/auth", "Secure", "HttpOnly", "SameSite=Strict")
-                .doesNotContain("Domain=");
+        assertThat(setCookie).contains("Path=/api/v1/auth", "Secure", "HttpOnly", "SameSite=Strict").doesNotContain("Domain=");
         var cookie = HttpCookie.parse(setCookie).getFirst();
         assertThat(cookie.getName()).isEqualTo("refresh-token");
         assertThat(cookie.getPath()).isEqualTo("/api/v1/auth");
@@ -251,8 +215,7 @@ class LocalLoginHttpTest {
         assertThat(cookie.getMaxAge()).isPositive();
         var cookieExpiresAt = cookieExpiresAt(setCookie);
         assertThat(cookieExpiresAt.getNano()).isZero();
-        assertThat(cookieExpiresAt)
-                .isEqualTo(OBSERVED_AT.plus(REFRESH_SESSION_LIFETIME).truncatedTo(ChronoUnit.SECONDS));
+        assertThat(cookieExpiresAt).isEqualTo(OBSERVED_AT.plus(REFRESH_SESSION_LIFETIME).truncatedTo(ChronoUnit.SECONDS));
         assertNoServletSession(result);
         assertThat(idGenerator.consumedIds()).startsWith(traceId, sessionId, tokenId);
 
@@ -260,9 +223,7 @@ class LocalLoginHttpTest {
         var refreshToken = cookie.getValue();
         assertThat(persistedSession.deviceLabel()).isNull();
         assertThat(persistedSession.expiresAt()).isEqualTo(OBSERVED_AT.plus(REFRESH_SESSION_LIFETIME));
-        assertThat(persistedSession.refreshTokenHash())
-                .isEqualTo(refreshTokenGenerator.hash(refreshToken))
-                .isNotEqualTo(refreshToken);
+        assertThat(persistedSession.refreshTokenHash()).isEqualTo(refreshTokenGenerator.hash(refreshToken)).isNotEqualTo(refreshToken);
         assertThat(rawTokenTextColumnOccurrences(refreshToken)).isZero();
         assertThat(identitySnapshot()).isEqualTo(identityBeforeLogin);
         assertThat(deviceSessionRepository.count()).isOne();
@@ -279,22 +240,16 @@ class LocalLoginHttpTest {
         var unknownEmail = "unknown-login@example.com";
         var unknownTraceId = uuid("cccccccc-cccc-4ccc-8ccc-ccccccccccc1");
         idGenerator.setNextIds(unknownTraceId);
-        var unknownResult = mockMvc.perform(post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content(loginJson(unknownEmail, RAW_PASSWORD, "unknown device", "RESPONSE_BODY")))
-                .andReturn();
+        var unknownResult = mockMvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)
+                .content(loginJson(unknownEmail, RAW_PASSWORD, "unknown device", "RESPONSE_BODY"))).andReturn();
         assertInvalidCredentials(unknownResult, unknownTraceId, unknownEmail, RAW_PASSWORD);
         assertThat(idGenerator.consumedIds()).startsWith(unknownTraceId);
         assertThat(persistedState()).isEqualTo(beforeFailures);
 
         var wrongTraceId = uuid("cccccccc-cccc-4ccc-8ccc-ccccccccccc2");
         idGenerator.setNextIds(wrongTraceId);
-        var wrongResult = mockMvc.perform(post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content(loginJson(email, WRONG_PASSWORD, "wrong device", "HTTP_ONLY_COOKIE")))
-                .andReturn();
+        var wrongResult = mockMvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)
+                .content(loginJson(email, WRONG_PASSWORD, "wrong device", "HTTP_ONLY_COOKIE"))).andReturn();
         assertInvalidCredentials(wrongResult, wrongTraceId, email, WRONG_PASSWORD);
         assertThat(idGenerator.consumedIds()).startsWith(wrongTraceId);
         assertThat(persistedState()).isEqualTo(beforeFailures);
@@ -302,28 +257,20 @@ class LocalLoginHttpTest {
 
     @Test
     void acceptedEmailAndPasswordBoundariesReachCredentialWorkflow() throws Exception {
-        var maximumEmail = "a".repeat(64) + "@" + "b".repeat(63) + "." + "c".repeat(63) + "." + "d".repeat(63) + "."
-                + "e".repeat(63);
+        var maximumEmail = "a".repeat(64) + "@" + "b".repeat(63) + "." + "c".repeat(63) + "." + "d".repeat(63) + "." + "e".repeat(63);
         var minimumPasswordTraceId = uuid("dddddddd-dddd-4ddd-8ddd-ddddddddddd1");
         idGenerator.setNextIds(minimumPasswordTraceId);
-        var minimumPasswordResult = mockMvc.perform(post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content(loginJson(maximumEmail, "p".repeat(12), null, "RESPONSE_BODY")))
-                .andReturn();
+        var minimumPasswordResult = mockMvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)
+                .content(loginJson(maximumEmail, "p".repeat(12), null, "RESPONSE_BODY"))).andReturn();
         assertInvalidCredentials(minimumPasswordResult, minimumPasswordTraceId, maximumEmail, "p".repeat(12));
         assertThat(idGenerator.consumedIds()).startsWith(minimumPasswordTraceId);
 
         var maximumPasswordTraceId = uuid("dddddddd-dddd-4ddd-8ddd-ddddddddddd2");
         idGenerator.setNextIds(maximumPasswordTraceId);
         var maximumPassword = "p".repeat(128);
-        var maximumPasswordResult = mockMvc.perform(post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content(loginJson("boundary@example.com", maximumPassword, null, "RESPONSE_BODY")))
-                .andReturn();
-        assertInvalidCredentials(
-                maximumPasswordResult, maximumPasswordTraceId, "boundary@example.com", maximumPassword);
+        var maximumPasswordResult = mockMvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)
+                .content(loginJson("boundary@example.com", maximumPassword, null, "RESPONSE_BODY"))).andReturn();
+        assertInvalidCredentials(maximumPasswordResult, maximumPasswordTraceId, "boundary@example.com", maximumPassword);
         assertThat(idGenerator.consumedIds()).startsWith(maximumPasswordTraceId);
         assertThat(deviceSessionRepository.count()).isZero();
     }
@@ -331,109 +278,37 @@ class LocalLoginHttpTest {
     @Test
     void requestValidationAndParsingStopBeforeLoginWorkflow() throws Exception {
         var beforeFailures = persistedState();
-        assertValidationFailure(
-                loginJson("", RAW_PASSWORD, null, "RESPONSE_BODY"),
-                "email",
-                "error.fields.common.not_blank",
-                uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee1"),
-                beforeFailures,
-                RAW_PASSWORD);
-        assertValidationFailure(
-                loginJson("not-an-email", RAW_PASSWORD, null, "RESPONSE_BODY"),
-                "email",
-                "error.fields.common.email",
-                uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee2"),
-                beforeFailures,
-                RAW_PASSWORD);
-        assertValidationFailure(
-                loginJson(" alice@example.com", RAW_PASSWORD, null, "RESPONSE_BODY"),
-                "email",
-                "error.fields.common.pattern",
-                uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee3"),
-                beforeFailures,
-                RAW_PASSWORD);
-        assertValidationFailure(
-                loginJson("alice@example.com ", RAW_PASSWORD, null, "RESPONSE_BODY"),
-                "email",
-                "error.fields.common.pattern",
-                uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee4"),
-                beforeFailures,
-                RAW_PASSWORD);
-        assertValidationFailure(
-                loginJson("a".repeat(310) + "@example.com", RAW_PASSWORD, null, "RESPONSE_BODY"),
-                "email",
-                "error.fields.common.size",
-                uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee5"),
-                beforeFailures,
-                RAW_PASSWORD);
-        assertValidationFailure(
-                loginJson("alice@example.com", "", null, "RESPONSE_BODY"),
-                "password",
-                "error.fields.common.not_blank",
-                uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee6"),
-                beforeFailures);
-        assertValidationFailure(
-                loginJson("alice@example.com", "p".repeat(11), null, "RESPONSE_BODY"),
-                "password",
-                "error.fields.common.size",
-                uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee7"),
-                beforeFailures,
-                "p".repeat(11));
+        assertValidationFailure(loginJson("", RAW_PASSWORD, null, "RESPONSE_BODY"), "email", "error.fields.common.not_blank",
+                uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee1"), beforeFailures, RAW_PASSWORD);
+        assertValidationFailure(loginJson("not-an-email", RAW_PASSWORD, null, "RESPONSE_BODY"), "email", "error.fields.common.email",
+                uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee2"), beforeFailures, RAW_PASSWORD);
+        assertValidationFailure(loginJson(" alice@example.com", RAW_PASSWORD, null, "RESPONSE_BODY"), "email", "error.fields.common.pattern",
+                uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee3"), beforeFailures, RAW_PASSWORD);
+        assertValidationFailure(loginJson("alice@example.com ", RAW_PASSWORD, null, "RESPONSE_BODY"), "email", "error.fields.common.pattern",
+                uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee4"), beforeFailures, RAW_PASSWORD);
+        assertValidationFailure(loginJson("a".repeat(310) + "@example.com", RAW_PASSWORD, null, "RESPONSE_BODY"), "email", "error.fields.common.size",
+                uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee5"), beforeFailures, RAW_PASSWORD);
+        assertValidationFailure(loginJson("alice@example.com", "", null, "RESPONSE_BODY"), "password", "error.fields.common.not_blank",
+                uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee6"), beforeFailures);
+        assertValidationFailure(loginJson("alice@example.com", "p".repeat(11), null, "RESPONSE_BODY"), "password", "error.fields.common.size",
+                uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee7"), beforeFailures, "p".repeat(11));
         var overlongPassword = "p".repeat(129);
-        assertValidationFailure(
-                loginJson("alice@example.com", overlongPassword, null, "RESPONSE_BODY"),
-                "password",
-                "error.fields.common.size",
-                uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee8"),
-                beforeFailures,
-                overlongPassword);
-        assertValidationFailure(
-                loginJson("alice@example.com", RAW_PASSWORD, " ", "RESPONSE_BODY"),
-                "deviceLabel",
-                "error.fields.common.pattern",
-                uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee9"),
-                beforeFailures,
-                RAW_PASSWORD);
-        assertValidationFailure(
-                loginJson("alice@example.com", RAW_PASSWORD, " device", "RESPONSE_BODY"),
-                "deviceLabel",
-                "error.fields.common.pattern",
-                uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeea"),
-                beforeFailures,
-                RAW_PASSWORD);
-        assertValidationFailure(
-                loginJson("alice@example.com", RAW_PASSWORD, "device ", "RESPONSE_BODY"),
-                "deviceLabel",
-                "error.fields.common.pattern",
-                uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeeb"),
-                beforeFailures,
-                RAW_PASSWORD);
-        assertValidationFailure(
-                loginJson("alice@example.com", RAW_PASSWORD, "d".repeat(129), "RESPONSE_BODY"),
-                "deviceLabel",
-                "error.fields.common.size",
-                uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeec"),
-                beforeFailures,
-                RAW_PASSWORD);
-        assertValidationFailure(
-                "{\"email\":\"alice@example.com\",\"password\":\"" + RAW_PASSWORD + "\",\"deviceLabel\":null}",
-                "refreshTokenDelivery",
-                "error.fields.common.not_null",
-                uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeed"),
-                beforeFailures,
-                RAW_PASSWORD);
-        assertMalformedRequest(
-                loginJson("alice@example.com", RAW_PASSWORD, null, "UNSUPPORTED"),
-                uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee"),
-                beforeFailures,
-                RAW_PASSWORD,
-                "UNSUPPORTED");
-        assertMalformedRequest(
-                "{\"email\":\"alice@example.com\",\"password\":\"" + RAW_PASSWORD,
-                uuid("ffffffff-ffff-4fff-8fff-fffffffffff1"),
-                beforeFailures,
-                "alice@example.com",
-                RAW_PASSWORD);
+        assertValidationFailure(loginJson("alice@example.com", overlongPassword, null, "RESPONSE_BODY"), "password", "error.fields.common.size",
+                uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee8"), beforeFailures, overlongPassword);
+        assertValidationFailure(loginJson("alice@example.com", RAW_PASSWORD, " ", "RESPONSE_BODY"), "deviceLabel", "error.fields.common.pattern",
+                uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee9"), beforeFailures, RAW_PASSWORD);
+        assertValidationFailure(loginJson("alice@example.com", RAW_PASSWORD, " device", "RESPONSE_BODY"), "deviceLabel", "error.fields.common.pattern",
+                uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeea"), beforeFailures, RAW_PASSWORD);
+        assertValidationFailure(loginJson("alice@example.com", RAW_PASSWORD, "device ", "RESPONSE_BODY"), "deviceLabel", "error.fields.common.pattern",
+                uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeeb"), beforeFailures, RAW_PASSWORD);
+        assertValidationFailure(loginJson("alice@example.com", RAW_PASSWORD, "d".repeat(129), "RESPONSE_BODY"), "deviceLabel", "error.fields.common.size",
+                uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeec"), beforeFailures, RAW_PASSWORD);
+        assertValidationFailure("{\"email\":\"alice@example.com\",\"password\":\"" + RAW_PASSWORD + "\",\"deviceLabel\":null}", "refreshTokenDelivery",
+                "error.fields.common.not_null", uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeed"), beforeFailures, RAW_PASSWORD);
+        assertMalformedRequest(loginJson("alice@example.com", RAW_PASSWORD, null, "UNSUPPORTED"), uuid("eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee"), beforeFailures,
+                RAW_PASSWORD, "UNSUPPORTED");
+        assertMalformedRequest("{\"email\":\"alice@example.com\",\"password\":\"" + RAW_PASSWORD, uuid("ffffffff-ffff-4fff-8fff-fffffffffff1"), beforeFailures,
+                "alice@example.com", RAW_PASSWORD);
     }
 
     @Test
@@ -453,17 +328,11 @@ class LocalLoginHttpTest {
         assertThat(registrationService.register(email, RAW_PASSWORD)).isEqualTo(userId);
     }
 
-    private void assertInvalidCredentials(
-            MvcResult result, UUID expectedTraceId, String submittedEmail, String submittedPassword) throws Exception {
+    private void assertInvalidCredentials(MvcResult result, UUID expectedTraceId, String submittedEmail, String submittedPassword) throws Exception {
         assertInvalidCredentials(result, expectedTraceId, submittedEmail, submittedPassword, false);
     }
 
-    private void assertInvalidCredentials(
-            MvcResult result,
-            UUID expectedTraceId,
-            String submittedEmail,
-            String submittedPassword,
-            boolean bearerChallenge)
+    private void assertInvalidCredentials(MvcResult result, UUID expectedTraceId, String submittedEmail, String submittedPassword, boolean bearerChallenge)
             throws Exception {
         var response = result.getResponse();
         assertThat(response.getStatus()).isEqualTo(401);
@@ -477,15 +346,10 @@ class LocalLoginHttpTest {
         assertThat(response.getHeaders(HttpHeaders.SET_COOKIE)).isEmpty();
         var body = response.getContentAsString();
         var problem = JsonPath.<Map<String, Object>>read(body, "$");
-        assertThat(problem)
-                .containsOnlyKeys("type", "title", "status", "instance", "code", "key", "traceId", "timestamp")
-                .containsEntry("type", "https://canverse.dev/problems/invalid-credentials")
-                .containsEntry("title", "Unauthorized")
-                .containsEntry("status", 401)
-                .containsEntry("instance", "/api/v1/auth/login")
-                .containsEntry("code", "INVALID_CREDENTIALS")
-                .containsEntry("key", "error.identity.invalid_credentials")
-                .containsEntry("traceId", expectedTraceId.toString());
+        assertThat(problem).containsOnlyKeys("type", "title", "status", "instance", "code", "key", "traceId", "timestamp")
+                .containsEntry("type", "https://canverse.dev/problems/invalid-credentials").containsEntry("title", "Unauthorized").containsEntry("status", 401)
+                .containsEntry("instance", "/api/v1/auth/login").containsEntry("code", "INVALID_CREDENTIALS")
+                .containsEntry("key", "error.identity.invalid_credentials").containsEntry("traceId", expectedTraceId.toString());
         assertThat(Instant.parse(problem.get("timestamp").toString())).isEqualTo(OBSERVED_AT);
         if (submittedEmail != null) {
             assertThat(body).doesNotContain(submittedEmail);
@@ -496,23 +360,12 @@ class LocalLoginHttpTest {
         assertNoServletSession(result);
     }
 
-    private void assertValidationFailure(
-            String requestBody,
-            String expectedField,
-            String expectedKey,
-            UUID traceId,
-            PersistedState expectedState,
-            String... sensitiveValues)
-            throws Exception {
+    private void assertValidationFailure(String requestBody, String expectedField, String expectedKey, UUID traceId, PersistedState expectedState,
+            String... sensitiveValues) throws Exception {
         idGenerator.setNextIds(traceId);
-        var result = mockMvc.perform(post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-                .andExpect(header().string(RequestTraceFilter.TRACE_ID_HEADER, traceId.toString()))
-                .andReturn();
+        var result = mockMvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content(requestBody))
+                .andExpect(status().isUnprocessableEntity()).andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(header().string(RequestTraceFilter.TRACE_ID_HEADER, traceId.toString())).andReturn();
 
         var body = result.getResponse().getContentAsString();
         var problem = JsonPath.<Map<String, Object>>read(body, "$");
@@ -530,18 +383,11 @@ class LocalLoginHttpTest {
         }
     }
 
-    private void assertMalformedRequest(
-            String requestBody, UUID traceId, PersistedState expectedState, String... sensitiveValues)
-            throws Exception {
+    private void assertMalformedRequest(String requestBody, UUID traceId, PersistedState expectedState, String... sensitiveValues) throws Exception {
         idGenerator.setNextIds(traceId);
-        var result = mockMvc.perform(post("/api/v1/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-                .andExpect(header().string(RequestTraceFilter.TRACE_ID_HEADER, traceId.toString()))
-                .andReturn();
+        var result = mockMvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content(requestBody))
+                .andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(header().string(RequestTraceFilter.TRACE_ID_HEADER, traceId.toString())).andReturn();
 
         var body = result.getResponse().getContentAsString();
         var problem = JsonPath.<Map<String, Object>>read(body, "$");
@@ -562,65 +408,45 @@ class LocalLoginHttpTest {
     }
 
     private void assertNoServletSession(MvcResult result) {
-        assertThat(result.getResponse().getHeaders(HttpHeaders.SET_COOKIE))
-                .noneMatch(value -> value.startsWith("JSESSIONID="));
+        assertThat(result.getResponse().getHeaders(HttpHeaders.SET_COOKIE)).noneMatch(value -> value.startsWith("JSESSIONID="));
         assertThat(result.getRequest().getSession(false)).isNull();
     }
 
     private PersistedSession persistedSession(UUID sessionId) {
         return new TransactionTemplate(transactionManager).execute(status -> {
             DeviceSession session = deviceSessionRepository.findById(sessionId).orElseThrow();
-            return new PersistedSession(
-                    session.getId(),
-                    session.getUserAccount().getId(),
-                    session.getFamilyId(),
-                    session.getRefreshTokenHash(),
-                    session.getDeviceLabel(),
-                    session.getCreatedAt(),
-                    session.getLastUsedAt(),
-                    session.getExpiresAt(),
-                    session.getRevokedAt(),
-                    session.getRevokeReason(),
-                    session.getReplacedBySessionId());
+            return new PersistedSession(session.getId(), session.getUserAccount().getId(), session.getFamilyId(), session.getRefreshTokenHash(),
+                    session.getDeviceLabel(), session.getCreatedAt(), session.getLastUsedAt(), session.getExpiresAt(), session.getRevokedAt(),
+                    session.getRevokeReason(), session.getReplacedBySessionId());
         });
     }
 
     private PersistedState persistedState() {
-        return new PersistedState(
-                List.copyOf(jdbcTemplate.queryForList("SELECT * FROM identity.user_account ORDER BY id")),
+        return new PersistedState(List.copyOf(jdbcTemplate.queryForList("SELECT * FROM identity.user_account ORDER BY id")),
                 List.copyOf(jdbcTemplate.queryForList("SELECT * FROM identity.auth_identity ORDER BY id")),
                 List.copyOf(jdbcTemplate.queryForList("SELECT * FROM identity.device_session ORDER BY id")));
     }
 
     private IdentityState identitySnapshot() {
-        return new IdentityState(
-                List.copyOf(jdbcTemplate.queryForList("SELECT * FROM identity.user_account ORDER BY id")),
+        return new IdentityState(List.copyOf(jdbcTemplate.queryForList("SELECT * FROM identity.user_account ORDER BY id")),
                 List.copyOf(jdbcTemplate.queryForList("SELECT * FROM identity.auth_identity ORDER BY id")));
     }
 
     private long rawTokenTextColumnOccurrences(String rawToken) {
-        return jdbcTemplate.queryForObject(
-                "SELECT count(*) FROM identity.device_session"
-                        + " WHERE strpos(refresh_token_hash, ?) > 0"
-                        + " OR strpos(coalesce(device_label, ''), ?) > 0"
-                        + " OR strpos(coalesce(revoke_reason, ''), ?) > 0",
-                Long.class,
-                rawToken,
-                rawToken,
-                rawToken);
+        return jdbcTemplate.queryForObject("SELECT count(*) FROM identity.device_session" + " WHERE strpos(refresh_token_hash, ?) > 0" +
+                " OR strpos(coalesce(device_label, ''), ?) > 0" + " OR strpos(coalesce(revoke_reason, ''), ?) > 0", Long.class, rawToken, rawToken, rawToken);
     }
 
     private Instant cookieExpiresAt(String setCookie) {
         var matcher = COOKIE_EXPIRES_PATTERN.matcher(setCookie);
         assertThat(matcher.find()).isTrue();
-        return ZonedDateTime.parse(matcher.group(1), DateTimeFormatter.RFC_1123_DATE_TIME)
-                .toInstant();
+        return ZonedDateTime.parse(matcher.group(1), DateTimeFormatter.RFC_1123_DATE_TIME).toInstant();
     }
 
     private String loginJson(String email, String password, String deviceLabel, String refreshTokenDelivery) {
         var labelJson = deviceLabel == null ? "null" : "\"" + deviceLabel + "\"";
-        return "{\"email\":\"%s\",\"password\":\"%s\",\"deviceLabel\":%s,\"refreshTokenDelivery\":\"%s\"}"
-                .formatted(email, password, labelJson, refreshTokenDelivery);
+        return "{\"email\":\"%s\",\"password\":\"%s\",\"deviceLabel\":%s,\"refreshTokenDelivery\":\"%s\"}".formatted(email, password, labelJson,
+                refreshTokenDelivery);
     }
 
     private void runInTransaction(Runnable action) {
@@ -647,23 +473,10 @@ class LocalLoginHttpTest {
         }
     }
 
-    private record PersistedSession(
-            UUID id,
-            UUID userAccountId,
-            UUID familyId,
-            String refreshTokenHash,
-            String deviceLabel,
-            Instant createdAt,
-            Instant lastUsedAt,
-            Instant expiresAt,
-            Instant revokedAt,
-            String revokeReason,
-            UUID replacedBySessionId) {}
+    private record PersistedSession(UUID id, UUID userAccountId, UUID familyId, String refreshTokenHash, String deviceLabel, Instant createdAt,
+            Instant lastUsedAt, Instant expiresAt, Instant revokedAt, String revokeReason, UUID replacedBySessionId) {}
 
     private record IdentityState(List<Map<String, Object>> users, List<Map<String, Object>> identities) {}
 
-    private record PersistedState(
-            List<Map<String, Object>> users,
-            List<Map<String, Object>> identities,
-            List<Map<String, Object>> sessions) {}
+    private record PersistedState(List<Map<String, Object>> users, List<Map<String, Object>> identities, List<Map<String, Object>> sessions) {}
 }

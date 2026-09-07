@@ -25,8 +25,7 @@ public class LocalRegistrationAttemptService {
         var attemptResult = abuseProtection.consumeRegistrationAttempt(remoteAddr);
         if (attemptResult.status() == AuthenticationAbuseProtection.AttemptStatus.JUST_BLOCKED) {
             try {
-                securityEventRecorder.recordAnonymousRequiresNew(
-                        SecurityEventRecorder.REGISTRATION_THROTTLED,
+                securityEventRecorder.recordAnonymousRequiresNew(SecurityEventRecorder.REGISTRATION_THROTTLED,
                         Map.of("traceId", traceId, "operation", "REGISTER"));
             } catch (RuntimeException exception) {
                 abuseProtection.rollbackThrottle(attemptResult.transition());

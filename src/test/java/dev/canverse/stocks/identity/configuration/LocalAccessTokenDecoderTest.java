@@ -52,13 +52,9 @@ class LocalAccessTokenDecoderTest {
     private static final String SESSION_ID = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 
     private final RecordingClock clock = new RecordingClock(FRACTIONAL_OBSERVED_AT);
-    private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withBean(Clock.class, () -> clock)
-            .withUserConfiguration(LocalAccessTokenConfiguration.class)
-            .withPropertyValues(
-                    "stocks.identity.access-token.issuer=" + ISSUER,
-                    "stocks.identity.access-token.audience=" + AUDIENCE,
-                    "stocks.identity.access-token.lifetime=5m",
+    private final ApplicationContextRunner contextRunner = new ApplicationContextRunner().withBean(Clock.class, () -> clock)
+            .withUserConfiguration(LocalAccessTokenConfiguration.class).withPropertyValues("stocks.identity.access-token.issuer=" + ISSUER,
+                    "stocks.identity.access-token.audience=" + AUDIENCE, "stocks.identity.access-token.lifetime=5m",
                     "stocks.identity.access-token.key-id=" + KEY_ID);
 
     @Test
@@ -78,10 +74,7 @@ class LocalAccessTokenDecoderTest {
             var decoded = decoder.decode(compactToken);
 
             assertThat(clock.invocations()).isOne();
-            assertThat(decoded.getHeaders())
-                    .containsOnlyKeys("alg", "kid", "typ")
-                    .containsEntry("alg", "RS256")
-                    .containsEntry("kid", KEY_ID)
+            assertThat(decoded.getHeaders()).containsOnlyKeys("alg", "kid", "typ").containsEntry("alg", "RS256").containsEntry("kid", KEY_ID)
                     .containsEntry("typ", "access");
             assertThat(decoded.getClaims()).containsOnlyKeys("iss", "sub", "aud", "iat", "nbf", "exp", "jti", "sid");
             assertThat(decoded.getIssuer().toString()).isEqualTo(ISSUER);
@@ -122,14 +115,8 @@ class LocalAccessTokenDecoderTest {
             var keyPair = context.getBean(KeyPair.class);
             var decoder = context.getBean(JwtDecoder.class);
 
-            invalidEnvelopes()
-                    .forEach(envelope -> assertEnvelopeRejected(
-                            decoder,
-                            keyPair,
-                            envelope.headers(),
-                            envelope.claims(),
-                            FRACTIONAL_OBSERVED_AT,
-                            envelope.name()));
+            invalidEnvelopes().forEach(
+                    envelope -> assertEnvelopeRejected(decoder, keyPair, envelope.headers(), envelope.claims(), FRACTIONAL_OBSERVED_AT, envelope.name()));
 
             assertRejectedBeforeEnvelopeValidation(decoder, keyPair, validClaims(ISSUED_AT, ISSUED_AT));
             assertRejectedBeforeEnvelopeValidation(decoder, keyPair, validClaims(ISSUED_AT, ISSUED_AT.minusSeconds(1)));
@@ -142,54 +129,37 @@ class LocalAccessTokenDecoderTest {
             var keyPair = context.getBean(KeyPair.class);
             var decoder = context.getBean(JwtDecoder.class);
             var exactNow = Instant.parse("2026-08-09T15:00:00Z");
-            var exactNotBefore =
-                    sign(keyPair, JWSAlgorithm.RS256, validHeaders(), validClaims(exactNow, exactNow.plusSeconds(60)));
+            var exactNotBefore = sign(keyPair, JWSAlgorithm.RS256, validHeaders(), validClaims(exactNow, exactNow.plusSeconds(60)));
             clock.reset(exactNow);
 
             assertThat(decoder.decode(exactNotBefore).getNotBefore()).isEqualTo(exactNow);
             assertThat(clock.invocations()).isOne();
 
-            var oneSecondWindow =
-                    sign(keyPair, JWSAlgorithm.RS256, validHeaders(), validClaims(ISSUED_AT, ISSUED_AT.plusSeconds(1)));
+            var oneSecondWindow = sign(keyPair, JWSAlgorithm.RS256, validHeaders(), validClaims(ISSUED_AT, ISSUED_AT.plusSeconds(1)));
             clock.reset(FRACTIONAL_OBSERVED_AT);
 
             assertThat(decoder.decode(oneSecondWindow).getExpiresAt()).isEqualTo(ISSUED_AT.plusSeconds(1));
             assertThat(clock.invocations()).isOne();
 
             var expiresExactlyNow = validClaims(exactNow.minusSeconds(60), exactNow);
-            assertEnvelopeRejected(
-                    decoder, keyPair, validHeaders(), expiresExactlyNow, exactNow, "expiry equality boundary");
+            assertEnvelopeRejected(decoder, keyPair, validHeaders(), expiresExactlyNow, exactNow, "expiry equality boundary");
 
             var futureNotBefore = validClaims(exactNow.plusSeconds(1), exactNow.plusSeconds(61));
-            assertEnvelopeRejected(
-                    decoder, keyPair, validHeaders(), futureNotBefore, exactNow, "future not-before boundary");
+            assertEnvelopeRejected(decoder, keyPair, validHeaders(), futureNotBefore, exactNow, "future not-before boundary");
         });
     }
 
     private String encode(JwtEncoder encoder, Instant issuedAt, Instant expiresAt) {
-        var headers = JwsHeader.with(SignatureAlgorithm.RS256)
-                .keyId(KEY_ID)
-                .type("access")
-                .build();
-        var claims = JwtClaimsSet.builder()
-                .issuer(ISSUER)
-                .subject(SUBJECT)
-                .audience(List.of(AUDIENCE))
-                .issuedAt(issuedAt)
-                .notBefore(issuedAt)
-                .expiresAt(expiresAt)
-                .id(TOKEN_ID)
-                .claim("sid", SESSION_ID)
-                .build();
+        var headers = JwsHeader.with(SignatureAlgorithm.RS256).keyId(KEY_ID).type("access").build();
+        var claims = JwtClaimsSet.builder().issuer(ISSUER).subject(SUBJECT).audience(List.of(AUDIENCE)).issuedAt(issuedAt).notBefore(issuedAt)
+                .expiresAt(expiresAt).id(TOKEN_ID).claim("sid", SESSION_ID).build();
         return encoder.encode(JwtEncoderParameters.from(headers, claims)).getTokenValue();
     }
 
     private List<InvalidEnvelope> invalidEnvelopes() {
         var fractionalIssuedAt = BigDecimal.valueOf(ISSUED_AT.getEpochSecond()).add(new BigDecimal("0.5"));
-        var fractionalExpiresAt =
-                BigDecimal.valueOf(ISSUED_AT.plusSeconds(60).getEpochSecond()).add(new BigDecimal("0.5"));
-        return List.of(
-                invalid("missing type", headers -> headers.remove("typ"), claims -> {}),
+        var fractionalExpiresAt = BigDecimal.valueOf(ISSUED_AT.plusSeconds(60).getEpochSecond()).add(new BigDecimal("0.5"));
+        return List.of(invalid("missing type", headers -> headers.remove("typ"), claims -> {}),
                 invalid("wrong type", headers -> headers.put("typ", "refresh"), claims -> {}),
                 invalid("missing key ID", headers -> headers.remove("kid"), claims -> {}),
                 invalid("wrong key ID", headers -> headers.put("kid", "wrong-key"), claims -> {}),
@@ -197,51 +167,28 @@ class LocalAccessTokenDecoderTest {
                 invalid("wrong issuer", headers -> {}, claims -> claims.put("iss", "https://wrong.example")),
                 invalid("missing audience", headers -> {}, claims -> claims.remove("aud")),
                 invalid("wrong audience", headers -> {}, claims -> claims.put("aud", "wrong-audience")),
-                invalid(
-                        "multiple audiences",
-                        headers -> {},
-                        claims -> claims.put("aud", List.of(AUDIENCE, "second-audience"))),
+                invalid("multiple audiences", headers -> {}, claims -> claims.put("aud", List.of(AUDIENCE, "second-audience"))),
                 invalid("missing subject", headers -> {}, claims -> claims.remove("sub")),
                 invalid("malformed subject", headers -> {}, claims -> claims.put("sub", "not-a-uuid")),
-                invalid(
-                        "non-canonical subject",
-                        headers -> {},
-                        claims -> claims.put("sub", SUBJECT.toUpperCase(Locale.ROOT))),
+                invalid("non-canonical subject", headers -> {}, claims -> claims.put("sub", SUBJECT.toUpperCase(Locale.ROOT))),
                 invalid("missing token ID", headers -> {}, claims -> claims.remove("jti")),
                 invalid("malformed token ID", headers -> {}, claims -> claims.put("jti", "not-a-uuid")),
-                invalid(
-                        "non-canonical token ID",
-                        headers -> {},
-                        claims -> claims.put("jti", TOKEN_ID.toUpperCase(Locale.ROOT))),
+                invalid("non-canonical token ID", headers -> {}, claims -> claims.put("jti", TOKEN_ID.toUpperCase(Locale.ROOT))),
                 invalid("missing session ID", headers -> {}, claims -> claims.remove("sid")),
                 invalid("malformed session ID", headers -> {}, claims -> claims.put("sid", "not-a-uuid")),
-                invalid(
-                        "non-canonical session ID",
-                        headers -> {},
-                        claims -> claims.put("sid", SESSION_ID.toUpperCase(Locale.ROOT))),
+                invalid("non-canonical session ID", headers -> {}, claims -> claims.put("sid", SESSION_ID.toUpperCase(Locale.ROOT))),
                 invalid("missing issued-at", headers -> {}, claims -> claims.remove("iat")),
                 invalid("missing not-before", headers -> {}, claims -> claims.remove("nbf")),
                 invalid("missing expiry", headers -> {}, claims -> claims.remove("exp")),
                 invalid("fractional issued-at", headers -> {}, claims -> claims.put("iat", fractionalIssuedAt)),
                 invalid("fractional not-before", headers -> {}, claims -> claims.put("nbf", fractionalIssuedAt)),
                 invalid("fractional expiry", headers -> {}, claims -> claims.put("exp", fractionalExpiresAt)),
-                invalid(
-                        "unequal issued-at and not-before",
-                        headers -> {},
-                        claims -> claims.put("nbf", ISSUED_AT.plusSeconds(1).getEpochSecond())),
-                invalid(
-                        "overlong validity window",
-                        headers -> {},
-                        claims -> claims.put(
-                                "exp",
-                                ISSUED_AT
-                                        .plus(ACCESS_TOKEN_LIFETIME)
-                                        .plusSeconds(1)
-                                        .getEpochSecond())));
+                invalid("unequal issued-at and not-before", headers -> {}, claims -> claims.put("nbf", ISSUED_AT.plusSeconds(1).getEpochSecond())),
+                invalid("overlong validity window", headers -> {},
+                        claims -> claims.put("exp", ISSUED_AT.plus(ACCESS_TOKEN_LIFETIME).plusSeconds(1).getEpochSecond())));
     }
 
-    private InvalidEnvelope invalid(
-            String name, Consumer<Map<String, Object>> headerChange, Consumer<Map<String, Object>> claimChange) {
+    private InvalidEnvelope invalid(String name, Consumer<Map<String, Object>> headerChange, Consumer<Map<String, Object>> claimChange) {
         var headers = validHeaders();
         var claims = validClaims(ISSUED_AT, ISSUED_AT.plus(ACCESS_TOKEN_LIFETIME));
         headerChange.accept(headers);
@@ -269,8 +216,7 @@ class LocalAccessTokenDecoderTest {
         return claims;
     }
 
-    private String sign(
-            KeyPair keyPair, JWSAlgorithm algorithm, Map<String, Object> headers, Map<String, Object> claims) {
+    private String sign(KeyPair keyPair, JWSAlgorithm algorithm, Map<String, Object> headers, Map<String, Object> claims) {
         var headerBuilder = new JWSHeader.Builder(algorithm);
         if (headers.get("kid") instanceof String keyId) {
             headerBuilder.keyID(keyId);
@@ -287,12 +233,7 @@ class LocalAccessTokenDecoderTest {
         return signedJwt.serialize();
     }
 
-    private void assertEnvelopeRejected(
-            JwtDecoder decoder,
-            KeyPair keyPair,
-            Map<String, Object> headers,
-            Map<String, Object> claims,
-            Instant observedAt,
+    private void assertEnvelopeRejected(JwtDecoder decoder, KeyPair keyPair, Map<String, Object> headers, Map<String, Object> claims, Instant observedAt,
             String caseName) {
         var compactToken = sign(keyPair, JWSAlgorithm.RS256, headers, claims);
         clock.reset(observedAt);
@@ -307,26 +248,11 @@ class LocalAccessTokenDecoderTest {
         assertThat(error.getErrorCode()).as(caseName).isEqualTo(OAuth2ErrorCodes.INVALID_TOKEN);
         assertThat(error.getDescription()).as(caseName).isEqualTo(LocalAccessTokenValidator.INVALID_TOKEN_DESCRIPTION);
         assertThat(error.getUri()).as(caseName).isNull();
-        assertThat(validationException.getMessage())
-                .as(caseName)
-                .doesNotContain(
-                        compactToken,
-                        caseName,
-                        KEY_ID,
-                        ISSUER,
-                        AUDIENCE,
-                        SUBJECT,
-                        TOKEN_ID,
-                        SESSION_ID,
-                        "wrong-key",
-                        "wrong-audience",
-                        "https://wrong.example",
-                        "not-a-uuid",
-                        "refresh");
+        assertThat(validationException.getMessage()).as(caseName).doesNotContain(compactToken, caseName, KEY_ID, ISSUER, AUDIENCE, SUBJECT, TOKEN_ID,
+                SESSION_ID, "wrong-key", "wrong-audience", "https://wrong.example", "not-a-uuid", "refresh");
     }
 
-    private void assertRejectedBeforeEnvelopeValidation(
-            JwtDecoder decoder, KeyPair keyPair, Map<String, Object> claims) {
+    private void assertRejectedBeforeEnvelopeValidation(JwtDecoder decoder, KeyPair keyPair, Map<String, Object> claims) {
         var compactToken = sign(keyPair, JWSAlgorithm.RS256, validHeaders(), claims);
         clock.reset(FRACTIONAL_OBSERVED_AT);
 

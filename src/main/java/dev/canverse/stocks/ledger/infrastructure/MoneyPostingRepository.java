@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface MoneyPostingRepository extends JpaRepository<MoneyPosting, UUID> {
 
-    @Query(
-            "select p from MoneyPosting p where p.ownerUserAccountId = :ownerUserAccountId and p.activityId = :activityId")
+    @Query("select p from MoneyPosting p where p.ownerUserAccountId = :ownerUserAccountId and p.activityId = :activityId")
     List<MoneyPosting> findOwnedActivity(UUID ownerUserAccountId, UUID activityId);
 }

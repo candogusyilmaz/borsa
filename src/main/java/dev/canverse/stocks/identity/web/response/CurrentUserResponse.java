@@ -5,8 +5,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-public record CurrentUserResponse(
-        @NotNull UUID id, @NotNull String email, @NotNull Instant createdAt) {
+public record CurrentUserResponse(@NotNull UUID id, @NotNull String email, @NotNull Instant createdAt) {
 
     public CurrentUserResponse {
         Objects.requireNonNull(id, "id");

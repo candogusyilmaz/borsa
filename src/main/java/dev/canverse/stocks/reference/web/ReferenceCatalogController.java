@@ -42,8 +42,7 @@ public class ReferenceCatalogController {
     }
 
     @GetMapping("markets/{marketId}/calendar")
-    public ResponseEntity<MarketCalendarResponse> calendar(
-            @PathVariable UUID marketId,
+    public ResponseEntity<MarketCalendarResponse> calendar(@PathVariable UUID marketId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
         return new ResponseEntity<>(queryService.calendar(marketId, from, to), CacheHeaders.noStore(), HttpStatus.OK);

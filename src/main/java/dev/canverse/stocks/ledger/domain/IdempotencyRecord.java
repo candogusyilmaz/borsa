@@ -33,16 +33,8 @@ public class IdempotencyRecord {
 
     private Instant createdAt;
 
-    public static IdempotencyRecord create(
-            UUID id,
-            UUID ownerUserAccountId,
-            String operationScope,
-            UUID clientRequestId,
-            String requestHash,
-            String resultResourceKind,
-            UUID resultResourceId,
-            String resultSnapshot,
-            Instant createdAt) {
+    public static IdempotencyRecord create(UUID id, UUID ownerUserAccountId, String operationScope, UUID clientRequestId, String requestHash,
+            String resultResourceKind, UUID resultResourceId, String resultSnapshot, Instant createdAt) {
         var record = new IdempotencyRecord();
         record.id = Objects.requireNonNull(id, "id");
         record.ownerUserAccountId = Objects.requireNonNull(ownerUserAccountId, "ownerUserAccountId");

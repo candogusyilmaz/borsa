@@ -28,9 +28,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        properties = "management.tracing.sampling.probability=1.0")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, properties = "management.tracing.sampling.probability=1.0")
 @AutoConfigureMockMvc
 @Testcontainers
 @Import(MicrometerTracingHttpTest.TestOverrides.class)
@@ -74,9 +72,7 @@ class MicrometerTracingHttpTest {
 
     @Test
     void compatibilityHeaderAndProblemDetailsRetainTheExistingCorrelationContract() throws Exception {
-        var result = mockMvc.perform(get("/test/tracing/error"))
-                .andExpect(status().isInternalServerError())
-                .andReturn();
+        var result = mockMvc.perform(get("/test/tracing/error")).andExpect(status().isInternalServerError()).andReturn();
 
         var headerTraceId = result.getResponse().getHeader(RequestTraceFilter.TRACE_ID_HEADER);
         var bodyTraceId = JsonPath.<String>read(result.getResponse().getContentAsString(), "$.traceId");
@@ -85,20 +81,13 @@ class MicrometerTracingHttpTest {
         assertMdcIsClean();
     }
 
-    private TraceProbeResponse probe(org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder request)
-            throws Exception {
+    private TraceProbeResponse probe(org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder request) throws Exception {
         var result = mockMvc.perform(request).andExpect(status().isOk()).andReturn();
         var body = result.getResponse().getContentAsString();
-        var response = new TraceProbeResponse(
-                JsonPath.read(body, "$.nativeTraceId"),
-                JsonPath.read(body, "$.nativeSpanId"),
-                JsonPath.read(body, "$.mdcTraceId"),
-                JsonPath.read(body, "$.mdcSpanId"),
-                JsonPath.read(body, "$.compatibilityTraceId"));
-        assertThat(result.getResponse().getHeader(RequestTraceFilter.TRACE_ID_HEADER))
-                .isNotBlank();
-        assertThat(response.compatibilityTraceId())
-                .isEqualTo(result.getResponse().getHeader(RequestTraceFilter.TRACE_ID_HEADER));
+        var response = new TraceProbeResponse(JsonPath.read(body, "$.nativeTraceId"), JsonPath.read(body, "$.nativeSpanId"),
+                JsonPath.read(body, "$.mdcTraceId"), JsonPath.read(body, "$.mdcSpanId"), JsonPath.read(body, "$.compatibilityTraceId"));
+        assertThat(result.getResponse().getHeader(RequestTraceFilter.TRACE_ID_HEADER)).isNotBlank();
+        assertThat(response.compatibilityTraceId()).isEqualTo(result.getResponse().getHeader(RequestTraceFilter.TRACE_ID_HEADER));
         return response;
     }
 
@@ -108,12 +97,7 @@ class MicrometerTracingHttpTest {
         assertThat(MDC.get(RequestTraceFilter.TRACE_ID_MDC_KEY)).isNull();
     }
 
-    private record TraceProbeResponse(
-            String nativeTraceId,
-            String nativeSpanId,
-            String mdcTraceId,
-            String mdcSpanId,
-            String compatibilityTraceId) {}
+    private record TraceProbeResponse(String nativeTraceId, String nativeSpanId, String mdcTraceId, String mdcSpanId, String compatibilityTraceId) {}
 
     @RestController
     static class TraceProbeController {
@@ -127,11 +111,7 @@ class MicrometerTracingHttpTest {
         @GetMapping("/test/tracing/probe")
         TraceProbeResponse probe() {
             var span = tracer.currentSpan();
-            return new TraceProbeResponse(
-                    spanValue(span, true),
-                    spanValue(span, false),
-                    valueOrNone(MDC.get("traceId")),
-                    valueOrNone(MDC.get("spanId")),
+            return new TraceProbeResponse(spanValue(span, true), spanValue(span, false), valueOrNone(MDC.get("traceId")), valueOrNone(MDC.get("spanId")),
                     valueOrNone(MDC.get(RequestTraceFilter.TRACE_ID_MDC_KEY)));
         }
 
