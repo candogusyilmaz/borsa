@@ -10,6 +10,34 @@ maintainability, and user experience.
 
 ---
 
+## 📁 Repository Structure
+
+The repository is organized as a plain monorepo with separate application roots:
+
+- `server/` — Spring Boot backend application (Java 25, PostgreSQL 17, Flyway)
+- `web/` — React frontend application (Vite, React 19, Mantine)
+- `docs/` — Architecture, engineering standards, and dual implementation tracks:
+  - `docs/implementation/` — Backend implementation track (`PR-xxx`)
+  - `docs/implementation/web/` — Frontend implementation track (`UI-xxx`)
+
+### Running the Backend
+
+```powershell
+cd server
+.\mvnw.cmd test
+.\mvnw.cmd spring-boot:run
+```
+
+### Running the Frontend
+
+```powershell
+cd web
+npm install
+npm run dev
+```
+
+---
+
 ## 🚀 Features
 
 - Authentication

@@ -1,6 +1,12 @@
 # Implementation PR workflow
 
-This directory contains the active implementation pointer, the concise current-state handoff, the PR template, and bounded implementation specifications.
+This directory contains the active backend implementation pointer, the concise current-state handoff, the PR template, and bounded implementation specifications for the backend application (`server/`).
+
+## Dual implementation tracks
+
+The repository maintains two independent implementation tracks:
+- **Backend track** (`docs/implementation/`): uses the `PR-xxx` specification namespace with `CURRENT.md` and `STATE.md`.
+- **Frontend track** ([docs/implementation/web/](web/README.md)): uses the `UI-xxx` specification namespace with its own `CURRENT.md` and `STATE.md`.
 
 ## Active-spec mechanism
 

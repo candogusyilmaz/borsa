@@ -13,7 +13,7 @@
     "format": "biome format --write ./src",
     "check": "biome check --write ./src",
     "generate:openapi": "openapi-typescript http://localhost:8080/v3/api-docs -o ./src/api/schema.d.ts",
-    "prepare": "cd ../../.. && husky"
+    "prepare": "cd .. && husky"
   },
   "dependencies": {
     "@biomejs/biome": "^2.4.5",

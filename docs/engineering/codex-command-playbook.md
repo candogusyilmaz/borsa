@@ -20,15 +20,16 @@ Do not record one-off compilation or assertion failures, temporary hypotheses, l
 
 ## Workspace and shell
 
-**Problem / condition:** Repository searches and edits run in the Windows workspace.
+**Problem / condition:** Repository searches and edits run in the Windows workspace across a plain monorepo (`server/` and `web/`).
 
-**Resolved procedure:** Work from `C:\Users\Vintage\Documents\stocks`; use `rg`/`rg --files` for discovery; keep inspection commands focused; use `apply_patch` for file edits rather than redirection, `cat`, or inline write scripts.
+**Resolved procedure:** Run repository searches and Git inspection from `C:\Users\Vintage\Documents\stocks`; run Maven commands from `server/` (e.g. `cd server; .\mvnw.cmd test`); run frontend commands from `web/` (e.g. `cd web; npm run build`); use `rg`/`rg --files` for discovery; keep inspection commands focused.
 
 **Known restriction:** Quote paths and comma-separated Maven properties in PowerShell:
 
 ```powershell
-./mvnw "-Dtest=FocusedTestA,FocusedTestB" test
-Get-Content -Raw "docs\implementation\CURRENT.md"
+cd server
+.\mvnw.cmd "-Dtest=FocusedTestA,FocusedTestB" test
+Get-Content -Raw "..\docs\implementation\CURRENT.md"
 ```
 
 ## Git safe-directory warning
@@ -58,12 +59,13 @@ Replace `STARTING_COMMIT` with the verified baseline; do not guess it from commi
 
 **Problem / condition:** The default sandbox can block Maven Central while resolving a parent or dependency.
 
-**Resolved procedure:** First run the normal wrapper command, such as:
+**Resolved procedure:** First run the normal wrapper command from `server/`, such as:
 
 ```powershell
-./mvnw spotless:check
-./mvnw test
-./mvnw verify
+cd server
+.\mvnw.cmd spotless:check
+.\mvnw.cmd test
+.\mvnw.cmd verify
 ```
 
 If the failure is specifically a dependency-resolution network or permission error, rerun the same command with an escalation request and a narrow `./mvnw` prefix.

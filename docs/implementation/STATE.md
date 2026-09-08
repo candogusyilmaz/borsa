@@ -5,7 +5,8 @@ Last updated: 2026-09-07
 ## Technology baseline
 
 - Java 25 and Spring Boot 4.1.x.
-- One Maven modular monolith, one Spring Boot process, and one PostgreSQL database.
+- One Maven modular monolith rooted in `server/`, one Spring Boot process, and one PostgreSQL database.
+- Repository structure: plain monorepo separating `server/` (Spring Boot backend) and `web/` (React frontend).
 - Flyway owns migrations and DDL; Hibernate/JPA validates the mapped schema.
 - Testcontainers provides PostgreSQL integration coverage.
 
@@ -84,11 +85,13 @@ Tables:
 
 PR-026 is accepted and committed; Cleanup C is complete. PR-027 / Cleanup D is active and implemented: the redundant preview/reference row/model/factory surfaces and unused read projections are removed, genuine read models remain, five workflow-specific fingerprint methods preserve the existing canonical identity, and the historical policy decision is passed through unchanged. The positive historical-adjustment test explicitly proves persisted `ALLOWED`, while the negative historical-adjustment test continues to prove `HISTORICAL_BREACH_RECORDED`. The focused PR-027 gate passed 99 tests, and the full suite plus Maven `verify` passed 371 tests each with 0 failures, 0 errors, and 0 skips against the final working tree. Spotless passed, Docker Desktop/Testcontainers PostgreSQL 17 was available, and no required tests were skipped or replaced. Static audits pass, including no deleted-symbol or removed-view matches, unchanged normalized predicates/order clauses, unchanged `CanonicalFingerprint`, and 261 Java files (198 production and 63 test).
 
+WORKSPACE-001 repository restructuring verified: full Maven lifecycle (`.\mvnw.cmd verify` without test skipping) from `server/` passed with 371 tests (0 failures, 0 errors, 0 skips), Spotless passed with 261 files clean, and Spring Boot executable archive repackaged successfully. Root Docker build (`docker build -t stocks-workspace-check .`) verified cleanly.
+
 Last updated: 2026-09-07
 
 ## Resume context
 
-- Operating contract and context router: [AGENTS.md](../../AGENTS.md)
+- Operating contract and context router: [server/AGENTS.md](../../server/AGENTS.md) (repository router: [AGENTS.md](../../AGENTS.md))
 - Active pointer: [CURRENT.md](CURRENT.md)
 - Active scope: [PR-027 - Cleanup D redundant model, mapping, and fingerprint readability](PR-027-redundant-model-mapping-and-fingerprint-readability.md)
 

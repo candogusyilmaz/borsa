@@ -7,7 +7,7 @@ separate human-controlled steps.
 
 Before editing:
 
-1. Read the repository [operating contract](../../AGENTS.md).
+1. Read the repository [operating contract](../../AGENTS.md) and backend contract ([server/AGENTS.md](../../server/AGENTS.md)).
 2. Read [CURRENT.md](../../docs/implementation/CURRENT.md).
 3. Read the active PR specification named there completely.
 4. Use that specification's references and changed surfaces to identify the initial relevant sections of the coding
@@ -27,9 +27,8 @@ If no implementation PR is active, do not invent production scope.
 - Implement the active specification completely, including every acceptance criterion and required test.
 - Do not quietly defer specified behavior, broaden into later roadmap work, add speculative infrastructure, or pad the
   change with unrelated cleanup.
-- Work backend-first. Do not edit `src/main/web` unless the user or active specification explicitly includes frontend
-  work.
-- Keep one Maven project, one Spring Boot process, one PostgreSQL database, and one deployable artifact.
+- Work backend-first. Do not edit `web/` unless the user or active specification explicitly includes frontend work.
+- Keep one Maven project under `server/`, one Spring Boot process, one PostgreSQL database, and one deployable artifact.
 - Flyway owns schema creation; Hibernate/JPA validates mappings and never owns DDL.
 - Preserve the repository's financial semantics and read the accounting contract sections required by the active
   capability.

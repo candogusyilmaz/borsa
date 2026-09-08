@@ -2,7 +2,7 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 
 # ── Java: Spotless ────────────────────────────────────────────────────────────
 echo 'Running Spotless (spotless:apply)...'
-cd "$REPO_ROOT" || exit 1
+cd "$REPO_ROOT/server" || exit 1
 ./mvnw spotless:apply -q
 SPOTLESS_EXIT=$?
 
@@ -18,7 +18,7 @@ echo 'OK: Java formatting done.'
 
 # ── Frontend: TypeScript type check ──────────────────────────────────────────
 echo 'Running TypeScript type check (tsc -b)...'
-cd "$REPO_ROOT/src/main/web" || exit 1
+cd "$REPO_ROOT/web" || exit 1
 npm run typecheck
 TSC_EXIT=$?
 

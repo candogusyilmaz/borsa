@@ -1,27 +1,26 @@
-# Stage 1: Build stage
-FROM eclipse-temurin:21-jdk-alpine as builder
+FROM eclipse-temurin:25-jdk AS builder
 
 # Set the working directory
 WORKDIR /app
 
 # Copy the Maven wrapper and give execution permission
-COPY .mvn/ .mvn
-COPY mvnw .
-COPY pom.xml .
+COPY server/.mvn/ .mvn
+COPY server/mvnw .
+COPY server/pom.xml .
 
 RUN chmod +x ./mvnw
 
 # Resolve dependencies
 RUN ./mvnw dependency:resolve
 
-# Copy the source code
-COPY src ./src
+# Copy backend configuration and source code
+COPY server/config ./config
+COPY server/src ./src
 
 # Package the Spring Boot application as a JAR file
 RUN ./mvnw clean package -DskipTests -Pprod
 
-# Stage 2: Runtime stage
-FROM eclipse-temurin:21-jre-alpine as runtime
+FROM eclipse-temurin:25-jre AS runtime
 
 WORKDIR /app
 
