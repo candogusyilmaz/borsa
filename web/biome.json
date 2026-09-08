@@ -35,8 +35,9 @@
     "includes": [
       "**",
       "!**/routeTree.gen.ts",
-      "**/!borsa.json",
-      "!**/*.css"
+      "!**/*.css",
+      "!dist/**",
+      "!node_modules/**"
     ]
   }
 }

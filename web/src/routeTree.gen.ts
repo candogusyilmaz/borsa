@@ -10,144 +10,49 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as authRegisterRouteImport } from './routes/(auth)/register'
-import { Route as authLoginRouteImport } from './routes/(auth)/login'
-import { Route as AuthenticatedOnboardingRouteRouteImport } from './routes/_authenticated/onboarding/route'
-import { Route as AuthenticatedMemberRouteRouteImport } from './routes/_authenticated/_member/route'
-import { Route as AuthenticatedMemberTradesRouteRouteImport } from './routes/_authenticated/_member/trades/route'
-import { Route as AuthenticatedMemberPositionsRouteRouteImport } from './routes/_authenticated/_member/positions/route'
-import { Route as AuthenticatedMemberDashboardRouteRouteImport } from './routes/_authenticated/_member/dashboard/route'
-import { Route as AuthenticatedMemberPortfoliosPortfolioIdRouteImport } from './routes/_authenticated/_member/portfolios/$portfolioId'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const authRegisterRoute = authRegisterRouteImport.update({
-  id: '/(auth)/register',
-  path: '/register',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const authLoginRoute = authLoginRouteImport.update({
-  id: '/(auth)/login',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedOnboardingRouteRoute =
-  AuthenticatedOnboardingRouteRouteImport.update({
-    id: '/onboarding',
-    path: '/onboarding',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedMemberRouteRoute =
-  AuthenticatedMemberRouteRouteImport.update({
-    id: '/_member',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedMemberTradesRouteRoute =
-  AuthenticatedMemberTradesRouteRouteImport.update({
-    id: '/trades',
-    path: '/trades',
-    getParentRoute: () => AuthenticatedMemberRouteRoute,
-  } as any)
-const AuthenticatedMemberPositionsRouteRoute =
-  AuthenticatedMemberPositionsRouteRouteImport.update({
-    id: '/positions',
-    path: '/positions',
-    getParentRoute: () => AuthenticatedMemberRouteRoute,
-  } as any)
-const AuthenticatedMemberDashboardRouteRoute =
-  AuthenticatedMemberDashboardRouteRouteImport.update({
-    id: '/dashboard',
-    path: '/dashboard',
-    getParentRoute: () => AuthenticatedMemberRouteRoute,
-  } as any)
-const AuthenticatedMemberPortfoliosPortfolioIdRoute =
-  AuthenticatedMemberPortfoliosPortfolioIdRouteImport.update({
-    id: '/portfolios/$portfolioId',
-    path: '/portfolios/$portfolioId',
-    getParentRoute: () => AuthenticatedMemberRouteRoute,
-  } as any)
+const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/onboarding': typeof AuthenticatedOnboardingRouteRoute
-  '/login': typeof authLoginRoute
-  '/register': typeof authRegisterRoute
-  '/dashboard': typeof AuthenticatedMemberDashboardRouteRoute
-  '/positions': typeof AuthenticatedMemberPositionsRouteRoute
-  '/trades': typeof AuthenticatedMemberTradesRouteRoute
-  '/portfolios/$portfolioId': typeof AuthenticatedMemberPortfoliosPortfolioIdRoute
+  '/': typeof AuthenticatedIndexRoute
+  '/login': typeof LoginRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/onboarding': typeof AuthenticatedOnboardingRouteRoute
-  '/login': typeof authLoginRoute
-  '/register': typeof authRegisterRoute
-  '/dashboard': typeof AuthenticatedMemberDashboardRouteRoute
-  '/positions': typeof AuthenticatedMemberPositionsRouteRoute
-  '/trades': typeof AuthenticatedMemberTradesRouteRoute
-  '/portfolios/$portfolioId': typeof AuthenticatedMemberPortfoliosPortfolioIdRoute
+  '/login': typeof LoginRoute
+  '/': typeof AuthenticatedIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
-  '/_authenticated/_member': typeof AuthenticatedMemberRouteRouteWithChildren
-  '/_authenticated/onboarding': typeof AuthenticatedOnboardingRouteRoute
-  '/(auth)/login': typeof authLoginRoute
-  '/(auth)/register': typeof authRegisterRoute
-  '/_authenticated/_member/dashboard': typeof AuthenticatedMemberDashboardRouteRoute
-  '/_authenticated/_member/positions': typeof AuthenticatedMemberPositionsRouteRoute
-  '/_authenticated/_member/trades': typeof AuthenticatedMemberTradesRouteRoute
-  '/_authenticated/_member/portfolios/$portfolioId': typeof AuthenticatedMemberPortfoliosPortfolioIdRoute
+  '/login': typeof LoginRoute
+  '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/onboarding'
-    | '/login'
-    | '/register'
-    | '/dashboard'
-    | '/positions'
-    | '/trades'
-    | '/portfolios/$portfolioId'
+  fullPaths: '/' | '/login'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/onboarding'
-    | '/login'
-    | '/register'
-    | '/dashboard'
-    | '/positions'
-    | '/trades'
-    | '/portfolios/$portfolioId'
-  id:
-    | '__root__'
-    | '/'
-    | '/_authenticated'
-    | '/_authenticated/_member'
-    | '/_authenticated/onboarding'
-    | '/(auth)/login'
-    | '/(auth)/register'
-    | '/_authenticated/_member/dashboard'
-    | '/_authenticated/_member/positions'
-    | '/_authenticated/_member/trades'
-    | '/_authenticated/_member/portfolios/$portfolioId'
+  to: '/login' | '/'
+  id: '__root__' | '/_authenticated' | '/login' | '/_authenticated/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
-  authLoginRoute: typeof authLoginRoute
-  authRegisterRoute: typeof authRegisterRoute
+  LoginRoute: typeof LoginRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -159,113 +64,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/(auth)/register': {
-      id: '/(auth)/register'
-      path: '/register'
-      fullPath: '/register'
-      preLoaderRoute: typeof authRegisterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/(auth)/login': {
-      id: '/(auth)/login'
+    '/login': {
+      id: '/login'
       path: '/login'
       fullPath: '/login'
-      preLoaderRoute: typeof authLoginRouteImport
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/onboarding': {
-      id: '/_authenticated/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof AuthenticatedOnboardingRouteRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/_member': {
-      id: '/_authenticated/_member'
-      path: ''
+    '/_authenticated/': {
+      id: '/_authenticated/'
+      path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedMemberRouteRouteImport
+      preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/_member/trades': {
-      id: '/_authenticated/_member/trades'
-      path: '/trades'
-      fullPath: '/trades'
-      preLoaderRoute: typeof AuthenticatedMemberTradesRouteRouteImport
-      parentRoute: typeof AuthenticatedMemberRouteRoute
-    }
-    '/_authenticated/_member/positions': {
-      id: '/_authenticated/_member/positions'
-      path: '/positions'
-      fullPath: '/positions'
-      preLoaderRoute: typeof AuthenticatedMemberPositionsRouteRouteImport
-      parentRoute: typeof AuthenticatedMemberRouteRoute
-    }
-    '/_authenticated/_member/dashboard': {
-      id: '/_authenticated/_member/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthenticatedMemberDashboardRouteRouteImport
-      parentRoute: typeof AuthenticatedMemberRouteRoute
-    }
-    '/_authenticated/_member/portfolios/$portfolioId': {
-      id: '/_authenticated/_member/portfolios/$portfolioId'
-      path: '/portfolios/$portfolioId'
-      fullPath: '/portfolios/$portfolioId'
-      preLoaderRoute: typeof AuthenticatedMemberPortfoliosPortfolioIdRouteImport
-      parentRoute: typeof AuthenticatedMemberRouteRoute
-    }
   }
 }
-
-interface AuthenticatedMemberRouteRouteChildren {
-  AuthenticatedMemberDashboardRouteRoute: typeof AuthenticatedMemberDashboardRouteRoute
-  AuthenticatedMemberPositionsRouteRoute: typeof AuthenticatedMemberPositionsRouteRoute
-  AuthenticatedMemberTradesRouteRoute: typeof AuthenticatedMemberTradesRouteRoute
-  AuthenticatedMemberPortfoliosPortfolioIdRoute: typeof AuthenticatedMemberPortfoliosPortfolioIdRoute
-}
-
-const AuthenticatedMemberRouteRouteChildren: AuthenticatedMemberRouteRouteChildren =
-  {
-    AuthenticatedMemberDashboardRouteRoute:
-      AuthenticatedMemberDashboardRouteRoute,
-    AuthenticatedMemberPositionsRouteRoute:
-      AuthenticatedMemberPositionsRouteRoute,
-    AuthenticatedMemberTradesRouteRoute: AuthenticatedMemberTradesRouteRoute,
-    AuthenticatedMemberPortfoliosPortfolioIdRoute:
-      AuthenticatedMemberPortfoliosPortfolioIdRoute,
-  }
-
-const AuthenticatedMemberRouteRouteWithChildren =
-  AuthenticatedMemberRouteRoute._addFileChildren(
-    AuthenticatedMemberRouteRouteChildren,
-  )
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedMemberRouteRoute: typeof AuthenticatedMemberRouteRouteWithChildren
-  AuthenticatedOnboardingRouteRoute: typeof AuthenticatedOnboardingRouteRoute
+  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedMemberRouteRoute: AuthenticatedMemberRouteRouteWithChildren,
-  AuthenticatedOnboardingRouteRoute: AuthenticatedOnboardingRouteRoute,
+  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
-  authLoginRoute: authLoginRoute,
-  authRegisterRoute: authRegisterRoute,
+  LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

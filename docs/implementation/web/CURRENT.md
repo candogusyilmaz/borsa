@@ -1,7 +1,7 @@
 # Current frontend implementation unit
 
-Status: **INACTIVE**
+Status: **ACTIVE**
 
-Specification: None
+Specification: UI-001 (Frontend Foundation Rebuild)
 
-No frontend implementation unit is currently active. The frontend-template migration is planned as a future unit (UI-001).
+Implementation and review remain scoped to this specification.

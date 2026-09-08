@@ -10,6 +10,7 @@ This file is the initial operating contract and context router for the frontend 
    - Pointer: [CURRENT.md](../docs/implementation/web/CURRENT.md)
    - State: [STATE.md](../docs/implementation/web/STATE.md)
    - Workflow: [README.md](../docs/implementation/web/README.md)
+   - Standards: [frontend-standards.md](../docs/engineering/frontend-standards.md)
    Future frontend units use the `UI-xxx` specification namespace (e.g. `UI-001`).
 
 ## Operating rules

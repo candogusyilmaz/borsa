@@ -1,0 +1,48 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--mantine-spacing-md);
+  background-color: var(--color-bg-base);
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  padding: var(--mantine-spacing-xl);
+  background-color: var(--color-bg-surface);
+  border-radius: var(--mantine-radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: var(--mantine-spacing-xl);
+  text-align: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--mantine-radius-md);
+  background-color: var(--color-brand-50);
+  color: var(--color-brand-600);
+  margin-bottom: var(--mantine-spacing-md);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-md);
+}
+
+.footer {
+  margin-top: var(--mantine-spacing-md);
+  text-align: center;
+}

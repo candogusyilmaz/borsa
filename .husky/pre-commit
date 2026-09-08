@@ -37,7 +37,7 @@ BIOME_CHECK_EXIT=$?
 
 if [ $BIOME_CHECK_EXIT -ne 0 ]; then
   # Auto-fix what can be fixed
-  npm run check
+  npm run check:fix
   echo ''
   echo 'Biome found and fixed issues. Staging the fixed files...'
 

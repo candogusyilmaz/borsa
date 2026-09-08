@@ -1,27 +1,32 @@
 import { Center, Loader } from '@mantine/core';
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
-import { GlobalModals } from '~/components/GlobalModals';
-import { useAutoRefreshToken } from '~/hooks/use-auto-refresh-token';
+import { getAccessToken } from '@/api/client';
+import { AppShell } from '@/shared/components/app-shell';
 
 export const Route = createFileRoute('/_authenticated')({
-  component: RouteComponent,
-  beforeLoad: async (p) => {
-    if (!p.context.auth.isAuthenticated) throw redirect({ to: '/login' });
+  beforeLoad: ({ context, location }) => {
+    const isAuthed = context.auth.isAuthenticated || Boolean(getAccessToken());
+    if (!isAuthed) {
+      throw redirect({
+        to: '/login',
+        search: {
+          redirect: location.href
+        }
+      });
+    }
   },
   pendingComponent: () => (
-    <Center h="100dvh">
-      <Loader />
+    <Center h="100vh">
+      <Loader size="lg" />
     </Center>
-  )
+  ),
+  component: AuthenticatedLayout
 });
 
-function RouteComponent() {
-  useAutoRefreshToken();
-
+function AuthenticatedLayout() {
   return (
-    <>
-      <GlobalModals />
+    <AppShell>
       <Outlet />
-    </>
+    </AppShell>
   );
 }

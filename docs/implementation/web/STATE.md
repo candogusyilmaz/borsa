@@ -1,31 +1,37 @@
 # Frontend implementation state
 
-Last updated: 2026-09-07
+Last updated: 2026-09-08
 
 ## Technology baseline
 
-- Vite, React 19, TypeScript
-- Mantine UI (v9 alpha)
-- TanStack Router and TanStack Query
-- OpenAPI Fetch client
-- Zustand state management
-- Biome for formatting and linting
+- React 19 (`19.2.8`), TypeScript strict (`5.9.3`), Vite (`8.2.2`)
+- Mantine UI (`9.6.0`: `@mantine/core`, `@mantine/hooks`, `@mantine/notifications`)
+- TanStack Router (`1.170.33`, file-based)
+- TanStack Query (`5.102.8`)
+- TanStack Form (`1.2.0`)
+- openapi-fetch (`0.17.0`) / openapi-react-query (`0.5.4`)
+- Biome (`2.5.12`)
+- React Compiler (`babel-plugin-react-compiler` + `oxc-transform-react`)
+- @phosphor-icons/react (`2.1.7`)
 
 ## Repository location
 
-- Preserved frontend application resides at `web/` in a plain monorepo layout.
+- Frontend application resides at `web/` in a plain monorepo layout.
 - Application operates independently from `server/`.
 
 ## Active implementation scope
 
-- No UI unit is currently active.
-- Legacy frontend is preserved as-is from `src/main/web`.
-- Template migration and UI modernization will be planned under future UI units (starting with UI-001).
+- Unit UI-001 (Frontend Foundation Rebuild) is currently active.
+- Legacy frontend has been purged and replaced with a clean foundation:
+  - Centralized typed API client (`src/api/client.ts`) with RFC 7807 `ProblemDetail` error normalization and Bearer auth middleware.
+  - Core design tokens, semantic CSS variables, and Mantine v9 alpha theme (`src/app/theme.ts`, `src/index.css`).
+  - Strict scope discipline: all UI work strictly contained within `web/`.
+  - State management rule: TanStack Query exclusively owns remote state; no Zustand, no global stores.
 
 ## Verification state
 
-- Restructuring verification passed against `web/`:
-  - `npm run typecheck` (`tsc -b`) passed with 0 errors.
-  - `npx biome check ./src` checked 77 files with 0 errors / no fixes needed.
-  - `npm run build` (`tsc -b && vite build`) produced production distribution in `web/dist` successfully.
-  - `npm run prepare` (`cd .. && husky`) verified successfully from `web/`.
+- Foundation baseline verification against `web/`:
+  - `npm run typecheck` (`tsc -b`) verified with 0 errors.
+  - `npx biome check ./src` verified with 0 errors.
+  - `npm run build` (`tsc -b && vite build`) passes cleanly.
+  - Pre-commit hooks verify TypeScript and Biome via `npm run check:fix`.
