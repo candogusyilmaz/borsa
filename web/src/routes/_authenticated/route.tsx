@@ -11,7 +11,8 @@ export const Route = createFileRoute('/_authenticated')({
         to: '/login',
         search: {
           redirect: location.href
-        }
+        },
+        replace: true
       });
     }
   },

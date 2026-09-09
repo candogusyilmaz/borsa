@@ -81,39 +81,40 @@ function AuthProvider({ children }: { children: ReactNode }) {
       clearAccessToken();
       setToken(null);
       queryClient.clear();
-      await router.invalidate();
-      await router.navigate({ to: '/login' });
     }
   }
 
   async function login(credentials: { email: string; password: string }) {
-    const { data, error } = await client.POST('/api/v1/auth/login', {
-      body: {
-        email: credentials.email,
-        password: credentials.password,
-        deviceLabel: 'Web Browser',
-        refreshTokenDelivery: 'HTTP_ONLY_COOKIE'
-      }
-    });
-
-    if (error || !data) {
-      throw normalizeError(error);
-    }
-
-    setAccessToken(data.accessToken);
-    setToken(data.accessToken);
+    let sessionEstablished = false;
     try {
+      const { data, error } = await client.POST('/api/v1/auth/login', {
+        body: {
+          email: credentials.email,
+          password: credentials.password,
+          deviceLabel: 'Web Browser',
+          refreshTokenDelivery: 'HTTP_ONLY_COOKIE'
+        }
+      });
+
+      if (error || !data) {
+        throw error ?? new Error('Login request failed');
+      }
+
+      setAccessToken(data.accessToken);
+      setToken(data.accessToken);
+      sessionEstablished = true;
+
       const currentUser = await queryClient.fetchQuery($api.queryOptions('get', '/api/v1/me'));
       if (!currentUser) {
         throw new Error('Failed to retrieve user profile after login');
       }
-      await router.invalidate();
-    } catch (profileError) {
-      clearAccessToken();
-      setToken(null);
-      queryClient.clear();
-      await router.invalidate();
-      throw normalizeError(profileError);
+    } catch (error) {
+      if (sessionEstablished) {
+        clearAccessToken();
+        setToken(null);
+        queryClient.clear();
+      }
+      throw normalizeError(error);
     }
   }
 
@@ -134,8 +135,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
       clearAccessToken();
       setToken(null);
       queryClient.clear();
-      await router.invalidate();
-      await router.navigate({ to: '/login' });
+      await router.navigate({ to: '/login', replace: true });
     });
 
     async function initAuth() {

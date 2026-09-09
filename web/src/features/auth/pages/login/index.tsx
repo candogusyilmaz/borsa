@@ -4,7 +4,7 @@ import { ChartLineUpIcon } from '@phosphor-icons/react';
 import { useForm } from '@tanstack/react-form';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useState } from 'react';
-import { normalizeError } from '@/api/client';
+import type { ApiError } from '@/api/client';
 import { PasswordField, TextField } from '@/shared/components/fields';
 import { ThemeToggle } from '@/shared/components/theme-toggle';
 import { useAuth } from '@/shared/hooks/use-auth';
@@ -13,7 +13,7 @@ import classes from './login.module.css';
 export function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const search = useSearch({ strict: false }) as { redirect?: string };
+  const search = useSearch({ from: '/login' });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm({
@@ -25,9 +25,9 @@ export function LoginPage() {
       setIsSubmitting(true);
       try {
         await login(value);
-        await navigate({ to: search.redirect || '/' });
+        await navigate({ to: search.redirect ?? '/', replace: true });
       } catch (err) {
-        const apiError = normalizeError(err);
+        const apiError = err as ApiError;
         notifications.show({
           title: 'Authentication error',
           message: apiError.message || 'Invalid credentials or connection error.',

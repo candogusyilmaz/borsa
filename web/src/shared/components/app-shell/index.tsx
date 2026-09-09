@@ -20,7 +20,7 @@ export function AppShell({ children }: AppShellProps) {
 
   async function handleLogout() {
     await logout();
-    await navigate({ to: '/login' });
+    await navigate({ to: '/login', replace: true });
   }
 
   return (
