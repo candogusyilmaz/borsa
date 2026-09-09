@@ -1,15 +1,15 @@
 import { QueryClient } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { requestTokenRefresh } from './auth-recovery';
 import {
   advanceSessionEpoch,
   clearAccessToken,
-  createApiClient,
   currentSessionEpoch,
   getAccessToken,
   registerSessionLossHandler,
-  requestTokenRefresh,
   setAccessToken
-} from '../api/client';
+} from './auth-state';
+import { createApiClient } from './client';
 import { logoutSession, resolveSession } from './session';
 
 // All tests use the exact same recoveringFetch as production via createApiClient.

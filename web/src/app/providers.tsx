@@ -2,7 +2,9 @@ import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { type ReactNode, useCallback, useEffect, useMemo } from 'react';
-import { advanceSessionEpoch, client, normalizeError, registerSessionLossHandler, setAccessToken } from '@/api/client';
+import { advanceSessionEpoch, registerSessionLossHandler, setAccessToken } from '@/api/auth-state';
+import { client } from '@/api/client';
+import { normalizeError } from '@/api/errors';
 import { clearLocalSession, fetchCurrentUser, logoutSession } from '@/api/session';
 import { queryClient } from '@/app/query-client';
 import { router } from '@/app/router';
@@ -22,6 +24,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (credentials: { email: string; password: string }) => {
     let sessionEstablished = false;
+
     try {
       const { data, error } = await client.POST('/api/v1/auth/login', {
         body: {
@@ -38,6 +41,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
 
       setAccessToken(data.accessToken);
       advanceSessionEpoch();
+
       sessionEstablished = true;
 
       await fetchCurrentUser(queryClient);
@@ -45,6 +49,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
       if (sessionEstablished) {
         clearLocalSession(queryClient);
       }
+
       throw normalizeError(error);
     }
   }, []);
@@ -52,12 +57,23 @@ function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unregister = registerSessionLossHandler(async () => {
       clearLocalSession(queryClient);
-      await router.navigate({ to: '/login', replace: true });
+
+      await router.navigate({
+        to: '/login',
+        replace: true
+      });
     });
+
     return unregister;
   }, []);
 
-  const contextValue = useMemo<AuthContextValue>(() => ({ login, logout }), [login, logout]);
+  const contextValue = useMemo<AuthContextValue>(
+    () => ({
+      login,
+      logout
+    }),
+    [login, logout]
+  );
 
   return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 }
@@ -67,6 +83,7 @@ export function Providers({ children }: ProvidersProps) {
     <QueryClientProvider client={queryClient}>
       <MantineProvider>
         <Notifications position="top-right" />
+
         <AuthProvider>{children}</AuthProvider>
       </MantineProvider>
     </QueryClientProvider>

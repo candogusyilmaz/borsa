@@ -4,7 +4,7 @@ import { ChartLineUpIcon } from '@phosphor-icons/react';
 import { useForm } from '@tanstack/react-form';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useState } from 'react';
-import type { ApiError } from '@/api/client';
+import type { ApiError } from '@/api/errors';
 import { PasswordField, TextField } from '@/shared/components/fields';
 import { ThemeToggle } from '@/shared/components/theme-toggle';
 import { useAuth } from '@/shared/hooks/use-auth';

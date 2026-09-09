@@ -1,6 +1,6 @@
 import { Center, Loader } from '@mantine/core';
 import { createFileRoute, redirect } from '@tanstack/react-router';
-import { getAccessToken } from '@/api/client';
+import { getAccessToken } from '@/api/auth-state';
 import { resolveSession } from '@/api/session';
 import { LoginPage } from '@/features/auth/pages/login';
 
