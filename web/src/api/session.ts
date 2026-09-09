@@ -1,6 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query';
 import type { User } from '@/shared/types/auth';
-import { $api, clearAccessToken, getAccessToken, requestTokenRefresh } from './client';
+import { $api, advanceSessionEpoch, clearAccessToken, client, currentSessionEpoch, getAccessToken, requestTokenRefresh } from './client';
 
 export type SessionResolution =
   | {
@@ -11,7 +11,6 @@ export type SessionResolution =
       status: 'anonymous';
     };
 
-/** Cache key of the authoritative authenticated-user query (/me). */
 export const ME_QUERY_KEY = ['get', '/api/v1/me'] as const;
 
 export function isAbortError(error: unknown) {
@@ -25,7 +24,7 @@ export function isAbortError(error: unknown) {
   return false;
 }
 
-export async function fetchCurrentUser(queryClient: QueryClient): Promise<User> {
+export async function fetchCurrentUser(queryClient: QueryClient) {
   const user = await queryClient.query($api.queryOptions('get', '/api/v1/me'));
   if (!user) {
     throw new Error('Failed to retrieve user profile');
@@ -33,48 +32,85 @@ export async function fetchCurrentUser(queryClient: QueryClient): Promise<User> 
   return user;
 }
 
-export function clearLocalSession(queryClient: QueryClient): void {
+export function clearLocalSession(queryClient: QueryClient) {
   clearAccessToken();
   queryClient.clear();
 }
 
-/**
- * True when an error means the current access token/session was rejected
- * (HTTP 401). The generated client throws the parsed RFC 7807 ProblemDetail
- * body for error responses, and ProblemDetail carries a numeric `status`.
- */
-function isAuthenticationError(error: unknown): boolean {
+function isAuthenticationError(error: unknown) {
   return typeof error === 'object' && error !== null && (error as { status?: unknown }).status === 401;
 }
 
-/**
- * Resolve the current session. The HTTP client in this repository does not
- * auto-retry authenticated requests after a 401, so recovery is explicit here:
- *
- * - Access token present:
- *   - /me succeeds -> authenticated.
- *   - abort -> propagated (no state transition).
- *   - /me fails with 401 (token rejected) -> single refresh-cookie
- *     restoration below.
- *   - /me fails operationally (5xx/network/...) -> error propagated; the
- *     session is NOT destroyed for a non-auth failure.
- * - No access token: the refresh cookie is the only way to start a session.
- * - Restoration: one requestTokenRefresh() call (single shared mutex).
- *   - Refresh cannot restore -> local session cleared -> anonymous.
- *   - Refresh succeeds but /me fails with 401 -> local session cleared
- *     -> anonymous (no valid-looking token left behind).
- *   - Refresh succeeds but /me fails operationally -> error propagated;
- *     the freshly issued token is preserved.
- *
- * Refresh calls converge on the single requestTokenRefresh() mutex in the API
- * client; the resolver never opens a second refresh request.
- */
 export async function resolveSession(queryClient: QueryClient): Promise<SessionResolution> {
-  const hasToken = getAccessToken() !== null;
+  while (true) {
+    const epochAtStart = currentSessionEpoch();
+    const hasToken = getAccessToken() !== null;
 
-  if (hasToken) {
+    if (hasToken) {
+      try {
+        const user = await fetchCurrentUser(queryClient);
+        if (currentSessionEpoch() !== epochAtStart) {
+          if (getAccessToken() !== null) {
+            continue;
+          }
+          clearLocalSession(queryClient);
+          return { status: 'anonymous' };
+        }
+        return { status: 'authenticated', user };
+      } catch (error) {
+        if (isAbortError(error)) {
+          throw error;
+        }
+        if (!isAuthenticationError(error)) {
+          throw error;
+        }
+        if (currentSessionEpoch() !== epochAtStart) {
+          if (getAccessToken() !== null) {
+            // New credentials exist; re-resolve against current session.
+            continue;
+          }
+          // Session was terminally invalidated or logged out (credentials gone).
+          clearLocalSession(queryClient);
+          return { status: 'anonymous' };
+        }
+        // Transport already attempted one refresh; do not try again.
+        clearLocalSession(queryClient);
+        return { status: 'anonymous' };
+      }
+    }
+
+    // No token: explicit bootstrap refresh (no Bearer request possible yet).
+    const restored = await requestTokenRefresh(epochAtStart);
+    if (!restored) {
+      if (currentSessionEpoch() !== epochAtStart) {
+        if (getAccessToken() !== null) {
+          continue;
+        }
+        clearLocalSession(queryClient);
+        return { status: 'anonymous' };
+      }
+      // Definitive refresh rejection in SAME epoch: clear dead local session.
+      clearLocalSession(queryClient);
+      return { status: 'anonymous' };
+    }
+
+    if (currentSessionEpoch() !== epochAtStart) {
+      if (getAccessToken() !== null) {
+        continue;
+      }
+      clearLocalSession(queryClient);
+      return { status: 'anonymous' };
+    }
+
     try {
       const user = await fetchCurrentUser(queryClient);
+      if (currentSessionEpoch() !== epochAtStart) {
+        if (getAccessToken() !== null) {
+          continue;
+        }
+        clearLocalSession(queryClient);
+        return { status: 'anonymous' };
+      }
       return { status: 'authenticated', user };
     } catch (error) {
       if (isAbortError(error)) {
@@ -83,28 +119,47 @@ export async function resolveSession(queryClient: QueryClient): Promise<SessionR
       if (!isAuthenticationError(error)) {
         throw error;
       }
-      // The stored access token was rejected (401); restore through the
-      // refresh cookie below.
-    }
-  }
-
-  const restored = await requestTokenRefresh();
-  if (!restored) {
-    clearLocalSession(queryClient);
-    return { status: 'anonymous' };
-  }
-
-  try {
-    const user = await fetchCurrentUser(queryClient);
-    return { status: 'authenticated', user };
-  } catch (error) {
-    if (isAbortError(error)) {
-      throw error;
-    }
-    if (isAuthenticationError(error)) {
+      if (currentSessionEpoch() !== epochAtStart) {
+        if (getAccessToken() !== null) {
+          continue;
+        }
+        clearLocalSession(queryClient);
+        return { status: 'anonymous' };
+      }
       clearLocalSession(queryClient);
       return { status: 'anonymous' };
     }
-    throw error;
   }
+}
+
+export async function logoutSession(queryClient: QueryClient): Promise<void> {
+  const epochAtStart = currentSessionEpoch();
+  try {
+    if (getAccessToken()) {
+      await client.POST('/api/v1/auth/logout', {
+        body: {
+          scope: 'CURRENT_SESSION'
+        }
+      });
+    }
+  } catch {
+    // Ignore network errors during logout
+  }
+
+  const currentEpoch = currentSessionEpoch();
+  const hasToken = getAccessToken() !== null;
+
+  // If a new session was established with new credentials while logout was in flight,
+  // do not clear the new session/token/cache.
+  if (currentEpoch !== epochAtStart && hasToken) {
+    return;
+  }
+
+  // If transport already advanced the epoch (e.g. terminal invalidation during /logout),
+  // do not advance the epoch a second time.
+  if (currentEpoch === epochAtStart) {
+    advanceSessionEpoch();
+  }
+
+  clearLocalSession(queryClient);
 }

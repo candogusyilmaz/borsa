@@ -13,6 +13,8 @@
     "format": "biome format --write ./src",
     "check": "biome check ./src",
     "check:fix": "biome check --write ./src",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "generate:openapi": "openapi-typescript http://localhost:8080/v3/api-docs -o ./src/api/schema.d.ts",
     "check:openapi": "node -e \"if (!require('fs').existsSync('./src/api/schema.d.ts')) { console.error('schema.d.ts missing'); process.exit(1); }\"",
     "prepare": "cd .. && husky"
@@ -49,6 +51,7 @@
     "postcss-preset-mantine": "^1.18.0",
     "postcss-simple-vars": "^7.0.1",
     "typescript": "^5.9.3",
-    "vite": "^8.2.2"
+    "vite": "^8.2.2",
+    "vitest": "^5.0.0"
   }
 }
