@@ -1,27 +1,13 @@
 import { createRouter } from '@tanstack/react-router';
-import { getAccessToken } from '@/api/client';
 import { queryClient } from '@/app/query-client';
 import { routeTree } from '@/routeTree.gen';
-import type { AuthContextValue } from '@/shared/types/auth';
-
-function getInitialAuthContext(): AuthContextValue {
-  const token = getAccessToken();
-  return {
-    user: null,
-    isAuthenticated: Boolean(token),
-    isLoading: true,
-    login: async () => {},
-    logout: async () => {}
-  };
-}
 
 export const router = createRouter({
   routeTree,
   context: {
-    queryClient,
-    auth: getInitialAuthContext()
+    queryClient
   },
-  defaultPreload: 'intent',
+  defaultPreload: false,
   scrollRestoration: true,
   defaultPendingMs: 300,
   defaultPendingMinMs: 400,

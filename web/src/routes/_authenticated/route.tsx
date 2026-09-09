@@ -1,12 +1,13 @@
 import { Center, Loader } from '@mantine/core';
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
-import { getAccessToken } from '@/api/client';
+import { resolveSession } from '@/api/session';
 import { AppShell } from '@/shared/components/app-shell';
 
 export const Route = createFileRoute('/_authenticated')({
-  beforeLoad: ({ context, location }) => {
-    const isAuthed = Boolean(context.auth?.isAuthenticated || getAccessToken());
-    if (!isAuthed) {
+  beforeLoad: async ({ context, location }) => {
+    const session = await resolveSession(context.queryClient);
+
+    if (session.status === 'anonymous') {
       throw redirect({
         to: '/login',
         search: {
@@ -15,6 +16,10 @@ export const Route = createFileRoute('/_authenticated')({
         replace: true
       });
     }
+
+    return {
+      user: session.user
+    };
   },
   pendingComponent: () => (
     <Center h="100vh">
@@ -25,8 +30,10 @@ export const Route = createFileRoute('/_authenticated')({
 });
 
 function AuthenticatedLayout() {
+  const { user } = Route.useRouteContext();
+
   return (
-    <AppShell>
+    <AppShell user={user}>
       <Outlet />
     </AppShell>
   );

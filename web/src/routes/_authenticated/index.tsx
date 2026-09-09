@@ -1,13 +1,12 @@
 import { Badge, Card, Group, Stack, Text, Title } from '@mantine/core';
 import { createFileRoute } from '@tanstack/react-router';
-import { useAuth } from '@/shared/hooks/use-auth';
 
 export const Route = createFileRoute('/_authenticated/')({
   component: HomePage
 });
 
 function HomePage() {
-  const { user } = useAuth();
+  const { user } = Route.useRouteContext();
 
   return (
     <Stack gap="lg">
@@ -30,11 +29,9 @@ function HomePage() {
             The modern frontend foundation has been established under UI-001. Core infrastructure including TanStack Router, TanStack Query,
             TanStack Form, Mantine v9, and OpenAPI client are active.
           </Text>
-          {user && (
-            <Text size="xs" c="dimmed">
-              Signed in as: {user.email} (ID: {user.id})
-            </Text>
-          )}
+          <Text size="xs" c="dimmed">
+            Signed in as: {user.email} (ID: {user.id})
+          </Text>
         </Stack>
       </Card>
     </Stack>

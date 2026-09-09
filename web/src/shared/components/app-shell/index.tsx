@@ -5,15 +5,17 @@ import { Link, useNavigate, useRouterState } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { ThemeToggle } from '@/shared/components/theme-toggle';
 import { useAuth } from '@/shared/hooks/use-auth';
+import type { User } from '@/shared/types/auth';
 import classes from './app-shell.module.css';
 
 interface AppShellProps {
   children: ReactNode;
+  user: User;
 }
 
-export function AppShell({ children }: AppShellProps) {
+export function AppShell({ children, user }: AppShellProps) {
   const [opened, { toggle, close }] = useDisclosure();
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const navigate = useNavigate();
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
@@ -50,11 +52,9 @@ export function AppShell({ children }: AppShellProps) {
             </Group>
 
             <div className={classes.headerActions}>
-              {user && (
-                <Text className={classes.userEmail} title={user.email}>
-                  {user.email}
-                </Text>
-              )}
+              <Text className={classes.userEmail} title={user.email}>
+                {user.email}
+              </Text>
               <ThemeToggle />
               <Tooltip label="Log out" withArrow position="bottom">
                 <ActionIcon variant="subtle" color="gray" size="lg" aria-label="Log out" onClick={handleLogout}>
