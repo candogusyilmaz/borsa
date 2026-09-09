@@ -4,7 +4,6 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import {
   $api,
-  clearAccessToken,
   client,
   getAccessToken,
   normalizeError,
@@ -12,23 +11,13 @@ import {
   requestTokenRefresh,
   setAccessToken
 } from '@/api/client';
+import { clearLocalSession, fetchCurrentUser, isAbortError, ME_QUERY_KEY, resolveSession } from '@/api/session';
 import { queryClient } from '@/app/query-client';
 import { router } from '@/app/router';
 import { AuthContext } from '@/shared/hooks/use-auth';
 import type { AuthContextValue, User } from '@/shared/types/auth';
 
 export { queryClient };
-
-function isAbortError(error: unknown) {
-  if (error instanceof Error && error.name === 'AbortError') {
-    return true;
-  }
-  if (typeof error === 'object' && error !== null) {
-    const candidate = error as { name?: unknown; code?: unknown };
-    return candidate.name === 'AbortError' || candidate.code === 20;
-  }
-  return false;
-}
 
 interface ProvidersProps {
   children: ReactNode;
@@ -44,28 +33,6 @@ function AuthProvider({ children }: { children: ReactNode }) {
     retry: false
   });
 
-  async function refreshSession() {
-    const newAccessToken = await requestTokenRefresh();
-    if (!newAccessToken) {
-      clearAccessToken();
-      setToken(null);
-      queryClient.clear();
-      return false;
-    }
-
-    setAccessToken(newAccessToken);
-    setToken(newAccessToken);
-    try {
-      await queryClient.fetchQuery($api.queryOptions('get', '/api/v1/me'));
-      return true;
-    } catch {
-      clearAccessToken();
-      setToken(null);
-      queryClient.clear();
-      return false;
-    }
-  }
-
   async function logout() {
     try {
       if (getAccessToken()) {
@@ -78,9 +45,8 @@ function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       // Ignore network errors during logout
     } finally {
-      clearAccessToken();
+      clearLocalSession(queryClient);
       setToken(null);
-      queryClient.clear();
     }
   }
 
@@ -104,15 +70,11 @@ function AuthProvider({ children }: { children: ReactNode }) {
       setToken(data.accessToken);
       sessionEstablished = true;
 
-      const currentUser = await queryClient.fetchQuery($api.queryOptions('get', '/api/v1/me'));
-      if (!currentUser) {
-        throw new Error('Failed to retrieve user profile after login');
-      }
+      await fetchCurrentUser(queryClient);
     } catch (error) {
       if (sessionEstablished) {
-        clearAccessToken();
+        clearLocalSession(queryClient);
         setToken(null);
-        queryClient.clear();
       }
       throw normalizeError(error);
     }
@@ -132,54 +94,35 @@ function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      clearAccessToken();
+      clearLocalSession(queryClient);
       setToken(null);
-      queryClient.clear();
       await router.navigate({ to: '/login', replace: true });
     });
 
     async function initAuth() {
       try {
-        const storedToken = getAccessToken();
-        if (storedToken) {
-          try {
-            await queryClient.fetchQuery($api.queryOptions('get', '/api/v1/me'));
-            return;
-          } catch (error) {
-            if (isCancelled || isAbortError(error)) {
-              return;
-            }
-            clearAccessToken();
-            setToken(null);
-            queryClient.removeQueries({ queryKey: ['get', '/api/v1/me'] });
-          }
-        }
-
+        const resolution = await resolveSession(queryClient);
         if (isCancelled) {
           return;
         }
-
-        const newAccessToken = await requestTokenRefresh();
-        if (isCancelled) {
-          return;
-        }
-
-        if (newAccessToken) {
-          setToken(newAccessToken);
-          try {
-            await queryClient.fetchQuery($api.queryOptions('get', '/api/v1/me'));
-          } catch (error) {
-            if (isCancelled || isAbortError(error)) {
-              return;
-            }
-            clearAccessToken();
-            setToken(null);
-            queryClient.removeQueries({ queryKey: ['get', '/api/v1/me'] });
-          }
+        if (resolution.status === 'authenticated') {
+          // Mirror the session-layer access token into temporary React state.
+          setToken(getAccessToken());
         } else {
-          clearAccessToken();
           setToken(null);
         }
+      } catch (error) {
+        if (isCancelled) {
+          return;
+        }
+        if (isAbortError(error)) {
+          return;
+        }
+        // Operational failure propagated from resolveSession (e.g. /me 5xx or
+        // network): the session is not known to be invalid, so it must not be
+        // destroyed. Mirror the stored token so the app renders and the /me
+        // query surfaces or recovers from the error reactively.
+        setToken(getAccessToken());
       } finally {
         if (!isCancelled) {
           isInitializingRef.current = false;
@@ -195,7 +138,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const cachedUser = queryClient.getQueryData<User>(['get', '/api/v1/me']);
+  const cachedUser = queryClient.getQueryData<User>(ME_QUERY_KEY);
   const activeToken = token || getAccessToken();
   const user = activeToken ? (meQuery.data ?? cachedUser ?? null) : null;
   const isAuthenticated = Boolean(activeToken);
@@ -206,8 +149,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
     isAuthenticated,
     isLoading,
     login,
-    logout,
-    refreshSession
+    logout
   };
 
   if (isInitializing) {

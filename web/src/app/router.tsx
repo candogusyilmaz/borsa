@@ -11,8 +11,7 @@ function getInitialAuthContext(): AuthContextValue {
     isAuthenticated: Boolean(token),
     isLoading: true,
     login: async () => {},
-    logout: async () => {},
-    refreshSession: async () => false
+    logout: async () => {}
   };
 }
 
