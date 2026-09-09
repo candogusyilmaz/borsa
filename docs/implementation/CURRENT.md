@@ -1,7 +1,7 @@
 # Current implementation PR
 
-Status: **ACTIVE**
+Status: **NONE**
 
-Specification: [PR-028 - Identity authentication boundary consolidation](PR-028-identity-authentication-boundary-consolidation.md)
+No backend implementation PR is active.
 
-Implementation and review remain scoped to this specification.
+Last completed: [PR-028 - Identity authentication boundary consolidation](PR-028-identity-authentication-boundary-consolidation.md), accepted in `ac4d7e7`.

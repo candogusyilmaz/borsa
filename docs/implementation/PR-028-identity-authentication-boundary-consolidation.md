@@ -1,6 +1,6 @@
 # PR-028 - Identity authentication boundary consolidation
 
-Status: **ACTIVE**
+Status: **COMPLETE**
 
 ## Goal
 
@@ -146,4 +146,4 @@ Run from `server/`:
 
 ### Follow-up work
 
-- User review and acceptance. Keep `CURRENT.md` pointed at PR-028 until that lifecycle decision; broader identity capabilities and R4 remain deferred.
+- None within this unit. PR-028 was accepted and committed in `ac4d7e7`; broader identity capabilities, R4, and the next lifecycle transition remain separately controlled.

@@ -1,6 +1,6 @@
 # Backend implementation state
 
-Last updated: 2026-09-08
+Last updated: 2026-09-09
 
 ## Technology baseline
 
@@ -12,12 +12,13 @@ Last updated: 2026-09-08
 
 ## Accepted implementation baseline
 
-- The accepted baseline through PR-027 includes the identity/session security lifecycle, canonical offline reference catalogue, owner-scoped immutable native-currency cash ledger, cash-statement reconciliation, the governing simplicity standards, Cleanup B pagination simplification, Cleanup C validation/error/trivial-abstraction simplification, and Cleanup D redundant model/mapping and fingerprint readability simplification.
+- The accepted baseline through PR-028 includes the identity/session security lifecycle, canonical offline reference catalogue, owner-scoped immutable native-currency cash ledger, cash-statement reconciliation, the governing simplicity standards, Cleanup B pagination simplification, Cleanup C validation/error/trivial-abstraction simplification, Cleanup D redundant model/mapping and fingerprint readability simplification, and the identity authentication-boundary consolidation.
 - PR-023 is accepted and committed. Its directness, bounded-list, Spring `Pageable`, `Slice`/`Page`, and evidence-based abstraction rules are authoritative; it changed documentation only and did not change runtime behavior.
 - PR-024 is accepted and committed. Financial accounts are a complete owner-scoped list; ledger activities and reconciliations use Spring `Pageable` with compact project-owned `SliceResponse<T>` results and no ledger cursor infrastructure.
 - PR-025 is accepted and committed. Cleanup B is complete.
 - PR-026 is accepted and committed. Cleanup C validation/error and trivial-abstraction simplification is complete.
 - PR-027 is accepted and committed in `4e3108d`. Cleanup D redundant model, mapping, and fingerprint readability simplification is complete.
+- PR-028 is accepted and committed in `ac4d7e7`. Identity authentication-boundary consolidation is complete.
 
 ## Implemented capabilities
 
@@ -71,8 +72,8 @@ Tables:
 ## Current implementation scope
 
 - PR-025 is accepted and committed; Cleanup B is complete. Device-session listing is a complete owner-scoped logical-family array, instrument search uses Spring `Pageable` plus compact `SliceResponse<InstrumentSummaryResponse>` results, and the remaining session/instrument/generic cursor stack was deleted after consumer removal.
-- PR-026 and PR-027 are accepted and committed; Cleanup C and Cleanup D are complete.
-- PR-028 is active and owns only the identity authentication-boundary consolidation described in its specification. R4, migrations, identity domain/repository/configuration changes, new authentication capabilities, and frontend work remain outside this unit.
+- PR-026 through PR-028 are accepted and committed; Cleanup C, Cleanup D, and the identity authentication-boundary consolidation are complete.
+- No backend implementation PR is active. R4, migrations, identity domain/repository/configuration changes, new authentication capabilities, and frontend work remain deferred until a separate unit is explicitly activated.
 
 ## Deferred capabilities
 
@@ -85,19 +86,19 @@ Tables:
 
 ## Verification state
 
-PR-028 is implemented in the working tree and awaits user acceptance. Registration/login/refresh now use one HTTP boundary and one non-transactional attempt-policy boundary; logout is colocated with device-session HTTP operations; the transactional registration/login/rotation workflows and separate device-session query/revocation boundaries are preserved. Duplicate login/refresh result and response records and superseded operation-specific controllers/attempt wrappers are removed. The focused identity/security gate passed 108 tests, and the full suite plus Maven `verify` passed 371 tests each with 0 failures, 0 errors, and 0 skips against PostgreSQL 17 Testcontainers. Spotless passed across 255 Java files (192 production and 63 test), the executable archive was repackaged, and no required tests were skipped or replaced. Static audits pass: exactly three identity REST controllers and ten identity `@Service` classes remain, no deleted symbols remain, `AuthenticationAttemptService` has no transaction annotation, and `git diff --check` is clean.
+PR-028 is accepted and committed in `ac4d7e7`. Registration/login/refresh use one HTTP boundary and one non-transactional attempt-policy boundary; logout is colocated with device-session HTTP operations; the transactional registration/login/rotation workflows and separate device-session query/revocation boundaries are preserved. Duplicate login/refresh result and response records and superseded operation-specific controllers/attempt wrappers are removed. The focused identity/security gate passed 108 tests, and the full suite plus Maven `verify` passed 371 tests each with 0 failures, 0 errors, and 0 skips against PostgreSQL 17 Testcontainers. Spotless passed across 255 Java files (192 production and 63 test), the executable archive was repackaged, and no required tests were skipped or replaced. Static audits pass: exactly three identity REST controllers and ten identity `@Service` classes remain, no deleted symbols remain, `AuthenticationAttemptService` has no transaction annotation, and `git diff --check` is clean.
 
 PR-026 and PR-027 are accepted and committed; Cleanup C and Cleanup D are complete. PR-027 was accepted in commit `4e3108d`: the redundant preview/reference row/model/factory surfaces and unused read projections are removed, genuine read models remain, five workflow-specific fingerprint methods preserve the existing canonical identity, and the historical policy decision is passed through unchanged.
 
 WORKSPACE-001 repository restructuring verified: full Maven lifecycle (`.\mvnw.cmd verify` without test skipping) from `server/` passed with 371 tests (0 failures, 0 errors, 0 skips), Spotless passed with 261 files clean, and Spring Boot executable archive repackaged successfully. Root Docker build (`docker build -t stocks-workspace-check .`) verified cleanly.
 
-Last updated: 2026-09-08
+Last updated: 2026-09-09
 
 ## Resume context
 
 - Operating contract and context router: [server/AGENTS.md](../../server/AGENTS.md) (repository router: [AGENTS.md](../../AGENTS.md))
 - Active pointer: [CURRENT.md](CURRENT.md)
-- Active scope: [PR-028 - Identity authentication boundary consolidation](PR-028-identity-authentication-boundary-consolidation.md)
-- Last completed scope: [PR-027 - Cleanup D redundant model, mapping, and fingerprint readability](PR-027-redundant-model-mapping-and-fingerprint-readability.md), accepted in `4e3108d`.
+- Active scope: none.
+- Last completed scope: [PR-028 - Identity authentication boundary consolidation](PR-028-identity-authentication-boundary-consolidation.md), accepted in `ac4d7e7`.
 
 Load only the standards, contracts, design sections, and repository code relevant to the current role and affected behavior.
