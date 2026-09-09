@@ -121,6 +121,7 @@ const authMiddleware: Middleware = {
     if (token) {
       request.headers.set('Authorization', `Bearer ${token}`);
     }
+    return request;
   },
   async onResponse({ response, schemaPath, request }) {
     const pathname = new URL(request.url).pathname;
@@ -145,3 +146,34 @@ export const client = createFetchClient<paths>({
 client.use(authMiddleware);
 
 export const $api = createClient(client);
+
+let refreshPromise: Promise<string | null> | null = null;
+
+export async function requestTokenRefresh() {
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+
+  refreshPromise = (async () => {
+    try {
+      const { data, error } = await client.POST('/api/v1/auth/refresh', {
+        body: {
+          refreshTokenDelivery: 'HTTP_ONLY_COOKIE'
+        }
+      });
+
+      if (error || !data?.accessToken) {
+        return null;
+      }
+
+      setAccessToken(data.accessToken);
+      return data.accessToken;
+    } catch {
+      return null;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
