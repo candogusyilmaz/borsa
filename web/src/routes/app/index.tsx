@@ -1,7 +1,7 @@
 import { Badge, Card, Group, Stack, Text, Title } from '@mantine/core';
 import { createFileRoute } from '@tanstack/react-router';
 
-export const Route = createFileRoute('/_authenticated/')({
+export const Route = createFileRoute('/app/')({
   component: HomePage
 });
 

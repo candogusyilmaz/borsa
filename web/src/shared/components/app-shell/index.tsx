@@ -43,7 +43,7 @@ export function AppShell({ children, user }: AppShellProps) {
           <div className={classes.header}>
             <Group gap="sm">
               <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" aria-label="Toggle navigation" />
-              <Link to="/" className={classes.brand} onClick={close}>
+              <Link to="/app" className={classes.brand} onClick={close}>
                 <ChartLineUpIcon size={24} weight="bold" color="var(--color-brand-600)" />
                 <Text fw={700} fz="lg">
                   Stocks
@@ -68,10 +68,10 @@ export function AppShell({ children, user }: AppShellProps) {
         <MantineAppShell.Navbar p="md">
           <NavLink
             component={Link}
-            to="/"
+            to="/app"
             label="Home"
             leftSection={<HouseIcon size={18} weight="bold" />}
-            active={currentPath === '/'}
+            active={currentPath === '/app'}
             onClick={close}
           />
         </MantineAppShell.Navbar>

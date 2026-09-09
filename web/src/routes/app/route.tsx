@@ -3,7 +3,7 @@ import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
 import { resolveSession } from '@/api/session';
 import { AppShell } from '@/shared/components/app-shell';
 
-export const Route = createFileRoute('/_authenticated')({
+export const Route = createFileRoute('/app')({
   beforeLoad: async ({ context, location }) => {
     const session = await resolveSession(context.queryClient);
 

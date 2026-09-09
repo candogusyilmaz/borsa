@@ -29,7 +29,7 @@ export const Route = createFileRoute('/login')({
 
     const session = await resolveSession(context.queryClient);
     if (session.status === 'authenticated') {
-      throw redirect({ to: '/', replace: true });
+      throw redirect({ to: '/app', replace: true });
     }
   },
   pendingComponent: () => (

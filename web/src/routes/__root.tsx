@@ -48,7 +48,7 @@ function NotFoundComponent() {
           <Text size="lg" c="dimmed">
             The requested page could not be found.
           </Text>
-          <Button component={Link} to="/" variant="light">
+          <Button component={Link} to="/app" variant="light">
             Return home
           </Button>
         </Stack>
