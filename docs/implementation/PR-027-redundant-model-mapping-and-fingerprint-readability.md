@@ -1,6 +1,6 @@
 # PR-027 - Cleanup D redundant model, mapping, and fingerprint readability
 
-Status: **ACTIVE**
+Status: **COMPLETE**
 
 ## Goal
 
@@ -435,7 +435,7 @@ Fill this before marking the PR complete.
 
 ### Implemented
 
-- Activated PR-027, pointed `CURRENT.md` to it, and recorded PR-026 acceptance/commit plus Cleanup C completion in `STATE.md`; PR-027 remains `ACTIVE` for user acceptance.
+- Activated PR-027, pointed `CURRENT.md` to it, and recorded PR-026 acceptance/commit plus Cleanup C completion in `STATE.md`; PR-027 was subsequently accepted and committed in `4e3108d`.
 - Deleted `TransferPreviewView` and its response factory; `CashTransferService.preview` now constructs the unchanged complete `TransferPreviewResponse` directly.
 - Deleted the three endpoint-only reference row records and their response factories; country, currency, and market queries now return immutable response records directly while preserving values, ordering, timezone validation, and PostgreSQL array handling.
 - Removed only the unused financial-account, instrument, and alias normalized read projections/components; normalized SQL predicates and ordering remain in place, and genuine read models remain.
@@ -465,4 +465,4 @@ Fill this before marking the PR complete.
 
 ### Follow-up work
 
-- User review/acceptance of PR-027, followed by the user-controlled lifecycle transition. Do not activate Cleanup E or R4 from this unit.
+- None within Cleanup D. PR-027 is accepted in `4e3108d`; the next backend implementation unit remains user-controlled.

@@ -1,8 +1,8 @@
 # Backend transformation progress report
 
-Report date: 2026-08-29
+Report date: 2026-09-08
 
-Scope: Spring Boot backend, PostgreSQL dump, database migration strategy, modular-monolith design, offline/fake data approach, and implementation readiness. React production remains unchanged; this update performed only a bounded audit of its legacy authentication/token handling for the build-versus-buy review.
+Scope: Spring Boot backend, PostgreSQL dump, database migration strategy, modular-monolith design, offline/fake data approach, and implementation readiness. Frontend implementation state is tracked separately under `docs/implementation/web/`.
 
 Current-state handoff: use [docs/implementation/STATE.md](../implementation/STATE.md). This report retains dated project checkpoints and historical evidence; it is not normal implementation bootstrap context.
 
@@ -45,21 +45,32 @@ Current-state handoff: use [docs/implementation/STATE.md](../implementation/STAT
 | PR-024 — Cleanup B1 ledger pagination simplification | **Complete in accepted commit `57e0be0`** | Ledger account lists are direct arrays; activity and reconciliation reads use `Pageable` plus compact `SliceResponse<T>`; speculative ledger cursor infrastructure was removed |
 | PR-025 — Cleanup B2 identity/reference pagination simplification | **Complete in accepted commit `9032db4`** | Device-session lists and instrument search use their bounded direct/Pageable shapes; remaining session/instrument/generic cursor infrastructure was removed |
 | PR-026 — Cleanup C validation, error, and trivial-abstraction simplification | **Complete in accepted commit `030b2e2`** | Future-time errors, direct validation/error paths, and trivial abstractions were simplified while preserving behavior; Cleanup D was kept separate |
-| PR-027 — Cleanup D redundant model, mapping, and fingerprint readability | **Implemented in working tree; awaiting user acceptance** | Transfer/reference redundant surfaces and unused projections are removed; five workflow-specific fingerprints preserve canonical identity; focused PR-027 gate: 99 tests passed; full test suite: 371 tests passed; Maven verify: 371 tests passed; PostgreSQL 17 Testcontainers executed successfully through Docker Desktop; Spotless passed across 261 Java files (198 production, 63 test); git diff --check passed |
+| PR-027 — Cleanup D redundant model, mapping, and fingerprint readability | **Complete in accepted commit `4e3108d`** | Transfer/reference redundant surfaces and unused projections are removed; five workflow-specific fingerprints preserve canonical identity; focused PR-027 gate: 99 tests passed; full test suite: 371 tests passed; Maven verify: 371 tests passed; PostgreSQL 17 Testcontainers executed successfully through Docker Desktop; Spotless passed across 261 Java files (198 production, 63 test); git diff --check passed |
+| PR-028 — Identity authentication boundary consolidation | **Implemented; awaiting acceptance** | Registration/login/refresh now share one controller and one non-transactional attempt-policy service; logout is colocated with device-session HTTP operations; duplicate credential result/response types and superseded controllers/wrappers are removed while core transaction and session boundaries remain separate |
 | Backend standardization cleanup                    | **Complete in commit `cf895ac`; preserved through the current baseline** | Controller-only validation, standard JWT validators with lexical compatibility checks, Boot-managed Micrometer W3C tracing, centralized persistence error mapping, typed authenticated principals, application-owned search criteria, and current package/SQL conventions; no public route or response contract changed |
-| Automated backend coverage                         | Focused PR-027 gate: 99 tests passed; full test suite: 371 tests passed; Maven `verify`: 371 tests passed | The suite covers response/cookie delivery, exact session/token binding, credential failures, validation/parsing, rotation invalid states, rollback, reuse, PostgreSQL V3-to-V4 migration preservation, reconciliation numeric shapes, raw behavioral constraints and append-only mutation rejection, exact opening continuity and adjustment-activity links, reconciliation lifecycle/correction/staleness, duplicate retry concurrency, transaction rollback boundaries, route scope, reference and ledger reads, explicit calendar coverage, owner isolation, bounded pageable instrument search and filter binding, exact financial posting/projection semantics, idempotency/concurrency, statelessness, centralized persistence handling, and W3C trace compatibility; PostgreSQL 17 Testcontainers executed successfully through Docker Desktop; Spotless passed across 261 Java files (198 production, 63 test); git diff --check passed |
+| Automated backend coverage                         | Focused PR-028 gate: 108 tests passed; full test suite: 371 tests passed; Maven `verify`: 371 tests passed | The suite covers response/cookie delivery, exact session/token binding, credential failures and throttling, validation/parsing, rotation invalid states, rollback, reuse, registration/login/refresh/logout/session HTTP behavior, PostgreSQL V3-to-V4 migration preservation, reconciliation numeric shapes and lifecycle, transaction boundaries, route scope, reference and ledger reads, ownership, idempotency/concurrency, statelessness, centralized persistence handling, and W3C trace compatibility; PostgreSQL 17 Testcontainers executed successfully through Docker Desktop; Spotless passed across 255 Java files (192 production, 63 test); git diff --check passed |
 
-Overall status: **PR-026 is accepted in `030b2e2`; PR-027 is implemented in the working tree and awaits user review/acceptance. No Cleanup E or R4 unit has been activated.**
+Overall status: **PR-028 is implemented in the working tree and awaits user acceptance; PR-027 remains the accepted baseline in `4e3108d`.**
 
-## Current Cleanup D checkpoint
+## Current identity-boundary checkpoint
 
-Date: 2026-08-29. PR-027 is the final planned cleanup unit before the user-controlled return to R4 investing work.
+Date: 2026-09-08. PR-028 is implemented and remains active pending user acceptance.
+
+- Three operation-specific public authentication controllers were consolidated into `LocalAuthenticationController`; the unchanged logout handler now sits with device-session HTTP operations.
+- Registration, login, and refresh attempt policy now lives in one deliberately non-transactional `AuthenticationAttemptService`, while transactional account registration, login, refresh rotation, and separate device-session query/revocation services remain independent Spring collaborators.
+- Login and refresh now reuse one successful credential application result and one HTTP response record. Public routes, JSON, headers, cookies, validation, error codes, event semantics, owner scoping, lock ordering, and transaction behavior are unchanged.
+- Six production Java files were removed net: identity now contains exactly three REST controllers and ten `@Service` classes; the repository contains 192 production and 63 test Java files.
+- Focused identity/security gate: 108 tests passed; full test suite: 371 tests passed; Maven `verify`: 371 tests passed. PostgreSQL 17 Testcontainers, executable repackaging, Spotless across all 255 Java files, static deleted-symbol/annotation/count audits, and `git diff --check` passed with no skipped tests.
+
+## Accepted Cleanup D checkpoint
+
+Date: 2026-09-08. PR-027 is accepted in `4e3108d`; Cleanup D is complete.
 
 - The redundant transfer preview model, endpoint-only country/currency/market row records, four audited response factories, and unused normalized read projections were removed. Genuine ledger/reference/session/instrument read models and all audited response factories remain.
 - Cash activity, transfer, opening correction, reconciliation commit, and reconciliation correction now each use one private workflow-specific fingerprint method containing the complete explicit ordered canonical construction. Existing short fingerprints and account-create request hashing remain in place; `CanonicalFingerprint` is unchanged.
 - Transfer preview assertions cover the complete response, and transfer/opening-correction replay and changed-request conflict behavior is covered. Existing exhaustive reconciliation and reference behavior tests remain in the suite.
 - Source audits pass with 198 production and 63 test Java files. Focused PR-027 gate: 99 tests passed; full test suite: 371 tests passed; Maven verify: 371 tests passed; PostgreSQL 17 Testcontainers executed successfully through Docker Desktop; Spotless passed across 261 Java files (198 production, 63 test); git diff --check passed. No tests were skipped or replaced.
-- `CURRENT.md` remains pointed at PR-027. Acceptance and the next lifecycle transition remain user-controlled; Cleanup E is not planned or activated here.
+- PR-027 was accepted in `4e3108d`; `CURRENT.md` now points at the separately bounded PR-028 identity refactor.
 
 ## Governing simplicity checkpoint — PR-023 (historical)
 

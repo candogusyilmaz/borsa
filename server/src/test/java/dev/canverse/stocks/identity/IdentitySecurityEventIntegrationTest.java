@@ -4,11 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import dev.canverse.stocks.identity.application.AuthenticationAbuseProtection;
+import dev.canverse.stocks.identity.application.AuthenticationAttemptService;
 import dev.canverse.stocks.identity.application.DeviceSessionRevocationService;
 import dev.canverse.stocks.identity.application.LocalAccountRegistrationService;
-import dev.canverse.stocks.identity.application.LocalLoginAttemptService;
 import dev.canverse.stocks.identity.application.LocalLoginService;
-import dev.canverse.stocks.identity.application.LocalRegistrationAttemptService;
 import dev.canverse.stocks.identity.application.RefreshSessionIssuanceService;
 import dev.canverse.stocks.identity.application.RefreshSessionRotationService;
 import dev.canverse.stocks.identity.domain.DeviceSession;
@@ -60,7 +59,7 @@ class IdentitySecurityEventIntegrationTest {
     LocalAccountRegistrationService registrationService;
 
     @Autowired
-    LocalLoginAttemptService loginAttemptService;
+    AuthenticationAttemptService authenticationAttemptService;
 
     @Autowired
     RefreshSessionIssuanceService issuanceService;
@@ -79,9 +78,6 @@ class IdentitySecurityEventIntegrationTest {
 
     @Autowired
     LocalLoginService localLoginService;
-
-    @Autowired
-    LocalRegistrationAttemptService registrationAttemptService;
 
     @Autowired
     AuthenticationAbuseProtection abuseProtection;
@@ -109,7 +105,8 @@ class IdentitySecurityEventIntegrationTest {
     void successfulLoginRecordsLocalLoginSucceededSecurityEvent() {
         var userId = registrationService.register("event-login@example.com", "correct horse battery staple");
 
-        var result = loginAttemptService.attemptLogin("event-login@example.com", "correct horse battery staple", "laptop", "127.0.0.1", "trace-login-1");
+        var result = authenticationAttemptService.attemptLogin("event-login@example.com", "correct horse battery staple", "laptop", "127.0.0.1",
+                "trace-login-1");
 
         var events = securityEventRepository.findAll().stream().filter(e -> e.getUserAccount() != null && e.getUserAccount().getId().equals(userId)).toList();
         assertThat(events).hasSize(1);
@@ -125,7 +122,7 @@ class IdentitySecurityEventIntegrationTest {
     void failedLoginRecordsAnonymousSecurityEvent() {
         registrationService.register("failed-login@example.com", "correct horse battery staple");
 
-        assertThatThrownBy(() -> loginAttemptService.attemptLogin("failed-login@example.com", "wrong-password", "laptop", "127.0.0.1", "trace-fail-1"))
+        assertThatThrownBy(() -> authenticationAttemptService.attemptLogin("failed-login@example.com", "wrong-password", "laptop", "127.0.0.1", "trace-fail-1"))
                 .isInstanceOf(AppException.class)
                 .satisfies(e -> assertThat(((AppException) e).getErrorCode()).isEqualTo(IdentityErrorCode.INVALID_CREDENTIALS));
 
@@ -146,13 +143,14 @@ class IdentitySecurityEventIntegrationTest {
         // Fail 5 times to trigger throttle
         for (int i = 0; i < 5; i++) {
             try {
-                loginAttemptService.attemptLogin("throttled@example.com", "wrong", "laptop", "127.0.0.1", "trace-t-" + i);
+                authenticationAttemptService.attemptLogin("throttled@example.com", "wrong", "laptop", "127.0.0.1", "trace-t-" + i);
             } catch (AppException ignored) {
             }
         }
 
         // 6th attempt is throttled before login execution
-        assertThatThrownBy(() -> loginAttemptService.attemptLogin("throttled@example.com", "correct horse battery staple", "laptop", "127.0.0.1", "trace-t-6"))
+        assertThatThrownBy(
+                () -> authenticationAttemptService.attemptLogin("throttled@example.com", "correct horse battery staple", "laptop", "127.0.0.1", "trace-t-6"))
                 .isInstanceOf(AppException.class)
                 .satisfies(e -> assertThat(((AppException) e).getErrorCode()).isEqualTo(IdentityErrorCode.AUTHENTICATION_THROTTLED));
 
@@ -285,7 +283,7 @@ class IdentitySecurityEventIntegrationTest {
         // Fail 4 times (limit is 5)
         for (int i = 0; i < 4; i++) {
             try {
-                loginAttemptService.attemptLogin(email, "wrong", "laptop", "10.10.10.10", "trace-" + i);
+                authenticationAttemptService.attemptLogin(email, "wrong", "laptop", "10.10.10.10", "trace-" + i);
             } catch (AppException ignored) {
             }
         }
@@ -297,8 +295,8 @@ class IdentitySecurityEventIntegrationTest {
 
         // 5th attempt triggers throttle, but event persistence fails and rolls back the
         // throttle in-memory
-        assertThatThrownBy(() -> loginAttemptService.attemptLogin(email, "wrong", "laptop", "10.10.10.10", "trace-5")).isInstanceOf(RuntimeException.class)
-                .hasMessage("Throttled event save failure");
+        assertThatThrownBy(() -> authenticationAttemptService.attemptLogin(email, "wrong", "laptop", "10.10.10.10", "trace-5"))
+                .isInstanceOf(RuntimeException.class).hasMessage("Throttled event save failure");
 
         // Bucket was rolled back and is NOT left blocked: checkLoginAllowed is still
         // ALLOWED
@@ -306,7 +304,7 @@ class IdentitySecurityEventIntegrationTest {
 
         // Subsequent valid login is NOT blocked with 429 and succeeds!
         org.mockito.Mockito.reset(securityEventRepository);
-        var result = loginAttemptService.attemptLogin(email, password, "laptop", "10.10.10.10", "trace-6");
+        var result = authenticationAttemptService.attemptLogin(email, password, "laptop", "10.10.10.10", "trace-6");
         assertThat(result).isNotNull();
     }
 

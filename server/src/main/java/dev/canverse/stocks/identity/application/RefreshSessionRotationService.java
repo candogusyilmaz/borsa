@@ -1,6 +1,6 @@
 package dev.canverse.stocks.identity.application;
 
-import dev.canverse.stocks.identity.application.model.LocalRefreshResult;
+import dev.canverse.stocks.identity.application.model.LocalAuthenticationResult;
 import dev.canverse.stocks.identity.domain.DeviceSession;
 import dev.canverse.stocks.identity.domain.UserAccount;
 import dev.canverse.stocks.identity.infrastructure.DeviceSessionRepository;
@@ -31,21 +31,21 @@ public class RefreshSessionRotationService {
     private final IdGenerator idGenerator;
 
     @Transactional
-    public Optional<LocalRefreshResult> rotate(String rawRefreshToken) {
+    public Optional<LocalAuthenticationResult> rotate(String rawRefreshToken) {
         Objects.requireNonNull(rawRefreshToken, "rawRefreshToken");
 
         var refreshTokenHash = refreshTokenGenerator.hash(rawRefreshToken);
         return deviceSessionRepository.findRefreshSessionOwnerByRefreshTokenHash(refreshTokenHash).flatMap(this::rotateKnownSession);
     }
 
-    private Optional<LocalRefreshResult> rotateKnownSession(RefreshSessionOwnerProjection ownerProjection) {
+    private Optional<LocalAuthenticationResult> rotateKnownSession(RefreshSessionOwnerProjection ownerProjection) {
         var owner = userAccountRepository.findByIdForUpdate(ownerProjection.userAccountId());
         var session = deviceSessionRepository.findById(ownerProjection.sessionId());
         var observedAt = clock.instant();
         return owner.flatMap(user -> session.flatMap(deviceSession -> rotateLocked(ownerProjection, user, deviceSession, observedAt)));
     }
 
-    private Optional<LocalRefreshResult> rotateLocked(RefreshSessionOwnerProjection ownerProjection, UserAccount owner, DeviceSession session,
+    private Optional<LocalAuthenticationResult> rotateLocked(RefreshSessionOwnerProjection ownerProjection, UserAccount owner, DeviceSession session,
             Instant observedAt) {
         if (owner.getDisabledAt() != null || session.getUserAccount().getDisabledAt() != null) {
             return Optional.empty();
@@ -76,7 +76,7 @@ public class RefreshSessionRotationService {
         session.linkReplacement(replacementId);
 
         var accessToken = accessTokenIssuanceService.issue(replacementId);
-        return Optional.of(new LocalRefreshResult(replacementId, accessToken.accessToken(), accessToken.expiresAt(), replacement.getExpiresAt(),
-                replacementToken.rawToken()));
+        return Optional.of(new LocalAuthenticationResult(replacementId, accessToken.accessToken(), accessToken.expiresAt(), replacementToken.rawToken(),
+                replacement.getExpiresAt()));
     }
 }

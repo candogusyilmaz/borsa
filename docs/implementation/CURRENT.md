@@ -2,6 +2,6 @@
 
 Status: **ACTIVE**
 
-Specification: [PR-027 - Cleanup D redundant model, mapping, and fingerprint readability](PR-027-redundant-model-mapping-and-fingerprint-readability.md)
+Specification: [PR-028 - Identity authentication boundary consolidation](PR-028-identity-authentication-boundary-consolidation.md)
 
 Implementation and review remain scoped to this specification.

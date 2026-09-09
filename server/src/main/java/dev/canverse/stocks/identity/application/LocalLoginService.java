@@ -1,6 +1,6 @@
 package dev.canverse.stocks.identity.application;
 
-import dev.canverse.stocks.identity.application.model.LocalLoginResult;
+import dev.canverse.stocks.identity.application.model.LocalAuthenticationResult;
 import dev.canverse.stocks.platform.application.SecurityEventRecorder;
 import java.util.Map;
 import java.util.Objects;
@@ -18,7 +18,7 @@ public class LocalLoginService {
     private final SecurityEventRecorder securityEventRecorder;
 
     @Transactional
-    public LocalLoginResult login(String email, String rawPassword, String deviceLabel) {
+    public LocalAuthenticationResult login(String email, String rawPassword, String deviceLabel) {
         Objects.requireNonNull(email, "email");
         Objects.requireNonNull(rawPassword, "rawPassword");
 
@@ -29,7 +29,7 @@ public class LocalLoginService {
         securityEventRecorder.record(userAccountId, SecurityEventRecorder.LOCAL_LOGIN_SUCCEEDED,
                 Map.of("sessionId", refreshSession.sessionId().toString(), "familyId", refreshSession.familyId().toString()));
 
-        return new LocalLoginResult(refreshSession.sessionId(), accessToken.accessToken(), accessToken.expiresAt(), refreshSession.refreshToken(),
+        return new LocalAuthenticationResult(refreshSession.sessionId(), accessToken.accessToken(), accessToken.expiresAt(), refreshSession.refreshToken(),
                 refreshSession.expiresAt());
     }
 }
