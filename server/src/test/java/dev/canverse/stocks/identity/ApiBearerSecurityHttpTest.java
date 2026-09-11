@@ -2,6 +2,7 @@ package dev.canverse.stocks.identity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -35,6 +36,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.Authentication;
@@ -131,6 +133,20 @@ class ApiBearerSecurityHttpTest {
         assertInvalidCredentials(rejected, rejectedTraceId, API_PROBE_PATH, List.of());
         assertThat(probeController.apiInvocations()).isZero();
         assertThat(snapshot()).isEqualTo(afterRegistration);
+    }
+
+    @Test
+    void corsPreflightAllowsConfiguredFrontendAndRejectsOtherOrigins() throws Exception {
+        mockMvc.perform(options(API_PROBE_PATH).header(HttpHeaders.ORIGIN, "https://platform.canverse.dev")
+                .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, HttpMethod.GET.name())
+                .header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "authorization, content-type")).andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "https://platform.canverse.dev"))
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true"));
+
+        mockMvc.perform(options(API_PROBE_PATH).header(HttpHeaders.ORIGIN, "https://untrusted.example").header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD,
+                HttpMethod.GET.name())).andExpect(status().isForbidden()).andExpect(header().doesNotExist(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN));
+
+        assertThat(probeController.apiInvocations()).isZero();
     }
 
     @Test
