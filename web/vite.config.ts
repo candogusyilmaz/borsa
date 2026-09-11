@@ -24,7 +24,8 @@ function sitemapPlugin(): Plugin {
 
       const routes = [
         { path: '/', priority: '1.0', changefreq: 'daily' },
-        { path: '/login', priority: '0.8', changefreq: 'monthly' }
+        { path: '/login', priority: '0.8', changefreq: 'monthly' },
+        { path: '/register', priority: '0.8', changefreq: 'monthly' }
       ];
 
       const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

@@ -1,4 +1,4 @@
-import { Anchor, Badge, Button, Card, Group, Stack, Text, Title, UnstyledButton } from '@mantine/core';
+import { Alert, Badge, Button, Card, Group, Stack, Text, Title } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import {
   ArrowLeftIcon,
@@ -7,73 +7,137 @@ import {
   LightningIcon,
   LockSimpleIcon,
   ShieldCheckIcon,
-  SignInIcon,
-  SparkleIcon
+  SparkleIcon,
+  UserPlusIcon,
+  WarningCircleIcon
 } from '@phosphor-icons/react';
 import { useForm } from '@tanstack/react-form';
 import { Link, useNavigate, useSearch } from '@tanstack/react-router';
-import { useState } from 'react';
-import type { ApiError } from '@/api/errors';
+import { $api } from '@/api/client';
+import { normalizeError } from '@/api/errors';
 import { BrandLogo } from '@/shared/components/brand-logo';
 import { PasswordField, TextField } from '@/shared/components/fields';
 import { ThemeToggle } from '@/shared/components/theme-toggle';
 import { siteConfig } from '@/shared/config/site';
 import { useAuth } from '@/shared/hooks/use-auth';
-import classes from './login.module.css';
+import classes from './register.module.css';
 
 const SHOWCASE_TICKERS = [
   { symbol: 'AAPL', price: '$234.10', change: '+1.8%', positive: true },
   { symbol: 'NVDA', price: '$138.45', change: '+3.4%', positive: true },
   { symbol: 'BIST 100', price: '10,248.5', change: '+1.2%', positive: true },
-  { symbol: 'CASH (USD)', price: '$34,500.00', change: 'BALANCED', positive: true }
+  { symbol: 'CASH (USD)', price: '$100,000.00', change: 'INITIAL', positive: true }
 ];
 
-export function LoginPage() {
+export function validateEmail(value: string): string | undefined {
+  if (!value?.trim()) {
+    return 'Email address is required';
+  }
+  if (value.trim() !== value) {
+    return 'Email must not have leading or trailing spaces';
+  }
+  if (value.length > 320) {
+    return 'Email cannot exceed 320 characters';
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+    return 'Please enter a valid email address';
+  }
+  return undefined;
+}
+
+export function validatePassword(value: string): string | undefined {
+  if (!value?.trim()) {
+    return 'Password is required';
+  }
+  if (value.length < 12) {
+    return 'Password must be at least 12 characters';
+  }
+  if (value.length > 128) {
+    return 'Password cannot exceed 128 characters';
+  }
+  return undefined;
+}
+
+export function RegisterPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const search = useSearch({ from: '/login' });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const search = useSearch({ from: '/register' });
+
+  const registerMutation = $api.useMutation('post', '/api/v1/auth/register', {
+    onSuccess: async (_data, variables) => {
+      notifications.show({
+        title: 'Account created',
+        message: 'Welcome! Signing you into your account...',
+        color: 'green'
+      });
+
+      try {
+        await login(variables.body);
+        await navigate({ to: search.redirect ?? '/app', replace: true });
+      } catch {
+        notifications.show({
+          title: 'Account created',
+          message: 'Please sign in with your new credentials.',
+          color: 'blue'
+        });
+        await navigate({
+          to: '/login',
+          search: search.redirect ? { redirect: search.redirect } : undefined,
+          replace: true
+        });
+      }
+    },
+    onError: (err) => {
+      const apiError = normalizeError(err);
+      if (apiError.code === 'EMAIL_ALREADY_REGISTERED' || apiError.status === 409) {
+        notifications.show({
+          title: 'Email already registered',
+          message: 'An account with this email address already exists. Please sign in instead.',
+          color: 'red'
+        });
+        return;
+      }
+
+      const message = apiError.fieldErrors?.length
+        ? apiError.fieldErrors.map((f) => f.detail).join('; ')
+        : apiError.message || 'Could not complete registration. Please try again.';
+
+      notifications.show({
+        title: 'Registration failed',
+        message,
+        color: 'red'
+      });
+    }
+  });
 
   const form = useForm({
     defaultValues: {
-      email: 'test@example.com',
-      password: 'Password1234!'
+      email: '',
+      password: ''
     },
     onSubmit: async ({ value }) => {
-      setIsSubmitting(true);
       try {
-        await login(value);
-        await navigate({ to: search.redirect ?? '/app', replace: true });
-      } catch (err) {
-        const apiError = err as ApiError;
-        notifications.show({
-          title: 'Authentication error',
-          message: apiError.message || 'Invalid credentials or connection error.',
-          color: 'red'
+        await registerMutation.mutateAsync({
+          body: {
+            email: value.email.trim(),
+            password: value.password
+          }
         });
-      } finally {
-        setIsSubmitting(false);
+      } catch {
+        // Mutation error state is captured and handled by registerMutation.onError
       }
     }
   });
 
-  const handleFillDemo = () => {
-    form.setFieldValue('email', 'test@example.com');
-    form.setFieldValue('password', 'Password1234!');
-    notifications.show({
-      title: 'Demo account loaded',
-      message: 'test@example.com / Password1234! populated.',
-      color: 'blue'
-    });
-  };
-
-  const handleForgotPassword = () => {
-    notifications.show({
-      title: 'Demo Sandbox Environment',
-      message: 'Password reset is disabled in sandbox. Use test@example.com / Password1234! to sign in.',
-      color: 'blue'
-    });
-  };
+  const mutationError = registerMutation.isError ? normalizeError(registerMutation.error) : null;
+  const isConflict = mutationError ? mutationError.code === 'EMAIL_ALREADY_REGISTERED' || mutationError.status === 409 : false;
+  const errorMessage = mutationError
+    ? isConflict
+      ? 'An account with this email address already exists. Please sign in instead.'
+      : mutationError.fieldErrors?.length
+        ? mutationError.fieldErrors.map((f) => f.detail).join('; ')
+        : mutationError.message || 'Could not complete registration. Please try again.'
+    : null;
 
   return (
     <div className={classes.page}>
@@ -87,34 +151,54 @@ export function LoginPage() {
 
       <main className={classes.main}>
         <div className={classes.layout}>
-          {/* Sign in Card */}
+          {/* Sign up Card */}
           <Card className={classes.card} withBorder>
             <div className={classes.header}>
               <Link to="/" className={classes.brandLink} aria-label={`${siteConfig.name} Home`}>
                 <BrandLogo variant="full" size="md" />
               </Link>
               <Title order={2} className={classes.title}>
-                Welcome back
+                Create your account
               </Title>
-              <Text className={classes.subtitle}>Sign in to access your {siteConfig.name} terminal &amp; portfolio</Text>
+              <Text className={classes.subtitle}>Start trading with virtual capital in the {siteConfig.name} simulation sandbox</Text>
             </div>
 
-            <UnstyledButton className={classes.demoBanner} onClick={handleFillDemo} aria-label="Fill demo credentials">
-              <div className={classes.demoBannerTop}>
+            <div className={classes.infoBanner} role="status">
+              <div className={classes.infoBannerTop}>
                 <Group gap={6}>
                   <SparkleIcon size={14} weight="fill" color="var(--mantine-primary-color-filled)" />
                   <Text fz="xs" fw={700} c="brand">
-                    DEMO ACCOUNT READY
+                    SANDBOX READY &bull; $100,000 VIRTUAL CASH
                   </Text>
                 </Group>
                 <Badge size="xs" variant="light" color="brand">
-                  Tap to fill
+                  Zero Risk
                 </Badge>
               </div>
               <Text fz="xs" c="dimmed" mt={4}>
-                Sign in as <strong>test@example.com</strong> to test real-time simulation and order routing.
+                Every new account starts with $100,000 in paper trading capital and full access to market intelligence.
               </Text>
-            </UnstyledButton>
+            </div>
+
+            {errorMessage && (
+              <Alert icon={<WarningCircleIcon size={18} weight="bold" />} title="Registration error" color="red" variant="light" mb="md">
+                <Text fz="sm">{errorMessage}</Text>
+                {isConflict && (
+                  <Link
+                    to="/login"
+                    search={search.redirect ? { redirect: search.redirect } : undefined}
+                    className={classes.footerLink}
+                    style={{
+                      display: 'inline-block',
+                      marginTop: 6,
+                      fontSize: 'var(--mantine-font-size-xs)',
+                      fontWeight: 600
+                    }}>
+                    Already have an account? Sign in here &rarr;
+                  </Link>
+                )}
+              </Alert>
+            )}
 
             <form
               onSubmit={(e) => {
@@ -128,7 +212,7 @@ export function LoginPage() {
                 <form.Field
                   name="email"
                   validators={{
-                    onChange: ({ value }) => (!value ? 'Email is required' : undefined)
+                    onChange: ({ value }) => validateEmail(value)
                   }}>
                   {(field) => (
                     <TextField
@@ -150,49 +234,68 @@ export function LoginPage() {
                 <form.Field
                   name="password"
                   validators={{
-                    onChange: ({ value }) => (!value ? 'Password is required' : undefined)
+                    onChange: ({ value }) => validatePassword(value)
                   }}>
                   {(field) => (
                     <PasswordField
                       field={field}
-                      id="current-password"
-                      name="password"
+                      id="new-password"
+                      name="new-password"
                       label="Password"
-                      placeholder="••••••••••••"
-                      autoComplete="current-password"
+                      placeholder="At least 12 characters"
+                      autoComplete="new-password"
                       enterKeyHint="done"
+                      aria-describedby="password-requirements"
                       leftSection={<LockSimpleIcon size={18} weight="duotone" color="var(--mantine-color-dimmed)" />}
                       required
                     />
                   )}
                 </form.Field>
 
-                <div className={classes.formMeta}>
-                  <Anchor component="button" type="button" className={classes.metaLink} onClick={handleFillDemo}>
-                    Autofill demo credentials
-                  </Anchor>
-                  <Anchor component="button" type="button" className={classes.metaLink} onClick={handleForgotPassword}>
-                    Forgot password?
-                  </Anchor>
-                </div>
+                <form.Subscribe selector={(state) => state.values.password}>
+                  {(password) => {
+                    const length = password?.length ?? 0;
+                    const isValid = length >= 12 && length <= 128;
+                    return (
+                      <div id="password-requirements" className={classes.passwordRequirements} aria-live="polite">
+                        <div
+                          className={classes.requirementItem}
+                          style={{
+                            color: isValid ? 'var(--mantine-color-success)' : 'var(--mantine-color-dimmed)'
+                          }}>
+                          <CheckCircleIcon size={14} weight={isValid ? 'fill' : 'bold'} />
+                          <span>
+                            {length === 0
+                              ? 'Must be between 12 and 128 characters'
+                              : length < 12
+                                ? `Must be between 12 and 128 characters (${length}/12 min)`
+                                : length <= 128
+                                  ? `Password length requirement met (${length} characters)`
+                                  : `Password cannot exceed 128 characters (${length}/128 max)`}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  }}
+                </form.Subscribe>
 
                 <Button
                   type="submit"
                   fullWidth
-                  loading={isSubmitting}
+                  loading={registerMutation.isPending}
                   size="md"
                   className={classes.submitButton}
-                  rightSection={<SignInIcon size={18} weight="bold" />}>
-                  Sign in to Terminal
+                  rightSection={<UserPlusIcon size={18} weight="bold" />}>
+                  Create Account
                 </Button>
               </Stack>
             </form>
 
             <div className={classes.footer}>
               <Text className={classes.footerText}>
-                Don't have an account?{' '}
-                <Link to="/register" search={search.redirect ? { redirect: search.redirect } : undefined} className={classes.footerLink}>
-                  Sign up
+                Already have an account?{' '}
+                <Link to="/login" search={search.redirect ? { redirect: search.redirect } : undefined} className={classes.footerLink}>
+                  Sign in
                 </Link>
               </Text>
               <Group gap={6} justify="center" className={classes.securityNotice}>
@@ -204,24 +307,25 @@ export function LoginPage() {
             </div>
           </Card>
 
-          {/* Showcase panel (Desktop surprise feature, mobile-first hidden) */}
-          <aside className={classes.showcase} aria-label="Platform Showcase">
+          {/* Showcase panel (Desktop, mobile-first hidden) */}
+          <aside className={classes.showcase} aria-label="Platform Benefits">
             <div className={classes.showcaseTop}>
               <div className={classes.showcaseHeader}>
                 <Badge variant="dot" color="green" size="md">
-                  CORE ONLINE &bull; 12ms EXECUTION
+                  CORE ONLINE &bull; SIMULATION ACTIVE
                 </Badge>
                 <Text fz="xs" c="dimmed" ff="var(--mantine-font-family-monospace)">
-                  PORTFOLIO INTEL v1.0
+                  SANDBOX ONBOARDING v1.0
                 </Text>
               </div>
 
               <div>
                 <Title order={3} className={classes.showcaseHeadline}>
-                  Institutional Grade Portfolio &amp; Market Intelligence
+                  Institutional-Grade Market Intelligence &amp; Execution
                 </Title>
                 <Text fz="sm" c="dimmed" mt={4}>
-                  Real-time market feeds, sub-millisecond execution, and mathematically verified double-entry accounting.
+                  Test trading strategies with real-time market feeds, sub-millisecond execution, and mathematically verified double-entry
+                  accounting.
                 </Text>
               </div>
 
@@ -257,10 +361,10 @@ export function LoginPage() {
                   </div>
                   <div>
                     <Text fz="sm" fw={600}>
-                      Sub-Millisecond Engine
+                      Instant Sandbox Activation
                     </Text>
                     <Text fz="xs" c="dimmed">
-                      Low-latency order processing pipeline with instant state reconciliation.
+                      Start testing simulated execution pipelines immediately with zero capital risk.
                     </Text>
                   </div>
                 </div>
@@ -274,7 +378,7 @@ export function LoginPage() {
                       Zero-Discrepancy Ledger
                     </Text>
                     <Text fz="xs" c="dimmed">
-                      Every trade and cash movement is locked by double-entry ledger invariants.
+                      Every simulated fill and cash balance is verified by immutable double-entry invariants.
                     </Text>
                   </div>
                 </div>
@@ -285,10 +389,10 @@ export function LoginPage() {
                   </div>
                   <div>
                     <Text fz="sm" fw={600}>
-                      Session Loss Protection
+                      Enterprise-Grade Security
                     </Text>
                     <Text fz="xs" c="dimmed">
-                      Secure refresh cookie exchange with RFC 7807 problem details error handling.
+                      Secure authentication with HttpOnly cookie rotation and strict RFC 7807 problem details.
                     </Text>
                   </div>
                 </div>

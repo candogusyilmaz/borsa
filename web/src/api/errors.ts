@@ -31,7 +31,9 @@ export function normalizeError(error: unknown): ApiError {
 
     const traceId = typeof candidate.traceId === 'string' ? candidate.traceId : undefined;
 
-    let fieldErrors: ApiFieldError[] | undefined;
+    let fieldErrors: ApiFieldError[] | undefined = Array.isArray(candidate.fieldErrors)
+      ? (candidate.fieldErrors as ApiFieldError[])
+      : undefined;
 
     const params = candidate.params as
       | {
@@ -43,7 +45,7 @@ export function normalizeError(error: unknown): ApiError {
         }
       | undefined;
 
-    if (Array.isArray(params?.errors)) {
+    if (!fieldErrors && Array.isArray(params?.errors)) {
       fieldErrors = params.errors
         .filter((entry) => typeof entry?.detail === 'string')
         .map((entry) => ({
