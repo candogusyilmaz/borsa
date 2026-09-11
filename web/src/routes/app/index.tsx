@@ -1,7 +1,21 @@
 import { Badge, Card, Group, Stack, Text, Title } from '@mantine/core';
 import { createFileRoute } from '@tanstack/react-router';
+import { siteConfig } from '@/shared/config/site';
+import { createSeoMeta } from '@/shared/utils/seo';
 
 export const Route = createFileRoute('/app/')({
+  head: () => {
+    const seo = createSeoMeta({
+      title: 'Dashboard',
+      path: '/app',
+      noIndex: true
+    });
+    return {
+      meta: seo.meta,
+      links: seo.links,
+      scripts: seo.scripts
+    };
+  },
   component: HomePage
 });
 
@@ -14,7 +28,7 @@ function HomePage() {
         <div>
           <Title order={2}>Dashboard</Title>
           <Text c="dimmed" size="sm">
-            Welcome back to Stocks
+            Welcome back to {siteConfig.name}
           </Text>
         </div>
         <Badge color="green" variant="light" size="lg">

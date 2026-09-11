@@ -1,6 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { requestTokenRefresh } from './auth-recovery';
+import { createRecoveringFetch, requestTokenRefresh } from './auth-recovery';
 import {
   advanceSessionEpoch,
   clearAccessToken,
@@ -79,6 +79,80 @@ describe('valid token', () => {
     expect(data).toMatchObject({ id: 'u1' });
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1);
     expect(sessionLossCount).toBe(0);
+  });
+});
+
+describe('cross-session response isolation', () => {
+  it('rejects a successful response that completes after a new logical session starts', async () => {
+    setAccessToken('TOKEN_A');
+
+    let resolveOldRequest!: (response: Response) => void;
+    const oldRequestGate = new Promise<Response>((resolve) => {
+      resolveOldRequest = resolve;
+    });
+
+    vi.mocked(fetch).mockReturnValueOnce(oldRequestGate);
+
+    const recoveringFetch = createRecoveringFetch('http://localhost');
+    const oldRequest = recoveringFetch(
+      new Request('http://localhost/api/v1/auth/sessions', {
+        headers: { Authorization: 'Bearer TOKEN_A' }
+      })
+    );
+
+    advanceSessionEpoch();
+    clearAccessToken();
+    setAccessToken('TOKEN_NEW');
+    advanceSessionEpoch();
+    resolveOldRequest(sessions200());
+
+    await expect(oldRequest).resolves.toMatchObject({ status: 401 });
+    expect(getAccessToken()).toBe('TOKEN_NEW');
+  });
+
+  it('rejects a successful retry that completes after a new logical session starts', async () => {
+    setAccessToken('TOKEN_A');
+
+    let resolveOldRetry!: (response: Response) => void;
+    const oldRetryGate = new Promise<Response>((resolve) => {
+      resolveOldRetry = resolve;
+    });
+
+    let retryStartedResolve!: () => void;
+    const retryStarted = new Promise<void>((resolve) => {
+      retryStartedResolve = resolve;
+    });
+
+    vi.mocked(fetch).mockImplementation(async (request) => {
+      const url = request instanceof Request ? request.url : String(request);
+      const authorization = request instanceof Request ? request.headers.get('Authorization') : null;
+
+      if (url.includes('/auth/refresh')) {
+        return refreshSuccess('TOKEN_B');
+      }
+      if (authorization === 'Bearer TOKEN_B') {
+        retryStartedResolve();
+        return oldRetryGate;
+      }
+      return response401();
+    });
+
+    const recoveringFetch = createRecoveringFetch('http://localhost');
+    const oldRequest = recoveringFetch(
+      new Request('http://localhost/api/v1/auth/sessions', {
+        headers: { Authorization: 'Bearer TOKEN_A' }
+      })
+    );
+
+    await retryStarted;
+    advanceSessionEpoch();
+    clearAccessToken();
+    setAccessToken('TOKEN_NEW');
+    advanceSessionEpoch();
+    resolveOldRetry(sessions200());
+
+    await expect(oldRequest).resolves.toMatchObject({ status: 401 });
+    expect(getAccessToken()).toBe('TOKEN_NEW');
   });
 });
 

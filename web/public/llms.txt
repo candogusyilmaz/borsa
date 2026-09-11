@@ -1,0 +1,24 @@
+# Platform
+
+> Modern Web Platform & Financial Ledger Intelligence
+
+Platform provides institutional-grade portfolio intelligence, double-entry cash ledger accounting, and real-time reconciliation.
+
+## Core Capabilities
+
+- **Double-Entry Ledger Accounting**: Immutable cash transaction journal with strict balance integrity.
+- **Automated Statement Reconciliation**: Batch reconciliation between external statements and internal ledger records.
+- **Multi-Currency Portfolio Intelligence**: Real-time position tracking, FX conversion, and performance analytics.
+- **Zero-Trust Session Lifecycle**: Stateless short-lived JWT access tokens paired with HttpOnly refresh cookies and automated rotation.
+
+## Public Endpoints & Routes
+
+- `/`: Public marketing overview, architecture documentation, features, and platform status.
+- `/login`: User authentication gateway.
+- `/app`: Authenticated management terminal and dashboard (requires valid session).
+
+## API Architecture
+
+- Backend API: RESTful endpoints under `/api/v1/`
+- OpenAPI Specification: `/v3/api-docs`
+- Format: JSON payloads conforming to RFC 7807 Problem Details for errors.

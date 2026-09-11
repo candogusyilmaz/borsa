@@ -1,12 +1,25 @@
 import { Button, Center, Container, Stack, Text, Title } from '@mantine/core';
 import type { QueryClient } from '@tanstack/react-query';
 import { createRootRouteWithContext, HeadContent, Link, Outlet } from '@tanstack/react-router';
+import { createSeoMeta } from '@/shared/utils/seo';
 
 interface RouterContext {
   queryClient: QueryClient;
 }
 
 export const Route = createRootRouteWithContext<RouterContext>()({
+  head: () => {
+    const seo = createSeoMeta({
+      includeJsonLd: true,
+      canonical: false,
+      noIndex: true
+    });
+    return {
+      meta: seo.meta,
+      links: seo.links,
+      scripts: seo.scripts
+    };
+  },
   component: RootComponent,
   errorComponent: RootErrorComponent,
   notFoundComponent: NotFoundComponent
@@ -48,7 +61,7 @@ function NotFoundComponent() {
           <Text size="lg" c="dimmed">
             The requested page could not be found.
           </Text>
-          <Button component={Link} to="/app" variant="light">
+          <Button component={Link} to="/" variant="light">
             Return home
           </Button>
         </Stack>

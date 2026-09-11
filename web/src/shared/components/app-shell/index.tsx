@@ -1,8 +1,9 @@
 import { ActionIcon, Burger, Group, AppShell as MantineAppShell, NavLink, Text, Tooltip } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { ChartLineUpIcon, HouseIcon, SignOutIcon } from '@phosphor-icons/react';
+import { HouseIcon, SignOutIcon } from '@phosphor-icons/react';
 import { Link, useNavigate, useRouterState } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
+import { BrandLogo } from '@/shared/components/brand-logo';
 import { ThemeToggle } from '@/shared/components/theme-toggle';
 import { useAuth } from '@/shared/hooks/use-auth';
 import type { User } from '@/shared/types/auth';
@@ -44,10 +45,7 @@ export function AppShell({ children, user }: AppShellProps) {
             <Group gap="sm">
               <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" aria-label="Toggle navigation" />
               <Link to="/app" className={classes.brand} onClick={close}>
-                <ChartLineUpIcon size={24} weight="bold" color="var(--color-brand-600)" />
-                <Text fw={700} fz="lg">
-                  Stocks
-                </Text>
+                <BrandLogo variant="full" size="md" />
               </Link>
             </Group>
 

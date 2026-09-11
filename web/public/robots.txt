@@ -1,0 +1,48 @@
+# Default Crawlers
+User-agent: *
+Disallow: /app
+Disallow: /app/
+Disallow: /api
+Disallow: /api/
+Allow: /
+
+# Real-time AI Search Engines (Allowed)
+User-agent: OAI-SearchBot
+Disallow: /app
+Disallow: /app/
+Disallow: /api
+Disallow: /api/
+Allow: /
+
+User-agent: PerplexityBot
+Disallow: /app
+Disallow: /app/
+Disallow: /api
+Disallow: /api/
+Allow: /
+
+User-agent: Claude-SearchBot
+Disallow: /app
+Disallow: /app/
+Disallow: /api
+Disallow: /api/
+Allow: /
+
+# AI Training Scrapers & Bulk Crawlers (Blocked)
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+# Sitemap
+Sitemap: http://localhost:5173/sitemap.xml

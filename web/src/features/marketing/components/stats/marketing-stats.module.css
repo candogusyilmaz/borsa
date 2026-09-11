@@ -1,0 +1,56 @@
+.statsSection {
+  scroll-margin-top: calc(64px + var(--mantine-spacing-md));
+  padding: calc(var(--mantine-spacing-xl) * 1.5) 0;
+  background-color: var(--color-bg-surface);
+  border-top: 1px solid var(--color-border-subtle);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--mantine-spacing-lg);
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--mantine-spacing-sm);
+}
+
+.statValue {
+  font-family: var(--font-mono);
+  font-size: clamp(2rem, 3.5vw, 2.75rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--color-brand-600);
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.statLabel {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 4px;
+}
+
+.statSubtext {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 900px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 540px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+    gap: var(--mantine-spacing-md);
+  }
+}

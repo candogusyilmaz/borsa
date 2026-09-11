@@ -1,12 +1,13 @@
 import { Button, Card, Group, Stack, Text, Title } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { ChartLineUpIcon } from '@phosphor-icons/react';
 import { useForm } from '@tanstack/react-form';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { ApiError } from '@/api/errors';
+import { BrandLogo } from '@/shared/components/brand-logo';
 import { PasswordField, TextField } from '@/shared/components/fields';
 import { ThemeToggle } from '@/shared/components/theme-toggle';
+import { siteConfig } from '@/shared/config/site';
 import { useAuth } from '@/shared/hooks/use-auth';
 import classes from './login.module.css';
 
@@ -25,7 +26,7 @@ export function LoginPage() {
       setIsSubmitting(true);
       try {
         await login(value);
-        await navigate({ to: search.redirect ?? '/', replace: true });
+        await navigate({ to: search.redirect ?? '/app', replace: true });
       } catch (err) {
         const apiError = err as ApiError;
         notifications.show({
@@ -44,9 +45,9 @@ export function LoginPage() {
       <Card className={classes.card} withBorder shadow="sm">
         <div className={classes.header}>
           <div className={classes.logo}>
-            <ChartLineUpIcon size={28} weight="bold" />
+            <BrandLogo variant="icon" size="lg" />
           </div>
-          <Title order={2}>Sign in to Stocks</Title>
+          <Title order={2}>Sign in to {siteConfig.name}</Title>
           <Text c="dimmed" size="sm" mt={4}>
             Enter your credentials to access your account
           </Text>

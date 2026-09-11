@@ -3,6 +3,8 @@ import { createFileRoute, redirect } from '@tanstack/react-router';
 import { getAccessToken } from '@/api/auth-state';
 import { resolveSession } from '@/api/session';
 import { LoginPage } from '@/features/auth/pages/login';
+import { siteConfig } from '@/shared/config/site';
+import { createSeoMeta } from '@/shared/utils/seo';
 
 interface LoginSearch {
   redirect?: string;
@@ -13,6 +15,18 @@ function isInternalAppPath(value: string): boolean {
 }
 
 export const Route = createFileRoute('/login')({
+  head: () => {
+    const seo = createSeoMeta({
+      title: 'Sign in',
+      description: `Sign in to access your ${siteConfig.name} account.`,
+      path: '/login'
+    });
+    return {
+      meta: seo.meta,
+      links: seo.links,
+      scripts: seo.scripts
+    };
+  },
   validateSearch: (search: Record<string, unknown>): LoginSearch => {
     const redirectParam = search.redirect;
     return {

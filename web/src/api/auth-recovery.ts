@@ -131,18 +131,18 @@ async function performRefresh(baseUrl: string, refreshEpoch: number): Promise<st
   return data.accessToken;
 }
 
-function throwSupersededRequest(): never {
-  const error = new Error('Request superseded by a logical session change');
-
-  error.name = 'AbortError';
-
-  throw error;
-}
-
-function ensureCurrentEpoch(expectedEpoch: number): void {
-  if (currentSessionEpoch() !== expectedEpoch) {
-    throwSupersededRequest();
-  }
+function supersededSessionResponse() {
+  return new Response(
+    JSON.stringify({
+      status: 401,
+      title: 'Request superseded',
+      detail: 'The authenticated session changed while the request was in flight.'
+    }),
+    {
+      status: 401,
+      headers: { 'Content-Type': 'application/problem+json' }
+    }
+  );
 }
 
 async function retryWithToken(request: Request, token: string): Promise<Response> {
@@ -179,9 +179,11 @@ export function createRecoveringFetch(baseUrl: string = API_BASE_URL) {
 
     const firstResponse = await fetch(input, init);
 
-    // Important: even a successful old-session response must not leak
-    // into the new session's Query cache/UI.
-    ensureCurrentEpoch(epochAtDispatch);
+    // A successful or operational response dispatched by an earlier session
+    // must never reach the current session's cache or mutation callbacks.
+    if (epochAtDispatch !== currentSessionEpoch()) {
+      return firstResponse.status === 401 ? firstResponse : supersededSessionResponse();
+    }
 
     if (firstResponse.status !== 401) {
       return firstResponse;
@@ -197,17 +199,15 @@ export function createRecoveringFetch(baseUrl: string = API_BASE_URL) {
      * without another refresh.
      */
     if (currentToken !== null && currentToken !== tokenAtDispatch) {
-      ensureCurrentEpoch(epochAtDispatch);
-
-      // Token could have rotated again between reading it and here.
-      if (getAccessToken() !== currentToken) {
+      if (currentSessionEpoch() !== epochAtDispatch || getAccessToken() !== currentToken) {
         return firstResponse;
       }
 
       const retryResponse = await retryWithToken(replayableRequest, currentToken);
 
-      // Prevent an old successful retry from reaching a new session.
-      ensureCurrentEpoch(epochAtDispatch);
+      if (currentSessionEpoch() !== epochAtDispatch) {
+        return firstResponse;
+      }
 
       if (retryResponse.status === 401) {
         invalidateSession({
@@ -223,10 +223,6 @@ export function createRecoveringFetch(baseUrl: string = API_BASE_URL) {
     const refreshedToken = await requestTokenRefresh(epochAtDispatch, baseUrl);
 
     if (!refreshedToken) {
-      // If refresh was superseded by another session, abort this old
-      // request rather than returning its stale 401 to the new session.
-      ensureCurrentEpoch(epochAtDispatch);
-
       invalidateSession({
         expectedEpoch: epochAtDispatch,
         expectedToken: tokenAtDispatch,
@@ -236,18 +232,15 @@ export function createRecoveringFetch(baseUrl: string = API_BASE_URL) {
       return firstResponse;
     }
 
-    // The logical session must still be the one that dispatched this
-    // request, and the token returned by refresh must still be current.
-    ensureCurrentEpoch(epochAtDispatch);
-
-    if (getAccessToken() !== refreshedToken) {
+    if (currentSessionEpoch() !== epochAtDispatch || getAccessToken() !== refreshedToken) {
       return firstResponse;
     }
 
     const retryResponse = await retryWithToken(replayableRequest, refreshedToken);
 
-    // This closes the successful-retry/session-switch race.
-    ensureCurrentEpoch(epochAtDispatch);
+    if (currentSessionEpoch() !== epochAtDispatch) {
+      return firstResponse;
+    }
 
     if (retryResponse.status === 401) {
       invalidateSession({

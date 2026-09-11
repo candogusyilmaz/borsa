@@ -3,16 +3,60 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Stocks</title>
+    <title>%VITE_APP_NAME%</title>
+    <meta name="description" content="%VITE_APP_DESCRIPTION%" />
+
+    <!-- Favicon & Touch Icons -->
+    <link rel="icon" type="image/png" href="/assets/favicon.png" />
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- Essential Zero-JS Social Previews (Slack 32KB Cutoff Compliant) -->
+    <meta property="og:title" content="%VITE_APP_NAME% - %VITE_APP_TAGLINE%" />
+    <meta property="og:description" content="%VITE_APP_DESCRIPTION%" />
+    <meta property="og:image" content="%VITE_APP_URL%/assets/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="%VITE_APP_URL%/assets/og-image.png" />
+
+    <style>
+      #semantic-fallback {
+        font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        padding: 2rem;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+    </style>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
       rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+      media="print"
+      onload="this.media='all'"
     />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+      />
+    </noscript>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <main id="semantic-fallback">
+        <h1>%VITE_APP_NAME%</h1>
+        <p>%VITE_APP_TAGLINE%</p>
+        <p>%VITE_APP_DESCRIPTION%</p>
+        <nav>
+          <a href="/">Home</a>
+          <a href="/login">Sign In</a>
+        </nav>
+      </main>
+    </div>
     <script type="module" src="/src/app/main.tsx"></script>
     <noscript>
       <div style="padding: 2rem; text-align: center;">

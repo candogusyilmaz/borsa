@@ -1,0 +1,25 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  user-select: none;
+}
+
+.image {
+  display: block;
+  object-fit: contain;
+  border-radius: var(--mantine-radius-sm);
+  flex-shrink: 0;
+}
+
+.lettermark {
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.text {
+  font-family: var(--mantine-font-family);
+  letter-spacing: -0.02em;
+  color: var(--color-text-primary, inherit);
+  line-height: 1.2;
+}
