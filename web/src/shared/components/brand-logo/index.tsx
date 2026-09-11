@@ -48,7 +48,7 @@ export function BrandLogo({ variant = 'full', size = 'md', logoSrc, name, classN
       <Avatar
         size={resolvedSizes.icon}
         radius="sm"
-        color="indigo"
+        color="brand"
         variant="filled"
         className={classes.lettermark}
         alt={`${brandName} lettermark`}>

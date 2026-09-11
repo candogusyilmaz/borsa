@@ -1,0 +1,53 @@
+.table {
+  color: var(--app-text-primary);
+}
+
+.th {
+  color: var(--app-text-secondary);
+  font-weight: 500;
+  font-size: var(--mantine-font-size-sm);
+  border-color: var(--app-border-subtle);
+}
+
+.td {
+  border-color: var(--app-border-subtle);
+  color: var(--app-text-primary);
+}
+
+.tr:hover .td {
+  background: var(--app-surface-hover);
+}
+
+.divider {
+  border-color: var(--app-border-subtle);
+}
+
+.progressRoot {
+  background: var(--app-surface-secondary);
+}
+
+.timelineItemBullet {
+  border-color: var(--app-border);
+  background: var(--app-surface);
+}
+
+.timelineItemBullet[data-with-child] {
+  background: var(--app-surface);
+  border-color: var(--app-accent-fill);
+}
+
+.timelineItem[data-line-active] .timelineItemBullet,
+.timelineItemBullet[data-active] {
+  background: var(--app-accent-fill);
+  border-color: var(--app-accent-fill);
+  color: #ffffff;
+}
+
+.timelineItemTitle {
+  color: var(--app-text-primary);
+  font-weight: 500;
+}
+
+.timelineItemBody {
+  color: var(--app-text-secondary);
+}

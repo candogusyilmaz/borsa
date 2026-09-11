@@ -52,7 +52,7 @@ export function MarketingFeatures() {
     <section id="features" className={classes.featuresSection} aria-labelledby="features-heading">
       <Container size="lg">
         <div className={classes.sectionHeader}>
-          <Badge variant="light" color="indigo" size="md" className={classes.badge}>
+          <Badge variant="light" color="brand" size="md" className={classes.badge}>
             Core Capabilities
           </Badge>
           <h2 id="features-heading" className={classes.title}>

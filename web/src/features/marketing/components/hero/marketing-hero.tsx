@@ -10,7 +10,7 @@ export function MarketingHero() {
       <Container size="lg">
         <div className={classes.heroContent}>
           <div className={classes.badgeWrapper}>
-            <Badge variant="light" color="indigo" size="lg" radius="sm" leftSection={<SparkleIcon size={14} weight="fill" />}>
+            <Badge variant="light" color="brand" size="lg" radius="sm" leftSection={<SparkleIcon size={14} weight="fill" />}>
               Architecture v1.0 Operational
             </Badge>
           </div>
@@ -29,7 +29,7 @@ export function MarketingHero() {
               component={Link}
               to="/app"
               size="lg"
-              color="indigo"
+              color="brand"
               radius="md"
               className={classes.ctaPrimary}
               rightSection={<ArrowRightIcon size={18} weight="bold" />}>
@@ -43,15 +43,15 @@ export function MarketingHero() {
 
           <div className={classes.signalsRow}>
             <div className={classes.signalItem}>
-              <ScalesIcon size={16} weight="bold" color="var(--color-brand-600)" />
+              <ScalesIcon size={16} weight="bold" color="var(--app-accent)" />
               <span>Double-entry balanced</span>
             </div>
             <div className={classes.signalItem}>
-              <LockKeyIcon size={16} weight="bold" color="var(--color-brand-600)" />
+              <LockKeyIcon size={16} weight="bold" color="var(--app-accent)" />
               <span>HttpOnly rotating sessions</span>
             </div>
             <div className={classes.signalItem}>
-              <LightningIcon size={16} weight="bold" color="var(--color-brand-600)" />
+              <LightningIcon size={16} weight="bold" color="var(--app-accent)" />
               <span>Sub-12ms reconciliation</span>
             </div>
           </div>

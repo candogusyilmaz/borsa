@@ -30,14 +30,14 @@ export function HeroTerminalCard() {
       <div className={classes.terminalBody}>
         <div className={classes.metricsGrid}>
           <div className={classes.metricCard}>
-            <Text fz="xs" c="dimmed" tt="uppercase" fw={600} ff="var(--font-mono)">
+            <Text fz="xs" c="dimmed" tt="uppercase" fw={600} ff="var(--mantine-font-family-monospace)">
               Total Equity Value
             </Text>
             <Group justify="space-between" align="baseline" mt={4}>
-              <Text fz="xl" fw={700} ff="var(--font-mono)">
+              <Text fz="xl" fw={700} ff="var(--mantine-font-family-monospace)">
                 $248,650.00
               </Text>
-              <Badge color="green" variant="light" size="sm">
+              <Badge color="success" variant="light" size="sm">
                 +14.2% YTD
               </Badge>
             </Group>
@@ -47,11 +47,11 @@ export function HeroTerminalCard() {
           </div>
 
           <div className={classes.metricCard}>
-            <Text fz="xs" c="dimmed" tt="uppercase" fw={600} ff="var(--font-mono)">
+            <Text fz="xs" c="dimmed" tt="uppercase" fw={600} ff="var(--mantine-font-family-monospace)">
               Cash Ledger Balance
             </Text>
             <Group justify="space-between" align="baseline" mt={4}>
-              <Text fz="xl" fw={700} ff="var(--font-mono)">
+              <Text fz="xl" fw={700} ff="var(--mantine-font-family-monospace)">
                 $34,500.00
               </Text>
               <Badge color="blue" variant="light" size="sm">
@@ -64,14 +64,14 @@ export function HeroTerminalCard() {
           </div>
 
           <div className={classes.metricCard}>
-            <Text fz="xs" c="dimmed" tt="uppercase" fw={600} ff="var(--font-mono)">
+            <Text fz="xs" c="dimmed" tt="uppercase" fw={600} ff="var(--mantine-font-family-monospace)">
               Day Return
             </Text>
             <Group justify="space-between" align="baseline" mt={4}>
-              <Text fz="xl" fw={700} ff="var(--font-mono)" c="green">
+              <Text fz="xl" fw={700} ff="var(--mantine-font-family-monospace)" c="success">
                 +$2,410.50
               </Text>
-              <Badge color="green" variant="outline" size="sm">
+              <Badge color="success" variant="outline" size="sm">
                 +0.98%
               </Badge>
             </Group>
@@ -84,8 +84,8 @@ export function HeroTerminalCard() {
         <div className={classes.chartContainer}>
           <div className={classes.chartHeader}>
             <Group gap="xs">
-              <ChartLineUpIcon size={16} weight="bold" color="var(--color-brand-600)" />
-              <Text fz="xs" fw={700} ff="var(--font-mono)">
+              <ChartLineUpIcon size={16} weight="bold" color="var(--app-accent)" />
+              <Text fz="xs" fw={700} ff="var(--mantine-font-family-monospace)">
                 AGGREGATED PORTFOLIO PERFORMANCE
               </Text>
             </Group>
@@ -101,15 +101,15 @@ export function HeroTerminalCard() {
           <svg className={classes.chartSvg} viewBox="0 0 800 130" preserveAspectRatio="none" aria-hidden="true">
             <defs>
               <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="var(--color-brand-500)" stopOpacity="0.35" />
-                <stop offset="100%" stopColor="var(--color-brand-500)" stopOpacity="0.0" />
+                <stop offset="0%" stopColor="var(--app-accent-fill)" stopOpacity="0.35" />
+                <stop offset="100%" stopColor="var(--app-accent-fill)" stopOpacity="0.0" />
               </linearGradient>
             </defs>
 
             {/* Subtle grid lines */}
-            <line x1="0" y1="30" x2="800" y2="30" stroke="var(--color-border-subtle)" strokeDasharray="3,3" strokeWidth="1" />
-            <line x1="0" y1="70" x2="800" y2="70" stroke="var(--color-border-subtle)" strokeDasharray="3,3" strokeWidth="1" />
-            <line x1="0" y1="110" x2="800" y2="110" stroke="var(--color-border-subtle)" strokeDasharray="3,3" strokeWidth="1" />
+            <line x1="0" y1="30" x2="800" y2="30" stroke="var(--app-border-subtle)" strokeDasharray="3,3" strokeWidth="1" />
+            <line x1="0" y1="70" x2="800" y2="70" stroke="var(--app-border-subtle)" strokeDasharray="3,3" strokeWidth="1" />
+            <line x1="0" y1="110" x2="800" y2="110" stroke="var(--app-border-subtle)" strokeDasharray="3,3" strokeWidth="1" />
 
             {/* Area under curve */}
             <path d="M 0,110 Q 120,95 220,80 T 400,65 T 580,38 T 720,24 L 800,18 L 800,130 L 0,130 Z" fill="url(#chartGradient)" />
@@ -118,13 +118,13 @@ export function HeroTerminalCard() {
             <path
               d="M 0,110 Q 120,95 220,80 T 400,65 T 580,38 T 720,24 L 800,18"
               fill="none"
-              stroke="var(--color-brand-500)"
+              stroke="var(--app-accent-fill)"
               strokeWidth="2.5"
               strokeLinecap="round"
             />
 
             {/* Current point indicator */}
-            <circle cx="800" cy="18" r="4.5" fill="var(--color-brand-600)" stroke="var(--color-bg-surface)" strokeWidth="2" />
+            <circle cx="800" cy="18" r="4.5" fill="var(--app-accent)" stroke="var(--app-surface)" strokeWidth="2" />
           </svg>
         </div>
 
@@ -137,7 +137,7 @@ export function HeroTerminalCard() {
               <Text span c="dimmed">
                 {t.price}
               </Text>
-              <Text span c={t.positive ? 'green' : 'red'} fw={600}>
+              <Text span c={t.positive ? 'success' : 'danger'} fw={600}>
                 {t.change}
               </Text>
             </div>
@@ -148,11 +148,11 @@ export function HeroTerminalCard() {
       <div className={classes.statusBar}>
         <Group gap="md">
           <Group gap={4}>
-            <CheckCircleIcon size={14} weight="bold" color="var(--color-success)" />
+            <CheckCircleIcon size={14} weight="bold" color="var(--app-success)" />
             <span>Ledger State: In-Sync</span>
           </Group>
           <Group gap={4}>
-            <ShieldCheckIcon size={14} weight="bold" color="var(--color-brand-500)" />
+            <ShieldCheckIcon size={14} weight="bold" color="var(--app-accent-fill)" />
             <span>RFC 7807 Guard: Active</span>
           </Group>
         </Group>

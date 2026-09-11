@@ -1,0 +1,79 @@
+.input {
+  min-height: 44px;
+  background: var(--app-surface);
+  border-color: var(--app-border);
+  color: var(--app-text-primary);
+  transition:
+    border-color var(--app-motion-standard) var(--app-ease-standard),
+    box-shadow var(--app-motion-standard) var(--app-ease-standard),
+    background-color var(--app-motion-standard) var(--app-ease-standard);
+}
+
+.input::placeholder {
+  color: var(--app-text-tertiary);
+}
+
+.input:hover:not(:focus):not(:focus-within):not([data-error]):not([data-disabled]) {
+  border-color: var(--app-border-strong);
+}
+
+.input:focus,
+.input:focus-within {
+  border-color: var(--app-accent-fill);
+  box-shadow: 0 0 0 3px var(--app-focus-ring);
+}
+
+.input[data-error] {
+  border-color: var(--app-danger);
+}
+
+.input[data-disabled],
+.input:disabled {
+  background: var(--app-surface-secondary);
+  border-color: var(--app-border-subtle);
+  color: var(--app-text-disabled);
+  opacity: 1;
+}
+
+.section {
+  color: var(--app-text-tertiary);
+}
+
+.label {
+  margin-bottom: 6px;
+  color: var(--app-text-primary);
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 500;
+}
+
+.description {
+  margin-top: 3px;
+  color: var(--app-text-tertiary);
+}
+
+.error {
+  margin-top: 4px;
+  color: var(--app-danger);
+}
+
+.option {
+  min-height: 40px;
+  border-radius: var(--mantine-radius-sm);
+  color: var(--app-text-primary);
+  transition: background-color var(--app-motion-fast) var(--app-ease-standard);
+}
+
+.option:hover {
+  background: var(--app-surface-hover);
+}
+
+.option[data-combobox-selected] {
+  background: var(--app-surface-selected);
+  color: var(--app-accent);
+}
+
+.groupLabel,
+.empty {
+  color: var(--app-text-tertiary);
+  font-size: var(--mantine-font-size-sm);
+}

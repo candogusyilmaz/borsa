@@ -4,16 +4,16 @@
   justify-content: center;
   min-height: 100vh;
   padding: var(--mantine-spacing-md);
-  background-color: var(--color-bg-base);
+  background-color: var(--app-bg);
 }
 
 .card {
   width: 100%;
   max-width: 420px;
   padding: var(--mantine-spacing-xl);
-  background-color: var(--color-bg-surface);
+  background-color: var(--app-surface);
   border-radius: var(--mantine-radius-md);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--app-shadow-raised);
 }
 
 .header {
@@ -31,8 +31,8 @@
   width: 48px;
   height: 48px;
   border-radius: var(--mantine-radius-md);
-  background-color: var(--color-brand-50);
-  color: var(--color-brand-600);
+  background-color: var(--app-accent-subtle);
+  color: var(--app-accent);
   margin-bottom: var(--mantine-spacing-md);
 }
 

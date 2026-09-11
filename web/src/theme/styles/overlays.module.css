@@ -1,0 +1,66 @@
+.overlay {
+  background: var(--app-overlay);
+  backdrop-filter: blur(2px);
+}
+
+.modalContent,
+.drawerContent {
+  color: var(--app-text-primary);
+  background: var(--app-surface-elevated);
+  border: 1px solid var(--app-border-subtle);
+  box-shadow: var(--app-shadow-floating);
+}
+
+.modalHeader {
+  padding: var(--app-space-5) var(--app-space-5) var(--app-space-3);
+  background: transparent;
+}
+
+.modalBody {
+  padding: var(--app-space-3) var(--app-space-5) var(--app-space-5);
+}
+
+.modalTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--app-text-primary);
+}
+
+.dropdown {
+  color: var(--app-text-primary);
+  background: var(--app-surface-elevated);
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--mantine-radius-md);
+  box-shadow: var(--app-shadow-floating);
+  padding: 6px;
+}
+
+.menuItem {
+  min-height: 40px;
+  border-radius: var(--mantine-radius-sm);
+  color: var(--app-text-primary);
+  transition: background-color var(--app-motion-fast) var(--app-ease-standard);
+}
+
+.menuItem:hover,
+.menuItem[data-hovered] {
+  background: var(--app-surface-hover);
+}
+
+.menuLabel {
+  color: var(--app-text-tertiary);
+  font-weight: 500;
+}
+
+.menuDivider {
+  border-color: var(--app-border-subtle);
+}
+
+.tooltip {
+  background: var(--app-text-primary);
+  color: var(--app-bg);
+  border-radius: var(--mantine-radius-sm);
+  box-shadow: var(--app-shadow-raised);
+  font-size: var(--mantine-font-size-sm);
+}

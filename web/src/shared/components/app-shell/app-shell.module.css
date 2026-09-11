@@ -13,7 +13,7 @@
   gap: var(--mantine-spacing-sm);
   font-weight: 700;
   font-size: var(--mantine-font-size-lg);
-  color: var(--color-text-primary);
+  color: var(--app-text-primary);
   text-decoration: none;
 }
 
@@ -25,7 +25,7 @@
 
 .userEmail {
   font-size: var(--mantine-font-size-sm);
-  color: var(--color-text-secondary);
+  color: var(--app-text-secondary);
   max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;

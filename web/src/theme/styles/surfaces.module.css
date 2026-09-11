@@ -1,0 +1,36 @@
+.card,
+.paper {
+  color: var(--app-text-primary);
+  background: var(--app-surface);
+}
+
+.code {
+  background: var(--app-surface-secondary);
+  border: 1px solid var(--app-border-subtle);
+  color: var(--app-text-primary);
+}
+
+.kbd {
+  background: var(--app-surface-secondary);
+  border: 1px solid var(--app-border);
+  border-bottom-width: 2px;
+  color: var(--app-text-secondary);
+  box-shadow: none;
+}
+
+.fieldsetRoot {
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--mantine-radius-md);
+}
+
+.fieldsetLegend {
+  color: var(--app-text-secondary);
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 500;
+}
+
+.avatarPlaceholder {
+  background: var(--app-accent-subtle);
+  color: var(--app-accent);
+  font-weight: 600;
+}

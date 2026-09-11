@@ -2,8 +2,8 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: var(--color-bg-base);
-  color: var(--color-text-primary);
+  background-color: var(--app-bg);
+  color: var(--app-text-primary);
 }
 
 .mainContent {

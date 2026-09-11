@@ -43,7 +43,7 @@ export function MarketingHeader() {
             component={Link}
             to="/app"
             variant="filled"
-            color="indigo"
+            color="brand"
             size="sm"
             rightSection={<ArrowRightIcon size={14} weight="bold" />}>
             Launch App
@@ -68,7 +68,7 @@ export function MarketingHeader() {
               component={Link}
               to="/app"
               fullWidth
-              color="indigo"
+              color="brand"
               rightSection={<ArrowRightIcon size={14} weight="bold" />}
               onClick={close}>
               Launch App

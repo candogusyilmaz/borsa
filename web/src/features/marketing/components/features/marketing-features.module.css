@@ -1,7 +1,7 @@
 .featuresSection {
   scroll-margin-top: calc(64px + var(--mantine-spacing-md));
   padding: calc(var(--mantine-spacing-xl) * 2.5) 0;
-  background-color: var(--color-bg-base);
+  background-color: var(--app-bg);
   content-visibility: auto;
   contain-intrinsic-size: auto none auto 600px;
 }
@@ -20,14 +20,14 @@
   font-size: clamp(1.75rem, 3.5vw, 2.5rem);
   font-weight: 800;
   letter-spacing: -0.025em;
-  color: var(--color-text-primary);
+  color: var(--app-text-primary);
   text-wrap: balance;
   margin-bottom: var(--mantine-spacing-md);
 }
 
 .subtitle {
   font-size: 1.1rem;
-  color: var(--color-text-secondary);
+  color: var(--app-text-secondary);
   line-height: 1.6;
   text-wrap: pretty;
 }
@@ -39,8 +39,8 @@
 }
 
 .featureCard {
-  background-color: var(--color-bg-surface);
-  border: 1px solid var(--color-border-subtle);
+  background-color: var(--app-surface);
+  border: 1px solid var(--app-border-subtle);
   border-radius: var(--mantine-radius-md);
   padding: var(--mantine-spacing-xl);
   display: flex;
@@ -50,8 +50,8 @@
 
 .featureCard:hover {
   transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--color-brand-300);
+  box-shadow: var(--app-shadow-raised);
+  border-color: var(--app-accent);
 }
 
 .iconWrapper {
@@ -61,26 +61,21 @@
   width: 48px;
   height: 48px;
   border-radius: var(--mantine-radius-md);
-  background-color: var(--color-brand-50);
-  color: var(--color-brand-600);
+  background-color: var(--app-accent-subtle);
+  color: var(--app-accent);
   margin-bottom: var(--mantine-spacing-md);
-}
-
-[data-mantine-color-scheme='dark'] .iconWrapper {
-  background-color: rgba(99, 102, 241, 0.15);
-  color: var(--color-brand-400);
 }
 
 .cardTitle {
   font-size: 1.2rem;
   font-weight: 700;
-  color: var(--color-text-primary);
+  color: var(--app-text-primary);
   margin-bottom: var(--mantine-spacing-xs);
 }
 
 .cardDescription {
   font-size: 0.925rem;
-  color: var(--color-text-secondary);
+  color: var(--app-text-secondary);
   line-height: 1.6;
   margin-bottom: var(--mantine-spacing-md);
   flex-grow: 1;

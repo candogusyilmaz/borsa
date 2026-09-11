@@ -31,7 +31,7 @@ function HomePage() {
             Welcome back to {siteConfig.name}
           </Text>
         </div>
-        <Badge color="green" variant="light" size="lg">
+        <Badge color="success" variant="light" size="lg">
           Authenticated Session
         </Badge>
       </Group>

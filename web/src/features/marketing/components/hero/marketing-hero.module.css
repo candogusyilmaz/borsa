@@ -6,9 +6,6 @@
   overflow: hidden;
 }
 
-[data-mantine-color-scheme='dark'] .heroSection {
-  background: radial-gradient(circle at 50% 15%, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
-}
 
 .heroContent {
   display: flex;
@@ -29,20 +26,20 @@
   font-weight: 800;
   line-height: 1.15;
   letter-spacing: -0.03em;
-  color: var(--color-text-primary);
+  color: var(--app-text-primary);
   text-wrap: balance;
   margin-bottom: var(--mantine-spacing-md);
 }
 
 .gradientText {
-  background: linear-gradient(135deg, var(--color-brand-500) 0%, var(--color-brand-700) 100%);
+  background: var(--app-accent-fill);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .subtitle {
   font-size: clamp(1.05rem, 2vw, 1.25rem);
-  color: var(--color-text-secondary);
+  color: var(--app-text-secondary);
   line-height: 1.6;
   text-wrap: pretty;
   max-width: 720px;
@@ -71,7 +68,7 @@
 
 .ctaSecondary {
   font-weight: 600;
-  border-color: var(--color-border-default);
+  border-color: var(--app-border);
 }
 
 .signalsRow {
@@ -79,7 +76,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--mantine-spacing-lg);
-  color: var(--color-text-muted);
+  color: var(--app-text-tertiary);
   font-size: 0.85rem;
   font-weight: 500;
   flex-wrap: wrap;

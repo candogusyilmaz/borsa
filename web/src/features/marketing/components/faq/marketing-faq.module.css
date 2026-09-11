@@ -1,7 +1,7 @@
 .faqSection {
   scroll-margin-top: calc(64px + var(--mantine-spacing-md));
   padding: calc(var(--mantine-spacing-xl) * 2.5) 0;
-  background-color: var(--color-bg-base);
+  background-color: var(--app-bg);
   content-visibility: auto;
   contain-intrinsic-size: auto none auto 500px;
 }
@@ -20,14 +20,14 @@
   font-size: clamp(1.75rem, 3.5vw, 2.5rem);
   font-weight: 800;
   letter-spacing: -0.025em;
-  color: var(--color-text-primary);
+  color: var(--app-text-primary);
   text-wrap: balance;
   margin-bottom: var(--mantine-spacing-md);
 }
 
 .subtitle {
   font-size: 1.1rem;
-  color: var(--color-text-secondary);
+  color: var(--app-text-secondary);
   line-height: 1.6;
   text-wrap: pretty;
 }
@@ -38,27 +38,27 @@
 }
 
 .item {
-  background-color: var(--color-bg-surface);
-  border: 1px solid var(--color-border-subtle);
+  background-color: var(--app-surface);
+  border: 1px solid var(--app-border-subtle);
   border-radius: var(--mantine-radius-md) !important;
   margin-bottom: var(--mantine-spacing-sm);
   transition: border-color 0.2s ease;
 }
 
 .item:hover {
-  border-color: var(--color-brand-300);
+  border-color: var(--app-accent);
 }
 
 .control {
   font-size: 1.05rem;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--app-text-primary);
   padding: var(--mantine-spacing-md) var(--mantine-spacing-lg);
 }
 
 .panel {
   font-size: 0.95rem;
-  color: var(--color-text-secondary);
+  color: var(--app-text-secondary);
   line-height: 1.65;
   padding: 0 var(--mantine-spacing-lg) var(--mantine-spacing-lg);
 }

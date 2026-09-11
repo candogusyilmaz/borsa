@@ -20,6 +20,6 @@
 .text {
   font-family: var(--mantine-font-family);
   letter-spacing: -0.02em;
-  color: var(--color-text-primary, inherit);
+  color: var(--app-text-primary, inherit);
   line-height: 1.2;
 }

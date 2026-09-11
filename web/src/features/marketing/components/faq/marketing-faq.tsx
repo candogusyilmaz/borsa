@@ -32,7 +32,7 @@ export function MarketingFaq() {
     <section id="faq" className={classes.faqSection} aria-labelledby="faq-heading">
       <Container size="lg">
         <div className={classes.sectionHeader}>
-          <Badge variant="light" color="indigo" size="md" className={classes.badge}>
+          <Badge variant="light" color="brand" size="md" className={classes.badge}>
             Common Questions
           </Badge>
           <h2 id="faq-heading" className={classes.title}>

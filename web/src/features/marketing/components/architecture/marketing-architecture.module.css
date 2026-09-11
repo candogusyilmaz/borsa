@@ -1,9 +1,9 @@
 .archSection {
   scroll-margin-top: calc(64px + var(--mantine-spacing-md));
   padding: calc(var(--mantine-spacing-xl) * 2.5) 0;
-  background-color: var(--color-bg-surface);
-  border-top: 1px solid var(--color-border-subtle);
-  border-bottom: 1px solid var(--color-border-subtle);
+  background-color: var(--app-surface);
+  border-top: 1px solid var(--app-border-subtle);
+  border-bottom: 1px solid var(--app-border-subtle);
   content-visibility: auto;
   contain-intrinsic-size: auto none auto 700px;
 }
@@ -30,14 +30,14 @@
   font-size: clamp(1.75rem, 3.5vw, 2.5rem);
   font-weight: 800;
   letter-spacing: -0.025em;
-  color: var(--color-text-primary);
+  color: var(--app-text-primary);
   text-wrap: balance;
   margin-bottom: var(--mantine-spacing-md);
 }
 
 .description {
   font-size: 1.05rem;
-  color: var(--color-text-secondary);
+  color: var(--app-text-secondary);
   line-height: 1.6;
   text-wrap: pretty;
   margin-bottom: var(--mantine-spacing-lg);
@@ -58,7 +58,7 @@
 .checkIcon {
   flex-shrink: 0;
   margin-top: 2px;
-  color: var(--color-brand-600);
+  color: var(--app-accent);
 }
 
 .checkText {
@@ -69,12 +69,12 @@
 .checkTitle {
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--app-text-primary);
 }
 
 .checkSubtext {
   font-size: 0.85rem;
-  color: var(--color-text-muted);
+  color: var(--app-text-tertiary);
 }
 
 .rightColumn {
@@ -84,11 +84,11 @@
 }
 
 .archCard {
-  background-color: var(--color-bg-base);
-  border: 1px solid var(--color-border-subtle);
+  background-color: var(--app-bg);
+  border: 1px solid var(--app-border-subtle);
   border-radius: var(--mantine-radius-lg);
   padding: var(--mantine-spacing-lg);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--app-shadow-raised);
 }
 
 .layerStack {
@@ -98,8 +98,8 @@
 }
 
 .layerItem {
-  background-color: var(--color-bg-surface);
-  border: 1px solid var(--color-border-subtle);
+  background-color: var(--app-surface);
+  border: 1px solid var(--app-border-subtle);
   border-radius: var(--mantine-radius-md);
   padding: var(--mantine-spacing-md);
   display: flex;
@@ -109,7 +109,7 @@
 }
 
 .layerItem:hover {
-  border-color: var(--color-brand-400);
+  border-color: var(--app-accent);
 }
 
 .layerInfo {
@@ -126,27 +126,27 @@
 
 .codeBox {
   margin-top: var(--mantine-spacing-sm);
-  background-color: var(--color-bg-surface);
-  border: 1px solid var(--color-border-subtle);
+  background-color: var(--app-surface);
+  border: 1px solid var(--app-border-subtle);
   border-radius: var(--mantine-radius-md);
   padding: var(--mantine-spacing-md);
   font-family: var(--font-mono);
   font-size: 0.8rem;
   line-height: 1.5;
-  color: var(--color-text-secondary);
+  color: var(--app-text-secondary);
   overflow-x: auto;
 }
 
 .codeKey {
-  color: var(--color-brand-600);
+  color: var(--app-accent);
 }
 
 .codeString {
-  color: var(--color-success);
+  color: var(--app-success);
 }
 
 .codeNumber {
-  color: var(--color-warning);
+  color: var(--app-warning);
 }
 
 .codeIndent1 {

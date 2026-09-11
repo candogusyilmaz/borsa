@@ -55,7 +55,7 @@ export function MarketingArchitecture() {
       <Container size="lg">
         <div className={classes.archGrid}>
           <div id="security" className={classes.leftColumn}>
-            <Badge variant="light" color="indigo" size="md" className={classes.badge}>
+            <Badge variant="light" color="brand" size="md" className={classes.badge}>
               Zero-Trust Architecture & Security
             </Badge>
 
@@ -83,7 +83,7 @@ export function MarketingArchitecture() {
 
           <div className={classes.rightColumn}>
             <div className={classes.archCard}>
-              <Text fz="xs" fw={700} ff="var(--font-mono)" c="dimmed" tt="uppercase" mb="sm">
+              <Text fz="xs" fw={700} ff="var(--mantine-font-family-monospace)" c="dimmed" tt="uppercase" mb="sm">
                 System Topology & Layer Stack
               </Text>
 
@@ -93,7 +93,7 @@ export function MarketingArchitecture() {
                   return (
                     <div key={layer.name} className={classes.layerItem}>
                       <div className={classes.layerInfo}>
-                        <Icon size={20} weight="bold" color="var(--color-brand-600)" />
+                        <Icon size={20} weight="bold" color="var(--app-accent)" />
                         <div>
                           <Text fz="sm" fw={600}>
                             {layer.name}
