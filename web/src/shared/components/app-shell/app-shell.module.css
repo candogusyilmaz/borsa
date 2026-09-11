@@ -1,39 +1,140 @@
+/* Mobile-First Dashboard Shell Architecture */
+
+.shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--mantine-color-body);
+  background-image:
+    radial-gradient(circle at 15% 15%, rgb(98 91 246 / 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 85% 85%, rgb(98 91 246 / 0.05) 0%, transparent 40%);
+  background-attachment: fixed;
+  color: var(--mantine-color-text);
+  position: relative;
+}
+
+/* Header: Sticky top bar with clean glassmorphism */
 .header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  height: 60px;
+  background-color: var(--mantine-color-body);
+  border-bottom: 1px solid var(--app-border-subtle);
+  display: flex;
+  align-items: center;
+  padding-inline: var(--mantine-spacing-md);
+}
+
+@supports (backdrop-filter: blur(16px)) or (-webkit-backdrop-filter: blur(16px)) {
+  .header {
+    background-color: color-mix(in srgb, var(--mantine-color-body) 82%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+}
+
+.headerInner {
+  width: 100%;
+  max-width: 80rem;
+  margin-inline: auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 100%;
-  padding-left: var(--mantine-spacing-md);
-  padding-right: var(--mantine-spacing-md);
 }
 
-.brand {
-  display: flex;
+.brandLink {
+  display: inline-flex;
   align-items: center;
-  gap: var(--mantine-spacing-sm);
-  font-weight: 700;
-  font-size: var(--mantine-font-size-lg);
-  color: var(--mantine-color-text);
   text-decoration: none;
+  color: inherit;
+  min-height: 44px;
 }
 
+/* Header right actions */
 .headerActions {
   display: flex;
   align-items: center;
-  gap: var(--mantine-spacing-sm);
+  gap: var(--mantine-spacing-xs);
 }
 
-.userEmail {
-  font-size: var(--mantine-font-size-sm);
-  color: var(--mantine-color-dimmed);
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.liveBadge {
+  display: inline-flex;
 }
 
-.mainContent {
+/* Avatar profile trigger button */
+.avatarButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--mantine-radius-xl);
+  min-width: 44px;
+  min-height: 44px;
+  cursor: pointer;
+  outline: none;
+  background: transparent;
+  border: none;
+  padding: 0;
+  transition:
+    transform var(--app-motion-fast) var(--app-ease),
+    opacity var(--app-motion-fast) var(--app-ease);
+}
+
+.avatarButton:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+.avatarButton:focus-visible {
+  box-shadow: 0 0 0 2px var(--app-focus-ring);
+}
+
+/* Main Content area */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding-bottom: var(--mantine-spacing-xl);
+}
+
+.container {
+  width: 100%;
+  max-width: 80rem;
+  margin-inline: auto;
+  padding: var(--mantine-spacing-md);
+}
+
+@media (min-width: 48em) {
+  .container {
+    padding: var(--mantine-spacing-xl);
+  }
+}
+
+/* Responsive Account Drawer */
+.drawerContent {
+  background-color: var(--mantine-color-default);
+  box-shadow: var(--mantine-shadow-xl);
+}
+
+.drawerBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-md);
+  padding: var(--mantine-spacing-md);
+}
+
+.drawerCard {
+  background-color: var(--app-surface-secondary);
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--mantine-radius-md);
+  padding: var(--mantine-spacing-md);
+}
+
+.drawerUserMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
 }

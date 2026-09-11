@@ -1,0 +1,353 @@
+/* Dashboard Page: Mobile-First Responsive Architecture */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-lg);
+  width: 100%;
+}
+
+/* Header & Welcome Area */
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--mantine-spacing-xs);
+}
+
+.title {
+  font-size: 1.5rem;
+  line-height: 1.2;
+  font-weight: var(--mantine-font-weight-bold);
+  letter-spacing: -0.02em;
+  color: var(--mantine-color-text);
+}
+
+@media (min-width: 48em) {
+  .title {
+    font-size: 1.75rem;
+  }
+}
+
+.subtitle {
+  font-size: var(--mantine-font-size-sm);
+  color: var(--mantine-color-dimmed);
+}
+
+/* Hero Portfolio Card */
+.portfolioCard {
+  background-color: var(--app-surface-elevated);
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--mantine-radius-lg);
+  padding: var(--mantine-spacing-lg);
+  box-shadow: var(--mantine-shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-md);
+}
+
+.portfolioHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-xs);
+}
+
+@media (min-width: 36em) {
+  .portfolioHeader {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+}
+
+.balanceLabel {
+  font-size: var(--mantine-font-size-xs);
+  font-weight: var(--mantine-font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--mantine-color-dimmed);
+}
+
+.balanceAmount {
+  font-size: 2rem;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--mantine-color-text);
+  font-variant-numeric: tabular-nums;
+  margin-block: 4px;
+}
+
+@media (min-width: 48em) {
+  .balanceAmount {
+    font-size: 2.5rem;
+  }
+}
+
+.changeBadge {
+  align-self: flex-start;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Timeframe Selector */
+.timeframeControl {
+  margin-top: var(--mantine-spacing-xs);
+  width: 100%;
+  max-width: 320px;
+}
+
+/* Portfolio Metrics Breakdown Grid */
+.metricsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--mantine-spacing-sm);
+  border-top: 1px solid var(--app-border-subtle);
+  padding-top: var(--mantine-spacing-md);
+}
+
+@media (min-width: 36em) {
+  .metricsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.metricItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metricLabel {
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+}
+
+.metricValue {
+  font-size: var(--mantine-font-size-md);
+  font-weight: 600;
+  color: var(--mantine-color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Mobile-First Dedicated Action Buttons Grid */
+.actionGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--mantine-spacing-sm);
+  width: 100%;
+}
+
+@media (max-width: 25em) {
+  .actionGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.actionBtn {
+  min-height: 48px;
+  font-weight: var(--mantine-font-weight-medium);
+  letter-spacing: -0.01em;
+  padding-inline: var(--mantine-spacing-xs);
+}
+
+/* 2-Column Responsive Section Grid */
+.sectionsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--mantine-spacing-lg);
+}
+
+@media (min-width: 60em) {
+  .sectionsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Section Cards */
+.sectionCard {
+  background-color: var(--app-surface-elevated);
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--mantine-radius-lg);
+  padding: var(--mantine-spacing-lg);
+  box-shadow: var(--mantine-shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-md);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sectionTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--mantine-color-text);
+  letter-spacing: -0.01em;
+}
+
+/* List of Tickers / Stocks */
+.tickerList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-xs);
+}
+
+.tickerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: var(--mantine-radius-md);
+  background-color: var(--app-surface-secondary);
+  border: 1px solid var(--app-border-subtle);
+  min-height: 52px;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  outline: none;
+  transition:
+    background-color var(--app-motion-fast) var(--app-ease),
+    border-color var(--app-motion-fast) var(--app-ease),
+    transform var(--app-motion-fast) var(--app-ease);
+}
+
+.tickerRow:hover,
+.tickerRow:focus-visible {
+  background-color: var(--mantine-color-default-hover);
+  border-color: var(--mantine-primary-color-filled);
+  transform: translateY(-1px);
+}
+
+.tickerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+}
+
+.tickerSymbol {
+  font-weight: 700;
+  font-size: var(--mantine-font-size-sm);
+  color: var(--mantine-color-text);
+}
+
+.tickerName {
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+}
+
+.tickerRight {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-md);
+}
+
+.tickerPrice {
+  font-weight: 600;
+  font-size: var(--mantine-font-size-sm);
+  color: var(--mantine-color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Activity Items */
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-xs);
+}
+
+.activityRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: var(--mantine-radius-md);
+  background-color: var(--app-surface-secondary);
+  border: 1px solid var(--app-border-subtle);
+  min-height: 48px;
+}
+
+.activityIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--mantine-radius-md);
+  background-color: var(--mantine-primary-color-light);
+  color: var(--mantine-primary-color-light-color);
+  flex-shrink: 0;
+}
+
+.activityDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  margin-inline: var(--mantine-spacing-sm);
+}
+
+.activityTitle {
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 500;
+  color: var(--mantine-color-text);
+}
+
+.activityDate {
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+}
+
+.activityAmountPositive {
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--mantine-color-teal-6);
+}
+
+.activityAmountDefault {
+  font-size: var(--mantine-font-size-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--mantine-color-text);
+}
+
+/* Operational Info Banner */
+.foundationCard {
+  background-color: var(--app-surface-secondary);
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--mantine-radius-lg);
+  padding: var(--mantine-spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-xs);
+}
+
+@media (min-width: 48em) {
+  .foundationCard {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--mantine-spacing-md) var(--mantine-spacing-lg);
+  }
+}
+
+.foundationLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+}
+
+.foundationText {
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+}
