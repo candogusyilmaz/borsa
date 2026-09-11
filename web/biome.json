@@ -35,6 +35,7 @@
     "includes": [
       "**",
       "!**/routeTree.gen.ts",
+      "!**/schema.d.ts",
       "!**/*.css",
       "!dist/**",
       "!node_modules/**"

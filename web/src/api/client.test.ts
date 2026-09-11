@@ -674,7 +674,7 @@ describe('non-auth errors', () => {
 
     const { error } = await sessions();
 
-    expect((error as { status?: number })?.status).toBe(500);
+    expect((error as unknown as { status?: number })?.status).toBe(500);
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1);
     expect(sessionLossCount).toBe(0);
   });
@@ -695,7 +695,7 @@ describe('non-auth errors', () => {
 
     const { error } = await sessions();
 
-    expect((error as { status?: number })?.status).toBe(403);
+    expect((error as unknown as { status?: number })?.status).toBe(403);
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1);
     expect(sessionLossCount).toBe(0);
   });
@@ -881,7 +881,7 @@ describe('tightened request-policy matching', () => {
     expect(sessionLossCount).toBe(1);
   });
 
-  it('parameterized protected route (/api/v1/auth/sessions/{sessionId}) uses global policy and attaches Bearer token', async () => {
+  it('parameterized protected route (/api/v1/auth/sessions/{familyId}) uses global policy and attaches Bearer token', async () => {
     setAccessToken('TOKEN_A');
     let capturedAuth: string | null = null;
 
@@ -894,8 +894,8 @@ describe('tightened request-policy matching', () => {
       return response500();
     });
 
-    await testClient.DELETE('/api/v1/auth/sessions/{sessionId}', {
-      params: { path: { sessionId: 'sess-123' } }
+    await testClient.DELETE('/api/v1/auth/sessions/{familyId}', {
+      params: { path: { familyId: 'sess-123' } }
     });
 
     expect(capturedAuth).toBe('Bearer TOKEN_A');

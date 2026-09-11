@@ -20,6 +20,7 @@ spring:
     web:
       pageable:
         max-page-size: 100
+        serialization-mode: via-dto
   flyway:
     enabled: true
     baseline-on-migrate: false
@@ -29,6 +30,12 @@ spring:
   mvc:
     problemdetails:
       enabled: true
+
+springdoc:
+  paths-to-match:
+    - /api/v1/**
+  api-docs:
+    version: openapi-3-0
 
 logging:
   pattern:

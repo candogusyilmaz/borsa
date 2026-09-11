@@ -15,8 +15,8 @@
     "check:fix": "biome check --write ./src",
     "test": "vitest run",
     "test:watch": "vitest",
-    "generate:openapi": "openapi-typescript http://localhost:8080/v3/api-docs -o ./src/api/schema.d.ts",
-    "check:openapi": "node -e \"if (!require('fs').existsSync('./src/api/schema.d.ts')) { console.error('schema.d.ts missing'); process.exit(1); }\"",
+    "generate:openapi": "openapi-typescript http://localhost:8080/v3/api-docs --output ./src/api/schema.d.ts",
+    "check:openapi": "openapi-typescript http://localhost:8080/v3/api-docs --output ./src/api/schema.d.ts --check",
     "prepare": "cd .. && husky"
   },
   "dependencies": {

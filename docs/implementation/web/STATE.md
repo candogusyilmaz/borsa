@@ -1,6 +1,6 @@
 # Frontend implementation state
 
-Last updated: 2026-09-08
+Last updated: 2026-09-11
 
 ## Technology baseline
 
@@ -10,6 +10,7 @@ Last updated: 2026-09-08
 - TanStack Query (`5.102.8`)
 - TanStack Form (`1.2.0`)
 - openapi-fetch (`0.17.0`) / openapi-react-query (`0.5.4`)
+- openapi-typescript (`7.13.0`)
 - Biome (`2.5.12`)
 - React Compiler (`babel-plugin-react-compiler` + `oxc-transform-react`)
 - @phosphor-icons/react (`2.1.7`)
@@ -24,6 +25,7 @@ Last updated: 2026-09-08
 - Unit UI-001 (Frontend Foundation Rebuild) is currently active.
 - Legacy frontend has been purged and replaced with a clean foundation:
   - Centralized typed API client (`src/api/client.ts`) with RFC 7807 `ProblemDetail` error normalization and Bearer auth middleware.
+  - `src/api/schema.d.ts` is generated from the backend `/v3/api-docs` contract, and its check script detects generated-schema drift.
   - Core design tokens, semantic CSS variables, and Mantine v9 alpha theme (`src/app/theme.ts`, `src/index.css`).
   - Strict scope discipline: all UI work strictly contained within `web/`.
   - State management rule: TanStack Query exclusively owns remote state; no Zustand, no global stores.
@@ -33,5 +35,7 @@ Last updated: 2026-09-08
 - Foundation baseline verification against `web/`:
   - `npm run typecheck` (`tsc -b`) verified with 0 errors.
   - `npx biome check ./src` verified with 0 errors.
+  - `npm run test` verified 64 tests with 0 failures.
   - `npm run build` (`tsc -b && vite build`) passes cleanly.
+  - The installed OpenAPI CLI recognizes the configured `--output` and `--check` flags.
   - Pre-commit hooks verify TypeScript and Biome via `npm run check:fix`.

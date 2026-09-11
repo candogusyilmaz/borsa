@@ -1,6 +1,6 @@
 # Backend implementation state
 
-Last updated: 2026-09-09
+Last updated: 2026-09-11
 
 ## Technology baseline
 
@@ -9,6 +9,7 @@ Last updated: 2026-09-09
 - Repository structure: plain monorepo separating `server/` (Spring Boot backend) and `web/` (React frontend).
 - Flyway owns migrations and DDL; Hibernate/JPA validates the mapped schema.
 - Testcontainers provides PostgreSQL integration coverage.
+- Springdoc OpenAPI `3.1.0` publishes a deterministic OpenAPI 3.0.1 contract for public `/api/v1/**` paths at `/v3/api-docs`.
 
 ## Accepted implementation baseline
 
@@ -65,6 +66,7 @@ Tables:
 
 - Current capability roots are `identity`, `reference`, `ledger`, and `platform`; HTTP records use capability-owned `web/request` and `web/response` packages, and use-case models use `application/model` where needed.
 - The application uses controller-bound request validation, typed authenticated principals, one stateless bearer chain, centralized persistence/error translation, and UUID compatibility correlation alongside native tracing.
+- Spring Boot owns Spring Data web configuration, including the 100-row maximum page size and stable DTO page serialization. Generated OpenAPI pagination schemas mark all guaranteed page and project-owned `SliceResponse<T>` fields as required.
 - PR-023 adopted the governing simplicity direction in the current standards: direct/local code, no pagination for naturally small bounded collections, Spring `Pageable` for ordinary pagination, and custom cursor/keyset infrastructure only for a demonstrated requirement. Ledger accounts are now unpaged, ledger activities/reconciliations use compact project-owned `SliceResponse<T>` results, and PR-025 now applies the same direct approach to complete device-session lists and instrument search. The ordinary-list cursor infrastructure has been removed after source search proved it dead.
 - `platform.job` is unused storage scaffolding only. No scheduler, worker, batch, queue, retry framework, or generic workflow runtime is part of the current implementation.
 - The preserved frontend still targets legacy APIs and is outside the backend rewrite baseline.
@@ -86,13 +88,15 @@ Tables:
 
 ## Verification state
 
+The current OpenAPI workspace changes pass the focused configuration and HTTP contract tests and the complete Maven `verify` lifecycle: 374 tests, 0 failures, 0 errors, and 0 skips against PostgreSQL 17 Testcontainers. Spotless passes across 258 Java files, `/v3/api-docs` exposes the controller contract with required slice fields, existing pagination normalization remains intact, and the executable archive is repackaged successfully.
+
 PR-028 is accepted and committed in `ac4d7e7`. Registration/login/refresh use one HTTP boundary and one non-transactional attempt-policy boundary; logout is colocated with device-session HTTP operations; the transactional registration/login/rotation workflows and separate device-session query/revocation boundaries are preserved. Duplicate login/refresh result and response records and superseded operation-specific controllers/attempt wrappers are removed. The focused identity/security gate passed 108 tests, and the full suite plus Maven `verify` passed 371 tests each with 0 failures, 0 errors, and 0 skips against PostgreSQL 17 Testcontainers. Spotless passed across 255 Java files (192 production and 63 test), the executable archive was repackaged, and no required tests were skipped or replaced. Static audits pass: exactly three identity REST controllers and ten identity `@Service` classes remain, no deleted symbols remain, `AuthenticationAttemptService` has no transaction annotation, and `git diff --check` is clean.
 
 PR-026 and PR-027 are accepted and committed; Cleanup C and Cleanup D are complete. PR-027 was accepted in commit `4e3108d`: the redundant preview/reference row/model/factory surfaces and unused read projections are removed, genuine read models remain, five workflow-specific fingerprint methods preserve the existing canonical identity, and the historical policy decision is passed through unchanged.
 
 WORKSPACE-001 repository restructuring verified: full Maven lifecycle (`.\mvnw.cmd verify` without test skipping) from `server/` passed with 371 tests (0 failures, 0 errors, 0 skips), Spotless passed with 261 files clean, and Spring Boot executable archive repackaged successfully. Root Docker build (`docker build -t stocks-workspace-check .`) verified cleanly.
 
-Last updated: 2026-09-09
+Last updated: 2026-09-11
 
 ## Resume context
 
