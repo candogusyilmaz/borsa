@@ -1,76 +1,130 @@
 import type { CSSVariablesResolver } from '@mantine/core';
-import { semantic } from './semantic';
-
-type SemanticValues = typeof semantic.light | typeof semantic.dark;
-
-function toVars(v: SemanticValues): Record<string, string> {
-  return {
-    // Bridge Mantine's own semantic variables to our palette so all components auto-theme
-    '--mantine-color-body': v.surface,
-    '--mantine-color-text': v.textPrimary,
-    '--mantine-color-placeholder': v.textTertiary,
-    '--mantine-color-dimmed': v.textSecondary,
-    '--mantine-color-default': v.surfaceInteractive,
-    '--mantine-color-default-hover': v.surfaceHover,
-    '--mantine-color-default-border': v.border,
-    '--mantine-color-default-color': v.textPrimary,
-    '--mantine-color-anchor': v.accent,
-    '--mantine-color-error': v.danger,
-
-    '--app-bg': v.bg,
-
-    '--app-surface': v.surface,
-    '--app-surface-secondary': v.surfaceSecondary,
-    '--app-surface-elevated': v.surfaceElevated,
-    '--app-surface-interactive': v.surfaceInteractive,
-    '--app-surface-hover': v.surfaceHover,
-    '--app-surface-selected': v.surfaceSelected,
-
-    '--app-text-primary': v.textPrimary,
-    '--app-text-secondary': v.textSecondary,
-    '--app-text-tertiary': v.textTertiary,
-    '--app-text-disabled': v.textDisabled,
-
-    '--app-border-subtle': v.borderSubtle,
-    '--app-border': v.border,
-    '--app-border-strong': v.borderStrong,
-
-    '--app-accent': v.accent,
-    '--app-accent-fill': v.accentFill,
-    '--app-accent-hover': v.accentHover,
-    '--app-accent-subtle': v.accentSubtle,
-
-    '--app-success': v.success,
-    '--app-danger': v.danger,
-    '--app-warning': v.warning,
-    '--app-info': v.info,
-
-    '--app-focus-ring': v.focusRing,
-    '--app-overlay': v.overlay,
-
-    '--app-shadow-raised': v.shadowRaised,
-    '--app-shadow-floating': v.shadowFloating
-  };
-}
 
 export const cssVariablesResolver: CSSVariablesResolver = () => ({
   variables: {
-    '--app-space-1': '0.25rem',
-    '--app-space-2': '0.5rem',
-    '--app-space-3': '0.75rem',
-    '--app-space-4': '1rem',
-    '--app-space-5': '1.25rem',
-    '--app-space-6': '1.5rem',
-    '--app-space-7': '2rem',
-    '--app-space-8': '2.5rem',
-    '--app-space-9': '3rem',
-
+    /*
+     * Mantine does not have generic motion tokens.
+     * These are worth owning ourselves.
+     */
     '--app-motion-fast': '120ms',
-    '--app-motion-standard': '160ms',
+    '--app-motion-normal': '160ms',
     '--app-motion-slow': '200ms',
-    '--app-ease-standard': 'cubic-bezier(0.2, 0.8, 0.2, 1)'
+    '--app-ease': 'cubic-bezier(0.2, 0.8, 0.2, 1)'
   },
+  light: {
+    /*
+     * --------------------------------------------------------
+     * MANTINE SEMANTIC VARIABLES
+     * --------------------------------------------------------
+     */
+    // Application canvas
+    '--mantine-color-body': '#F6F7F9',
 
-  light: toVars(semantic.light),
-  dark: toVars(semantic.dark)
+    // Main typography
+    '--mantine-color-text': '#171B22',
+    '--mantine-color-bright': '#10141B',
+
+    // Secondary text
+    '--mantine-color-dimmed': '#5D6775',
+
+    // Form placeholder
+    '--mantine-color-placeholder': '#8A95A5',
+
+    // Links
+    '--mantine-color-anchor': 'var(--mantine-color-brand-7)',
+
+    /*
+     * "default" is extremely useful.
+     *
+     * Button variant="default", ActionIcon default,
+     * inputs and a number of other Mantine components
+     * derive their neutral presentation from these.
+     */
+    '--mantine-color-default': '#FFFFFF',
+    '--mantine-color-default-hover': '#F3F4F7',
+    '--mantine-color-default-color': '#171B22',
+    '--mantine-color-default-border': '#DCE0E7',
+
+    // Disabled state
+    '--mantine-color-disabled': '#F0F2F5',
+    '--mantine-color-disabled-color': '#9AA4B2',
+    '--mantine-color-disabled-border': '#E5E8ED',
+
+    // Semantic states
+    '--mantine-color-error': '#C83E4D',
+    '--mantine-color-success': '#16855B',
+
+    /*
+     * Primary interaction color.
+     *
+     * These drive filled/light variants in many Mantine
+     * components, not only Button.
+     */
+    '--mantine-primary-color-filled': 'var(--mantine-color-brand-6)',
+    '--mantine-primary-color-filled-hover': 'var(--mantine-color-brand-7)',
+    '--mantine-primary-color-light': 'rgb(98 91 246 / 0.10)',
+    '--mantine-primary-color-light-hover': 'rgb(98 91 246 / 0.15)',
+    '--mantine-primary-color-light-color': 'var(--mantine-color-brand-7)',
+
+    /*
+     * --------------------------------------------------------
+     * ONLY THE SEMANTICS MANTINE DOES NOT ALREADY PROVIDE
+     * --------------------------------------------------------
+     */
+    '--app-surface-secondary': '#F0F2F5',
+    '--app-surface-elevated': '#FFFFFF',
+    '--app-surface-selected': '#EFEEFF',
+    '--app-border-subtle': '#E8EAF0',
+    '--app-border-strong': '#C8CED8',
+    '--app-focus-ring': 'rgb(98 91 246 / 0.20)',
+    '--app-overlay': 'rgb(10 14 22 / 0.48)'
+  },
+  dark: {
+    /*
+     * --------------------------------------------------------
+     * MANTINE SEMANTIC VARIABLES
+     * --------------------------------------------------------
+     */
+    '--mantine-color-body': '#0C111B',
+    '--mantine-color-text': '#F3F5F8',
+    '--mantine-color-bright': '#FFFFFF',
+    '--mantine-color-dimmed': '#AEB7C4',
+    '--mantine-color-placeholder': '#7F8A9B',
+    '--mantine-color-anchor': 'var(--mantine-color-brand-3)',
+
+    '--mantine-color-default': '#111827',
+    '--mantine-color-default-hover': '#1A2535',
+    '--mantine-color-default-color': '#F3F5F8',
+    '--mantine-color-default-border': '#2A374A',
+
+    '--mantine-color-disabled': '#151E2D',
+    '--mantine-color-disabled-color': '#667386',
+    '--mantine-color-disabled-border': '#202C3F',
+
+    '--mantine-color-error': '#FF7C89',
+    '--mantine-color-success': '#58D7A0',
+
+    /*
+     * Keep filled buttons slightly darker.
+     * Links/selection can use the brighter brand shades.
+     */
+    '--mantine-primary-color-filled': 'var(--mantine-color-brand-6)',
+    '--mantine-primary-color-filled-hover': 'var(--mantine-color-brand-5)',
+    '--mantine-primary-color-light': 'rgb(169 164 255 / 0.14)',
+    '--mantine-primary-color-light-hover': 'rgb(169 164 255 / 0.20)',
+    '--mantine-primary-color-light-color': 'var(--mantine-color-brand-2)',
+
+    /*
+     * --------------------------------------------------------
+     * MISSING MANTINE SEMANTICS
+     * --------------------------------------------------------
+     */
+    '--app-surface-secondary': '#151E2D',
+    '--app-surface-elevated': '#182334',
+    '--app-surface-selected': '#24264B',
+    '--app-border-subtle': '#202C3F',
+    '--app-border-strong': '#3A4961',
+    '--app-focus-ring': 'rgb(169 164 255 / 0.28)',
+    '--app-overlay': 'rgb(2 6 12 / 0.68)'
+  }
 });

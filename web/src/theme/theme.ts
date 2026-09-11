@@ -1,21 +1,81 @@
-import { createTheme } from '@mantine/core';
-import { componentOverrides } from './components';
-import { brand, neutral, semanticColors } from './palette';
+import { ActionIcon, Button, Card, createTheme, Input, type MantineColorsTuple, Paper } from '@mantine/core';
+
+const brand: MantineColorsTuple = [
+  '#F3F2FF',
+  '#E7E5FF',
+  '#D0CDFF',
+  '#B5B1FF',
+  '#9690FF',
+  '#776FF8',
+  '#625BF6',
+  '#5149E0',
+  '#413AB9',
+  '#342F91'
+];
+
+const gray: MantineColorsTuple = [
+  '#FAFBFC',
+  '#F6F7F9',
+  '#F0F2F5',
+  '#E8EAF0',
+  '#DCE0E7',
+  '#9AA4B2',
+  '#697586',
+  '#525C6A',
+  '#303741',
+  '#171B22'
+];
+
+/**
+ * This is intentionally blue-neutral rather than a pure gray/black scale.
+ *
+ * Mantine dark-mode defaults use roughly:
+ *
+ * dark.0 -> text
+ * dark.2 -> dimmed
+ * dark.3 -> placeholder
+ * dark.4 -> borders
+ * dark.5 -> hover
+ * dark.6 -> normal surfaces
+ * dark.7 -> body
+ *
+ * so this palette is designed around those semantics.
+ */
+const dark: MantineColorsTuple = [
+  '#F3F5F8',
+  '#D6DBE3',
+  '#B8C0CC',
+  '#8F9AAB',
+  '#3A4961',
+  '#1E2A3D',
+  '#111827',
+  '#0C111B',
+  '#090E17',
+  '#060A10'
+];
 
 export const theme = createTheme({
   primaryColor: 'brand',
-  primaryShade: { light: 6, dark: 6 },
-
+  primaryShade: {
+    light: 6,
+    dark: 6
+  },
   colors: {
     brand,
-    neutral,
-    ...semanticColors
+    gray,
+    dark
   },
-
-  fontFamily: 'Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-
-  fontFamilyMonospace: '"SFMono-Regular", Consolas, "Liberation Mono", monospace',
-
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif',
+  headings: {
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif',
+    fontWeight: '600',
+    textWrap: 'balance'
+  },
+  fontWeights: {
+    regular: '400',
+    medium: '500',
+    bold: '600'
+  },
   fontSizes: {
     xs: '0.75rem',
     sm: '0.875rem',
@@ -23,64 +83,77 @@ export const theme = createTheme({
     lg: '1.125rem',
     xl: '1.25rem'
   },
-
-  lineHeights: {
-    xs: '1.35',
-    sm: '1.45',
-    md: '1.55',
-    lg: '1.5',
-    xl: '1.4'
-  },
-
-  headings: {
-    fontFamily: 'Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-    fontWeight: '600',
-    sizes: {
-      h1: { fontSize: '2rem', lineHeight: '1.15', fontWeight: '600' },
-      h2: { fontSize: '1.625rem', lineHeight: '1.2', fontWeight: '600' },
-      h3: { fontSize: '1.375rem', lineHeight: '1.25', fontWeight: '600' },
-      h4: { fontSize: '1.125rem', lineHeight: '1.35', fontWeight: '600' },
-      h5: { fontSize: '1rem', lineHeight: '1.4', fontWeight: '500' },
-      h6: { fontSize: '0.875rem', lineHeight: '1.4', fontWeight: '500' }
-    }
-  },
-
   spacing: {
-    xs: '0.5rem',
-    sm: '0.75rem',
-    md: '1rem',
-    lg: '1.25rem',
-    xl: '1.5rem'
+    xs: '0.5rem', // 8
+    sm: '0.75rem', // 12
+    md: '1rem', // 16
+    lg: '1.25rem', // 20
+    xl: '1.5rem' // 24
   },
-
   radius: {
-    xs: '0.375rem',
-    sm: '0.5rem',
-    md: '0.75rem',
-    lg: '1rem',
-    xl: '1.375rem'
+    xs: '0.375rem', // 6
+    sm: '0.5rem', // 8
+    md: '0.75rem', // 12
+    lg: '1rem', // 16
+    xl: '1.375rem' // 22
   },
-
   defaultRadius: 'md',
-
   shadows: {
-    xs: '0 1px 2px rgba(15, 23, 42, 0.04)',
-    sm: '0 2px 8px rgba(15, 23, 42, 0.06)',
-    md: '0 6px 20px rgba(15, 23, 42, 0.08)',
-    lg: '0 12px 32px rgba(15, 23, 42, 0.10)',
-    xl: '0 18px 48px rgba(15, 23, 42, 0.12)'
+    xs: '0 1px 2px rgb(15 23 42 / 0.04)',
+    sm: '0 2px 8px rgb(15 23 42 / 0.06)',
+    md: '0 6px 20px rgb(15 23 42 / 0.08)',
+    lg: '0 12px 32px rgb(15 23 42 / 0.10)',
+    xl: '0 18px 48px rgb(15 23 42 / 0.14)'
   },
-
   breakpoints: {
-    xs: '30em',
-    sm: '48em',
-    md: '64em',
-    lg: '75em',
-    xl: '90em'
+    xs: '30em', // 480
+    sm: '48em', // 768
+    md: '64em', // 1024
+    lg: '75em', // 1200
+    xl: '90em' // 1440
   },
-
   focusRing: 'auto',
   cursorType: 'pointer',
-
-  components: componentOverrides
+  components: {
+    Button: Button.extend({
+      defaultProps: {
+        size: 'md',
+        radius: 'md'
+      }
+    }),
+    ActionIcon: ActionIcon.extend({
+      defaultProps: {
+        size: 'lg',
+        radius: 'md',
+        variant: 'subtle'
+      }
+    }),
+    /**
+     * Mantine v9 propagates Input defaults to TextInput,
+     * NumberInput, PasswordInput, Textarea, Select,
+     * MultiSelect, etc.
+     */
+    Input: Input.extend({
+      defaultProps: {
+        size: 'md',
+        radius: 'md',
+        variant: 'default'
+      }
+    }),
+    InputWrapper: Input.Wrapper.extend({
+      defaultProps: {}
+    }),
+    Card: Card.extend({
+      defaultProps: {
+        radius: 'md',
+        shadow: undefined
+      }
+    }),
+    Paper: Paper.extend({
+      defaultProps: {
+        radius: 'md',
+        shadow: undefined
+      }
+    })
+  }
 });

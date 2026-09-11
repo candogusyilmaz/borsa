@@ -1,0 +1,392 @@
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+html {
+  background: var(--mantine-color-body);
+}
+
+body {
+  margin: 0;
+  background: var(--mantine-color-body);
+  color: var(--mantine-color-text);
+  font-family: var(--mantine-font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: var(--mantine-primary-color-light);
+  color: var(--mantine-color-text);
+}
+
+/* ---------------------------------------------------------- */
+/* TYPOGRAPHY                                                 */
+/* ---------------------------------------------------------- */
+
+.app-page-title {
+  margin: 0;
+  color: var(--mantine-color-text);
+  font-size: 1.75rem;
+  line-height: 1.12;
+  font-weight: var(--mantine-font-weight-bold);
+  letter-spacing: -0.025em;
+}
+
+.app-section-title {
+  margin: 0;
+  color: var(--mantine-color-text);
+  font-size: 1.25rem;
+  line-height: 1.25;
+  font-weight: var(--mantine-font-weight-bold);
+  letter-spacing: -0.015em;
+}
+
+.app-secondary-text {
+  color: var(--mantine-color-dimmed);
+}
+
+.app-numeric {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------- */
+/* BUTTON                                                     */
+/* ---------------------------------------------------------- */
+
+.mantine-Button-root {
+  min-height: 44px;
+  font-weight: var(--mantine-font-weight-medium);
+  letter-spacing: -0.01em;
+  transition:
+    background-color var(--app-motion-normal) var(--app-ease),
+    border-color var(--app-motion-normal) var(--app-ease),
+    color var(--app-motion-normal) var(--app-ease),
+    transform var(--app-motion-fast) var(--app-ease);
+}
+
+.mantine-Button-root:active:not(:disabled):not([data-disabled]) {
+  transform: translateY(1px);
+}
+
+/*
+ * No special CSS required for filled/default/light/subtle colors.
+ *
+ * Mantine will use:
+ *
+ *   --mantine-primary-color-filled
+ *   --mantine-primary-color-filled-hover
+ *   --mantine-primary-color-light
+ *   --mantine-primary-color-light-color
+ *   --mantine-color-default
+ *   --mantine-color-default-hover
+ *   --mantine-color-default-border
+ */
+
+/* ---------------------------------------------------------- */
+/* ACTION ICON                                                */
+/* ---------------------------------------------------------- */
+
+.mantine-ActionIcon-root {
+  min-width: 44px;
+  min-height: 44px;
+  transition:
+    background-color var(--app-motion-normal) var(--app-ease),
+    color var(--app-motion-normal) var(--app-ease),
+    transform var(--app-motion-fast) var(--app-ease);
+}
+
+.mantine-ActionIcon-root:active:not(:disabled):not([data-disabled]) {
+  transform: translateY(1px);
+}
+
+/* ---------------------------------------------------------- */
+/* INPUTS                                                     */
+/* ---------------------------------------------------------- */
+
+.mantine-Input-input {
+  min-height: 44px;
+  background: var(--mantine-color-default);
+  border-color: var(--mantine-color-default-border);
+  color: var(--mantine-color-text);
+  transition:
+    border-color var(--app-motion-normal) var(--app-ease),
+    box-shadow var(--app-motion-normal) var(--app-ease),
+    background-color var(--app-motion-normal) var(--app-ease);
+}
+
+.mantine-Input-input::placeholder {
+  color: var(--mantine-color-placeholder);
+}
+
+.mantine-Input-input:hover:not(:disabled):not(:focus-within) {
+  border-color: var(--app-border-strong);
+}
+
+.mantine-Input-input:focus,
+.mantine-Input-input:focus-within {
+  border-color: var(--mantine-primary-color-filled);
+  box-shadow: 0 0 0 3px var(--app-focus-ring);
+}
+
+.mantine-InputWrapper-label {
+  margin-bottom: 6px;
+  color: var(--mantine-color-text);
+  font-size: var(--mantine-font-size-sm);
+  font-weight: var(--mantine-font-weight-medium);
+}
+
+.mantine-InputWrapper-description {
+  margin-top: 3px;
+  color: var(--mantine-color-dimmed);
+}
+
+.mantine-InputWrapper-error {
+  margin-top: 4px;
+}
+
+/* ---------------------------------------------------------- */
+/* CARD / PAPER                                               */
+/* ---------------------------------------------------------- */
+
+.mantine-Paper-root,
+.mantine-Card-root {
+  background: var(--mantine-color-default);
+  color: var(--mantine-color-text);
+}
+
+/*
+ * Intentionally no global shadow.
+ * Intentionally no global border.
+ *
+ * Use withBorder only when the component structurally needs it.
+ */
+
+/* ---------------------------------------------------------- */
+/* FLOATING SURFACES                                          */
+/* ---------------------------------------------------------- */
+
+.mantine-Menu-dropdown,
+.mantine-Popover-dropdown {
+  background: var(--app-surface-elevated);
+  border: 1px solid var(--app-border-subtle);
+  box-shadow: var(--mantine-shadow-lg);
+}
+
+.mantine-Menu-item {
+  border-radius: var(--mantine-radius-sm);
+  transition:
+    background-color var(--app-motion-fast) var(--app-ease),
+    color var(--app-motion-fast) var(--app-ease);
+}
+
+.mantine-Menu-item:hover,
+.mantine-Menu-item[data-hovered] {
+  background: var(--mantine-color-default-hover);
+}
+
+/* ---------------------------------------------------------- */
+/* MODAL / DRAWER                                             */
+/* ---------------------------------------------------------- */
+
+.mantine-Modal-content,
+.mantine-Drawer-content {
+  background: var(--app-surface-elevated);
+  color: var(--mantine-color-text);
+  border: 1px solid var(--app-border-subtle);
+  box-shadow: var(--mantine-shadow-xl);
+}
+
+.mantine-Modal-header,
+.mantine-Drawer-header {
+  background: transparent;
+}
+
+.mantine-Modal-title,
+.mantine-Drawer-title {
+  font-weight: var(--mantine-font-weight-bold);
+  letter-spacing: -0.015em;
+}
+
+/* ---------------------------------------------------------- */
+/* TOOLTIP                                                    */
+/* ---------------------------------------------------------- */
+
+.mantine-Tooltip-tooltip {
+  background: var(--mantine-color-text);
+  color: var(--mantine-color-body);
+  border-radius: var(--mantine-radius-sm);
+  box-shadow: var(--mantine-shadow-sm);
+}
+
+/* ---------------------------------------------------------- */
+/* SEGMENTED CONTROL                                          */
+/* ---------------------------------------------------------- */
+
+.mantine-SegmentedControl-root {
+  padding: 3px;
+  background: var(--app-surface-secondary);
+  border: 0;
+}
+
+.mantine-SegmentedControl-indicator {
+  background: var(--mantine-color-default);
+  box-shadow: var(--mantine-shadow-xs);
+}
+
+.mantine-SegmentedControl-label {
+  color: var(--mantine-color-dimmed);
+  font-weight: var(--mantine-font-weight-medium);
+  transition: color var(--app-motion-fast) var(--app-ease);
+}
+
+.mantine-SegmentedControl-label[data-active] {
+  color: var(--mantine-color-text);
+}
+
+/* ---------------------------------------------------------- */
+/* TABS                                                       */
+/* ---------------------------------------------------------- */
+
+.mantine-Tabs-tab {
+  min-height: 44px;
+  color: var(--mantine-color-dimmed);
+  font-weight: var(--mantine-font-weight-medium);
+  transition:
+    color var(--app-motion-fast) var(--app-ease),
+    background-color var(--app-motion-fast) var(--app-ease);
+}
+
+.mantine-Tabs-tab:hover {
+  color: var(--mantine-color-text);
+  background: var(--mantine-color-default-hover);
+}
+
+.mantine-Tabs-tab[data-active] {
+  color: var(--mantine-color-anchor);
+}
+
+/* ---------------------------------------------------------- */
+/* NAVIGATION                                                 */
+/* ---------------------------------------------------------- */
+
+.mantine-NavLink-root {
+  min-height: 44px;
+  border-radius: var(--mantine-radius-md);
+  color: var(--mantine-color-dimmed);
+  transition:
+    background-color var(--app-motion-fast) var(--app-ease),
+    color var(--app-motion-fast) var(--app-ease);
+}
+
+.mantine-NavLink-root:hover {
+  color: var(--mantine-color-text);
+  background: var(--mantine-color-default-hover);
+}
+
+.mantine-NavLink-root[data-active] {
+  color: var(--mantine-primary-color-light-color);
+  background: var(--mantine-primary-color-light);
+}
+
+/* ---------------------------------------------------------- */
+/* DIVIDERS / TABLES                                          */
+/* ---------------------------------------------------------- */
+
+.mantine-Divider-root {
+  border-color: var(--app-border-subtle);
+}
+
+.mantine-Table-th {
+  color: var(--mantine-color-dimmed);
+  font-size: var(--mantine-font-size-sm);
+  font-weight: var(--mantine-font-weight-medium);
+}
+
+.mantine-Table-th,
+.mantine-Table-td {
+  border-color: var(--app-border-subtle);
+}
+
+/* ---------------------------------------------------------- */
+/* GENERIC APPLICATION SURFACES                               */
+/* ---------------------------------------------------------- */
+
+.app-surface-secondary {
+  background: var(--app-surface-secondary);
+}
+
+.app-surface-elevated {
+  background: var(--app-surface-elevated);
+  border: 1px solid var(--app-border-subtle);
+  box-shadow: var(--mantine-shadow-sm);
+}
+
+.app-surface-selected {
+  background: var(--app-surface-selected);
+}
+
+/* ---------------------------------------------------------- */
+/* MOBILE-FIRST PAGE LAYOUT                                   */
+/* ---------------------------------------------------------- */
+
+.app-page {
+  width: 100%;
+  max-width: 80rem;
+  margin-inline: auto;
+  padding: var(--mantine-spacing-md) var(--mantine-spacing-md);
+}
+
+.app-section {
+  margin-block: var(--mantine-spacing-xl);
+}
+
+.app-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--mantine-spacing-md);
+}
+
+@media (min-width: 30em) {
+  .app-page {
+    padding-inline: var(--mantine-spacing-lg);
+  }
+}
+
+@media (min-width: 48em) {
+  .app-page {
+    padding: var(--mantine-spacing-xl) var(--mantine-spacing-xl);
+  }
+
+  .app-page-title {
+    font-size: 2rem;
+  }
+
+  .app-grid {
+    gap: var(--mantine-spacing-lg);
+  }
+}
+
+@media (min-width: 64em) {
+  .app-grid[data-columns='2'] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .app-grid[data-columns='3'] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ---------------------------------------------------------- */
+/* REDUCED MOTION                                             */
+/* ---------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --app-motion-fast: 1ms;
+    --app-motion-normal: 1ms;
+    --app-motion-slow: 1ms;
+  }
+}

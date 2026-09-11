@@ -37,7 +37,7 @@ export function HeroTerminalCard() {
               <Text fz="xl" fw={700} ff="var(--mantine-font-family-monospace)">
                 $248,650.00
               </Text>
-              <Badge color="success" variant="light" size="sm">
+              <Badge color="green" variant="light" size="sm">
                 +14.2% YTD
               </Badge>
             </Group>
@@ -68,10 +68,10 @@ export function HeroTerminalCard() {
               Day Return
             </Text>
             <Group justify="space-between" align="baseline" mt={4}>
-              <Text fz="xl" fw={700} ff="var(--mantine-font-family-monospace)" c="success">
+              <Text fz="xl" fw={700} ff="var(--mantine-font-family-monospace)" c="green">
                 +$2,410.50
               </Text>
-              <Badge color="success" variant="outline" size="sm">
+              <Badge color="green" variant="outline" size="sm">
                 +0.98%
               </Badge>
             </Group>
@@ -84,7 +84,7 @@ export function HeroTerminalCard() {
         <div className={classes.chartContainer}>
           <div className={classes.chartHeader}>
             <Group gap="xs">
-              <ChartLineUpIcon size={16} weight="bold" color="var(--app-accent)" />
+              <ChartLineUpIcon size={16} weight="bold" color="var(--mantine-primary-color-filled)" />
               <Text fz="xs" fw={700} ff="var(--mantine-font-family-monospace)">
                 AGGREGATED PORTFOLIO PERFORMANCE
               </Text>
@@ -101,8 +101,8 @@ export function HeroTerminalCard() {
           <svg className={classes.chartSvg} viewBox="0 0 800 130" preserveAspectRatio="none" aria-hidden="true">
             <defs>
               <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="var(--app-accent-fill)" stopOpacity="0.35" />
-                <stop offset="100%" stopColor="var(--app-accent-fill)" stopOpacity="0.0" />
+                <stop offset="0%" stopColor="var(--mantine-primary-color-filled)" stopOpacity="0.35" />
+                <stop offset="100%" stopColor="var(--mantine-primary-color-filled)" stopOpacity="0.0" />
               </linearGradient>
             </defs>
 
@@ -118,13 +118,20 @@ export function HeroTerminalCard() {
             <path
               d="M 0,110 Q 120,95 220,80 T 400,65 T 580,38 T 720,24 L 800,18"
               fill="none"
-              stroke="var(--app-accent-fill)"
+              stroke="var(--mantine-primary-color-filled)"
               strokeWidth="2.5"
               strokeLinecap="round"
             />
 
             {/* Current point indicator */}
-            <circle cx="800" cy="18" r="4.5" fill="var(--app-accent)" stroke="var(--app-surface)" strokeWidth="2" />
+            <circle
+              cx="800"
+              cy="18"
+              r="4.5"
+              fill="var(--mantine-primary-color-filled)"
+              stroke="var(--mantine-color-default)"
+              strokeWidth="2"
+            />
           </svg>
         </div>
 
@@ -137,7 +144,7 @@ export function HeroTerminalCard() {
               <Text span c="dimmed">
                 {t.price}
               </Text>
-              <Text span c={t.positive ? 'success' : 'danger'} fw={600}>
+              <Text span fw={600} style={{ color: t.positive ? 'var(--mantine-color-success)' : 'var(--mantine-color-error)' }}>
                 {t.change}
               </Text>
             </div>
@@ -148,11 +155,11 @@ export function HeroTerminalCard() {
       <div className={classes.statusBar}>
         <Group gap="md">
           <Group gap={4}>
-            <CheckCircleIcon size={14} weight="bold" color="var(--app-success)" />
+            <CheckCircleIcon size={14} weight="bold" color="var(--mantine-color-success)" />
             <span>Ledger State: In-Sync</span>
           </Group>
           <Group gap={4}>
-            <ShieldCheckIcon size={14} weight="bold" color="var(--app-accent-fill)" />
+            <ShieldCheckIcon size={14} weight="bold" color="var(--mantine-primary-color-filled)" />
             <span>RFC 7807 Guard: Active</span>
           </Group>
         </Group>

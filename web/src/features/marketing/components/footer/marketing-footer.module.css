@@ -1,5 +1,5 @@
 .footer {
-  background-color: var(--app-surface);
+  background-color: var(--mantine-color-default);
   border-top: 1px solid var(--app-border-subtle);
   padding: calc(var(--mantine-spacing-xl) * 2) 0 var(--mantine-spacing-xl);
   content-visibility: auto;
@@ -25,7 +25,7 @@
   align-items: center;
   gap: var(--mantine-spacing-xs);
   text-decoration: none;
-  color: var(--app-text-primary);
+  color: var(--mantine-color-text);
   font-weight: 700;
   font-size: 1.25rem;
 }
@@ -37,13 +37,13 @@
   width: 32px;
   height: 32px;
   border-radius: var(--mantine-radius-md);
-  background: var(--app-accent-fill);
+  background: var(--mantine-primary-color-filled);
   color: #ffffff;
 }
 
 .brandDesc {
   font-size: 0.875rem;
-  color: var(--app-text-secondary);
+  color: var(--mantine-color-dimmed);
   line-height: 1.6;
 }
 
@@ -58,24 +58,24 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--app-text-primary);
+  color: var(--mantine-color-text);
   margin-bottom: var(--mantine-spacing-xs);
 }
 
 .footerLink {
-  color: var(--app-text-tertiary);
+  color: var(--mantine-color-dimmed);
   text-decoration: none;
   font-size: 0.875rem;
-  transition: color 0.15s ease;
+  transition: color var(--app-motion-normal) var(--app-ease);
 }
 
 .footerLink:hover {
-  color: var(--app-accent);
+  color: var(--mantine-color-anchor);
 }
 
 .techBadge {
-  color: var(--app-text-tertiary);
-  font-family: var(--font-mono);
+  color: var(--mantine-color-dimmed);
+  font-family: var(--mantine-font-family-monospace);
   font-size: 0.8rem;
 }
 
@@ -93,21 +93,21 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: var(--font-mono);
+  font-family: var(--mantine-font-family-monospace);
   font-size: 0.75rem;
-  color: var(--app-text-tertiary);
+  color: var(--mantine-color-dimmed);
 }
 
 .statusDot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: var(--app-success);
+  background-color: var(--mantine-color-success);
 }
 
 .copyright {
   font-size: 0.85rem;
-  color: var(--app-text-tertiary);
+  color: var(--mantine-color-dimmed);
 }
 
 @media (max-width: 900px) {

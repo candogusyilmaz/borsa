@@ -1,7 +1,7 @@
 .featuresSection {
   scroll-margin-top: calc(64px + var(--mantine-spacing-md));
   padding: calc(var(--mantine-spacing-xl) * 2.5) 0;
-  background-color: var(--app-bg);
+  background-color: var(--mantine-color-body);
   content-visibility: auto;
   contain-intrinsic-size: auto none auto 600px;
 }
@@ -20,14 +20,14 @@
   font-size: clamp(1.75rem, 3.5vw, 2.5rem);
   font-weight: 800;
   letter-spacing: -0.025em;
-  color: var(--app-text-primary);
+  color: var(--mantine-color-text);
   text-wrap: balance;
   margin-bottom: var(--mantine-spacing-md);
 }
 
 .subtitle {
   font-size: 1.1rem;
-  color: var(--app-text-secondary);
+  color: var(--mantine-color-dimmed);
   line-height: 1.6;
   text-wrap: pretty;
 }
@@ -39,19 +39,22 @@
 }
 
 .featureCard {
-  background-color: var(--app-surface);
+  background-color: var(--mantine-color-default);
   border: 1px solid var(--app-border-subtle);
   border-radius: var(--mantine-radius-md);
   padding: var(--mantine-spacing-xl);
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition:
+    transform var(--app-motion-slow) var(--app-ease),
+    box-shadow var(--app-motion-slow) var(--app-ease),
+    border-color var(--app-motion-slow) var(--app-ease);
 }
 
 .featureCard:hover {
   transform: translateY(-3px);
-  box-shadow: var(--app-shadow-raised);
-  border-color: var(--app-accent);
+  box-shadow: var(--mantine-shadow-sm);
+  border-color: var(--mantine-primary-color-filled);
 }
 
 .iconWrapper {
@@ -61,21 +64,21 @@
   width: 48px;
   height: 48px;
   border-radius: var(--mantine-radius-md);
-  background-color: var(--app-accent-subtle);
-  color: var(--app-accent);
+  background-color: var(--mantine-primary-color-light);
+  color: var(--mantine-primary-color-filled);
   margin-bottom: var(--mantine-spacing-md);
 }
 
 .cardTitle {
   font-size: 1.2rem;
   font-weight: 700;
-  color: var(--app-text-primary);
+  color: var(--mantine-color-text);
   margin-bottom: var(--mantine-spacing-xs);
 }
 
 .cardDescription {
   font-size: 0.925rem;
-  color: var(--app-text-secondary);
+  color: var(--mantine-color-dimmed);
   line-height: 1.6;
   margin-bottom: var(--mantine-spacing-md);
   flex-grow: 1;

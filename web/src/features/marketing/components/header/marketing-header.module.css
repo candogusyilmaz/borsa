@@ -4,11 +4,11 @@
   z-index: 100;
   width: 100%;
   height: 64px;
-  background-color: color-mix(in srgb, var(--app-bg) 85%, transparent);
+  background-color: color-mix(in srgb, var(--mantine-color-body) 85%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--app-border-subtle);
-  transition: border-color 0.2s ease;
+  transition: border-color var(--app-motion-slow) var(--app-ease);
 }
 
 .inner {
@@ -23,7 +23,7 @@
   align-items: center;
   gap: var(--mantine-spacing-xs);
   text-decoration: none;
-  color: var(--app-text-primary);
+  color: var(--mantine-color-text);
   font-weight: 700;
   font-size: 1.25rem;
   letter-spacing: -0.02em;
@@ -36,9 +36,9 @@
   width: 34px;
   height: 34px;
   border-radius: var(--mantine-radius-md);
-  background: var(--app-accent-fill);
+  background: var(--mantine-primary-color-filled);
   color: #ffffff;
-  box-shadow: var(--app-shadow-raised);
+  box-shadow: var(--mantine-shadow-sm);
 }
 
 .navLinks {
@@ -48,15 +48,15 @@
 }
 
 .navLink {
-  color: var(--app-text-secondary);
+  color: var(--mantine-color-dimmed);
   text-decoration: none;
   font-size: 0.875rem;
   font-weight: 500;
-  transition: color 0.15s ease;
+  transition: color var(--app-motion-normal) var(--app-ease);
 }
 
 .navLink:hover {
-  color: var(--app-accent);
+  color: var(--mantine-color-anchor);
 }
 
 .actions {
@@ -73,7 +73,7 @@
 }
 
 .mobileNavLink {
-  color: var(--app-text-primary);
+  color: var(--mantine-color-text);
   text-decoration: none;
   font-size: 1rem;
   font-weight: 500;
@@ -82,9 +82,9 @@
   display: flex;
   align-items: center;
   border-bottom: 1px solid var(--app-border-subtle);
-  transition: color 0.15s ease;
+  transition: color var(--app-motion-normal) var(--app-ease);
 }
 
 .mobileNavLink:hover {
-  color: var(--app-accent);
+  color: var(--mantine-color-anchor);
 }

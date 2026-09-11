@@ -1,7 +1,7 @@
 .statsSection {
   scroll-margin-top: calc(64px + var(--mantine-spacing-md));
   padding: calc(var(--mantine-spacing-xl) * 1.5) 0;
-  background-color: var(--app-surface);
+  background-color: var(--mantine-color-default);
   border-top: 1px solid var(--app-border-subtle);
   border-bottom: 1px solid var(--app-border-subtle);
 }
@@ -21,11 +21,11 @@
 }
 
 .statValue {
-  font-family: var(--font-mono);
+  font-family: var(--mantine-font-family-monospace);
   font-size: clamp(2rem, 3.5vw, 2.75rem);
   font-weight: 800;
   letter-spacing: -0.03em;
-  color: var(--app-accent);
+  color: var(--mantine-primary-color-filled);
   line-height: 1.1;
   margin-bottom: 4px;
 }
@@ -33,13 +33,13 @@
 .statLabel {
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--app-text-primary);
+  color: var(--mantine-color-text);
   margin-bottom: 4px;
 }
 
 .statSubtext {
   font-size: 0.8rem;
-  color: var(--app-text-tertiary);
+  color: var(--mantine-color-dimmed);
 }
 
 @media (max-width: 900px) {

@@ -1,9 +1,9 @@
 import type { DefaultMantineColor, MantineColorsTuple } from '@mantine/core';
 
-type AppColor = DefaultMantineColor | 'brand' | 'neutral' | 'success' | 'danger' | 'warning' | 'info';
+type ExtendedCustomColors = 'brand' | DefaultMantineColor;
 
 declare module '@mantine/core' {
   export interface MantineThemeColorsOverride {
-    colors: Record<AppColor, MantineColorsTuple>;
+    colors: Record<ExtendedCustomColors, MantineColorsTuple>;
   }
 }

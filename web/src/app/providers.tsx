@@ -1,4 +1,3 @@
-import { localStorageColorSchemeManager, MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { type ReactNode, useCallback, useEffect, useMemo } from 'react';
@@ -10,8 +9,7 @@ import { queryClient } from '@/app/query-client';
 import { router } from '@/app/router';
 import { AuthContext } from '@/shared/hooks/use-auth';
 import type { AuthContextValue } from '@/shared/types/auth';
-import { cssVariablesResolver } from '@/theme/css-variables';
-import { theme } from '@/theme/theme';
+import { AppThemeProvider } from '@/theme';
 
 export { queryClient };
 
@@ -80,20 +78,14 @@ function AuthProvider({ children }: { children: ReactNode }) {
   return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 }
 
-const colorSchemeManager = localStorageColorSchemeManager({ key: 'app-color-scheme' });
-
 export function Providers({ children }: ProvidersProps) {
   return (
     <QueryClientProvider client={queryClient}>
-      <MantineProvider
-        theme={theme}
-        cssVariablesResolver={cssVariablesResolver}
-        colorSchemeManager={colorSchemeManager}
-        defaultColorScheme="auto">
+      <AppThemeProvider>
         <Notifications position="top-right" />
 
         <AuthProvider>{children}</AuthProvider>
-      </MantineProvider>
+      </AppThemeProvider>
     </QueryClientProvider>
   );
 }

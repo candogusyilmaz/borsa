@@ -1,19 +1,19 @@
 .ctaSection {
   padding: calc(var(--mantine-spacing-xl) * 2.5) 0;
-  background-color: var(--app-bg);
+  background-color: var(--mantine-color-body);
   content-visibility: auto;
   contain-intrinsic-size: auto none auto 400px;
 }
 
 .ctaCard {
   position: relative;
-  background: var(--app-accent-fill);
+  background: var(--mantine-primary-color-filled);
   border-radius: var(--mantine-radius-lg);
   padding: calc(var(--mantine-spacing-xl) * 2);
   color: #ffffff;
   text-align: center;
   overflow: hidden;
-  box-shadow: var(--app-shadow-floating);
+  box-shadow: var(--mantine-shadow-xl);
 }
 
 .ctaCard::before {
@@ -47,7 +47,7 @@
 
 .description {
   font-size: 1.15rem;
-  color: var(--app-accent-subtle);
+  color: var(--mantine-primary-color-light-color);
   line-height: 1.6;
   text-wrap: pretty;
   margin-bottom: var(--mantine-spacing-xl);
@@ -62,13 +62,15 @@
 
 .primaryButton {
   background-color: #ffffff;
-  color: var(--app-accent-fill);
+  color: var(--mantine-primary-color-filled);
   font-weight: 600;
-  transition: transform 0.15s ease, background-color 0.15s ease;
+  transition:
+    transform var(--app-motion-normal) var(--app-ease),
+    background-color var(--app-motion-normal) var(--app-ease);
 }
 
 .primaryButton:hover {
-  background-color: var(--app-accent-subtle);
+  background-color: var(--mantine-primary-color-light);
   transform: translateY(-1px);
 }
 

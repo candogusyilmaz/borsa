@@ -6,7 +6,6 @@
   overflow: hidden;
 }
 
-
 .heroContent {
   display: flex;
   flex-direction: column;
@@ -26,20 +25,20 @@
   font-weight: 800;
   line-height: 1.15;
   letter-spacing: -0.03em;
-  color: var(--app-text-primary);
+  color: var(--mantine-color-text);
   text-wrap: balance;
   margin-bottom: var(--mantine-spacing-md);
 }
 
 .gradientText {
-  background: var(--app-accent-fill);
+  background: var(--mantine-primary-color-filled);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .subtitle {
   font-size: clamp(1.05rem, 2vw, 1.25rem);
-  color: var(--app-text-secondary);
+  color: var(--mantine-color-dimmed);
   line-height: 1.6;
   text-wrap: pretty;
   max-width: 720px;
@@ -58,7 +57,9 @@
 .ctaPrimary {
   font-weight: 600;
   box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.39);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform var(--app-motion-normal) var(--app-ease),
+    box-shadow var(--app-motion-normal) var(--app-ease);
 }
 
 .ctaPrimary:hover {
@@ -68,7 +69,7 @@
 
 .ctaSecondary {
   font-weight: 600;
-  border-color: var(--app-border);
+  border-color: var(--mantine-color-default-border);
 }
 
 .signalsRow {
@@ -76,7 +77,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--mantine-spacing-lg);
-  color: var(--app-text-tertiary);
+  color: var(--mantine-color-dimmed);
   font-size: 0.85rem;
   font-weight: 500;
   flex-wrap: wrap;

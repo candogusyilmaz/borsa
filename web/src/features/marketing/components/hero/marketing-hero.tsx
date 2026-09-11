@@ -43,15 +43,15 @@ export function MarketingHero() {
 
           <div className={classes.signalsRow}>
             <div className={classes.signalItem}>
-              <ScalesIcon size={16} weight="bold" color="var(--app-accent)" />
+              <ScalesIcon size={16} weight="bold" color="var(--mantine-primary-color-filled)" />
               <span>Double-entry balanced</span>
             </div>
             <div className={classes.signalItem}>
-              <LockKeyIcon size={16} weight="bold" color="var(--app-accent)" />
+              <LockKeyIcon size={16} weight="bold" color="var(--mantine-primary-color-filled)" />
               <span>HttpOnly rotating sessions</span>
             </div>
             <div className={classes.signalItem}>
-              <LightningIcon size={16} weight="bold" color="var(--app-accent)" />
+              <LightningIcon size={16} weight="bold" color="var(--mantine-primary-color-filled)" />
               <span>Sub-12ms reconciliation</span>
             </div>
           </div>

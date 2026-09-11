@@ -93,7 +93,7 @@ export function MarketingArchitecture() {
                   return (
                     <div key={layer.name} className={classes.layerItem}>
                       <div className={classes.layerInfo}>
-                        <Icon size={20} weight="bold" color="var(--app-accent)" />
+                        <Icon size={20} weight="bold" color="var(--mantine-primary-color-filled)" />
                         <div>
                           <Text fz="sm" fw={600}>
                             {layer.name}
