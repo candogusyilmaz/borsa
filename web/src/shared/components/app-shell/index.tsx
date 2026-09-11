@@ -50,10 +50,22 @@ export function AppShell({ children, user }: AppShellProps) {
 
           {/* Desktop Nav Links */}
           <nav className={classes.navLinks} aria-label="Main Navigation">
-            <Button component={Link} to="/app" variant="subtle" size="sm" leftSection={<HouseIcon size={16} weight="bold" />}>
+            <Button
+              component={Link}
+              to="/app"
+              activeOptions={{ exact: true }}
+              variant="subtle"
+              size="sm"
+              leftSection={<HouseIcon size={16} weight="bold" />}>
               Dashboard
             </Button>
-            <Button component={Link} to="/app/accounts" variant="subtle" size="sm" leftSection={<BankIcon size={16} weight="bold" />}>
+            <Button
+              component={Link}
+              to="/app/accounts"
+              activeOptions={{ exact: true }}
+              variant="subtle"
+              size="sm"
+              leftSection={<BankIcon size={16} weight="bold" />}>
               Accounts
             </Button>
           </nav>
@@ -135,18 +147,6 @@ export function AppShell({ children, user }: AppShellProps) {
             Financial Accounts
           </Button>
 
-          {/* Return to Landing Page link */}
-          <Button
-            component={Link}
-            to="/"
-            variant="default"
-            size="md"
-            fullWidth
-            leftSection={<HouseIcon size={18} weight="bold" />}
-            onClick={closeDrawer}>
-            Return to Landing Page
-          </Button>
-
           {/* Active Devices & Sessions link */}
           <Button
             component={Link}
@@ -156,7 +156,6 @@ export function AppShell({ children, user }: AppShellProps) {
             fullWidth
             leftSection={<DevicesIcon size={18} weight="bold" />}
             onClick={closeDrawer}
-            justify="space-between"
             rightSection={
               activeSessionsCount !== undefined ? (
                 <Badge color="teal" variant="light" size="xs">
@@ -164,7 +163,7 @@ export function AppShell({ children, user }: AppShellProps) {
                 </Badge>
               ) : null
             }>
-            Active Devices & Sessions
+            Sessions
           </Button>
 
           {/* Theme setting row */}

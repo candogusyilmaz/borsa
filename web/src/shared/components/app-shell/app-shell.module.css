@@ -71,6 +71,12 @@
   }
 }
 
+/* Active nav link: soft pill background */
+.navLinks a[data-status='active'] {
+  background-color: color-mix(in srgb, var(--mantine-primary-color-filled) 12%, transparent);
+  border-radius: var(--mantine-radius-sm);
+}
+
 .headerActions {
   display: flex;
   align-items: center;
