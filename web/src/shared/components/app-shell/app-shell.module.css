@@ -22,9 +22,7 @@
   height: 60px;
   background-color: var(--mantine-color-body);
   border-bottom: 1px solid var(--app-border-subtle);
-  display: flex;
-  align-items: center;
-  padding-inline: var(--mantine-spacing-md);
+  width: 100%;
 }
 
 @supports (backdrop-filter: blur(16px)) or (-webkit-backdrop-filter: blur(16px)) {
@@ -39,9 +37,17 @@
   width: 100%;
   max-width: 80rem;
   margin-inline: auto;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding-inline: var(--mantine-spacing-md);
+}
+
+@media (min-width: 48em) {
+  .headerInner {
+    padding-inline: var(--mantine-spacing-lg);
+  }
 }
 
 .brandLink {
@@ -53,6 +59,18 @@
 }
 
 /* Header right actions */
+.navLinks {
+  display: none;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+}
+
+@media (min-width: 48em) {
+  .navLinks {
+    display: flex;
+  }
+}
+
 .headerActions {
   display: flex;
   align-items: center;
@@ -103,12 +121,14 @@
   width: 100%;
   max-width: 80rem;
   margin-inline: auto;
-  padding: var(--mantine-spacing-md);
+  padding-inline: var(--mantine-spacing-md);
+  padding-block: var(--mantine-spacing-md);
 }
 
 @media (min-width: 48em) {
   .container {
-    padding: var(--mantine-spacing-xl);
+    padding-inline: var(--mantine-spacing-lg);
+    padding-block: var(--mantine-spacing-lg);
   }
 }
 

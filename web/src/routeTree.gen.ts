@@ -15,6 +15,8 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as AppSessionsRouteImport } from './routes/app/sessions'
+import { Route as AppAccountsIndexRouteImport } from './routes/app/accounts/index'
+import { Route as AppAccountsAccountIdRouteImport } from './routes/app/accounts/$accountId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,6 +48,16 @@ const AppSessionsRoute = AppSessionsRouteImport.update({
   path: '/sessions',
   getParentRoute: () => AppRouteRoute,
 } as any)
+const AppAccountsIndexRoute = AppAccountsIndexRouteImport.update({
+  id: '/accounts/',
+  path: '/accounts/',
+  getParentRoute: () => AppRouteRoute,
+} as any)
+const AppAccountsAccountIdRoute = AppAccountsAccountIdRouteImport.update({
+  id: '/accounts/$accountId',
+  path: '/accounts/$accountId',
+  getParentRoute: () => AppRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +66,8 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/app/sessions': typeof AppSessionsRoute
   '/app/': typeof AppIndexRoute
+  '/app/accounts/$accountId': typeof AppAccountsAccountIdRoute
+  '/app/accounts/': typeof AppAccountsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -61,6 +75,8 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/app/sessions': typeof AppSessionsRoute
   '/app': typeof AppIndexRoute
+  '/app/accounts/$accountId': typeof AppAccountsAccountIdRoute
+  '/app/accounts': typeof AppAccountsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -70,12 +86,29 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/app/sessions': typeof AppSessionsRoute
   '/app/': typeof AppIndexRoute
+  '/app/accounts/$accountId': typeof AppAccountsAccountIdRoute
+  '/app/accounts/': typeof AppAccountsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/login' | '/register' | '/app/sessions' | '/app/'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/login'
+    | '/register'
+    | '/app/sessions'
+    | '/app/'
+    | '/app/accounts/$accountId'
+    | '/app/accounts/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/register' | '/app/sessions' | '/app'
+  to:
+    | '/'
+    | '/login'
+    | '/register'
+    | '/app/sessions'
+    | '/app'
+    | '/app/accounts/$accountId'
+    | '/app/accounts'
   id:
     | '__root__'
     | '/'
@@ -84,6 +117,8 @@ export interface FileRouteTypes {
     | '/register'
     | '/app/sessions'
     | '/app/'
+    | '/app/accounts/$accountId'
+    | '/app/accounts/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -137,17 +172,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSessionsRouteImport
       parentRoute: typeof AppRouteRoute
     }
+    '/app/accounts/': {
+      id: '/app/accounts/'
+      path: '/accounts'
+      fullPath: '/app/accounts/'
+      preLoaderRoute: typeof AppAccountsIndexRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
+    '/app/accounts/$accountId': {
+      id: '/app/accounts/$accountId'
+      path: '/accounts/$accountId'
+      fullPath: '/app/accounts/$accountId'
+      preLoaderRoute: typeof AppAccountsAccountIdRouteImport
+      parentRoute: typeof AppRouteRoute
+    }
   }
 }
 
 interface AppRouteRouteChildren {
   AppSessionsRoute: typeof AppSessionsRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppAccountsAccountIdRoute: typeof AppAccountsAccountIdRoute
+  AppAccountsIndexRoute: typeof AppAccountsIndexRoute
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppSessionsRoute: AppSessionsRoute,
   AppIndexRoute: AppIndexRoute,
+  AppAccountsAccountIdRoute: AppAccountsAccountIdRoute,
+  AppAccountsIndexRoute: AppAccountsIndexRoute,
 }
 
 const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(

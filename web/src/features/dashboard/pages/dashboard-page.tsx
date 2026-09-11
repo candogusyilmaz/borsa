@@ -23,8 +23,10 @@ import {
   PlusIcon,
   ReceiptIcon,
   SparkleIcon,
-  TrendUpIcon
+  TrendUpIcon,
+  WalletIcon
 } from '@phosphor-icons/react';
+import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { siteConfig } from '@/shared/config/site';
 import type { User } from '@/shared/types/auth';
@@ -242,6 +244,16 @@ export function DashboardPage({ user }: DashboardPageProps) {
             });
           }}>
           Transfer
+        </Button>
+
+        <Button
+          component={Link}
+          to="/app/accounts"
+          variant="default"
+          size="md"
+          className={classes.actionBtn}
+          leftSection={<WalletIcon size={18} weight="bold" />}>
+          Accounts
         </Button>
       </div>
 

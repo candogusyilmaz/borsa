@@ -139,9 +139,15 @@
 /* Mobile-First Dedicated Action Buttons Grid */
 .actionGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--mantine-spacing-sm);
   width: 100%;
+}
+
+@media (min-width: 36em) {
+  .actionGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 @media (max-width: 25em) {

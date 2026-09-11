@@ -1,0 +1,180 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-lg);
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.headerRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-md);
+}
+
+@media (min-width: 48em) {
+  .headerRow {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+}
+
+.headerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-xs);
+  min-width: 0;
+}
+
+.titleArea {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+  flex-wrap: wrap;
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: var(--mantine-font-weight-bold);
+  color: var(--mantine-color-text);
+  line-height: 1.2;
+}
+
+.badgesGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.actionsBar {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+  flex-wrap: wrap;
+}
+
+.card {
+  background: var(--mantine-color-default);
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--mantine-radius-md);
+  padding: var(--mantine-spacing-lg);
+  box-shadow: var(--mantine-shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-md);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mantine-spacing-sm);
+}
+
+.cardTitle {
+  font-size: var(--mantine-font-size-md);
+  font-weight: var(--mantine-font-weight-bold);
+  color: var(--mantine-color-text);
+}
+
+.balanceHero {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.balanceLabel {
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+}
+
+.balanceValue {
+  font-size: 2.25rem;
+  font-weight: var(--mantine-font-weight-bold);
+  color: var(--mantine-color-text);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--mantine-spacing-md);
+  padding-top: var(--mantine-spacing-md);
+  border-top: 1px solid var(--app-border-subtle);
+}
+
+@media (min-width: 48em) {
+  .metricsGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.metricItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metricLabel {
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+}
+
+.metricValue {
+  font-size: var(--mantine-font-size-md);
+  font-weight: var(--mantine-font-weight-bold);
+  color: var(--mantine-color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.liabilityMetricItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: var(--mantine-spacing-xs);
+}
+
+.liabilityMetricValue {
+  font-size: var(--mantine-font-size-md);
+  font-weight: var(--mantine-font-weight-bold);
+  color: var(--mantine-color-error);
+  font-variant-numeric: tabular-nums;
+}
+
+.specGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--mantine-spacing-md);
+}
+
+@media (min-width: 48em) {
+  .specGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.specRow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--mantine-spacing-xs) 0;
+  border-bottom: 1px solid var(--app-border-subtle);
+}
+
+.specLabel {
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+}
+
+.specValue {
+  font-size: var(--mantine-font-size-sm);
+  font-weight: var(--mantine-font-weight-medium);
+  color: var(--mantine-color-text);
+}

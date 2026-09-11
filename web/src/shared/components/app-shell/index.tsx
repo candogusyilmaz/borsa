@@ -1,6 +1,6 @@
 import { Avatar, Badge, Button, Divider, Drawer, Group, Stack, Text, UnstyledButton } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { DevicesIcon, HouseIcon, SignOutIcon } from '@phosphor-icons/react';
+import { BankIcon, DevicesIcon, HouseIcon, SignOutIcon } from '@phosphor-icons/react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { $api } from '@/api/client';
@@ -47,6 +47,16 @@ export function AppShell({ children, user }: AppShellProps) {
           <Link to="/app" className={classes.brandLink} aria-label={`${siteConfig.name} Home`}>
             <BrandLogo variant="full" size="sm" />
           </Link>
+
+          {/* Desktop Nav Links */}
+          <nav className={classes.navLinks} aria-label="Main Navigation">
+            <Button component={Link} to="/app" variant="subtle" size="sm" leftSection={<HouseIcon size={16} weight="bold" />}>
+              Dashboard
+            </Button>
+            <Button component={Link} to="/app/accounts" variant="subtle" size="sm" leftSection={<BankIcon size={16} weight="bold" />}>
+              Accounts
+            </Button>
+          </nav>
 
           {/* Header Right Actions */}
           <div className={classes.headerActions}>
@@ -113,7 +123,19 @@ export function AppShell({ children, user }: AppShellProps) {
             </Group>
           </div>
 
-          {/* Quick Navigation link */}
+          {/* Financial Accounts link */}
+          <Button
+            component={Link}
+            to="/app/accounts"
+            variant="default"
+            size="md"
+            fullWidth
+            leftSection={<BankIcon size={18} weight="bold" />}
+            onClick={closeDrawer}>
+            Financial Accounts
+          </Button>
+
+          {/* Return to Landing Page link */}
           <Button
             component={Link}
             to="/"
