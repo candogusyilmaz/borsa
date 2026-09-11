@@ -1,0 +1,355 @@
+/* Mobile-First Active Device & Session Management Styles */
+
+.container {
+  width: 100%;
+  max-width: 54rem;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-lg);
+}
+
+/* Header row & top actions */
+.headerRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-sm);
+}
+
+@media (min-width: 48em) {
+  .headerRow {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.headerText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.titleWithBadge {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+  flex-wrap: wrap;
+}
+
+.actionsBar {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+  flex-wrap: wrap;
+}
+
+/* Overview stat cards */
+.statGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--mantine-spacing-sm);
+}
+
+@media (min-width: 30em) {
+  .statGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.statCard {
+  background-color: var(--app-surface-secondary);
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--mantine-radius-md);
+  padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-md);
+}
+
+.statIconWrap {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--mantine-radius-md);
+  background-color: var(--mantine-primary-color-light);
+  color: var(--mantine-primary-color-light-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.statContent {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Sessions list */
+.sessionsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-md);
+}
+
+/* Individual session card */
+.sessionCard {
+  background-color: var(--mantine-color-default);
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--mantine-radius-md);
+  padding: var(--mantine-spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-md);
+  transition:
+    border-color var(--app-motion-normal) var(--app-ease),
+    box-shadow var(--app-motion-normal) var(--app-ease);
+}
+
+.sessionCard:hover {
+  border-color: var(--app-border-strong);
+}
+
+/* Distinct highlight for current session */
+.sessionCardCurrent {
+  border: 1.5px solid var(--mantine-primary-color-filled);
+  background-color: color-mix(in srgb, var(--mantine-primary-color-light) 25%, var(--mantine-color-default));
+  box-shadow: 0 4px 16px rgb(98 91 246 / 0.12);
+  position: relative;
+}
+
+.currentSessionIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--mantine-font-size-xs);
+  font-weight: 600;
+  color: var(--mantine-primary-color-filled);
+}
+
+.currentPulseDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--mantine-color-success);
+  box-shadow: 0 0 0 0 rgba(88, 215, 160, 0.7);
+  animation: pulseDot 2s infinite;
+}
+
+@keyframes pulseDot {
+  0% {
+    box-shadow: 0 0 0 0 rgba(88, 215, 160, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(88, 215, 160, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(88, 215, 160, 0);
+  }
+}
+
+/* Card header: Icon, Device Label, Status Badge */
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--mantine-spacing-sm);
+  flex-wrap: wrap;
+}
+
+.deviceIdentity {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+  min-width: 0;
+}
+
+.deviceIconBox {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--mantine-radius-md);
+  background-color: var(--app-surface-secondary);
+  border: 1px solid var(--app-border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--mantine-color-text);
+}
+
+.deviceDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.deviceLabel {
+  font-size: var(--mantine-font-size-md);
+  font-weight: 600;
+  color: var(--mantine-color-text);
+  line-height: 1.3;
+}
+
+.deviceSubtitle {
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+}
+
+.badgesGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Metadata grid */
+.metaGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--mantine-spacing-xs);
+  padding: var(--mantine-spacing-sm);
+  background-color: var(--app-surface-secondary);
+  border-radius: var(--mantine-radius-sm);
+  font-size: var(--mantine-font-size-xs);
+}
+
+@media (min-width: 36em) {
+  .metaGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 48em) {
+  .metaGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.metaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metaLabel {
+  color: var(--mantine-color-dimmed);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.metaValue {
+  color: var(--mantine-color-text);
+  font-weight: 500;
+  word-break: break-all;
+}
+
+/* Card bottom actions: Revoke / Details */
+.cardActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mantine-spacing-sm);
+  flex-wrap: wrap;
+  padding-top: var(--mantine-spacing-xs);
+  border-top: 1px solid var(--app-border-subtle);
+}
+
+.technicalToggle {
+  min-height: 44px;
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+}
+
+.technicalToggle:hover {
+  color: var(--mantine-color-text);
+}
+
+.technicalPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-xs);
+  padding: var(--mantine-spacing-sm);
+  background-color: var(--app-surface-secondary);
+  border: 1px dashed var(--app-border-subtle);
+  border-radius: var(--mantine-radius-sm);
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: var(--mantine-color-dimmed);
+  word-break: break-all;
+}
+
+.techRow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+@media (min-width: 36em) {
+  .techRow {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+/* Empty State */
+.emptyCard {
+  background-color: var(--app-surface-secondary);
+  border: 1px dashed var(--app-border-subtle);
+  border-radius: var(--mantine-radius-md);
+  padding: var(--mantine-spacing-xl);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mantine-spacing-md);
+}
+
+.emptyIcon {
+  color: var(--mantine-color-dimmed);
+}
+
+/* History toggle and inactive sessions */
+.historyToggleCard {
+  background-color: var(--app-surface-secondary);
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--mantine-radius-md);
+  padding: var(--mantine-spacing-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mantine-spacing-md);
+}
+
+.historyToggleText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sessionCardHistory {
+  opacity: 0.85;
+  background-color: color-mix(in srgb, var(--app-surface-secondary) 50%, var(--mantine-color-default));
+  border: 1px dashed var(--app-border-subtle);
+}
+
+.sectionSubheading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--mantine-font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--mantine-color-dimmed);
+  margin-top: var(--mantine-spacing-xs);
+  margin-bottom: var(--mantine-spacing-xs);
+}
+
+/* Load More */
+.loadMoreButton {
+  min-height: 44px;
+  font-weight: var(--mantine-font-weight-medium);
+}
+

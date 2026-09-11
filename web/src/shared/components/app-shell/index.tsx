@@ -1,8 +1,9 @@
 import { Avatar, Badge, Button, Divider, Drawer, Group, Stack, Text, UnstyledButton } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { HouseIcon, SignOutIcon } from '@phosphor-icons/react';
+import { DevicesIcon, HouseIcon, SignOutIcon } from '@phosphor-icons/react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
+import { $api } from '@/api/client';
 import { BrandLogo } from '@/shared/components/brand-logo';
 import { ThemeToggle } from '@/shared/components/theme-toggle';
 import { siteConfig } from '@/shared/config/site';
@@ -19,6 +20,11 @@ export function AppShell({ children, user }: AppShellProps) {
   const [drawerOpened, { open: openDrawer, close: closeDrawer }] = useDisclosure(false);
   const { logout } = useAuth();
   const navigate = useNavigate();
+
+  const sessionsQuery = $api.useQuery('get', '/api/v1/auth/sessions', undefined, {
+    enabled: drawerOpened
+  });
+  const activeSessionsCount = sessionsQuery.data ? sessionsQuery.data.filter((s) => s.status === 'ACTIVE').length : undefined;
 
   async function handleLogout() {
     closeDrawer();
@@ -117,6 +123,26 @@ export function AppShell({ children, user }: AppShellProps) {
             leftSection={<HouseIcon size={18} weight="bold" />}
             onClick={closeDrawer}>
             Return to Landing Page
+          </Button>
+
+          {/* Active Devices & Sessions link */}
+          <Button
+            component={Link}
+            to="/app/sessions"
+            variant="default"
+            size="md"
+            fullWidth
+            leftSection={<DevicesIcon size={18} weight="bold" />}
+            onClick={closeDrawer}
+            justify="space-between"
+            rightSection={
+              activeSessionsCount !== undefined ? (
+                <Badge color="teal" variant="light" size="xs">
+                  {activeSessionsCount} active
+                </Badge>
+              ) : null
+            }>
+            Active Devices & Sessions
           </Button>
 
           {/* Theme setting row */}
