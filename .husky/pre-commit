@@ -1,50 +1,170 @@
-REPO_ROOT=$(git rev-parse --show-toplevel)
+#!/usr/bin/env bash
 
-# ── Java: Spotless ────────────────────────────────────────────────────────────
-echo 'Running Spotless (spotless:apply)...'
-cd "$REPO_ROOT/server" || exit 1
-./mvnw spotless:apply -q
-SPOTLESS_EXIT=$?
+set -u
 
-if [ $SPOTLESS_EXIT -ne 0 ]; then
+REPO_ROOT=$(git rev-parse --show-toplevel) || exit 1
+cd "$REPO_ROOT" || exit 1
+
+# ── Capture originally staged files ──────────────────────────────────────────
+#
+# IMPORTANT:
+# Only files that were staged BEFORE this hook started may be automatically
+# re-staged after formatting.
+#
+# This prevents unrelated unstaged changes from accidentally entering the commit.
+
+mapfile -d '' -t STAGED_FILES < <(
+  git diff --cached --name-only --diff-filter=ACMR -z
+)
+
+if [ ${#STAGED_FILES[@]} -eq 0 ]; then
+  echo 'No staged files.'
+  exit 0
+fi
+
+
+# ── Protect partially staged files ───────────────────────────────────────────
+#
+# Example:
+#
+#   Foo.java
+#     hunk A -> staged
+#     hunk B -> unstaged
+#
+# Running `git add Foo.java` after auto-formatting would also stage hunk B.
+# Therefore auto-fix is unsafe for partially staged files.
+
+PARTIALLY_STAGED=()
+
+for file in "${STAGED_FILES[@]}"; do
+  if ! git diff --quiet -- "$file"; then
+    PARTIALLY_STAGED+=("$file")
+  fi
+done
+
+if [ ${#PARTIALLY_STAGED[@]} -gt 0 ]; then
   echo ''
-  echo 'FAILED: Spotless formatting failed. Fix the errors above before committing.'
+  echo 'FAILED: These files contain both staged and unstaged changes:'
+  printf '  %s\n' "${PARTIALLY_STAGED[@]}"
+  echo ''
+  echo 'Pre-commit auto-fix cannot safely re-stage partially staged files.'
   exit 1
 fi
 
-# Stage any Java files that Spotless reformatted
-git diff --name-only -- '*.java' | xargs -r git add
-echo 'OK: Java formatting done.'
+
+# ── Classify staged files ────────────────────────────────────────────────────
+
+JAVA_FILES=()
+WEB_FILES=()
+
+for file in "${STAGED_FILES[@]}"; do
+  case "$file" in
+    server/*.java)
+      JAVA_FILES+=("$file")
+      ;;
+
+    web/src/*)
+      WEB_FILES+=("$file")
+      ;;
+  esac
+done
+
+
+# ── Java: Spotless auto-fix ─────────────────────────────────────────────────
+
+if [ ${#JAVA_FILES[@]} -gt 0 ]; then
+  echo 'Running Spotless (spotless:apply)...'
+
+  cd "$REPO_ROOT/server" || exit 1
+
+  ./mvnw spotless:apply -q
+  SPOTLESS_EXIT=$?
+
+  if [ $SPOTLESS_EXIT -ne 0 ]; then
+    echo ''
+    echo 'FAILED: Spotless formatting failed.'
+    exit 1
+  fi
+
+  cd "$REPO_ROOT" || exit 1
+
+  # IMPORTANT:
+  # Only re-stage Java files that were already staged before the hook started.
+  git add -- "${JAVA_FILES[@]}"
+
+  echo 'OK: Java formatting done.'
+else
+  echo 'Skipping Spotless: no staged Java files.'
+fi
+
+
+# ── Frontend: Biome auto-fix ─────────────────────────────────────────────────
+
+if [ ${#WEB_FILES[@]} -gt 0 ]; then
+  echo 'Running Biome auto-fix...'
+
+  cd "$REPO_ROOT/web" || exit 1
+
+  # Convert:
+  #
+  #   web/src/foo.ts
+  #
+  # into:
+  #
+  #   src/foo.ts
+  #
+  BIOME_FILES=()
+
+  for file in "${WEB_FILES[@]}"; do
+    BIOME_FILES+=("${file#web/}")
+  done
+
+  BIOME_EXIT=0
+  npx biome check --write "${BIOME_FILES[@]}" || BIOME_EXIT=$?
+
+  cd "$REPO_ROOT" || exit 1
+
+  # Even when Biome reports a remaining non-fixable error,
+  # preserve any safe fixes it already made.
+  #
+  # Again: only originally staged files are re-staged.
+  git add -- "${WEB_FILES[@]}"
+
+  if [ $BIOME_EXIT -ne 0 ]; then
+    echo ''
+    echo 'FAILED: Biome found errors that could not be fixed automatically.'
+    exit 1
+  fi
+
+  echo 'OK: Biome formatting/lint fixes applied.'
+else
+  echo 'Skipping Biome: no staged frontend source files.'
+fi
+
 
 # ── Frontend: TypeScript type check ──────────────────────────────────────────
+#
+# Run this AFTER Biome because Biome may modify imports/code.
+# We want tsc to validate the exact code that will be committed.
+
 echo 'Running TypeScript type check (tsc -b)...'
+
 cd "$REPO_ROOT/web" || exit 1
+
 npm run typecheck
 TSC_EXIT=$?
 
 if [ $TSC_EXIT -ne 0 ]; then
   echo ''
-  echo 'FAILED: TypeScript type check failed. Fix the errors above before committing.'
+  echo 'FAILED: TypeScript type check failed.'
   exit 1
 fi
 
-# ── Frontend: Biome check ────────────────────────────────────────────────────
-echo 'Running Biome check...'
 
-# First do a dry-run to detect any unformatted/lint issues
-npx biome check ./src
-BIOME_CHECK_EXIT=$?
+# ── Done ─────────────────────────────────────────────────────────────────────
 
-if [ $BIOME_CHECK_EXIT -ne 0 ]; then
-  # Auto-fix what can be fixed
-  npm run check:fix
-  echo ''
-  echo 'Biome found and fixed issues. Staging the fixed files...'
+cd "$REPO_ROOT" || exit 1
 
-  git diff --name-only -- ./src | xargs -r git add
-
-  echo 'Fixed files have been staged. Please review and commit again.'
-  exit 1
-fi
-
-echo 'OK: All checks passed.'
+echo ''
+echo 'OK: All pre-commit checks passed.'
+exit 0
