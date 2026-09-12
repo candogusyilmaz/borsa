@@ -1,4 +1,4 @@
-import type { AccountKind, NegativeBalancePolicy, TrackingMode } from '../types';
+import type { AccountKind, ActivityType, NegativeBalancePolicy, PolicyDecision, PostingRole, RecordingMode, TrackingMode } from '../types';
 
 export function isLiabilityKind(kind: AccountKind) {
   return kind === 'CREDIT_CARD' || kind === 'LOAN';
@@ -10,6 +10,10 @@ export function isAssetKind(kind: AccountKind) {
 
 export function supportsHoldingsOnly(kind: AccountKind) {
   return kind === 'BROKERAGE';
+}
+
+export function isCashFundingCapable(kind: AccountKind) {
+  return kind === 'CASH_CURRENT' || kind === 'CASH_SAVINGS' || kind === 'CASH_WALLET' || kind === 'BROKERAGE';
 }
 
 export function supportsNegativePolicy(kind: AccountKind, policy: NegativeBalancePolicy) {
@@ -260,3 +264,121 @@ export const COMMON_CURRENCIES = [
   { code: 'CAD', name: 'Canadian Dollar', symbol: '$' },
   { code: 'AUD', name: 'Australian Dollar', symbol: '$' }
 ];
+
+export const POSITIVE_DECIMAL_REGEX = /^(?:0|[1-9]\d*)(?:\.\d+)?$/;
+
+export function getActivityTypeLabel(type: ActivityType): string {
+  switch (type) {
+    case 'CASH_DEPOSIT':
+      return 'Cash Deposit';
+    case 'CASH_WITHDRAWAL':
+      return 'Cash Withdrawal';
+    case 'OWNED_TRANSFER':
+      return 'Account Transfer';
+    case 'OPENING_BALANCE':
+      return 'Opening Balance';
+    case 'REVERSAL':
+      return 'Activity Reversal';
+    case 'RECONCILIATION_ADJUSTMENT':
+      return 'Statement Adjustment';
+    default:
+      return type;
+  }
+}
+
+export function getActivityTypeDescription(type: ActivityType): string {
+  switch (type) {
+    case 'CASH_DEPOSIT':
+      return 'Funds deposited into this financial account.';
+    case 'CASH_WITHDRAWAL':
+      return 'Funds withdrawn from this financial account.';
+    case 'OWNED_TRANSFER':
+      return 'Money transferred between your own accounts.';
+    case 'OPENING_BALANCE':
+      return 'Initial balance recorded at account opening.';
+    case 'REVERSAL':
+      return 'Offsetting transaction reversing a previous activity.';
+    case 'RECONCILIATION_ADJUSTMENT':
+      return 'Correction adjusting ledger to match external bank statement.';
+    default:
+      return '';
+  }
+}
+
+export function getActivityTypeBadgeColor(type: ActivityType): string {
+  switch (type) {
+    case 'CASH_DEPOSIT':
+      return 'teal';
+    case 'CASH_WITHDRAWAL':
+      return 'orange';
+    case 'OWNED_TRANSFER':
+      return 'blue';
+    case 'OPENING_BALANCE':
+      return 'indigo';
+    case 'REVERSAL':
+      return 'violet';
+    case 'RECONCILIATION_ADJUSTMENT':
+      return 'cyan';
+    default:
+      return 'gray';
+  }
+}
+
+export function getPostingRoleLabel(role: PostingRole): string {
+  switch (role) {
+    case 'DEPOSIT':
+      return 'Deposit';
+    case 'WITHDRAWAL':
+      return 'Withdrawal';
+    case 'TRANSFER_SOURCE':
+      return 'Outgoing Transfer Leg';
+    case 'TRANSFER_DESTINATION':
+      return 'Incoming Transfer Leg';
+    case 'OPENING':
+      return 'Opening Balance';
+    case 'REVERSAL':
+      return 'Reversal Offset';
+    case 'ADJUSTMENT':
+      return 'Reconciliation Adjustment';
+    default:
+      return role;
+  }
+}
+
+export function getPolicyDecisionLabel(decision: PolicyDecision): string {
+  switch (decision) {
+    case 'ALLOWED':
+      return 'Approved within Limit';
+    case 'CONFIRMED_BREACH':
+      return 'Overdraft Confirmed';
+    case 'HISTORICAL_BREACH_RECORDED':
+      return 'Historical Overdraft';
+    case 'NOT_APPLICABLE':
+      return 'Standard';
+    default:
+      return decision;
+  }
+}
+
+export function getPolicyDecisionBadgeColor(decision: PolicyDecision): string {
+  switch (decision) {
+    case 'ALLOWED':
+      return 'teal';
+    case 'CONFIRMED_BREACH':
+    case 'HISTORICAL_BREACH_RECORDED':
+      return 'red';
+    default:
+      return 'gray';
+  }
+}
+
+export function getRecordingModeLabel(mode: RecordingMode): string {
+  switch (mode) {
+    case 'CURRENT_ACTION':
+      return 'Live Real-time Entry';
+    case 'HISTORICAL_FACT':
+      return 'Past / Historical Fact';
+    default:
+      return mode;
+  }
+}

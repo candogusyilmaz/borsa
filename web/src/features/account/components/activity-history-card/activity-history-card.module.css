@@ -1,0 +1,237 @@
+.card {
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--mantine-radius-md);
+  padding: var(--mantine-spacing-md);
+  background: var(--mantine-color-default);
+  box-shadow: var(--mantine-shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-md);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--mantine-spacing-xs);
+}
+
+.titleArea {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+}
+
+.cardTitle {
+  font-size: var(--mantine-font-size-md);
+  font-weight: var(--mantine-font-weight-bold);
+  color: var(--mantine-color-text);
+}
+
+.controlsBar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-xs);
+}
+
+@media (min-width: 48em) {
+  .controlsBar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-xs);
+  flex: 1;
+}
+
+@media (min-width: 36em) {
+  .filterGroup {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.filterSelect {
+  min-width: 180px;
+}
+
+.filterSelect :global(.mantine-Select-input) {
+  min-height: 44px;
+}
+
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.activityRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
+  background: var(--app-surface-secondary);
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--mantine-radius-sm);
+  cursor: pointer;
+  min-height: 52px;
+  gap: var(--mantine-spacing-xs);
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  appearance: none;
+  transition: box-shadow var(--app-motion-fast) var(--app-ease), border-color var(--app-motion-fast) var(--app-ease);
+}
+
+.activityRow:hover {
+  box-shadow: var(--mantine-shadow-md);
+  border-color: var(--app-border-strong);
+  transform: translateY(-1px);
+}
+
+.activityRowReversed {
+  opacity: 0.75;
+  background: color-mix(in srgb, var(--app-surface-secondary) 85%, var(--mantine-color-gray-2));
+}
+
+.activityRowIsReversed {
+  opacity: 0.65;
+  border-style: dashed;
+}
+
+.actionBtn {
+  min-height: 44px;
+}
+
+.activityMain {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+  min-width: 0;
+}
+
+.iconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--mantine-radius-md);
+  background: var(--mantine-color-default);
+  border: 1px solid var(--app-border-subtle);
+  flex-shrink: 0;
+}
+
+.activityMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.activityTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.activityTitle {
+  font-size: var(--mantine-font-size-sm);
+  font-weight: var(--mantine-font-weight-bold);
+  color: var(--mantine-color-text);
+}
+
+.activityTimes {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+}
+
+.effectiveTime {
+  font-weight: var(--mantine-font-weight-medium);
+  font-variant-numeric: tabular-nums;
+  color: var(--mantine-color-text);
+}
+
+.recordedTime {
+  font-variant-numeric: tabular-nums;
+}
+
+.activityRight {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-sm);
+  margin-left: auto;
+}
+
+.amountArea {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.amountText {
+  font-size: var(--mantine-font-size-md);
+  font-weight: var(--mantine-font-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.amountPositive {
+  color: var(--mantine-color-teal-6);
+}
+
+.amountNegative {
+  color: var(--mantine-color-red-6);
+}
+
+.paginationBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--mantine-spacing-xs);
+  padding-top: var(--mantine-spacing-sm);
+  border-top: 1px solid var(--app-border-subtle);
+}
+
+.pageIndicator {
+  font-size: var(--mantine-font-size-sm);
+  color: var(--mantine-color-dimmed);
+  font-variant-numeric: tabular-nums;
+}
+
+.paginationButtons {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+}
+
+.pageBtn {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--mantine-spacing-xl) var(--mantine-spacing-md);
+  text-align: center;
+  gap: var(--mantine-spacing-sm);
+  background: var(--app-surface-secondary);
+  border-radius: var(--mantine-radius-md);
+  border: 1px dashed var(--app-border-subtle);
+}

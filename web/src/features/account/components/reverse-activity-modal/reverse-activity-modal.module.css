@@ -1,0 +1,62 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-md);
+}
+
+.activitySummary {
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--mantine-radius-md);
+  padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
+  background: var(--app-surface-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.summaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--mantine-font-size-sm);
+}
+
+.summaryLabel {
+  color: var(--mantine-color-dimmed);
+}
+
+.summaryValue {
+  font-weight: var(--mantine-font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  color: var(--mantine-color-text);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--mantine-spacing-sm);
+  margin-top: var(--mantine-spacing-md);
+  padding-top: var(--mantine-spacing-sm);
+  border-top: 1px solid var(--app-border-subtle);
+  width: 100%;
+}
+
+.actions > * {
+  width: 100%;
+}
+
+@media (min-width: 30em) {
+  .actions {
+    flex-direction: row;
+    justify-content: flex-end;
+    width: auto;
+  }
+
+  .actions > * {
+    width: auto;
+  }
+}
+
+.actionBtn {
+  min-height: 44px;
+}

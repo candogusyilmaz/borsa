@@ -37,3 +37,25 @@ export interface OpeningCorrectionFormValues {
   amount: string;
   correctionReason: string;
 }
+
+export type ActivityResponse = components['schemas']['ActivityResponse'];
+export type PostingResponse = components['schemas']['PostingResponse'];
+export type CashActivityRequest = components['schemas']['CashActivityRequest'];
+export type ReversalRequest = components['schemas']['ReversalRequest'];
+export type SliceResponseActivityResponse = components['schemas']['SliceResponseActivityResponse'];
+export type ActivityType = ActivityResponse['activityType'];
+export type PostingRole = PostingResponse['role'];
+export type RecordingMode = ActivityResponse['recordingMode'];
+export type PolicyDecision = ActivityResponse['policyDecision'];
+
+export interface RecordCashActivityFormValues {
+  activityType: 'CASH_DEPOSIT' | 'CASH_WITHDRAWAL';
+  amount: string;
+  recordingMode: RecordingMode;
+  effectiveAt: string;
+  confirmPolicyBreach: boolean;
+}
+
+export interface ReverseActivityFormValues {
+  correctionReason: string;
+}

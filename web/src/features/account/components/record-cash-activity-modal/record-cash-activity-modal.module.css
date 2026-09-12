@@ -1,0 +1,78 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-md);
+}
+
+.segmentedWrap {
+  margin-bottom: var(--mantine-spacing-xs);
+}
+
+.segmentedControl {
+  min-height: 44px;
+}
+
+.segmentedControl :global(.mantine-SegmentedControl-control) {
+  min-height: 44px;
+}
+
+.segmentedControl :global(.mantine-SegmentedControl-label) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: var(--mantine-font-weight-bold);
+  min-height: 44px;
+}
+
+.balanceBox {
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--mantine-radius-md);
+  padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
+  background: var(--app-surface-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.balanceLabel {
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+}
+
+.balanceValue {
+  font-size: var(--mantine-font-size-sm);
+  font-weight: var(--mantine-font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  color: var(--mantine-color-text);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--mantine-spacing-sm);
+  margin-top: var(--mantine-spacing-md);
+  padding-top: var(--mantine-spacing-sm);
+  border-top: 1px solid var(--app-border-subtle);
+  width: 100%;
+}
+
+.actions > * {
+  width: 100%;
+}
+
+@media (min-width: 30em) {
+  .actions {
+    flex-direction: row;
+    justify-content: flex-end;
+    width: auto;
+  }
+
+  .actions > * {
+    width: auto;
+  }
+}
+
+.actionBtn {
+  min-height: 44px;
+}

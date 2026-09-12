@@ -1,0 +1,118 @@
+.card {
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--mantine-radius-md);
+  padding: var(--mantine-spacing-md);
+  background: var(--mantine-color-default);
+  box-shadow: var(--mantine-shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-md);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--mantine-spacing-xs);
+}
+
+.titleArea {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+}
+
+.cardTitle {
+  font-size: var(--mantine-font-size-md);
+  font-weight: var(--mantine-font-weight-bold);
+  color: var(--mantine-color-text);
+}
+
+.pocketInfoGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--mantine-spacing-sm);
+}
+
+@media (min-width: 48em) {
+  .pocketInfoGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--mantine-spacing-xs) var(--mantine-spacing-sm);
+  background: var(--app-surface-secondary);
+  border-radius: var(--mantine-radius-sm);
+  border: 1px solid var(--app-border-subtle);
+}
+
+.infoLabel {
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+  font-weight: var(--mantine-font-weight-medium);
+}
+
+.infoValue {
+  font-size: var(--mantine-font-size-sm);
+  font-weight: var(--mantine-font-weight-bold);
+  color: var(--mantine-color-text);
+  font-variant-numeric: tabular-nums;
+  word-break: break-word;
+}
+
+.reconciliationBox {
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--mantine-radius-sm);
+  padding: var(--mantine-spacing-sm);
+  background: var(--app-surface-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.reconciliationHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.reconciliationTitle {
+  font-size: var(--mantine-font-size-xs);
+  font-weight: var(--mantine-font-weight-bold);
+  color: var(--mantine-color-text);
+}
+
+.reconciliationGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--mantine-spacing-xs);
+  font-size: var(--mantine-font-size-xs);
+}
+
+.quickActionsBar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-sm);
+  margin-top: var(--mantine-spacing-xs);
+  padding-top: var(--mantine-spacing-sm);
+  border-top: 1px solid var(--app-border-subtle);
+}
+
+@media (min-width: 36em) {
+  .quickActionsBar {
+    flex-direction: row;
+  }
+
+  .quickActionsBar > * {
+    flex: 1;
+  }
+}
+
+.actionBtn {
+  min-height: 44px;
+}

@@ -14,6 +14,7 @@ import { useState } from 'react';
 import { $api } from '@/api/client';
 import { AccountCard } from '../../components/account-card/account-card';
 import { CreateAccountModal } from '../../components/create-account-modal/create-account-modal';
+import { CurrencyBalancesCard } from '../../components/currency-balances-card/currency-balances-card';
 import classes from './accounts-list-page.module.css';
 
 export function AccountsListPage() {
@@ -171,7 +172,10 @@ export function AccountsListPage() {
         </div>
       </div>
 
-      {/* 3. Filter & Search Controls */}
+      {/* 3. Cash Pockets & Balances by Currency */}
+      <CurrencyBalancesCard accounts={rawAccounts} isLoading={accountsQuery.isLoading} />
+
+      {/* 4. Filter & Search Controls */}
       <div className={classes.filterCard}>
         <div className={classes.filterRow}>
           <div className={classes.filterControls}>

@@ -65,16 +65,12 @@
 
 @media (min-width: 36em) {
   .actionsBar {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (min-width: 48em) {
-  .actionsBar {
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: center;
+    justify-content: flex-end;
+    gap: var(--mantine-spacing-xs);
     width: auto;
   }
 

@@ -3,7 +3,9 @@ import { useDisclosure } from '@mantine/hooks';
 import {
   ArchiveIcon,
   ArrowClockwiseIcon,
+  ArrowDownLeftIcon,
   ArrowLeftIcon,
+  ArrowUpRightIcon,
   CalendarBlankIcon,
   ClockCounterClockwiseIcon,
   GearIcon,
@@ -15,9 +17,12 @@ import { useState } from 'react';
 import { $api } from '@/api/client';
 import { normalizeError } from '@/api/errors';
 import { AccountSettingsModal } from '../../components/account-settings-modal/account-settings-modal';
+import { ActivityHistoryCard } from '../../components/activity-history-card/activity-history-card';
 import { ArchiveAccountModal } from '../../components/archive-account-modal/archive-account-modal';
+import { CashPocketCard } from '../../components/cash-pocket-card/cash-pocket-card';
 import { OpeningCorrectionModal } from '../../components/opening-correction-modal/opening-correction-modal';
 import { OpeningStateCard } from '../../components/opening-state-card/opening-state-card';
+import { RecordCashActivityModal } from '../../components/record-cash-activity-modal/record-cash-activity-modal';
 import {
   formatCurrency,
   formatDateTime,
@@ -29,6 +34,7 @@ import {
   getTrackingModeBadgeColor,
   getTrackingModeDescription,
   getTrackingModeLabel,
+  isCashFundingCapable,
   toDatetimeLocal
 } from '../../utils/account-formatters';
 import classes from './account-detail-page.module.css';
@@ -41,6 +47,8 @@ export function AccountDetailPage({ accountId }: AccountDetailPageProps) {
   const [settingsOpened, { open: openSettings, close: closeSettings }] = useDisclosure(false);
   const [archiveOpened, { open: openArchive, close: closeArchive }] = useDisclosure(false);
   const [openingCorrectionOpened, { open: openOpeningCorrection, close: closeOpeningCorrection }] = useDisclosure(false);
+  const [depositOpened, { open: openDeposit, close: closeDeposit }] = useDisclosure(false);
+  const [withdrawOpened, { open: openWithdraw, close: closeWithdraw }] = useDisclosure(false);
 
   // Historical effective date state for balance queries
   const [selectedAsOf, setSelectedAsOf] = useState<string | null>(null);
@@ -119,6 +127,7 @@ export function AccountDetailPage({ accountId }: AccountDetailPageProps) {
 
   const account = accountQuery.data;
   const balance = balanceQuery.data;
+  const canTransactCash = !isHoldings && isCashFundingCapable(account.kind) && !account.archived;
 
   const isBeforeCoverage = Boolean(
     selectedAsOf && account.coverageFrom && new Date(selectedAsOf).getTime() < new Date(account.coverageFrom).getTime()
@@ -181,6 +190,30 @@ export function AccountDetailPage({ accountId }: AccountDetailPageProps) {
         </div>
 
         <div className={classes.actionsBar}>
+          {canTransactCash && (
+            <>
+              <Button
+                color="teal"
+                variant="filled"
+                size="md"
+                leftSection={<ArrowDownLeftIcon size={18} weight="bold" />}
+                onClick={openDeposit}
+                aria-label="Deposit cash">
+                Deposit
+              </Button>
+
+              <Button
+                color="orange"
+                variant="light"
+                size="md"
+                leftSection={<ArrowUpRightIcon size={18} weight="bold" />}
+                onClick={openWithdraw}
+                aria-label="Withdraw cash">
+                Withdraw
+              </Button>
+            </>
+          )}
+
           <Button
             variant="default"
             size="md"
@@ -476,7 +509,18 @@ export function AccountDetailPage({ accountId }: AccountDetailPageProps) {
         )}
       </div>
 
-      {/* 4. Opening State & Cash Coverage Card */}
+      {/* 4. Cash Settlement Pocket Card */}
+      <CashPocketCard account={account} balance={balance} onOpenDeposit={openDeposit} onOpenWithdraw={openWithdraw} />
+
+      {/* 5. Cash Activity History */}
+      <ActivityHistoryCard
+        account={account}
+        onOpenDeposit={openDeposit}
+        onOpenWithdraw={openWithdraw}
+        onActivityUpdated={handleRefetchAll}
+      />
+
+      {/* 6. Opening State & Cash Coverage Card */}
       <OpeningStateCard account={account} onOpenCorrection={openOpeningCorrection} />
 
       {/* 5. Detailed Account Specifications & Policies */}
@@ -578,6 +622,28 @@ export function AccountDetailPage({ accountId }: AccountDetailPageProps) {
         opened={openingCorrectionOpened}
         onClose={closeOpeningCorrection}
         onRefetchAccount={handleRefetchAll}
+      />
+
+      {/* Record Deposit Modal */}
+      <RecordCashActivityModal
+        key={`deposit-${account.id}-${balance?.ledgerBalance ?? 0}`}
+        account={account}
+        balance={balance}
+        opened={depositOpened}
+        onClose={closeDeposit}
+        defaultType="CASH_DEPOSIT"
+        onSuccess={handleRefetchAll}
+      />
+
+      {/* Record Withdrawal Modal */}
+      <RecordCashActivityModal
+        key={`withdraw-${account.id}-${balance?.ledgerBalance ?? 0}`}
+        account={account}
+        balance={balance}
+        opened={withdrawOpened}
+        onClose={closeWithdraw}
+        defaultType="CASH_WITHDRAWAL"
+        onSuccess={handleRefetchAll}
       />
     </section>
   );
