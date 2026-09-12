@@ -17,7 +17,24 @@
 
 .actions {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column-reverse;
   gap: var(--mantine-spacing-sm);
   margin-top: var(--mantine-spacing-sm);
+  width: 100%;
+}
+
+.actions > * {
+  width: 100%;
+}
+
+@media (min-width: 30em) {
+  .actions {
+    flex-direction: row;
+    justify-content: flex-end;
+    width: auto;
+  }
+
+  .actions > * {
+    width: auto;
+  }
 }

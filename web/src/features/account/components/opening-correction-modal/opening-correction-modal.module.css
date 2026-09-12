@@ -1,0 +1,95 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-md);
+}
+
+.anchorCard {
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--mantine-radius-md);
+  padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
+  background: var(--mantine-color-default);
+  box-shadow: var(--mantine-shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.anchorLabel {
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+  font-weight: var(--mantine-font-weight-medium);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.anchorValue {
+  font-size: var(--mantine-font-size-sm);
+  font-weight: var(--mantine-font-weight-bold);
+  color: var(--mantine-color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.anchorHelp {
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+.fieldGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--mantine-spacing-md);
+  align-items: start;
+}
+
+@media (min-width: 36em) {
+  .fieldGrid {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--mantine-spacing-sm);
+  margin-top: var(--mantine-spacing-md);
+  padding-top: var(--mantine-spacing-sm);
+  border-top: 1px solid var(--app-border-subtle);
+  width: 100%;
+}
+
+.actions > * {
+  width: 100%;
+}
+
+@media (min-width: 30em) {
+  .actions {
+    flex-direction: row;
+    justify-content: flex-end;
+    width: auto;
+  }
+
+  .actions > * {
+    width: auto;
+  }
+}
+
+.versionBadge {
+  font-variant-numeric: tabular-nums;
+}
+
+.conflictBox {
+  margin-bottom: var(--mantine-spacing-xs);
+}
+
+.actionBtn {
+  min-height: 44px;
+}
+
+.reloadBtn {
+  min-height: 44px;
+}

@@ -135,8 +135,8 @@ export function ArchiveAccountModal({ account, opened, onClose, onRefetchAccount
           color="red"
           variant="light"
           className={classes.warningBox}>
-          Archiving an account freezes its active state. The account and its ledger history remain permanently recorded for auditing and tax
-          compliance, but active order execution and deposits will be restricted.
+          Archiving safely deactivates this account. All your past records and history are preserved, but new deposits, withdrawals, and
+          trades will be paused.
         </Alert>
 
         <div className={classes.accountSummary}>

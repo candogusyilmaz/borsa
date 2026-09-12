@@ -357,3 +357,30 @@
   font-size: var(--mantine-font-size-xs);
   color: var(--mantine-color-dimmed);
 }
+
+.modalActions {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--mantine-spacing-sm);
+  width: 100%;
+}
+
+.modalActions > * {
+  width: 100%;
+}
+
+@media (min-width: 30em) {
+  .modalActions {
+    flex-direction: row;
+    justify-content: flex-end;
+    width: auto;
+  }
+
+  .modalActions > * {
+    width: auto;
+  }
+}
+
+.depositPresetBtn {
+  min-height: 44px;
+}

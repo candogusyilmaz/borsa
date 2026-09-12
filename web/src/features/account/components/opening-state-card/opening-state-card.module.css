@@ -1,0 +1,132 @@
+.card {
+  background: var(--mantine-color-default);
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--mantine-radius-md);
+  padding: var(--mantine-spacing-lg);
+  box-shadow: var(--mantine-shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-md);
+}
+
+.cardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-xs);
+}
+
+@media (min-width: 36em) {
+  .cardHeader {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.titleArea {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+  flex-wrap: wrap;
+}
+
+.cardTitle {
+  font-size: var(--mantine-font-size-md);
+  font-weight: var(--mantine-font-weight-bold);
+  color: var(--mantine-color-text);
+}
+
+.heroRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-md);
+  padding: var(--mantine-spacing-sm) 0;
+  border-bottom: 1px solid var(--app-border-subtle);
+}
+
+@media (min-width: 48em) {
+  .heroRow {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+}
+
+.balanceHero {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.balanceLabel {
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+}
+
+.balanceValue {
+  font-size: 2rem;
+  font-weight: var(--mantine-font-weight-bold);
+  color: var(--mantine-color-text);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.attributesGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--mantine-spacing-md);
+}
+
+@media (min-width: 36em) {
+  .attributesGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 48em) {
+  .attributesGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.attrItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.attrLabel {
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+}
+
+.attrValue {
+  font-size: var(--mantine-font-size-sm);
+  font-weight: var(--mantine-font-weight-semibold);
+  color: var(--mantine-color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.attrSubtext {
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+}
+
+.footerNote {
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+  line-height: 1.45;
+  padding-top: var(--mantine-spacing-xs);
+  border-top: 1px solid var(--app-border-subtle);
+}
+
+.correctBtn {
+  min-height: 44px;
+  width: 100%;
+}
+
+@media (min-width: 36em) {
+  .correctBtn {
+    width: auto;
+  }
+}

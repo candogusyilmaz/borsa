@@ -1,6 +1,6 @@
 import { Alert, Badge, Button, Group, Modal, Select, Stack, Text, TextInput } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { CheckCircleIcon, InfoIcon, PlusIcon, WarningCircleIcon } from '@phosphor-icons/react';
+import { CalendarBlankIcon, CheckCircleIcon, CurrencyCircleDollarIcon, InfoIcon, PlusIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { useForm, useStore } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { $api } from '@/api/client';
@@ -15,8 +15,10 @@ import {
   getTrackingModeDescription,
   getTrackingModeLabel,
   isLiabilityKind,
+  PLAIN_DECIMAL_REGEX,
   supportsHoldingsOnly,
-  supportsNegativePolicy
+  supportsNegativePolicy,
+  toDatetimeLocal
 } from '../../utils/account-formatters';
 import classes from './create-account-modal.module.css';
 
@@ -70,7 +72,7 @@ export function CreateAccountModal({ opened, onClose }: CreateAccountModalProps)
     typeof Intl !== 'undefined' && Intl.DateTimeFormat ? Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC' : 'UTC';
 
   // Offset default time slightly into the past to prevent clock skew validation errors
-  const defaultEffectiveAt = new Date(Date.now() - 60000).toISOString().slice(0, 16);
+  const defaultEffectiveAt = toDatetimeLocal(new Date(Date.now() - 60000));
 
   const form = useForm({
     defaultValues: {
@@ -122,6 +124,7 @@ export function CreateAccountModal({ opened, onClose }: CreateAccountModalProps)
   const currentKind = useStore(form.store, (state) => state.values.kind);
   const currentTrackingMode = useStore(form.store, (state) => state.values.trackingMode);
   const currentPolicy = useStore(form.store, (state) => state.values.policy);
+  const currentCurrency = useStore(form.store, (state) => state.values.currency);
   const isHoldings = currentTrackingMode === 'HOLDINGS_ONLY';
   const isLiability = isLiabilityKind(currentKind);
 
@@ -218,12 +221,12 @@ export function CreateAccountModal({ opened, onClose }: CreateAccountModalProps)
                     }
                   }}
                   data={[
-                    { value: 'CASH_CURRENT', label: 'Current / Checking (Cash)' },
-                    { value: 'CASH_SAVINGS', label: 'Savings Account (Cash)' },
-                    { value: 'CASH_WALLET', label: 'Cash Wallet / Petty Cash' },
-                    { value: 'BROKERAGE', label: 'Brokerage / Investment' },
-                    { value: 'CREDIT_CARD', label: 'Credit Card (Liability)' },
-                    { value: 'LOAN', label: 'Loan / Margin Debt (Liability)' }
+                    { value: 'CASH_CURRENT', label: 'Checking Account' },
+                    { value: 'CASH_SAVINGS', label: 'Savings Account' },
+                    { value: 'CASH_WALLET', label: 'Cash Wallet' },
+                    { value: 'BROKERAGE', label: 'Brokerage / Stocks' },
+                    { value: 'CREDIT_CARD', label: 'Credit Card' },
+                    { value: 'LOAN', label: 'Loan / Debt' }
                   ]}
                   required
                 />
@@ -241,10 +244,10 @@ export function CreateAccountModal({ opened, onClose }: CreateAccountModalProps)
                     field.handleChange(val as TrackingMode);
                   }}
                   data={[
-                    { value: 'FULL_LEDGER', label: 'Full Ledger (Double-entry Cash & Assets)' },
+                    { value: 'FULL_LEDGER', label: 'Full Ledger (Cash & Investments)' },
                     {
                       value: 'HOLDINGS_ONLY',
-                      label: 'Holdings Only (Securities Positions Only)',
+                      label: 'Holdings Only (Positions Only)',
                       disabled: !supportsHoldingsOnly(currentKind)
                     }
                   ]}
@@ -262,7 +265,7 @@ export function CreateAccountModal({ opened, onClose }: CreateAccountModalProps)
                   {getTrackingModeLabel(currentTrackingMode)}
                 </Badge>
                 <Badge color={isLiability ? 'orange' : 'teal'} size="sm" variant="outline">
-                  {isLiability ? 'Liability Instrument' : 'Asset Instrument'}
+                  {isLiability ? 'Debt / Liability' : 'Cash & Assets'}
                 </Badge>
               </Group>
               <Text size="xs" c="dimmed">
@@ -271,8 +274,8 @@ export function CreateAccountModal({ opened, onClose }: CreateAccountModalProps)
             </Group>
             <p className={classes.modeInfo}>
               {isHoldings
-                ? 'Holdings-only mode bypasses cash ledger accounting. Opening balances and negative cash policies are not required.'
-                : 'Full-ledger mode records double-entry postings for every cash movement, secured by cash pocket balances and invariant checks.'}
+                ? 'Holdings-only mode tracks your share quantities without requiring cash balance records or overdraft rules.'
+                : 'Full-ledger mode tracks every deposit, withdrawal, and cash movement with complete accounting precision.'}
             </p>
           </div>
 
@@ -334,9 +337,9 @@ export function CreateAccountModal({ opened, onClose }: CreateAccountModalProps)
                       }
                     }}
                     data={[
-                      { value: 'HARD_FLOOR', label: 'Hard Floor (No Negative Balance)' },
-                      { value: 'SOFT_FLOOR', label: 'Soft Floor (Allow with Warning)' },
-                      { value: 'TRACK_REALITY', label: 'Track Reality (Unrestricted)' },
+                      { value: 'HARD_FLOOR', label: 'Hard Floor (No Overdraft)' },
+                      { value: 'SOFT_FLOOR', label: 'Soft Floor (Warn on Overdraft)' },
+                      { value: 'TRACK_REALITY', label: 'Track Reality (No Limits)' },
                       {
                         value: 'AUTHORIZED_LIMIT',
                         label: 'Authorized Overdraft Limit',
@@ -378,53 +381,122 @@ export function CreateAccountModal({ opened, onClose }: CreateAccountModalProps)
 
           {/* Opening State Section (Only for Full Ledger accounts) */}
           {!isHoldings && (
-            <div className={classes.fieldGrid}>
-              <form.Field
-                name="openingAmount"
-                validators={{
-                  onChange: ({ value }) => {
-                    if (value.trim() === '') return 'Opening balance amount is required.';
-                    if (Number.isNaN(Number.parseFloat(value))) return 'Must be a valid decimal number.';
-                    return undefined;
-                  }
-                }}>
-                {(field) => (
-                  <TextInput
-                    label="Opening Balance Amount"
-                    placeholder="0.00"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.currentTarget.value)}
-                    onBlur={field.handleBlur}
-                    error={field.state.meta.isTouched ? field.state.meta.errors[0] : undefined}
-                    required
-                  />
-                )}
-              </form.Field>
+            <div className={classes.openingCard}>
+              <div>
+                <Text className={classes.sectionHeading}>Starting Balance &amp; Start Date</Text>
+                <Text size="xs" c="dimmed">
+                  Set your starting cash balance and the date tracking begins for this account.
+                </Text>
+              </div>
 
-              <form.Field
-                name="openingEffectiveAt"
-                validators={{
-                  onChange: ({ value }) => {
-                    if (!value) return 'Effective date is required.';
-                    if (new Date(value).getTime() > Date.now()) {
-                      return 'Opening effective date cannot be in the future.';
+              <div className={classes.fieldGrid}>
+                <form.Field
+                  name="openingAmount"
+                  validators={{
+                    onChange: ({ value }) => {
+                      const trimmed = value.trim();
+                      if (!trimmed) return 'Opening balance amount is required.';
+                      if (!PLAIN_DECIMAL_REGEX.test(trimmed)) {
+                        return 'Must be an exact decimal amount (e.g. 0.00, 1000.00).';
+                      }
+                      return undefined;
                     }
-                    return undefined;
-                  }
-                }}>
-                {(field) => (
-                  <TextInput
-                    label="Opening Effective Date"
-                    type="datetime-local"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.currentTarget.value)}
-                    onBlur={field.handleBlur}
-                    error={field.state.meta.isTouched ? field.state.meta.errors[0] : undefined}
-                    max={defaultEffectiveAt}
-                    required
-                  />
-                )}
-              </form.Field>
+                  }}>
+                  {(field) => (
+                    <TextInput
+                      label="Starting Balance"
+                      placeholder="0.00"
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.currentTarget.value)}
+                      onBlur={field.handleBlur}
+                      error={field.state.meta.isTouched ? field.state.meta.errors[0] : undefined}
+                      leftSection={<CurrencyCircleDollarIcon size={18} />}
+                      rightSection={
+                        <Badge variant="light" color="teal" size="sm" mr={6}>
+                          {currentCurrency}
+                        </Badge>
+                      }
+                      required
+                    />
+                  )}
+                </form.Field>
+
+                <div>
+                  <form.Field
+                    name="openingEffectiveAt"
+                    validators={{
+                      onChange: ({ value }) => {
+                        if (!value) return 'Effective date is required.';
+                        if (new Date(value).getTime() > Date.now()) {
+                          return 'Opening effective date cannot be in the future.';
+                        }
+                        return undefined;
+                      }
+                    }}>
+                    {(field) => (
+                      <div>
+                        <TextInput
+                          label="Start Date &amp; Time"
+                          type="datetime-local"
+                          value={field.state.value}
+                          onChange={(e) => field.handleChange(e.currentTarget.value)}
+                          onBlur={field.handleBlur}
+                          error={field.state.meta.isTouched ? field.state.meta.errors[0] : undefined}
+                          leftSection={<CalendarBlankIcon size={18} />}
+                          required
+                        />
+                        <div className={classes.presetContainer}>
+                          <Text size="xs" c="dimmed" className={classes.presetLabel}>
+                            Presets:
+                          </Text>
+                          <div className={classes.presetGroup}>
+                            <Button
+                              type="button"
+                              variant="default"
+                              className={classes.presetBtn}
+                              onClick={() => field.handleChange(toDatetimeLocal(new Date()))}>
+                              Now
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="default"
+                              className={classes.presetBtn}
+                              onClick={() => {
+                                const d = new Date();
+                                d.setHours(0, 0, 0, 0);
+                                field.handleChange(toDatetimeLocal(d));
+                              }}>
+                              Today
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="default"
+                              className={classes.presetBtn}
+                              onClick={() => {
+                                const d = new Date();
+                                d.setDate(1);
+                                d.setHours(0, 0, 0, 0);
+                                field.handleChange(toDatetimeLocal(d));
+                              }}>
+                              This Month
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="default"
+                              className={classes.presetBtn}
+                              onClick={() => {
+                                const d = new Date(new Date().getFullYear(), 0, 1, 0, 0, 0);
+                                field.handleChange(toDatetimeLocal(d));
+                              }}>
+                              This Year
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </form.Field>
+                </div>
+              </div>
             </div>
           )}
 
@@ -437,10 +509,15 @@ export function CreateAccountModal({ opened, onClose }: CreateAccountModalProps)
 
           {/* Form Actions */}
           <div className={classes.actions}>
-            <Button variant="default" onClick={handleClose} disabled={createMutation.isPending}>
+            <Button variant="default" onClick={handleClose} disabled={createMutation.isPending} className={classes.actionBtn}>
               Cancel
             </Button>
-            <Button type="submit" color="brand" loading={createMutation.isPending} leftSection={<PlusIcon size={18} weight="bold" />}>
+            <Button
+              type="submit"
+              color="brand"
+              loading={createMutation.isPending}
+              className={classes.actionBtn}
+              leftSection={<PlusIcon size={18} weight="bold" />}>
               Create Account
             </Button>
           </div>

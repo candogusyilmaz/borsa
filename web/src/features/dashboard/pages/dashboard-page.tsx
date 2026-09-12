@@ -140,8 +140,8 @@ export function DashboardPage({ user }: DashboardPageProps) {
 
   function handleExecuteDeposit() {
     notifications.show({
-      title: 'Deposit Initiated',
-      message: 'Funds transfer successfully submitted to clearing house.',
+      title: 'Deposit Successful',
+      message: 'Your funds have been deposited and are now available.',
       color: 'teal',
       icon: <CheckCircleIcon size={18} weight="bold" />
     });
@@ -337,7 +337,7 @@ export function DashboardPage({ user }: DashboardPageProps) {
         <div className={classes.foundationLeft}>
           <CheckCircleIcon size={20} weight="bold" color="var(--mantine-color-teal-6)" />
           <div className={classes.foundationText}>
-            <strong>Foundation Operational:</strong> Double-entry ledger reconciled, sub-millisecond execution engine active.
+            <strong>System Status:</strong> All systems running normally. Balances and market data are up to date.
           </div>
         </div>
         <Badge variant="outline" color="gray" size="xs">
@@ -346,7 +346,7 @@ export function DashboardPage({ user }: DashboardPageProps) {
       </footer>
 
       {/* Quick Trade Modal */}
-      <Modal opened={buyOpened} onClose={closeBuy} title="Execute Market Order" centered radius="md">
+      <Modal opened={buyOpened} onClose={closeBuy} title="Quick Trade" centered radius="md">
         <Stack gap="md">
           <Select
             label="Symbol"
@@ -375,29 +375,29 @@ export function DashboardPage({ user }: DashboardPageProps) {
               </Text>
             </Group>
             <Text size="xs" c="dimmed" mt={4}>
-              Includes simulated zero-commission exchange fee and instant settlement.
+              Zero commission fee and instant execution.
             </Text>
           </Card>
 
-          <Group justify="flex-end" mt="md">
+          <div className={classes.modalActions}>
             <Button variant="default" onClick={closeBuy}>
               Cancel
             </Button>
             <Button color="brand" onClick={handleExecuteBuy}>
-              Confirm Purchase
+              Buy Shares
             </Button>
-          </Group>
+          </div>
         </Stack>
       </Modal>
 
       {/* Deposit Funds Modal */}
-      <Modal opened={depositOpened} onClose={closeDeposit} title="Deposit Account Funds" centered radius="md">
+      <Modal opened={depositOpened} onClose={closeDeposit} title="Deposit Funds" centered radius="md">
         <Stack gap="md">
           <Select
             label="Payment Method"
             defaultValue="ach"
             data={[
-              { value: 'ach', label: 'ACH Bank Wire (0% Fee, Instant Settlement)' },
+              { value: 'ach', label: 'ACH Bank Transfer (Instant, No Fee)' },
               { value: 'card', label: 'Debit Card (Instant Deposit)' }
             ]}
           />
@@ -405,25 +405,25 @@ export function DashboardPage({ user }: DashboardPageProps) {
           <NumberInput label="Deposit Amount (USD)" defaultValue={1000} min={10} max={100000} prefix="$" />
 
           <SimpleGrid cols={3} spacing="xs">
-            <Button variant="default" size="xs" onClick={handleExecuteDeposit}>
+            <Button variant="default" className={classes.depositPresetBtn} onClick={handleExecuteDeposit}>
               +$500
             </Button>
-            <Button variant="default" size="xs" onClick={handleExecuteDeposit}>
+            <Button variant="default" className={classes.depositPresetBtn} onClick={handleExecuteDeposit}>
               +$1,000
             </Button>
-            <Button variant="default" size="xs" onClick={handleExecuteDeposit}>
+            <Button variant="default" className={classes.depositPresetBtn} onClick={handleExecuteDeposit}>
               +$5,000
             </Button>
           </SimpleGrid>
 
-          <Group justify="flex-end" mt="md">
+          <div className={classes.modalActions}>
             <Button variant="default" onClick={closeDeposit}>
               Cancel
             </Button>
             <Button color="brand" onClick={handleExecuteDeposit}>
-              Initiate Transfer
+              Deposit Funds
             </Button>
-          </Group>
+          </div>
         </Stack>
       </Modal>
     </div>

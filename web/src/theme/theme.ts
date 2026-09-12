@@ -1,4 +1,18 @@
-import { ActionIcon, Button, Card, createTheme, Input, type MantineColorsTuple, Paper } from '@mantine/core';
+import {
+  ActionIcon,
+  Button,
+  Card,
+  createTheme,
+  Input,
+  type MantineColorsTuple,
+  MultiSelect,
+  NumberInput,
+  Paper,
+  PasswordInput,
+  Select,
+  Textarea,
+  TextInput
+} from '@mantine/core';
 
 const brand: MantineColorsTuple = [
   '#F3F2FF',
@@ -141,7 +155,61 @@ export const theme = createTheme({
       }
     }),
     InputWrapper: Input.Wrapper.extend({
-      defaultProps: {}
+      defaultProps: {
+        inputWrapperOrder: ['label', 'input', 'description', 'error']
+      }
+    }),
+    TextInput: TextInput.extend({
+      defaultProps: {
+        size: 'md',
+        radius: 'md',
+        inputWrapperOrder: ['label', 'input', 'description', 'error']
+      }
+    }),
+    Select: Select.extend({
+      defaultProps: {
+        size: 'md',
+        radius: 'md',
+        inputWrapperOrder: ['label', 'input', 'description', 'error'],
+        comboboxProps: {
+          withinPortal: true,
+          shadow: 'lg',
+          transitionProps: { transition: 'fade', duration: 120 }
+        }
+      }
+    }),
+    NumberInput: NumberInput.extend({
+      defaultProps: {
+        size: 'md',
+        radius: 'md',
+        inputWrapperOrder: ['label', 'input', 'description', 'error']
+      }
+    }),
+    PasswordInput: PasswordInput.extend({
+      defaultProps: {
+        size: 'md',
+        radius: 'md',
+        inputWrapperOrder: ['label', 'input', 'description', 'error']
+      }
+    }),
+    Textarea: Textarea.extend({
+      defaultProps: {
+        size: 'md',
+        radius: 'md',
+        inputWrapperOrder: ['label', 'input', 'description', 'error']
+      }
+    }),
+    MultiSelect: MultiSelect.extend({
+      defaultProps: {
+        size: 'md',
+        radius: 'md',
+        inputWrapperOrder: ['label', 'input', 'description', 'error'],
+        comboboxProps: {
+          withinPortal: true,
+          shadow: 'lg',
+          transitionProps: { transition: 'fade', duration: 120 }
+        }
+      }
     }),
     Card: Card.extend({
       defaultProps: {

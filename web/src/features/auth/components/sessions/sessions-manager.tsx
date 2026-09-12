@@ -602,7 +602,7 @@ export function SessionsManager() {
             <Text size="xs" c="dimmed">
               {showHistory
                 ? `Showing ${visibleHistorySessions.length} of ${historySessions.length} inactive sessions`
-                : `View ${historySessions.length} revoked, expired, or compromised session(s)`}
+                : `View ${historySessions.length} past or signed-out session(s)`}
             </Text>
           </div>
           <Switch

@@ -37,9 +37,25 @@
 
 .actionsBar {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: var(--mantine-spacing-xs);
-  flex-wrap: wrap;
+  width: 100%;
+}
+
+.actionsBar > * {
+  width: 100%;
+}
+
+@media (min-width: 30em) {
+  .actionsBar {
+    flex-direction: row;
+    align-items: center;
+    width: auto;
+  }
+
+  .actionsBar > * {
+    width: auto;
+  }
 }
 
 /* Overview stat cards */
@@ -56,7 +72,7 @@
 }
 
 .statCard {
-  background-color: var(--app-surface-secondary);
+  background-color: var(--mantine-color-default);
   border: 1px solid var(--app-border-subtle);
   border-radius: var(--mantine-radius-md);
   padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
@@ -113,8 +129,8 @@
 /* Distinct highlight for current session */
 .sessionCardCurrent {
   border: 1.5px solid var(--mantine-primary-color-filled);
-  background-color: color-mix(in srgb, var(--mantine-primary-color-light) 25%, var(--mantine-color-default));
-  box-shadow: 0 4px 16px rgb(98 91 246 / 0.12);
+  background-color: var(--app-surface-selected);
+  box-shadow: var(--mantine-shadow-sm);
   position: relative;
 }
 
@@ -247,12 +263,28 @@
 /* Card bottom actions: Revoke / Details */
 .cardActions {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
   gap: var(--mantine-spacing-sm);
-  flex-wrap: wrap;
   padding-top: var(--mantine-spacing-xs);
   border-top: 1px solid var(--app-border-subtle);
+  width: 100%;
+}
+
+.cardActions > * {
+  width: 100%;
+}
+
+@media (min-width: 30em) {
+  .cardActions {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: auto;
+  }
+
+  .cardActions > * {
+    width: auto;
+  }
 }
 
 .technicalToggle {

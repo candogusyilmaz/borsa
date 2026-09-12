@@ -30,3 +30,10 @@ export interface UpdateAccountPolicyFormValues {
   policy: NegativeBalancePolicy;
   authorizedLimit: string;
 }
+
+export type OpeningCorrectionRequest = components['schemas']['OpeningCorrectionRequest'];
+
+export interface OpeningCorrectionFormValues {
+  amount: string;
+  correctionReason: string;
+}

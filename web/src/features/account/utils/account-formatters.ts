@@ -44,17 +44,17 @@ export function getAccountKindLabel(kind: AccountKind) {
 export function getAccountKindDescription(kind: AccountKind) {
   switch (kind) {
     case 'CASH_CURRENT':
-      return 'Operating cash account for deposits, withdrawals, and transfers. Supports overdraft limit.';
+      return 'Everyday checking account for deposits, withdrawals, and transfers.';
     case 'CASH_SAVINGS':
-      return 'Reserve funds account for yield and savings allocations.';
+      return 'Savings account to hold reserve funds and earn interest.';
     case 'CASH_WALLET':
-      return 'Physical cash pocket or digital liquidity wallet.';
+      return 'Physical cash in hand or digital petty cash wallet.';
     case 'BROKERAGE':
-      return 'Securities trading account for stocks, funds, and ETFs. Supports full ledger or holdings-only mode.';
+      return 'Investment account for buying and selling stocks, ETFs, and funds.';
     case 'CREDIT_CARD':
-      return 'Revolving credit liability account.';
+      return 'Credit card account to track purchases, credit line, and repayments.';
     case 'LOAN':
-      return 'Fixed-term or margin loan liability account.';
+      return 'Loan or debt account to track borrowed money and repayments.';
     default:
       return '';
   }
@@ -93,9 +93,9 @@ export function getTrackingModeLabel(mode: TrackingMode) {
 export function getTrackingModeDescription(mode: TrackingMode) {
   switch (mode) {
     case 'FULL_LEDGER':
-      return 'Strict double-entry bookkeeping with opening state, transactions, and cash pocket invariants.';
+      return 'Full accounting that tracks all cash deposits, withdrawals, and balances.';
     case 'HOLDINGS_ONLY':
-      return 'Position-only tracking for stock quantities without cash ledger balancing.';
+      return 'Simple portfolio tracking for stock quantities without cash bookkeeping.';
     default:
       return '';
   }
@@ -125,13 +125,13 @@ export function getPolicyDescription(policy?: string) {
   if (!policy) return 'No policy enforced on this account.';
   switch (policy) {
     case 'HARD_FLOOR':
-      return 'Outflows that would cause balance to drop below zero are strictly rejected.';
+      return 'Strict zero minimum. Transactions that would overdraw are blocked.';
     case 'SOFT_FLOOR':
-      return 'Allows negative balance with breach notification warnings.';
+      return 'Allows overdraft with a warning alert when balance drops below zero.';
     case 'TRACK_REALITY':
-      return 'Accepts all transactions as reality without blocking on deficits.';
+      return 'Unrestricted balance. Records all transactions without overdraft blocks.';
     case 'AUTHORIZED_LIMIT':
-      return 'Allows negative balance down to an explicit agreed overdraft limit.';
+      return 'Allows overdraft down to your pre-approved credit limit.';
     default:
       return '';
   }
@@ -188,6 +188,46 @@ export function formatDateTime(isoString?: string) {
     }).format(date);
   } catch {
     return isoString;
+  }
+}
+
+export const PLAIN_DECIMAL_REGEX = /^-?(?:0|[1-9]\d*)(?:\.\d+)?$/;
+
+export function toDatetimeLocal(date: Date = new Date(), includeSeconds = false): string {
+  if (Number.isNaN(date.getTime())) return '';
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+  if (includeSeconds) {
+    const seconds = pad(date.getSeconds());
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+  }
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+export function toRelativeTime(isoString?: string): string {
+  if (!isoString) return '';
+  try {
+    const timestamp = new Date(isoString).getTime();
+    if (Number.isNaN(timestamp)) return '';
+    const diffMs = Date.now() - timestamp;
+    const diffSec = Math.floor(diffMs / 1000);
+    if (diffSec < 60) return 'just now';
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffHours = Math.floor(diffMin / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays < 30) return `${diffDays}d ago`;
+    const diffMonths = Math.floor(diffDays / 30);
+    if (diffMonths < 12) return `${diffMonths}mo ago`;
+    const diffYears = Math.floor(diffDays / 365);
+    return `${diffYears}y ago`;
+  } catch {
+    return '';
   }
 }
 

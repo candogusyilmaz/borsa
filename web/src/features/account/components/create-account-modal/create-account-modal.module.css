@@ -20,21 +20,111 @@
 
 .actions {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column-reverse;
   gap: var(--mantine-spacing-sm);
   margin-top: var(--mantine-spacing-md);
   padding-top: var(--mantine-spacing-sm);
   border-top: 1px solid var(--app-border-subtle);
+  width: 100%;
+}
+
+.actions > * {
+  width: 100%;
+}
+
+@media (min-width: 30em) {
+  .actions {
+    flex-direction: row;
+    justify-content: flex-end;
+    width: auto;
+  }
+
+  .actions > * {
+    width: auto;
+  }
 }
 
 .fieldGrid {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--mantine-spacing-md);
+  align-items: start;
 }
 
 @media (min-width: 36em) {
   .fieldGrid {
     grid-template-columns: 1fr 1fr;
+    align-items: start;
   }
+}
+
+.openingCard {
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--mantine-radius-md);
+  padding: var(--mantine-spacing-md);
+  background: var(--mantine-color-default);
+  box-shadow: var(--mantine-shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-sm);
+}
+
+.sectionHeading {
+  font-size: var(--mantine-font-size-sm);
+  font-weight: var(--mantine-font-weight-bold);
+  color: var(--mantine-color-text);
+}
+
+.presetContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: var(--mantine-spacing-xs);
+}
+
+.presetLabel {
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+  font-weight: 500;
+}
+
+.presetGroup {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--mantine-spacing-xs);
+}
+
+@media (min-width: 32em) {
+  .presetContainer {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--mantine-spacing-sm);
+  }
+
+  .presetGroup {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+}
+
+.presetBtn {
+  font-size: var(--mantine-font-size-xs);
+  min-height: 44px;
+  padding: 0 var(--mantine-spacing-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+@media (min-width: 32em) {
+  .presetBtn {
+    width: auto;
+  }
+}
+
+.actionBtn {
+  min-height: 44px;
 }

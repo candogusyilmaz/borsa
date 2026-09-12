@@ -353,9 +353,9 @@ export function AccountSettingsModal({ account, opened, onClose, onRefetchAccoun
                       field.handleChange(val as NegativeBalancePolicy);
                     }}
                     data={[
-                      { value: 'HARD_FLOOR', label: 'Hard Floor (Strict Zero Min)' },
-                      { value: 'SOFT_FLOOR', label: 'Soft Floor (Warning Notification)' },
-                      { value: 'TRACK_REALITY', label: 'Track Reality (Unrestricted)' },
+                      { value: 'HARD_FLOOR', label: 'Hard Floor (No Overdraft)' },
+                      { value: 'SOFT_FLOOR', label: 'Soft Floor (Warn on Overdraft)' },
+                      { value: 'TRACK_REALITY', label: 'Track Reality (No Limits)' },
                       {
                         value: 'AUTHORIZED_LIMIT',
                         label: 'Authorized Overdraft Limit',

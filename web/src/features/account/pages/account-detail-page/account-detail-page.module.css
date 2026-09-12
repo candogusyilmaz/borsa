@@ -54,9 +54,33 @@
 
 .actionsBar {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: var(--mantine-spacing-sm);
-  flex-wrap: wrap;
+  width: 100%;
+}
+
+.actionsBar > * {
+  width: 100%;
+}
+
+@media (min-width: 36em) {
+  .actionsBar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 48em) {
+  .actionsBar {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: auto;
+  }
+
+  .actionsBar > * {
+    width: auto;
+  }
 }
 
 .card {
@@ -72,9 +96,18 @@
 
 .cardHeader {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: flex-start;
   gap: var(--mantine-spacing-sm);
+  width: 100%;
+}
+
+@media (min-width: 36em) {
+  .cardHeader {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
 }
 
 .cardTitle {
@@ -177,4 +210,130 @@
   font-size: var(--mantine-font-size-sm);
   font-weight: var(--mantine-font-weight-medium);
   color: var(--mantine-color-text);
+}
+
+.asOfToolbar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-md);
+  padding: var(--mantine-spacing-md);
+  border-radius: var(--mantine-radius-md);
+  background: var(--mantine-color-default);
+  border: 1px solid var(--app-border-subtle);
+  box-shadow: var(--mantine-shadow-sm);
+}
+
+@media (min-width: 60em) {
+  .asOfToolbar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.asOfControls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-xs);
+  width: 100%;
+}
+
+@media (min-width: 30em) {
+  .asOfControls {
+    flex-direction: row;
+    align-items: center;
+    width: auto;
+  }
+}
+
+.asOfLabelGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--mantine-spacing-xs);
+  white-space: nowrap;
+}
+
+.asOfInput {
+  width: 100%;
+  min-height: 44px;
+}
+
+@media (min-width: 30em) {
+  .asOfInput {
+    width: 240px;
+  }
+}
+
+.asOfPresetContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-xs);
+  width: 100%;
+}
+
+@media (min-width: 48em) {
+  .asOfPresetContainer {
+    flex-direction: row;
+    align-items: center;
+    width: auto;
+  }
+}
+
+.asOfPresetHeading {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.asOfPresetGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--mantine-spacing-xs);
+  width: 100%;
+}
+
+@media (min-width: 36em) {
+  .asOfPresetGrid {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    width: auto;
+  }
+}
+
+.asOfPresetBtn {
+  font-size: var(--mantine-font-size-xs);
+  min-height: 44px;
+  padding: 0 var(--mantine-spacing-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+@media (min-width: 36em) {
+  .asOfPresetBtn {
+    width: auto;
+  }
+}
+
+.asOfResetBtn {
+  font-size: var(--mantine-font-size-xs);
+  min-height: 44px;
+  padding: 0 var(--mantine-spacing-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  grid-column: 1 / -1;
+}
+
+@media (min-width: 36em) {
+  .asOfResetBtn {
+    width: auto;
+    grid-column: auto;
+  }
+}
+
+.actionBtn {
+  min-height: 44px;
 }

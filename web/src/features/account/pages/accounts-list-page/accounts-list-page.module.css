@@ -33,15 +33,37 @@
 
 .actionsBar {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: var(--mantine-spacing-sm);
-  flex-wrap: wrap;
+  width: 100%;
+}
+
+.actionsBar > * {
+  width: 100%;
+}
+
+@media (min-width: 30em) {
+  .actionsBar {
+    flex-direction: row;
+    align-items: center;
+    width: auto;
+  }
+
+  .actionsBar > * {
+    width: auto;
+  }
 }
 
 .statGrid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr;
   gap: var(--mantine-spacing-md);
+}
+
+@media (min-width: 30em) {
+  .statGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (min-width: 48em) {
@@ -108,18 +130,18 @@
   display: flex;
   flex-direction: column;
   gap: var(--mantine-spacing-sm);
-  flex: 1;
+  width: 100%;
 }
 
 .searchFilter {
-  flex: 1;
+  width: 100%;
 }
 
 .selectFilter {
-  flex: 1;
+  width: 100%;
 }
 
-@media (min-width: 36em) {
+@media (min-width: 56em) {
   .filterControls {
     flex-direction: row;
     align-items: center;

@@ -166,26 +166,66 @@ body {
  */
 
 /* ---------------------------------------------------------- */
-/* FLOATING SURFACES                                          */
+/* FLOATING SURFACES & DROPDOWNS                              */
 /* ---------------------------------------------------------- */
 
 .mantine-Menu-dropdown,
-.mantine-Popover-dropdown {
+.mantine-Popover-dropdown,
+.mantine-Combobox-dropdown,
+.mantine-Select-dropdown,
+.mantine-MultiSelect-dropdown {
   background: var(--app-surface-elevated);
   border: 1px solid var(--app-border-subtle);
   box-shadow: var(--mantine-shadow-lg);
+  max-width: min(calc(100vw - 2rem), 36rem);
 }
 
-.mantine-Menu-item {
+.mantine-Menu-item,
+.mantine-Combobox-option,
+.mantine-Select-option {
   border-radius: var(--mantine-radius-sm);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition:
     background-color var(--app-motion-fast) var(--app-ease),
     color var(--app-motion-fast) var(--app-ease);
 }
 
+.mantine-Menu-itemLabel,
+.mantine-Combobox-option > *,
+.mantine-Select-option > * {
+  min-width: 0;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mantine-Combobox-option > span,
+.mantine-Select-option > span {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .mantine-Menu-item:hover,
-.mantine-Menu-item[data-hovered] {
+.mantine-Menu-item[data-hovered],
+.mantine-Combobox-option:hover,
+.mantine-Combobox-option[data-hovered] {
   background: var(--mantine-color-default-hover);
+}
+
+.mantine-Combobox-option[data-checked] {
+  background: var(--mantine-primary-color-light);
+  color: var(--mantine-primary-color-filled);
+  font-weight: var(--mantine-font-weight-medium);
 }
 
 /* ---------------------------------------------------------- */
