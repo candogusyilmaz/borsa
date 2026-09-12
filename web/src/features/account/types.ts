@@ -59,3 +59,16 @@ export interface RecordCashActivityFormValues {
 export interface ReverseActivityFormValues {
   correctionReason: string;
 }
+
+export type TransferPreviewRequest = components['schemas']['TransferPreviewRequest'];
+export type TransferPreviewResponse = components['schemas']['TransferPreviewResponse'];
+export type TransferRequest = components['schemas']['TransferRequest'];
+
+export interface TransferFormValues {
+  sourceAccountId: string;
+  destinationAccountId: string;
+  amount: string;
+  recordingMode: RecordingMode;
+  effectiveAt: string;
+  confirmPolicyBreach: boolean;
+}

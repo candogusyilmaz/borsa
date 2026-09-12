@@ -1,0 +1,292 @@
+.modalBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-md);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-md);
+}
+
+.accountSelectRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-xs);
+  position: relative;
+}
+
+.swapBtnWrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-block: calc(var(--mantine-spacing-xs) * -0.5);
+  z-index: 2;
+}
+
+.swapBtn {
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: var(--mantine-radius-xl);
+  border: 1px solid var(--app-border-subtle);
+  background: var(--mantine-color-default);
+  box-shadow: var(--mantine-shadow-sm);
+  transition: transform var(--app-motion-fast) var(--app-ease), box-shadow var(--app-motion-fast) var(--app-ease);
+}
+
+.swapBtn:hover:not(:disabled) {
+  transform: rotate(180deg);
+  box-shadow: var(--mantine-shadow-md);
+}
+
+.selectOption {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.segmentedWrap {
+  margin-bottom: var(--mantine-spacing-xs);
+}
+
+.segmentedControl {
+  min-height: 44px;
+}
+
+.segmentedControl :global(.mantine-SegmentedControl-control) {
+  min-height: 44px;
+}
+
+.segmentedControl :global(.mantine-SegmentedControl-label) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: var(--mantine-font-weight-bold);
+  min-height: 44px;
+}
+
+.balanceBox {
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--mantine-radius-md);
+  padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
+  background: var(--app-surface-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.balanceLabel {
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+}
+
+.balanceValue {
+  font-size: var(--mantine-font-size-sm);
+  font-weight: var(--mantine-font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  color: var(--mantine-color-text);
+}
+
+.previewGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--mantine-spacing-sm);
+  margin-top: var(--mantine-spacing-xs);
+}
+
+@media (min-width: 32em) {
+  .previewGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.previewCard {
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--mantine-radius-md);
+  padding: var(--mantine-spacing-md);
+  background: var(--app-surface-secondary);
+  box-shadow: var(--mantine-shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-xs);
+}
+
+.previewCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mantine-spacing-xs);
+}
+
+.previewAccountName {
+  font-size: var(--mantine-font-size-sm);
+  font-weight: var(--mantine-font-weight-bold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.balanceComparison {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.balanceComparisonRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--mantine-font-size-xs);
+}
+
+.balanceComparisonLabel {
+  color: var(--mantine-color-dimmed);
+}
+
+.balanceComparisonValue {
+  font-weight: var(--mantine-font-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.balanceDeltaNegative {
+  color: var(--mantine-color-orange-filled);
+}
+
+.balanceDeltaPositive {
+  color: var(--mantine-color-teal-filled);
+}
+
+.transferSummaryCard {
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--mantine-radius-md);
+  padding: var(--mantine-spacing-md);
+  background: var(--mantine-color-default);
+  box-shadow: var(--mantine-shadow-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--mantine-spacing-xs);
+}
+
+.summaryAmount {
+  font-size: var(--mantine-font-size-xl);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--mantine-primary-color-filled);
+}
+
+.summaryRoute {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mantine-spacing-sm);
+  font-size: var(--mantine-font-size-sm);
+  color: var(--mantine-color-text);
+  font-weight: 600;
+  flex-wrap: wrap;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--mantine-spacing-sm);
+  margin-top: var(--mantine-spacing-md);
+  padding-top: var(--mantine-spacing-sm);
+  border-top: 1px solid var(--app-border-subtle);
+  width: 100%;
+}
+
+.actions > * {
+  width: 100%;
+}
+
+@media (min-width: 36em) {
+  .actions {
+    flex-direction: row;
+    justify-content: flex-end;
+    width: auto;
+  }
+
+  .actions > * {
+    width: auto;
+  }
+}
+
+.actionBtn {
+  min-height: 44px;
+}
+
+.successScreen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--mantine-spacing-md);
+  padding-block: var(--mantine-spacing-md);
+}
+
+.successIconWrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--mantine-color-teal-light);
+  color: var(--mantine-color-teal-filled);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.successDetailsCard {
+  width: 100%;
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--mantine-radius-md);
+  padding: var(--mantine-spacing-md);
+  background: var(--app-surface-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-xs);
+  text-align: left;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--mantine-font-size-xs);
+}
+
+.detailLabel {
+  color: var(--mantine-color-dimmed);
+}
+
+.detailValue {
+  font-weight: var(--mantine-font-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.selectOptionText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.selectOptionTitle {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.selectOptionSub {
+  font-size: var(--mantine-font-size-xs);
+  color: var(--mantine-color-dimmed);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

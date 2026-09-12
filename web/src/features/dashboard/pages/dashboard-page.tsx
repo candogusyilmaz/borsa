@@ -8,6 +8,7 @@ import {
   SegmentedControl,
   Select,
   SimpleGrid,
+  Skeleton,
   Stack,
   Text,
   Title,
@@ -16,6 +17,9 @@ import {
 import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import {
+  ArrowCounterClockwiseIcon,
+  ArrowDownLeftIcon,
+  ArrowsLeftRightIcon,
   ArrowUpRightIcon,
   BankIcon,
   CaretRightIcon,
@@ -28,6 +32,15 @@ import {
 } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
+import { $api } from '@/api/client';
+import {
+  ActivityDetailModal,
+  formatCurrency,
+  formatDateTime,
+  getActivityTypeLabel,
+  TransferModal,
+  toRelativeTime
+} from '@/features/account';
 import { siteConfig } from '@/shared/config/site';
 import type { User } from '@/shared/types/auth';
 import classes from './dashboard-page.module.css';
@@ -116,6 +129,22 @@ export function DashboardPage({ user }: DashboardPageProps) {
   // Interactive Modals
   const [buyOpened, { open: openBuy, close: closeBuy }] = useDisclosure(false);
   const [depositOpened, { open: openDeposit, close: closeDeposit }] = useDisclosure(false);
+  const [transferOpened, { open: openTransfer, close: closeTransfer }] = useDisclosure(false);
+  const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
+  const [detailOpened, { open: openDetail, close: closeDetail }] = useDisclosure(false);
+
+  // Authoritative recent activities query
+  const activitiesQuery = $api.useQuery('get', '/api/v1/activities', {
+    params: {
+      query: {
+        pageable: {
+          page: 0,
+          size: 5,
+          sort: ['recordedAt,desc']
+        }
+      }
+    }
+  });
 
   // Buy Modal State
   const [selectedTicker, setSelectedTicker] = useState<string>('NVDA');
@@ -235,14 +264,9 @@ export function DashboardPage({ user }: DashboardPageProps) {
           variant="default"
           size="md"
           className={classes.actionBtn}
-          leftSection={<ArrowUpRightIcon size={18} weight="bold" />}
-          onClick={() => {
-            notifications.show({
-              title: 'Transfer Funds',
-              message: 'ACH & Wire transfer simulator active. Balances update immediately on deposit.',
-              color: 'blue'
-            });
-          }}>
+          leftSection={<ArrowsLeftRightIcon size={18} weight="bold" />}
+          onClick={openTransfer}
+          aria-label="Transfer funds between accounts">
           Transfer
         </Button>
 
@@ -308,26 +332,81 @@ export function DashboardPage({ user }: DashboardPageProps) {
           </div>
 
           <div className={classes.activityList}>
-            {RECENT_ACTIVITIES.map((act) => (
-              <div key={act.id} className={classes.activityRow}>
-                <div className={classes.activityIcon}>
-                  {act.type === 'BUY' ? (
-                    <TrendUpIcon size={16} weight="bold" />
-                  ) : act.type === 'DIVIDEND' ? (
-                    <SparkleIcon size={16} weight="bold" />
-                  ) : (
-                    <ReceiptIcon size={16} weight="bold" />
-                  )}
-                </div>
+            {activitiesQuery.isLoading ? (
+              <Stack gap="xs">
+                <Skeleton height={48} radius="md" />
+                <Skeleton height={48} radius="md" />
+                <Skeleton height={48} radius="md" />
+              </Stack>
+            ) : activitiesQuery.data?.items && activitiesQuery.data.items.length > 0 ? (
+              activitiesQuery.data.items.map((act) => {
+                const isTransfer = act.activityType === 'OWNED_TRANSFER';
+                const isDeposit = act.activityType === 'CASH_DEPOSIT';
+                const isWithdrawal = act.activityType === 'CASH_WITHDRAWAL';
+                const isReversal = act.activityType === 'REVERSAL';
 
-                <div className={classes.activityDetails}>
-                  <div className={classes.activityTitle}>{act.title}</div>
-                  <div className={classes.activityDate}>{act.date}</div>
-                </div>
+                const primaryPosting = act.postings[0];
+                const rawAmount = primaryPosting?.amount || '0.00';
+                const absAmount = rawAmount.startsWith('-') ? rawAmount.slice(1) : rawAmount;
+                const currency = primaryPosting?.currency || 'USD';
 
-                <div className={act.isPositive ? classes.activityAmountPositive : classes.activityAmountDefault}>{act.amount}</div>
-              </div>
-            ))}
+                return (
+                  <UnstyledButton
+                    key={act.id}
+                    className={classes.activityRow}
+                    onClick={() => {
+                      setSelectedActivityId(act.id);
+                      openDetail();
+                    }}
+                    aria-label={`View details for ${getActivityTypeLabel(act.activityType)}`}>
+                    <div className={classes.activityIcon}>
+                      {isTransfer ? (
+                        <ArrowsLeftRightIcon size={18} weight="bold" />
+                      ) : isDeposit ? (
+                        <ArrowDownLeftIcon size={18} weight="bold" />
+                      ) : isWithdrawal ? (
+                        <ArrowUpRightIcon size={18} weight="bold" />
+                      ) : isReversal ? (
+                        <ArrowCounterClockwiseIcon size={18} weight="bold" />
+                      ) : (
+                        <ReceiptIcon size={18} weight="bold" />
+                      )}
+                    </div>
+
+                    <div className={classes.activityDetails}>
+                      <div className={classes.activityTitle}>{getActivityTypeLabel(act.activityType)}</div>
+                      <div className={classes.activityDate}>{toRelativeTime(act.recordedAt) || formatDateTime(act.recordedAt)}</div>
+                    </div>
+
+                    <div className={isDeposit ? classes.activityAmountPositive : classes.activityAmountDefault}>
+                      {isDeposit ? '+' : isWithdrawal ? '-' : ''}
+                      {formatCurrency(absAmount, currency)}
+                    </div>
+                  </UnstyledButton>
+                );
+              })
+            ) : (
+              RECENT_ACTIVITIES.map((act) => (
+                <div key={act.id} className={classes.activityRow}>
+                  <div className={classes.activityIcon}>
+                    {act.type === 'BUY' ? (
+                      <TrendUpIcon size={16} weight="bold" />
+                    ) : act.type === 'DIVIDEND' ? (
+                      <SparkleIcon size={16} weight="bold" />
+                    ) : (
+                      <ReceiptIcon size={16} weight="bold" />
+                    )}
+                  </div>
+
+                  <div className={classes.activityDetails}>
+                    <div className={classes.activityTitle}>{act.title}</div>
+                    <div className={classes.activityDate}>{act.date}</div>
+                  </div>
+
+                  <div className={act.isPositive ? classes.activityAmountPositive : classes.activityAmountDefault}>{act.amount}</div>
+                </div>
+              ))
+            )}
           </div>
         </section>
       </div>
@@ -426,6 +505,17 @@ export function DashboardPage({ user }: DashboardPageProps) {
           </div>
         </Stack>
       </Modal>
+
+      {/* Internal Transfer Modal */}
+      <TransferModal opened={transferOpened} onClose={closeTransfer} onSuccess={() => activitiesQuery.refetch()} />
+
+      {/* Activity Detail Modal */}
+      <ActivityDetailModal
+        activityId={selectedActivityId}
+        opened={detailOpened}
+        onClose={closeDetail}
+        onActivityUpdated={() => activitiesQuery.refetch()}
+      />
     </div>
   );
 }

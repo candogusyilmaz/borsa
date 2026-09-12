@@ -5,6 +5,7 @@ import {
   ArrowClockwiseIcon,
   ArrowDownLeftIcon,
   ArrowLeftIcon,
+  ArrowsLeftRightIcon,
   ArrowUpRightIcon,
   CalendarBlankIcon,
   ClockCounterClockwiseIcon,
@@ -23,6 +24,7 @@ import { CashPocketCard } from '../../components/cash-pocket-card/cash-pocket-ca
 import { OpeningCorrectionModal } from '../../components/opening-correction-modal/opening-correction-modal';
 import { OpeningStateCard } from '../../components/opening-state-card/opening-state-card';
 import { RecordCashActivityModal } from '../../components/record-cash-activity-modal/record-cash-activity-modal';
+import { TransferModal } from '../../components/transfer-modal/transfer-modal';
 import {
   formatCurrency,
   formatDateTime,
@@ -49,6 +51,7 @@ export function AccountDetailPage({ accountId }: AccountDetailPageProps) {
   const [openingCorrectionOpened, { open: openOpeningCorrection, close: closeOpeningCorrection }] = useDisclosure(false);
   const [depositOpened, { open: openDeposit, close: closeDeposit }] = useDisclosure(false);
   const [withdrawOpened, { open: openWithdraw, close: closeWithdraw }] = useDisclosure(false);
+  const [transferOpened, { open: openTransfer, close: closeTransfer }] = useDisclosure(false);
 
   // Historical effective date state for balance queries
   const [selectedAsOf, setSelectedAsOf] = useState<string | null>(null);
@@ -210,6 +213,16 @@ export function AccountDetailPage({ accountId }: AccountDetailPageProps) {
                 onClick={openWithdraw}
                 aria-label="Withdraw cash">
                 Withdraw
+              </Button>
+
+              <Button
+                color="blue"
+                variant="light"
+                size="md"
+                leftSection={<ArrowsLeftRightIcon size={18} weight="bold" />}
+                onClick={openTransfer}
+                aria-label="Transfer cash">
+                Transfer
               </Button>
             </>
           )}
@@ -517,6 +530,7 @@ export function AccountDetailPage({ accountId }: AccountDetailPageProps) {
         account={account}
         onOpenDeposit={openDeposit}
         onOpenWithdraw={openWithdraw}
+        onOpenTransfer={openTransfer}
         onActivityUpdated={handleRefetchAll}
       />
 
@@ -643,6 +657,16 @@ export function AccountDetailPage({ accountId }: AccountDetailPageProps) {
         opened={withdrawOpened}
         onClose={closeWithdraw}
         defaultType="CASH_WITHDRAWAL"
+        onSuccess={handleRefetchAll}
+      />
+
+      {/* Internal Transfer Modal */}
+      <TransferModal
+        key={`transfer-${account.id}`}
+        opened={transferOpened}
+        onClose={closeTransfer}
+        defaultSourceAccountId={account.id}
+        lockSourceAccount={true}
         onSuccess={handleRefetchAll}
       />
     </section>

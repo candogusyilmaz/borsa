@@ -3,6 +3,7 @@ import { useDisclosure } from '@mantine/hooks';
 import {
   ArchiveIcon,
   ArrowClockwiseIcon,
+  ArrowsLeftRightIcon,
   BankIcon,
   ChartLineUpIcon,
   MagnifyingGlassIcon,
@@ -15,10 +16,12 @@ import { $api } from '@/api/client';
 import { AccountCard } from '../../components/account-card/account-card';
 import { CreateAccountModal } from '../../components/create-account-modal/create-account-modal';
 import { CurrencyBalancesCard } from '../../components/currency-balances-card/currency-balances-card';
+import { TransferModal } from '../../components/transfer-modal/transfer-modal';
 import classes from './accounts-list-page.module.css';
 
 export function AccountsListPage() {
   const [createModalOpened, { open: openCreateModal, close: closeCreateModal }] = useDisclosure(false);
+  const [transferModalOpened, { open: openTransferModal, close: closeTransferModal }] = useDisclosure(false);
 
   // Filters state
   const [showArchived, setShowArchived] = useState(false);
@@ -92,6 +95,15 @@ export function AccountsListPage() {
         </div>
 
         <div className={classes.actionsBar}>
+          <Button
+            variant="default"
+            size="md"
+            leftSection={<ArrowsLeftRightIcon size={18} weight="bold" />}
+            onClick={openTransferModal}
+            aria-label="Transfer funds between accounts">
+            Transfer
+          </Button>
+
           <Button
             variant="default"
             size="md"
@@ -320,6 +332,9 @@ export function AccountsListPage() {
 
       {/* Account Creation Modal */}
       <CreateAccountModal opened={createModalOpened} onClose={closeCreateModal} />
+
+      {/* Internal Transfer Modal */}
+      <TransferModal opened={transferModalOpened} onClose={closeTransferModal} onSuccess={() => accountsQuery.refetch()} />
     </section>
   );
 }

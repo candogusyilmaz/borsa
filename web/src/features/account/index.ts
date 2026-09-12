@@ -10,6 +10,7 @@ export { OpeningCorrectionModal } from './components/opening-correction-modal/op
 export { OpeningStateCard } from './components/opening-state-card/opening-state-card';
 export { RecordCashActivityModal } from './components/record-cash-activity-modal/record-cash-activity-modal';
 export { ReverseActivityModal } from './components/reverse-activity-modal/reverse-activity-modal';
+export { TransferModal } from './components/transfer-modal/transfer-modal';
 export { AccountDetailPage } from './pages/account-detail-page/account-detail-page';
 export { AccountsListPage } from './pages/accounts-list-page/accounts-list-page';
 export * from './types';

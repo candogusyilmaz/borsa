@@ -29,6 +29,7 @@ interface ActivityHistoryCardProps {
   account: FinancialAccount;
   onOpenDeposit: () => void;
   onOpenWithdraw: () => void;
+  onOpenTransfer?: () => void;
   onActivityUpdated?: () => void;
 }
 
@@ -51,7 +52,13 @@ function getActivityIcon(type: ActivityType) {
   }
 }
 
-export function ActivityHistoryCard({ account, onOpenDeposit, onOpenWithdraw, onActivityUpdated }: ActivityHistoryCardProps) {
+export function ActivityHistoryCard({
+  account,
+  onOpenDeposit,
+  onOpenWithdraw,
+  onOpenTransfer,
+  onActivityUpdated
+}: ActivityHistoryCardProps) {
   const [page, setPage] = useState(0);
   const [sortOption, setSortOption] = useState('recordedAt,desc');
   const [typeFilter, setTypeFilter] = useState('ALL');
@@ -215,6 +222,11 @@ export function ActivityHistoryCard({ account, onOpenDeposit, onOpenWithdraw, on
                 <Button size="md" color="orange" variant="light" className={classes.actionBtn} onClick={onOpenWithdraw}>
                   Withdraw Cash
                 </Button>
+                {onOpenTransfer && (
+                  <Button size="md" color="blue" variant="light" className={classes.actionBtn} onClick={onOpenTransfer}>
+                    Transfer Funds
+                  </Button>
+                )}
               </Group>
             )}
           </div>
