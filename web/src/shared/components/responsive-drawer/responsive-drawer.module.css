@@ -1,0 +1,71 @@
+.drawerTitle {
+  font-weight: 700;
+  font-size: 1.125rem;
+  letter-spacing: -0.015em;
+  color: var(--mantine-color-bright);
+}
+
+.drawerContent {
+  background-color: var(--mantine-color-default);
+  box-shadow: var(--mantine-shadow-xl);
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 47.99em) {
+  .drawerContent {
+    margin-inline: max(12px, env(safe-area-inset-left, 0px)) !important;
+    margin-bottom: max(12px, env(safe-area-inset-bottom, 0px)) !important;
+    margin-top: 0 !important;
+    max-width: calc(100% - 24px) !important;
+    width: min(calc(100% - 24px), 32rem) !important;
+    height: auto !important;
+    max-height: calc(85dvh - max(12px, env(safe-area-inset-bottom, 0px))) !important;
+    border-radius: 20px !important;
+    border: 1px solid var(--app-border-subtle);
+    overflow: hidden;
+  }
+}
+
+@media (min-width: 48em) {
+  .drawerContent {
+    border-left: 1px solid var(--app-border-subtle);
+  }
+}
+
+.drawerHeader {
+  position: relative;
+  background: transparent;
+  padding-inline: var(--mantine-spacing-md);
+  padding-block: var(--mantine-spacing-sm);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+@media (max-width: 47.99em) {
+  .drawerHeader {
+    padding-top: calc(var(--mantine-spacing-md) + 8px);
+    padding-bottom: var(--mantine-spacing-xs);
+  }
+
+  /* iOS Grabber Pill Affordance */
+  .drawerHeader::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 5px;
+    border-radius: 999px;
+    background-color: var(--mantine-color-default-border);
+  }
+}
+
+.drawerBody {
+  display: flex;
+  flex-direction: column;
+  padding: var(--mantine-spacing-md);
+  padding-bottom: var(--mantine-spacing-xl);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}

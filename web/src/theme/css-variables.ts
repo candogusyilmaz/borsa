@@ -78,7 +78,10 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
     '--app-border-subtle': '#E8EAF0',
     '--app-border-strong': '#C8CED8',
     '--app-focus-ring': 'rgb(98 91 246 / 0.20)',
-    '--app-overlay': 'rgb(10 14 22 / 0.48)'
+    '--app-overlay': 'rgb(10 14 22 / 0.48)',
+    '--app-scrollbar-thumb': '#C8CED8',
+    '--app-scrollbar-thumb-hover': '#9AA4B2',
+    '--app-scrollbar-track': 'transparent'
   },
   dark: {
     /*
@@ -126,6 +129,9 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
     '--app-border-subtle': '#202C3F',
     '--app-border-strong': '#3A4961',
     '--app-focus-ring': 'rgb(169 164 255 / 0.28)',
-    '--app-overlay': 'rgb(2 6 12 / 0.68)'
+    '--app-overlay': 'rgb(2 6 12 / 0.68)',
+    '--app-scrollbar-thumb': '#3A4961',
+    '--app-scrollbar-thumb-hover': '#667386',
+    '--app-scrollbar-track': 'transparent'
   }
 });

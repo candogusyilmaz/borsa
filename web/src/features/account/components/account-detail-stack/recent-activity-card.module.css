@@ -1,0 +1,275 @@
+.card {
+  background: var(--mantine-color-default);
+  border: 1px solid var(--app-border-subtle);
+  border-radius: 1rem;
+  box-shadow: var(--mantine-shadow-sm);
+  overflow: hidden;
+  transition:
+    border-color var(--app-motion-normal) var(--app-ease),
+    box-shadow var(--app-motion-normal) var(--app-ease);
+}
+
+.card:hover {
+  border-color: var(--app-border-strong);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.75rem 1.125rem;
+  background: transparent;
+  gap: var(--mantine-spacing-sm);
+  box-sizing: border-box;
+}
+
+.headerMain {
+  display: flex;
+  align-items: center;
+  min-height: 52px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  min-width: 0;
+  flex: 1;
+  text-align: left;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.headerMain:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--mantine-radius-sm);
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.iconSquircle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  min-width: 2.5rem;
+  border-radius: 0.625rem;
+  background: rgb(98 91 246 / 0.14);
+  color: var(--mantine-primary-color-filled);
+  flex-shrink: 0;
+}
+
+.cardTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--mantine-color-bright);
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+
+.viewAllBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--mantine-primary-color-filled);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--mantine-radius-sm);
+  touch-action: manipulation;
+  transition:
+    opacity var(--app-motion-fast) var(--app-ease),
+    background-color var(--app-motion-fast) var(--app-ease);
+}
+
+.viewAllBtn:hover {
+  background: var(--mantine-color-default-hover);
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.chevronBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  background: transparent;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  padding: 0;
+  touch-action: manipulation;
+  color: var(--mantine-color-dimmed);
+  transition:
+    background-color var(--app-motion-fast) var(--app-ease),
+    color var(--app-motion-fast) var(--app-ease);
+}
+
+.chevronBtn:hover {
+  background: var(--mantine-color-default-hover);
+  color: var(--mantine-color-bright);
+}
+
+.chevronIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--app-motion-fast) var(--app-ease);
+}
+
+.cardBody {
+  padding: 0 1.125rem 1.125rem 1.125rem;
+  overflow: hidden;
+}
+
+.activityRowSingle {
+  border-bottom: none !important;
+  padding-bottom: 0 !important;
+}
+
+/* Activity item row */
+.activityRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mantine-spacing-sm);
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--app-border-subtle);
+  cursor: pointer;
+  background: transparent;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  width: 100%;
+  text-align: left;
+  min-height: 48px;
+  touch-action: manipulation;
+  transition: background-color var(--app-motion-fast) var(--app-ease);
+}
+
+.activityRow:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.activityRow:hover {
+  background-color: var(--mantine-color-default-hover);
+}
+
+.activityItemLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.activityIconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  min-width: 2.25rem;
+  border-radius: 0.5rem;
+  background: var(--app-surface-secondary);
+  flex-shrink: 0;
+}
+
+.activityMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.activityTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.activityTitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--mantine-color-bright);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.activityDate {
+  font-size: 0.75rem;
+  color: var(--mantine-color-dimmed);
+}
+
+.activityAmount {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  max-width: 55%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.amountPositive {
+  color: var(--mantine-color-teal-6);
+}
+
+.amountNegative {
+  color: var(--mantine-color-red-6);
+}
+
+.amountNeutral {
+  color: var(--mantine-color-dimmed);
+}
+
+.expandedContent {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.emptyState {
+  padding: 1.25rem 0.5rem;
+  text-align: center;
+  color: var(--mantine-color-dimmed);
+  font-size: 0.875rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .activityRow,
+  .chevronIcon {
+    transition: none !important;
+  }
+}

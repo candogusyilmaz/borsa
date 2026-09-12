@@ -125,6 +125,25 @@ export function getPolicyLabel(policy?: string) {
   }
 }
 
+export function getCoverageStatusPresentation(status?: string): { label: string; badgeLabel: string; isVerified: boolean } {
+  switch (status) {
+    case 'KNOWN_FROM_OPENING':
+      return { label: 'Known from opening', badgeLabel: 'Verified', isVerified: true };
+    case 'ESTIMATED':
+      return { label: 'Estimated starting balance', badgeLabel: 'Estimated', isVerified: false };
+    case 'UNKNOWN':
+      return { label: 'Unverified starting history', badgeLabel: 'Unverified', isVerified: false };
+    case 'INCOMPLETE':
+      return { label: 'Incomplete cash coverage', badgeLabel: 'Incomplete', isVerified: false };
+    default:
+      return {
+        label: status ? status.replace(/_/g, ' ').toLowerCase() : 'Not established',
+        badgeLabel: status ? 'Active' : 'Unverified',
+        isVerified: status === 'KNOWN_FROM_OPENING'
+      };
+  }
+}
+
 export function getPolicyDescription(policy?: string) {
   if (!policy) return 'No policy enforced on this account.';
   switch (policy) {

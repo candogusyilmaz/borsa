@@ -1,0 +1,37 @@
+.drawerContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-md);
+  padding-bottom: var(--mantine-spacing-lg);
+}
+
+.presetGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--mantine-spacing-xs);
+}
+
+.presetBtn {
+  min-height: 44px;
+  font-weight: 600;
+  border-radius: var(--mantine-radius-md);
+  letter-spacing: -0.01em;
+}
+
+.liveBalanceBtn {
+  grid-column: 1 / -1;
+}
+
+.customDateSection {
+  margin-top: var(--mantine-spacing-xs);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.actionRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: var(--mantine-spacing-sm);
+}

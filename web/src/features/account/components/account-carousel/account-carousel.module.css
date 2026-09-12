@@ -1,0 +1,110 @@
+.carouselWrapper {
+  position: relative;
+  width: 100%;
+  padding-bottom: 1.5rem;
+}
+
+.singleSlide {
+  width: 100%;
+  max-width: 440px;
+  margin-inline: auto;
+}
+
+.carouselRoot {
+  position: relative;
+  width: 100%;
+}
+
+.carouselViewport {
+  overflow: hidden;
+  border-radius: var(--mantine-radius-lg);
+}
+
+.carouselContainer {
+  display: flex;
+}
+
+.carouselSlide {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+
+.carouselControls {
+  inset-inline-start: calc(5% - 22px) !important;
+  inset-inline-end: calc(5% - 22px) !important;
+  left: calc(5% - 22px) !important;
+  right: calc(5% - 22px) !important;
+  top: calc(50% - 22px) !important;
+  padding-inline: 0 !important;
+  pointer-events: none;
+}
+
+.carouselControl {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--mantine-color-default) 90%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--app-border-strong);
+  box-shadow: var(--mantine-shadow-md);
+  color: var(--mantine-color-bright);
+  pointer-events: auto;
+  transition:
+    opacity var(--app-motion-fast) var(--app-ease),
+    transform var(--app-motion-fast) var(--app-ease),
+    background-color var(--app-motion-fast) var(--app-ease);
+}
+
+.carouselControl:hover:not([data-disabled]) {
+  background: var(--mantine-color-default);
+  transform: scale(1.05);
+}
+
+.carouselControl[data-disabled] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.carouselIndicators {
+  bottom: -1.25rem !important;
+  gap: 0.375rem;
+  pointer-events: none;
+}
+
+.carouselIndicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--mantine-color-dimmed) 40%, transparent);
+  pointer-events: auto;
+  transition:
+    width var(--app-motion-fast) var(--app-ease),
+    background-color var(--app-motion-fast) var(--app-ease);
+}
+
+.carouselIndicator[data-active] {
+  width: 18px;
+  background: var(--mantine-primary-color-filled);
+}
+
+.counterRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--mantine-color-dimmed);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carouselControl,
+  .carouselIndicator {
+    transition: none !important;
+  }
+}

@@ -135,6 +135,7 @@
   display: flex;
   flex-direction: column;
   width: 100%;
+  overflow-x: clip;
   padding-bottom: calc(
     var(--mobile-bottom-nav-height) +
     env(safe-area-inset-bottom, 0px) +
@@ -219,6 +220,7 @@
   flex-direction: column;
   gap: var(--mantine-spacing-md);
   padding: var(--mantine-spacing-md);
+  padding-bottom: var(--mantine-spacing-xl);
   overflow-y: auto;
   overscroll-behavior: contain;
 }

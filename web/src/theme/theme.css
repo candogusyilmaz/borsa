@@ -7,6 +7,7 @@ body,
 html {
   background: var(--mantine-color-body);
   scrollbar-gutter: stable;
+  overflow-x: clip;
 }
 
 body {
@@ -21,6 +22,41 @@ body {
 ::selection {
   background: var(--mantine-primary-color-light);
   color: var(--mantine-color-text);
+}
+
+/* ---------------------------------------------------------- */
+/* SCROLLBARS                                                 */
+/* ---------------------------------------------------------- */
+
+html,
+body,
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--app-scrollbar-thumb) var(--app-scrollbar-track);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--app-scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--app-scrollbar-thumb);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--app-scrollbar-thumb-hover);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* ---------------------------------------------------------- */
@@ -190,6 +226,7 @@ body {
   border: 1px solid var(--app-border-subtle);
   box-shadow: var(--mantine-shadow-lg);
   max-width: min(calc(100vw - 2rem), 36rem);
+  overflow: hidden;
 }
 
 .mantine-Menu-item,
@@ -452,6 +489,117 @@ body {
   .app-grid[data-columns='3'] {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+}
+
+/* ---------------------------------------------------------- */
+/* CAROUSEL                                                   */
+/* ---------------------------------------------------------- */
+
+.mantine-Carousel-root {
+  position: relative;
+}
+
+.mantine-Carousel-control {
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
+  background: var(--mantine-color-default);
+  border: 1px solid var(--app-border-subtle);
+  color: var(--mantine-color-text);
+  box-shadow: var(--mantine-shadow-sm);
+  border-radius: 9999px;
+  opacity: 0.92;
+  transition:
+    background-color var(--app-motion-normal) var(--app-ease),
+    transform var(--app-motion-fast) var(--app-ease),
+    opacity var(--app-motion-normal) var(--app-ease);
+}
+
+.mantine-Carousel-control:hover:not([data-disabled]) {
+  background: var(--mantine-color-default-hover);
+  opacity: 1;
+}
+
+.mantine-Carousel-control:active:not([data-disabled]) {
+  transform: scale(0.95);
+}
+
+.mantine-Carousel-control[data-disabled] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mantine-Carousel-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--app-border-strong);
+  transition:
+    width var(--app-motion-normal) var(--app-ease),
+    background-color var(--app-motion-normal) var(--app-ease);
+}
+
+.mantine-Carousel-indicator[data-active] {
+  width: 22px;
+  background: var(--mantine-primary-color-filled);
+}
+
+/* ---------------------------------------------------------- */
+/* CHARTS                                                     */
+/* ---------------------------------------------------------- */
+
+.mantine-ChartTooltip-tooltip {
+  min-width: 0 !important;
+  background: var(--app-surface-elevated) !important;
+  border: 1px solid var(--app-border-subtle) !important;
+  border-radius: var(--mantine-radius-md) !important;
+  box-shadow: var(--mantine-shadow-md) !important;
+  padding: 0.5rem 0.75rem !important;
+}
+
+.mantine-ChartTooltip-tooltipLabel {
+  color: var(--mantine-color-dimmed) !important;
+  font-size: var(--mantine-font-size-xs) !important;
+  font-weight: var(--mantine-font-weight-medium) !important;
+  margin-bottom: 2px !important;
+  padding: 0 !important;
+}
+
+.mantine-ChartTooltip-tooltipBody {
+  padding: 0 !important;
+}
+
+.mantine-ChartTooltip-tooltipItemData {
+  color: var(--mantine-color-bright) !important;
+  font-size: var(--mantine-font-size-sm) !important;
+  font-weight: var(--mantine-font-weight-bold) !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.mantine-ChartTooltip-tooltipItemName {
+  color: var(--mantine-color-text) !important;
+  font-size: var(--mantine-font-size-xs) !important;
+}
+
+.recharts-cartesian-grid line {
+  stroke: var(--app-border-subtle);
+  stroke-dasharray: 3 3;
+}
+
+.recharts-cartesian-axis-tick text {
+  fill: var(--mantine-color-dimmed);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.recharts-cartesian-axis line {
+  stroke: var(--app-border-subtle);
+}
+
+.recharts-tooltip-cursor {
+  stroke: var(--app-border-strong);
+  stroke-dasharray: 3 3;
 }
 
 /* ---------------------------------------------------------- */

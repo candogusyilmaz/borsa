@@ -3,6 +3,8 @@ import type { ReactNode } from 'react';
 import { cssVariablesResolver } from './css-variables';
 import { theme } from './theme';
 import '@mantine/core/styles.css';
+import '@mantine/carousel/styles.css';
+import '@mantine/charts/styles.css';
 import './theme.css';
 
 export const colorSchemeManager = localStorageColorSchemeManager({
