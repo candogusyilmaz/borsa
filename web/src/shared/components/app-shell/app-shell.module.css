@@ -123,7 +123,17 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  padding-bottom: var(--mantine-spacing-xl);
+  padding-bottom: calc(
+    var(--mobile-bottom-nav-height) +
+    env(safe-area-inset-bottom, 0px) +
+    var(--mantine-spacing-md)
+  );
+}
+
+@media (min-width: 48em) {
+  .main {
+    padding-bottom: var(--mantine-spacing-xl);
+  }
 }
 
 .container {
@@ -147,11 +157,53 @@
   box-shadow: var(--mantine-shadow-xl);
 }
 
+@media (max-width: 47.99em) {
+  .drawerContent {
+    margin-inline: max(12px, env(safe-area-inset-left, 0px)) !important;
+    margin-bottom: max(12px, env(safe-area-inset-bottom, 0px)) !important;
+    margin-top: 0 !important;
+    max-width: calc(100% - 24px) !important;
+    width: min(calc(100% - 24px), 32rem) !important;
+    max-height: calc(85dvh - max(12px, env(safe-area-inset-bottom, 0px))) !important;
+    border-radius: 20px !important;
+    border: 1px solid var(--app-border-subtle);
+    overflow: hidden;
+  }
+}
+
+.drawerHeader {
+  position: relative;
+  background: transparent;
+  padding-inline: var(--mantine-spacing-md);
+  padding-block: var(--mantine-spacing-sm);
+}
+
+@media (max-width: 47.99em) {
+  .drawerHeader {
+    padding-top: calc(var(--mantine-spacing-md) + 8px);
+    padding-bottom: var(--mantine-spacing-xs);
+  }
+
+  /* iOS Grabber Pill Affordance */
+  .drawerHeader::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 5px;
+    border-radius: 999px;
+    background-color: var(--mantine-color-default-border);
+  }
+}
+
 .drawerBody {
   display: flex;
   flex-direction: column;
   gap: var(--mantine-spacing-md);
   padding: var(--mantine-spacing-md);
+  overflow-y: auto;
 }
 
 .drawerCard {

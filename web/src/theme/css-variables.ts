@@ -9,7 +9,8 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
     '--app-motion-fast': '120ms',
     '--app-motion-normal': '160ms',
     '--app-motion-slow': '200ms',
-    '--app-ease': 'cubic-bezier(0.2, 0.8, 0.2, 1)'
+    '--app-ease': 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+    '--mobile-bottom-nav-height': '4rem'
   },
   light: {
     /*

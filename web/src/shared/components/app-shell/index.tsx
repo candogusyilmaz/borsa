@@ -1,10 +1,11 @@
 import { Avatar, Badge, Button, Divider, Drawer, Group, Stack, Text, UnstyledButton } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
-import { BankIcon, DevicesIcon, HouseIcon, SignOutIcon } from '@phosphor-icons/react';
-import { Link, useNavigate } from '@tanstack/react-router';
-import type { ReactNode } from 'react';
+import { useDisclosure, useMediaQuery } from '@mantine/hooks';
+import { BankIcon, DevicesIcon, HouseIcon, SignOutIcon, UserIcon } from '@phosphor-icons/react';
+import { Link, useLocation, useNavigate } from '@tanstack/react-router';
+import { type MouseEvent, type ReactNode, useCallback, useMemo } from 'react';
 import { $api } from '@/api/client';
 import { BrandLogo } from '@/shared/components/brand-logo';
+import { type BottomNavItem, MobileBottomNav } from '@/shared/components/mobile-bottom-nav';
 import { ThemeToggle } from '@/shared/components/theme-toggle';
 import { siteConfig } from '@/shared/config/site';
 import { useAuth } from '@/shared/hooks/use-auth';
@@ -17,14 +18,79 @@ interface AppShellProps {
 }
 
 export function AppShell({ children, user }: AppShellProps) {
+  const isMobile = useMediaQuery('(max-width: 47.99em)');
   const [drawerOpened, { open: openDrawer, close: closeDrawer }] = useDisclosure(false);
   const { logout } = useAuth();
   const navigate = useNavigate();
-
-  const sessionsQuery = $api.useQuery('get', '/api/v1/auth/sessions', undefined, {
-    enabled: drawerOpened
+  const pathname = useLocation({
+    select: (location) => location.pathname
   });
+
+  const sessionsQuery = $api.useQuery('get', '/api/v1/auth/sessions');
   const activeSessionsCount = sessionsQuery.data ? sessionsQuery.data.filter((s) => s.status === 'ACTIVE').length : undefined;
+
+  const activeId = useMemo(() => {
+    if (pathname === '/app/accounts' || pathname.startsWith('/app/accounts/')) {
+      return 'accounts';
+    }
+    if (pathname === '/app/sessions' || pathname.startsWith('/app/sessions/')) {
+      return 'sessions';
+    }
+    if (pathname === '/app' || pathname === '/app/') {
+      return 'dashboard';
+    }
+    return undefined;
+  }, [pathname]);
+
+  const navItems = useMemo<readonly BottomNavItem[]>(
+    () => [
+      {
+        id: 'dashboard',
+        label: 'Dashboard',
+        to: '/app',
+        icon: ({ active }) => <HouseIcon size={22} weight={active ? 'fill' : 'bold'} />
+      },
+      {
+        id: 'accounts',
+        label: 'Accounts',
+        to: '/app/accounts',
+        icon: ({ active }) => <BankIcon size={22} weight={active ? 'fill' : 'bold'} />
+      },
+      {
+        id: 'sessions',
+        label: 'Sessions',
+        to: '/app/sessions',
+        icon: ({ active }) => <DevicesIcon size={22} weight={active ? 'fill' : 'bold'} />,
+        badge:
+          activeSessionsCount !== undefined && activeSessionsCount > 0
+            ? {
+                content: activeSessionsCount,
+                ariaLabel: `${activeSessionsCount} active session${activeSessionsCount === 1 ? '' : 's'}`,
+                color: 'teal',
+                maxValue: 99
+              }
+            : undefined
+      },
+      {
+        id: 'menu',
+        label: 'Menu',
+        to: '#',
+        icon: ({ active }) => <UserIcon size={22} weight={active ? 'fill' : 'bold'} />,
+        ariaLabel: 'Open account and settings menu'
+      }
+    ],
+    [activeSessionsCount]
+  );
+
+  const handleItemSelect = useCallback(
+    (item: BottomNavItem, event: MouseEvent<HTMLAnchorElement>) => {
+      if (item.id === 'menu') {
+        event.preventDefault();
+        openDrawer();
+      }
+    },
+    [openDrawer]
+  );
 
   async function handleLogout() {
     closeDrawer();
@@ -98,14 +164,24 @@ export function AppShell({ children, user }: AppShellProps) {
         <div className={classes.container}>{children}</div>
       </main>
 
-      {/* 3. Responsive Account & Settings Drawer */}
+      {/* 3. Responsive Account & Settings Drawer (iOS-style floating bottom sheet on mobile) */}
       <Drawer
         opened={drawerOpened}
         onClose={closeDrawer}
-        position="right"
-        size="320px"
+        position={isMobile ? 'bottom' : 'right'}
+        size={isMobile ? 'auto' : '320px'}
+        radius={isMobile ? 20 : 0}
+        offset={isMobile ? 12 : 0}
+        transitionProps={{
+          transition: isMobile ? 'slide-up' : 'slide-left',
+          duration: 200
+        }}
         title={<BrandLogo variant="full" size="sm" />}
-        classNames={{ content: classes.drawerContent, body: classes.drawerBody }}>
+        classNames={{
+          content: classes.drawerContent,
+          header: classes.drawerHeader,
+          body: classes.drawerBody
+        }}>
         <Stack gap="md">
           {/* User profile card */}
           <div className={classes.drawerCard}>
@@ -191,6 +267,31 @@ export function AppShell({ children, user }: AppShellProps) {
           </Button>
         </Stack>
       </Drawer>
+
+      {/* 4. Mobile Bottom Navigation */}
+      <MobileBottomNav
+        items={navItems}
+        activeId={activeId}
+        activeIndicator="pill"
+        surface="solid"
+        position="fixed"
+        onItemSelect={handleItemSelect}
+        renderLink={({ item, linkProps, children }) => {
+          if (item.id === 'menu') {
+            return (
+              <UnstyledButton component="a" href="#menu" aria-haspopup="dialog" aria-expanded={drawerOpened} {...linkProps}>
+                {children}
+              </UnstyledButton>
+            );
+          }
+
+          return (
+            <Link to={item.to} activeOptions={{ exact: item.to === '/app' }} {...linkProps}>
+              {children}
+            </Link>
+          );
+        }}
+      />
     </div>
   );
 }
