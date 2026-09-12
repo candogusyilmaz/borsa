@@ -51,6 +51,8 @@ body {
 
 .app-numeric {
   font-variant-numeric: tabular-nums;
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 /* ---------------------------------------------------------- */
@@ -61,6 +63,11 @@ body {
   min-height: 44px;
   font-weight: var(--mantine-font-weight-medium);
   letter-spacing: -0.01em;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
   transition:
     background-color var(--app-motion-normal) var(--app-ease),
     border-color var(--app-motion-normal) var(--app-ease),
@@ -93,6 +100,11 @@ body {
 .mantine-ActionIcon-root {
   min-width: 44px;
   min-height: 44px;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
   transition:
     background-color var(--app-motion-normal) var(--app-ease),
     color var(--app-motion-normal) var(--app-ease),
@@ -270,6 +282,11 @@ body {
   padding: 3px;
   background: var(--app-surface-secondary);
   border: 0;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .mantine-SegmentedControl-indicator {
@@ -295,6 +312,11 @@ body {
   min-height: 44px;
   color: var(--mantine-color-dimmed);
   font-weight: var(--mantine-font-weight-medium);
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
   transition:
     color var(--app-motion-fast) var(--app-ease),
     background-color var(--app-motion-fast) var(--app-ease);
@@ -317,6 +339,11 @@ body {
   min-height: 44px;
   border-radius: var(--mantine-radius-md);
   color: var(--mantine-color-dimmed);
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
   transition:
     background-color var(--app-motion-fast) var(--app-ease),
     color var(--app-motion-fast) var(--app-ease);
@@ -344,11 +371,18 @@ body {
   color: var(--mantine-color-dimmed);
   font-size: var(--mantine-font-size-sm);
   font-weight: var(--mantine-font-weight-medium);
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .mantine-Table-th,
 .mantine-Table-td {
   border-color: var(--app-border-subtle);
+}
+
+.mantine-Table-td {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 /* ---------------------------------------------------------- */

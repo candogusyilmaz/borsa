@@ -6,6 +6,9 @@
     env(safe-area-inset-bottom, 0px)
   );
   box-sizing: border-box;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 
   /*
    * Keep navigation controls above the home indicator while
@@ -108,7 +111,11 @@
   color: var(--mantine-color-dimmed);
   text-decoration: none;
 
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 
   transition:
     color var(--app-motion-fast) var(--app-ease),
@@ -206,6 +213,11 @@
   transform: translate(-50%, -50%);
   box-shadow: var(--mantine-shadow-md);
   z-index: 1;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .fab:focus-visible {
