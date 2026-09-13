@@ -72,3 +72,14 @@ export interface TransferFormValues {
   effectiveAt: string;
   confirmPolicyBreach: boolean;
 }
+
+export interface AccountsLayoutContext {
+  accounts: FinancialAccount[];
+  activeAccounts: FinancialAccount[];
+  isLoading: boolean;
+  isFetching: boolean;
+  isError: boolean;
+  refetchAccounts: () => Promise<unknown>;
+  openCreateModal: () => void;
+  openPickerDrawer: () => void;
+}

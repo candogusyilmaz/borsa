@@ -5,7 +5,7 @@ import { useForm, useStore } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { $api } from '@/api/client';
 import { normalizeError } from '@/api/errors';
-import type { AccountKind, NegativeBalancePolicy, TrackingMode } from '../../types';
+import type { AccountKind, FinancialAccount, NegativeBalancePolicy, TrackingMode } from '../../types';
 import {
   COMMON_CURRENCIES,
   COMMON_TIMEZONES,
@@ -25,15 +25,21 @@ import classes from './create-account-modal.module.css';
 interface CreateAccountModalProps {
   opened: boolean;
   onClose: () => void;
+  onSuccess?: (account: FinancialAccount) => void;
 }
 
-export function CreateAccountModal({ opened, onClose }: CreateAccountModalProps) {
+export function CreateAccountModal({ opened, onClose, onSuccess }: CreateAccountModalProps) {
   const queryClient = useQueryClient();
 
   const currenciesQuery = $api.useQuery('get', '/api/v1/reference/currencies');
 
   const createMutation = $api.useMutation('post', '/api/v1/accounts', {
     onSuccess: (data) => {
+      queryClient.setQueriesData<FinancialAccount[]>({ queryKey: ['get', '/api/v1/accounts'] }, (old) => {
+        if (!old) return [data];
+        if (old.some((a) => a.id === data.id)) return old;
+        return [...old, data];
+      });
       queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/accounts'] });
       notifications.show({
         title: 'Account Created',
@@ -43,6 +49,7 @@ export function CreateAccountModal({ opened, onClose }: CreateAccountModalProps)
       });
       form.reset();
       onClose();
+      onSuccess?.(data);
     },
     onError: (err) => {
       const apiErr = normalizeError(err);

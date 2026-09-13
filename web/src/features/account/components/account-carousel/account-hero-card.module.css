@@ -13,8 +13,7 @@
   overflow: hidden;
   transition:
     border-color var(--app-motion-normal) var(--app-ease),
-    box-shadow var(--app-motion-normal) var(--app-ease),
-    opacity var(--app-motion-normal) var(--app-ease);
+    box-shadow var(--app-motion-normal) var(--app-ease);
   user-select: none;
   -webkit-user-select: none;
 }
@@ -22,16 +21,13 @@
 .cardSelected {
   border-color: color-mix(in srgb, var(--mantine-primary-color-filled) 60%, transparent);
   box-shadow: var(--mantine-shadow-md);
-  opacity: 1;
 }
 
 .cardUnselected {
-  opacity: 0.72;
   cursor: pointer;
 }
 
 .cardUnselected:hover {
-  opacity: 0.9;
   border-color: var(--app-border-strong);
 }
 

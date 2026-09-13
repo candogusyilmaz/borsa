@@ -1,0 +1,89 @@
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mantine-spacing-sm);
+  padding-top: 0.125rem;
+  margin-bottom: 0.125rem;
+}
+
+.headerText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.titleArea {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pageTitle {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--mantine-color-bright);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 0;
+  white-space: nowrap;
+}
+
+@media (min-width: 48em) {
+  .pageTitle {
+    font-size: 1.625rem;
+  }
+}
+
+.desktopBadge {
+  display: none;
+}
+
+@media (min-width: 48em) {
+  .desktopBadge {
+    display: inline-flex;
+  }
+}
+
+.pageSubtitle {
+  font-size: 0.8125rem;
+  color: var(--mantine-color-dimmed);
+  line-height: 1.35;
+  margin: 0;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.createBtn {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 9999px;
+  background: var(--mantine-primary-color-filled);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    transform var(--app-motion-fast) var(--app-ease),
+    background-color var(--app-motion-fast) var(--app-ease);
+}
+
+.createBtn:hover {
+  background: var(--mantine-primary-color-filled-hover);
+}
+
+.createBtn:active {
+  transform: scale(0.95);
+}

@@ -18,9 +18,10 @@ interface ArchiveAccountModalProps {
   opened: boolean;
   onClose: () => void;
   onRefetchAccount: () => Promise<unknown>;
+  onSuccess?: (account: FinancialAccount) => void;
 }
 
-export function ArchiveAccountModal({ account, opened, onClose, onRefetchAccount }: ArchiveAccountModalProps) {
+export function ArchiveAccountModal({ account, opened, onClose, onRefetchAccount, onSuccess }: ArchiveAccountModalProps) {
   const queryClient = useQueryClient();
 
   const archiveMutation = $api.useMutation('post', '/api/v1/accounts/{accountId}/archive', {
@@ -36,6 +37,7 @@ export function ArchiveAccountModal({ account, opened, onClose, onRefetchAccount
         icon: <CheckCircleIcon size={18} weight="bold" />
       });
       handleClose();
+      onSuccess?.(data);
     },
     onError: (err) => {
       const apiErr = normalizeError(err);

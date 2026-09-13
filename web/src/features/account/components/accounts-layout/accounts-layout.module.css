@@ -1,0 +1,27 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 480px;
+  margin-inline: auto;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+@media (min-width: 48em) {
+  .container {
+    max-width: 600px;
+  }
+}
+
+@media (min-width: 64em) {
+  .container {
+    max-width: 680px;
+  }
+}
+
+.heroRegion {
+  position: relative;
+  width: 100%;
+}
