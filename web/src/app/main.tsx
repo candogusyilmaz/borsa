@@ -20,10 +20,10 @@ function requireRootElement(): HTMLElement {
 
 const rootElement = requireRootElement();
 const splash = isStandaloneApp() ? document.getElementById('semantic-fallback') : null;
+
 const splashStartedAt = performance.now();
 
 if (splash) {
-  document.body.appendChild(splash);
   rootElement.inert = true;
 }
 
