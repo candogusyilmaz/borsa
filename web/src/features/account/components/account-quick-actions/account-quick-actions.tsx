@@ -1,17 +1,15 @@
 import { ArrowDownLeftIcon, ArrowsLeftRightIcon, ArrowUpRightIcon, DotsThreeIcon } from '@phosphor-icons/react';
 import type { FinancialAccount } from '../../types';
 import { isCashFundingCapable } from '../../utils/account-formatters';
+import { useAccountDetailOverlay } from '../account-detail-overlay/account-detail-overlay-provider';
 import classes from './account-quick-actions.module.css';
 
 interface AccountQuickActionsProps {
   account: FinancialAccount;
-  onDeposit: () => void;
-  onWithdraw: () => void;
-  onTransfer: () => void;
-  onMore: () => void;
 }
 
-export function AccountQuickActions({ account, onDeposit, onWithdraw, onTransfer, onMore }: AccountQuickActionsProps) {
+export function AccountQuickActions({ account }: AccountQuickActionsProps) {
+  const { open } = useAccountDetailOverlay();
   const isHoldings = account.trackingMode === 'HOLDINGS_ONLY';
   const canCashTransact = !isHoldings && isCashFundingCapable(account.kind) && !account.archived;
 
@@ -21,7 +19,7 @@ export function AccountQuickActions({ account, onDeposit, onWithdraw, onTransfer
       <button
         type="button"
         className={`${classes.actionBtn} ${classes.depositBtn}`}
-        onClick={onDeposit}
+        onClick={() => open({ type: 'cash-activity', activityType: 'CASH_DEPOSIT' })}
         disabled={!canCashTransact}
         aria-label={canCashTransact ? `Deposit into ${account.name}` : 'Deposit not available for this account'}>
         <ArrowDownLeftIcon size={20} weight="bold" />
@@ -32,7 +30,7 @@ export function AccountQuickActions({ account, onDeposit, onWithdraw, onTransfer
       <button
         type="button"
         className={`${classes.actionBtn} ${classes.withdrawBtn}`}
-        onClick={onWithdraw}
+        onClick={() => open({ type: 'cash-activity', activityType: 'CASH_WITHDRAWAL' })}
         disabled={!canCashTransact}
         aria-label={canCashTransact ? `Withdraw from ${account.name}` : 'Withdrawal not available for this account'}>
         <ArrowUpRightIcon size={20} weight="bold" />
@@ -43,7 +41,7 @@ export function AccountQuickActions({ account, onDeposit, onWithdraw, onTransfer
       <button
         type="button"
         className={`${classes.actionBtn} ${classes.transferBtn}`}
-        onClick={onTransfer}
+        onClick={() => open({ type: 'transfer' })}
         disabled={!canCashTransact}
         aria-label={canCashTransact ? `Transfer funds from ${account.name}` : 'Transfer not available for this account'}>
         <ArrowsLeftRightIcon size={20} weight="bold" />
@@ -54,7 +52,7 @@ export function AccountQuickActions({ account, onDeposit, onWithdraw, onTransfer
       <button
         type="button"
         className={`${classes.actionBtn} ${classes.moreBtn}`}
-        onClick={onMore}
+        onClick={() => open({ type: 'actions' })}
         aria-label={`More actions for ${account.name}`}>
         <DotsThreeIcon size={22} weight="bold" />
         <span className={classes.btnLabel}>More</span>

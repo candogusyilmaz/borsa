@@ -2,6 +2,7 @@ import { ArchiveIcon, ArrowClockwiseIcon, BankIcon, CaretRightIcon, GearIcon, In
 import { ResponsiveDrawer } from '@/shared/components/responsive-drawer';
 import type { FinancialAccount } from '../../types';
 import { getAccountKindLabel, getTrackingModeLabel } from '../../utils/account-formatters';
+import { useAccountDetailOverlay } from '../account-detail-overlay/account-detail-overlay-provider';
 import classes from './account-actions-drawer.module.css';
 
 interface AccountActionsDrawerProps {
@@ -9,20 +10,10 @@ interface AccountActionsDrawerProps {
   opened: boolean;
   onClose: () => void;
   onRefresh: () => void;
-  onOpenSettings: () => void;
-  onOpenInfo: () => void;
-  onOpenArchive: () => void;
 }
 
-export function AccountActionsDrawer({
-  account,
-  opened,
-  onClose,
-  onRefresh,
-  onOpenSettings,
-  onOpenInfo,
-  onOpenArchive
-}: AccountActionsDrawerProps) {
+export function AccountActionsDrawer({ account, opened, onClose, onRefresh }: AccountActionsDrawerProps) {
+  const { open } = useAccountDetailOverlay();
   return (
     <ResponsiveDrawer opened={opened} onClose={onClose} title="Account Actions">
       <div className={classes.drawerContent}>
@@ -55,14 +46,7 @@ export function AccountActionsDrawer({
         </button>
 
         {/* 2. Settings & Policies */}
-        <button
-          type="button"
-          className={classes.actionItem}
-          disabled={account.archived}
-          onClick={() => {
-            onClose();
-            onOpenSettings();
-          }}>
+        <button type="button" className={classes.actionItem} disabled={account.archived} onClick={() => open({ type: 'settings' })}>
           <div className={classes.actionItemLeft}>
             <GearIcon size={20} />
             <span>Settings &amp; Policies</span>
@@ -71,13 +55,7 @@ export function AccountActionsDrawer({
         </button>
 
         {/* 3. Account Information */}
-        <button
-          type="button"
-          className={classes.actionItem}
-          onClick={() => {
-            onClose();
-            onOpenInfo();
-          }}>
+        <button type="button" className={classes.actionItem} onClick={() => open({ type: 'info' })}>
           <div className={classes.actionItemLeft}>
             <InfoIcon size={20} />
             <span>Account Information</span>
@@ -92,10 +70,7 @@ export function AccountActionsDrawer({
           type="button"
           className={`${classes.actionItem} ${classes.destructiveItem}`}
           disabled={account.archived}
-          onClick={() => {
-            onClose();
-            onOpenArchive();
-          }}>
+          onClick={() => open({ type: 'archive' })}>
           <div className={classes.actionItemLeft}>
             <ArchiveIcon size={20} />
             <span>{account.archived ? 'Account is Archived' : 'Archive Account'}</span>

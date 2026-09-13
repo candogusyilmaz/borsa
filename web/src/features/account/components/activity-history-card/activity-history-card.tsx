@@ -22,14 +22,12 @@ import {
   getActivityTypeLabel,
   isCashFundingCapable
 } from '../../utils/account-formatters';
+import { useAccountDetailOverlay } from '../account-detail-overlay/account-detail-overlay-provider';
 import { ActivityDetailModal } from '../activity-detail-modal/activity-detail-modal';
 import classes from './activity-history-card.module.css';
 
 interface ActivityHistoryCardProps {
   account: FinancialAccount;
-  onOpenDeposit: () => void;
-  onOpenWithdraw: () => void;
-  onOpenTransfer?: () => void;
   onActivityUpdated?: () => void;
 }
 
@@ -52,13 +50,8 @@ function getActivityIcon(type: ActivityType) {
   }
 }
 
-export function ActivityHistoryCard({
-  account,
-  onOpenDeposit,
-  onOpenWithdraw,
-  onOpenTransfer,
-  onActivityUpdated
-}: ActivityHistoryCardProps) {
+export function ActivityHistoryCard({ account, onActivityUpdated }: ActivityHistoryCardProps) {
+  const { open } = useAccountDetailOverlay();
   const [page, setPage] = useState(0);
   const [sortOption, setSortOption] = useState('recordedAt,desc');
   const [typeFilter, setTypeFilter] = useState('ALL');
@@ -216,17 +209,25 @@ export function ActivityHistoryCard({
             </Text>
             {typeFilter === 'ALL' && !account.archived && isCashFundingCapable(account.kind) && (
               <Group gap="xs" mt="xs">
-                <Button size="md" color="teal" variant="light" className={classes.actionBtn} onClick={onOpenDeposit}>
+                <Button
+                  size="md"
+                  color="teal"
+                  variant="light"
+                  className={classes.actionBtn}
+                  onClick={() => open({ type: 'cash-activity', activityType: 'CASH_DEPOSIT' })}>
                   Deposit Cash
                 </Button>
-                <Button size="md" color="orange" variant="light" className={classes.actionBtn} onClick={onOpenWithdraw}>
+                <Button
+                  size="md"
+                  color="orange"
+                  variant="light"
+                  className={classes.actionBtn}
+                  onClick={() => open({ type: 'cash-activity', activityType: 'CASH_WITHDRAWAL' })}>
                   Withdraw Cash
                 </Button>
-                {onOpenTransfer && (
-                  <Button size="md" color="blue" variant="light" className={classes.actionBtn} onClick={onOpenTransfer}>
-                    Transfer Funds
-                  </Button>
-                )}
+                <Button size="md" color="blue" variant="light" className={classes.actionBtn} onClick={() => open({ type: 'transfer' })}>
+                  Transfer Funds
+                </Button>
               </Group>
             )}
           </div>

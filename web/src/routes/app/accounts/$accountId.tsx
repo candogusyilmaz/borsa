@@ -1,7 +1,13 @@
 import { Alert, Button, Skeleton, Text } from '@mantine/core';
 import { WarningCircleIcon } from '@phosphor-icons/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { AccountDetailContent, AccountEmptyState, useAccountsLayout } from '@/features/account';
+import {
+  AccountDetailContent,
+  AccountDetailOverlayHost,
+  AccountDetailOverlayProvider,
+  AccountEmptyState,
+  useAccountsLayout
+} from '@/features/account';
 import type { FinancialAccount } from '@/features/account/types';
 import { createSeoMeta } from '@/shared/utils/seo';
 
@@ -75,24 +81,24 @@ function AccountDetailRouteComponent() {
     );
   }
 
+  const selectedAccount = account;
+
+  async function handleAccountArchived() {
+    const res = await refetchAccounts();
+    const updatedAccounts = (res as { data?: FinancialAccount[] })?.data ?? accounts;
+    const remainingActive = updatedAccounts.filter((a) => !a.archived && a.id !== selectedAccount.id);
+    const firstRemaining = remainingActive[0] ?? updatedAccounts.find((a) => a.id !== selectedAccount.id);
+    if (firstRemaining) {
+      navigate({ to: '/app/accounts/$accountId', params: { accountId: firstRemaining.id }, replace: true });
+    } else {
+      navigate({ to: '/app/accounts', replace: true });
+    }
+  }
+
   return (
-    <AccountDetailContent
-      key={account.id}
-      account={account}
-      allAccounts={accounts}
-      onOpenAccountPicker={openPickerDrawer}
-      onRefetchAll={refetchAccounts}
-      onAccountArchived={async () => {
-        const res = await refetchAccounts();
-        const updatedAccounts = (res as { data?: FinancialAccount[] })?.data ?? accounts;
-        const remainingActive = updatedAccounts.filter((a) => !a.archived && a.id !== account.id);
-        const firstRemaining = remainingActive[0] ?? updatedAccounts.find((a) => a.id !== account.id);
-        if (firstRemaining) {
-          navigate({ to: '/app/accounts/$accountId', params: { accountId: firstRemaining.id }, replace: true });
-        } else {
-          navigate({ to: '/app/accounts', replace: true });
-        }
-      }}
-    />
+    <AccountDetailOverlayProvider key={selectedAccount.id}>
+      <AccountDetailContent account={selectedAccount} allAccounts={accounts} onOpenAccountPicker={openPickerDrawer} />
+      <AccountDetailOverlayHost account={selectedAccount} refetchAccounts={refetchAccounts} onAccountArchived={handleAccountArchived} />
+    </AccountDetailOverlayProvider>
   );
 }
