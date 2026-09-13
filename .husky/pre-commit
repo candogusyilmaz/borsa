@@ -7,11 +7,8 @@ cd "$REPO_ROOT" || exit 1
 
 # ── Capture originally staged files ──────────────────────────────────────────
 #
-# IMPORTANT:
-# Only files that were staged BEFORE this hook started may be automatically
-# re-staged after formatting.
-#
-# This prevents unrelated unstaged changes from accidentally entering the commit.
+# Only files staged BEFORE this hook starts may be automatically re-staged.
+# This prevents unrelated unstaged changes from entering the commit.
 
 mapfile -d '' -t STAGED_FILES < <(
   git diff --cached --name-only --diff-filter=ACMR -z
@@ -31,7 +28,7 @@ fi
 #     hunk A -> staged
 #     hunk B -> unstaged
 #
-# Running `git add Foo.java` after auto-formatting would also stage hunk B.
+# Running `git add Foo.java` after formatting would also stage hunk B.
 # Therefore auto-fix is unsafe for partially staged files.
 
 PARTIALLY_STAGED=()
@@ -55,16 +52,36 @@ fi
 # ── Classify staged files ────────────────────────────────────────────────────
 
 JAVA_FILES=()
-WEB_FILES=()
+BIOME_FILES=()
+TYPESCRIPT_FILES=()
 
 for file in "${STAGED_FILES[@]}"; do
   case "$file" in
+
+    # Java
     server/*.java)
       JAVA_FILES+=("$file")
       ;;
 
+    # TypeScript / JavaScript:
+    # - Biome
+    # - TypeScript typecheck
+    web/src/*.ts|web/src/*.tsx|web/src/*.js|web/src/*.jsx|web/src/*.mts|web/src/*.cts|web/src/*.mjs|web/src/*.cjs)
+      BIOME_FILES+=("$file")
+      TYPESCRIPT_FILES+=("$file")
+      ;;
+
+    # JSON files Biome may format/check.
+    # Remove these if your biome config intentionally ignores them.
+    web/src/*.json|web/src/*.jsonc)
+      BIOME_FILES+=("$file")
+      ;;
+
+    # Everything else under web/src — CSS, SVG, images, etc.
+    #
+    # These are intentionally not sent to Biome unless explicitly supported
+    # by the project's biome configuration.
     web/src/*)
-      WEB_FILES+=("$file")
       ;;
   esac
 done
@@ -88,7 +105,6 @@ if [ ${#JAVA_FILES[@]} -gt 0 ]; then
 
   cd "$REPO_ROOT" || exit 1
 
-  # IMPORTANT:
   # Only re-stage Java files that were already staged before the hook started.
   git add -- "${JAVA_FILES[@]}"
 
@@ -100,7 +116,7 @@ fi
 
 # ── Frontend: Biome auto-fix ─────────────────────────────────────────────────
 
-if [ ${#WEB_FILES[@]} -gt 0 ]; then
+if [ ${#BIOME_FILES[@]} -gt 0 ]; then
   echo 'Running Biome auto-fix...'
 
   cd "$REPO_ROOT/web" || exit 1
@@ -112,23 +128,22 @@ if [ ${#WEB_FILES[@]} -gt 0 ]; then
   # into:
   #
   #   src/foo.ts
-  #
-  BIOME_FILES=()
 
-  for file in "${WEB_FILES[@]}"; do
-    BIOME_FILES+=("${file#web/}")
+  BIOME_RELATIVE_FILES=()
+
+  for file in "${BIOME_FILES[@]}"; do
+    BIOME_RELATIVE_FILES+=("${file#web/}")
   done
 
   BIOME_EXIT=0
-  npx biome check --write "${BIOME_FILES[@]}" || BIOME_EXIT=$?
+
+  npx biome check --write "${BIOME_RELATIVE_FILES[@]}" || BIOME_EXIT=$?
 
   cd "$REPO_ROOT" || exit 1
 
-  # Even when Biome reports a remaining non-fixable error,
-  # preserve any safe fixes it already made.
-  #
-  # Again: only originally staged files are re-staged.
-  git add -- "${WEB_FILES[@]}"
+  # Preserve safe fixes Biome already made, but only for files that were
+  # originally staged.
+  git add -- "${BIOME_FILES[@]}"
 
   if [ $BIOME_EXIT -ne 0 ]; then
     echo ''
@@ -138,26 +153,34 @@ if [ ${#WEB_FILES[@]} -gt 0 ]; then
 
   echo 'OK: Biome formatting/lint fixes applied.'
 else
-  echo 'Skipping Biome: no staged frontend source files.'
+  echo 'Skipping Biome: no staged Biome-supported files.'
 fi
 
 
 # ── Frontend: TypeScript type check ──────────────────────────────────────────
 #
-# Run this AFTER Biome because Biome may modify imports/code.
-# We want tsc to validate the exact code that will be committed.
+# There is no reason to run the entire TypeScript compiler for commits that
+# only modify CSS, SVGs, images, etc.
+#
+# Run it only when TypeScript / JavaScript source files are staged.
 
-echo 'Running TypeScript type check (tsc -b)...'
+if [ ${#TYPESCRIPT_FILES[@]} -gt 0 ]; then
+  echo 'Running TypeScript type check (tsc -b)...'
 
-cd "$REPO_ROOT/web" || exit 1
+  cd "$REPO_ROOT/web" || exit 1
 
-npm run typecheck
-TSC_EXIT=$?
+  npm run typecheck
+  TSC_EXIT=$?
 
-if [ $TSC_EXIT -ne 0 ]; then
-  echo ''
-  echo 'FAILED: TypeScript type check failed.'
-  exit 1
+  if [ $TSC_EXIT -ne 0 ]; then
+    echo ''
+    echo 'FAILED: TypeScript type check failed.'
+    exit 1
+  fi
+
+  echo 'OK: TypeScript type check passed.'
+else
+  echo 'Skipping TypeScript type check: no staged TypeScript/JavaScript files.'
 fi
 
 
