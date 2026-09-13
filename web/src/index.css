@@ -30,6 +30,8 @@ body,
 #root {
   display: flex;
   flex-direction: column;
+  /* Keep centered content steady as the page scrollbar appears or is locked by a modal. */
+  width: 100vw;
 }
 
 .skip-link {

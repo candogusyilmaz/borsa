@@ -1,6 +1,5 @@
 html {
   background: var(--mantine-color-body);
-  scrollbar-gutter: stable;
   overflow-x: clip;
 }
 
@@ -54,10 +53,6 @@ body,
 }
 
 @media (max-width: 47.999em) {
-  html {
-    scrollbar-gutter: auto;
-  }
-
   html,
   body,
   * {
