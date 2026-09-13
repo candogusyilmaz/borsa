@@ -5,8 +5,7 @@
 }
 
 .singleSlide {
-  width: 100%;
-  max-width: 440px;
+  width: 90%;
   margin-inline: auto;
 }
 
@@ -59,31 +58,54 @@
     background-color var(--app-motion-fast) var(--app-ease);
 }
 
-.carouselControl:hover:not([data-disabled]) {
+.carouselControl:hover:not([data-disabled]):not([data-inactive]) {
   background: var(--mantine-color-default);
   transform: scale(1.05);
 }
 
-.carouselControl[data-disabled] {
+.carouselControl[data-disabled],
+.carouselControl[data-inactive],
+.carouselControl[aria-disabled='true'] {
   opacity: 0;
   pointer-events: none;
 }
 
 .carouselIndicators {
-  bottom: -1.25rem !important;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.25rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   gap: 0.375rem;
   pointer-events: none;
 }
 
 .carouselIndicator {
+  position: relative;
   width: 6px;
   height: 6px;
   border-radius: 9999px;
   background: color-mix(in srgb, var(--mantine-color-dimmed) 40%, transparent);
+  border: none;
+  padding: 0;
+  cursor: pointer;
   pointer-events: auto;
+  touch-action: manipulation;
   transition:
     width var(--app-motion-fast) var(--app-ease),
     background-color var(--app-motion-fast) var(--app-ease);
+}
+
+.carouselIndicator::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 44px;
+  height: 44px;
 }
 
 .carouselIndicator[data-active] {
