@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { Providers, queryClient } from '@/app/providers';
 import { router } from '@/app/router';
 import { isStandaloneApp } from '@/shared/utils/is-standalone-app';
+import { preventIosOverscroll } from '@/shared/utils/prevent-ios-overscroll';
 
 import '@mantine/notifications/styles.css';
 import '@/index.css';
@@ -27,6 +28,8 @@ if (splash) {
 }
 
 function RouterApp() {
+  useEffect(preventIosOverscroll, []);
+
   useEffect(() => {
     if (!splash) {
       return;
