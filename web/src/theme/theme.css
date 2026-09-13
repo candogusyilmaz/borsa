@@ -1,9 +1,3 @@
-html,
-body,
-#root {
-  min-height: 100%;
-}
-
 html {
   background: var(--mantine-color-body);
   scrollbar-gutter: stable;

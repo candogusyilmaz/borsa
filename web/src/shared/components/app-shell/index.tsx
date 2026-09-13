@@ -1,28 +1,17 @@
-import { Avatar, Badge, Button, Divider, Drawer, Group, type MantineTransition, Stack, Text, UnstyledButton } from '@mantine/core';
-import { useDisclosure, useMediaQuery } from '@mantine/hooks';
+import { Avatar, Badge, Button, Divider, Group, Stack, Text, UnstyledButton } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import { BankIcon, DevicesIcon, HouseIcon, SignOutIcon, UserIcon } from '@phosphor-icons/react';
 import { Link, useLocation, useNavigate } from '@tanstack/react-router';
 import { type MouseEvent, type ReactNode, useCallback, useMemo } from 'react';
 import { $api } from '@/api/client';
 import { BrandLogo } from '@/shared/components/brand-logo';
 import { type BottomNavItem, MobileBottomNav } from '@/shared/components/mobile-bottom-nav';
+import { ResponsiveDrawer } from '@/shared/components/responsive-drawer';
 import { ThemeToggle } from '@/shared/components/theme-toggle';
 import { siteConfig } from '@/shared/config/site';
 import { useAuth } from '@/shared/hooks/use-auth';
 import type { User } from '@/shared/types/auth';
 import classes from './app-shell.module.css';
-
-/**
- * Native iOS-style bottom sheet dismissal transition:
- * Keeps sheet 100% opaque while sliding down out of the viewport.
- * Avoids the disorienting simultaneous opacity fade-out that makes sheet dismissal feel instantaneous.
- */
-const mobileSheetTransition: MantineTransition = {
-  in: { opacity: 1, transform: 'translateY(0)' },
-  out: { opacity: 1, transform: 'translateY(100%)' },
-  common: { transformOrigin: 'bottom' },
-  transitionProperty: 'transform'
-};
 
 interface AppShellProps {
   children: ReactNode;
@@ -30,7 +19,6 @@ interface AppShellProps {
 }
 
 export function AppShell({ children, user }: AppShellProps) {
-  const isMobile = useMediaQuery('(max-width: 47.99em)', undefined, { getInitialValueInEffect: false });
   const [drawerOpened, { close: closeDrawer, toggle: toggleDrawer }] = useDisclosure(false);
   const { logout } = useAuth();
   const navigate = useNavigate();
@@ -177,25 +165,7 @@ export function AppShell({ children, user }: AppShellProps) {
       </main>
 
       {/* 3. Responsive Account & Settings Drawer (iOS-style floating bottom sheet on mobile) */}
-      <Drawer
-        opened={drawerOpened}
-        onClose={closeDrawer}
-        position={isMobile ? 'bottom' : 'right'}
-        size={isMobile ? 'auto' : '320px'}
-        radius={isMobile ? 20 : 0}
-        offset={isMobile ? 12 : 0}
-        transitionProps={{
-          transition: isMobile ? mobileSheetTransition : 'slide-left',
-          duration: isMobile ? 280 : 200,
-          exitDuration: isMobile ? 280 : 200,
-          timingFunction: isMobile ? 'cubic-bezier(0.32, 0.72, 0, 1)' : 'ease'
-        }}
-        title={<BrandLogo variant="full" size="sm" />}
-        classNames={{
-          content: classes.drawerContent,
-          header: classes.drawerHeader,
-          body: classes.drawerBody
-        }}>
+      <ResponsiveDrawer opened={drawerOpened} onClose={closeDrawer} desktopSize="320px" title={<BrandLogo variant="full" size="sm" />}>
         <Stack gap="md">
           {/* User profile card */}
           <div className={classes.drawerCard}>
@@ -280,7 +250,7 @@ export function AppShell({ children, user }: AppShellProps) {
             Sign Out
           </Button>
         </Stack>
-      </Drawer>
+      </ResponsiveDrawer>
 
       {/* 4. Mobile Bottom Navigation */}
       <MobileBottomNav

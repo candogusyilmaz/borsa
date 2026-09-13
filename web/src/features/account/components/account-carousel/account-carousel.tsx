@@ -159,8 +159,6 @@ export function AccountCarousel({ accounts, selectedAccountId, onSelectAccount }
         }}
         withControls={accounts.length > 1}
         withIndicators={false}
-        controlsOffset={0}
-        controlSize={44}
         nextControlIcon={<CaretRightIcon size={20} weight="bold" />}
         previousControlIcon={<CaretLeftIcon size={20} weight="bold" />}
         nextControlProps={{ 'aria-label': 'Next account' }}

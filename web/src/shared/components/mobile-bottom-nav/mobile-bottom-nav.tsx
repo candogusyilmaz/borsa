@@ -125,7 +125,6 @@ export function MobileBottomNav<TTo extends string = string>({
         <ActionIcon
           className={clsx(classes.fab, classNames.fab)}
           variant="filled"
-          size={56}
           radius="xl"
           aria-label={fab.ariaLabel}
           disabled={fab.disabled}

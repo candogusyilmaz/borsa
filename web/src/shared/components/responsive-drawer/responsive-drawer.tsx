@@ -12,7 +12,7 @@ export const mobileSheetTransition: MantineTransition = {
 
 export type ResponsiveDrawerStylesNames = 'content' | 'header' | 'body' | 'root' | 'inner' | 'title' | 'close' | 'overlay';
 
-export interface ResponsiveDrawerProps extends Omit<DrawerProps, 'size' | 'classNames'> {
+export interface ResponsiveDrawerProps extends Omit<DrawerProps, 'size' | 'classNames' | 'radius' | 'offset'> {
   desktopSize?: string | number;
   children: ReactNode;
   classNames?: Partial<Record<ResponsiveDrawerStylesNames, string>>;
@@ -29,8 +29,7 @@ export function ResponsiveDrawer({ children, desktopSize = '380px', classNames, 
     <Drawer
       position={isMobile ? 'bottom' : 'right'}
       size={isMobile ? 'auto' : desktopSize}
-      radius={isMobile ? 20 : 0}
-      offset={isMobile ? 12 : 0}
+      radius={isMobile ? undefined : 0}
       transitionProps={{
         transition: isMobile ? mobileSheetTransition : 'slide-left',
         duration: isMobile ? 280 : 200,
