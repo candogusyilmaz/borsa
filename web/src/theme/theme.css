@@ -53,6 +53,24 @@ body,
   background: transparent;
 }
 
+@media (max-width: 47.999em) {
+  html {
+    scrollbar-gutter: auto;
+  }
+
+  html,
+  body,
+  * {
+    scrollbar-width: none;
+  }
+
+  ::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+}
+
 /* ---------------------------------------------------------- */
 /* TYPOGRAPHY                                                 */
 /* ---------------------------------------------------------- */
