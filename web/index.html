@@ -9,6 +9,7 @@
     <!-- Favicon & Touch Icons -->
     <link rel="icon" type="image/png" href="/assets/favicon.png" />
     <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+    <link rel="preload" as="image" href="/assets/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
 
     <!-- Essential Zero-JS Social Previews (Slack 32KB Cutoff Compliant) -->
@@ -21,12 +22,140 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content="%VITE_APP_URL%/assets/og-image.png" />
 
+    <script>
+      if (
+        !window.matchMedia('(display-mode: standalone)').matches &&
+        window.navigator.standalone !== true
+      ) {
+        document.documentElement.classList.add('browser-app');
+      }
+    </script>
+
     <style>
       #semantic-fallback {
+        --splash-bg: #f6f7f9;
+        --splash-surface: #ffffff;
+        --splash-border: #e8eaf0;
+        --splash-text: #171b22;
+        --splash-muted: #5d6775;
+        --splash-track: #dce0e7;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        box-sizing: border-box;
+        min-height: 100vh;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        padding: max(2rem, env(safe-area-inset-top, 0px)) max(1.5rem, env(safe-area-inset-right, 0px))
+          max(2rem, env(safe-area-inset-bottom, 0px)) max(1.5rem, env(safe-area-inset-left, 0px));
+        overflow: auto;
+        background: var(--splash-bg);
+        color: var(--splash-text);
         font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        padding: 2rem;
-        max-width: 800px;
-        margin: 0 auto;
+        text-align: center;
+        -webkit-font-smoothing: antialiased;
+        transition: opacity 240ms ease;
+      }
+
+      html.browser-app #semantic-fallback {
+        display: none;
+      }
+
+      #semantic-fallback.is-dismissing {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .splash-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: min(100%, 28rem);
+      }
+
+      .splash-mark {
+        display: grid;
+        place-items: center;
+        width: 108px;
+        height: 108px;
+        border: 1px solid var(--splash-border);
+        border-radius: 28px;
+        background: var(--splash-surface);
+      }
+
+      .splash-mark img {
+        display: block;
+        width: 76px;
+        height: 76px;
+        object-fit: contain;
+      }
+
+      .splash-content h1 {
+        margin: 1.5rem 0 0;
+        font-size: clamp(1.875rem, 6vw, 2.5rem);
+        font-weight: 750;
+        line-height: 1.1;
+        letter-spacing: -0.045em;
+      }
+
+      .splash-tagline {
+        margin: 0.6rem 0 0;
+        color: var(--splash-muted);
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
+
+      .splash-loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.9rem;
+        margin-top: 2.5rem;
+        color: var(--splash-muted);
+        font-size: 0.75rem;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+      }
+
+      .splash-progress {
+        display: block;
+        width: 148px;
+        height: 4px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: var(--splash-track);
+      }
+
+      .splash-progress::after {
+        display: block;
+        width: 42%;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #2445bf, #0fb9e9);
+        content: "";
+        animation: splash-slide 1.1s ease-in-out infinite alternate;
+      }
+
+      @keyframes splash-slide {
+        from { transform: translateX(0); }
+        to { transform: translateX(138%); }
+      }
+
+      @media (prefers-color-scheme: dark) {
+        #semantic-fallback {
+          --splash-bg: #0c111b;
+          --splash-surface: #151e2d;
+          --splash-border: #2a374a;
+          --splash-text: #f3f5f8;
+          --splash-muted: #aeb7c4;
+          --splash-track: #2a374a;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        #semantic-fallback { transition: none; }
+        .splash-progress::after { animation: none; }
       }
     </style>
 
@@ -48,20 +177,26 @@
   <body>
     <div id="root">
       <main id="semantic-fallback">
-        <h1>%VITE_APP_NAME%</h1>
-        <p>%VITE_APP_TAGLINE%</p>
-        <p>%VITE_APP_DESCRIPTION%</p>
-        <nav>
-          <a href="/">Home</a>
-          <a href="/login">Sign In</a>
-        </nav>
+        <div class="splash-content">
+          <div class="splash-mark" aria-hidden="true">
+            <img src="/assets/apple-touch-icon.png" alt="" width="76" height="76" />
+          </div>
+          <h1>%VITE_APP_NAME%</h1>
+          <p class="splash-tagline">%VITE_APP_TAGLINE%</p>
+          <div class="splash-loading" role="status" aria-live="polite">
+            <span class="splash-progress" aria-hidden="true"></span>
+            <span>Getting things ready</span>
+          </div>
+          <noscript>
+            <p>JavaScript is required to use the app.</p>
+            <nav aria-label="Fallback navigation">
+              <a href="/">Home</a>
+              <a href="/login">Sign in</a>
+            </nav>
+          </noscript>
+        </div>
       </main>
     </div>
     <script type="module" src="/src/app/main.tsx"></script>
-    <noscript>
-      <div style="padding: 2rem; text-align: center;">
-        Please enable JavaScript to use this application.
-      </div>
-    </noscript>
   </body>
 </html>
