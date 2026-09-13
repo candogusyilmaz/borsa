@@ -25,10 +25,20 @@
 
 .cardUnselected {
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .cardUnselected:hover {
   border-color: var(--app-border-strong);
+}
+
+.cardUnselected:active {
+  opacity: 0.82;
+}
+
+.cardUnselected:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: 2px;
 }
 
 .headerRow {

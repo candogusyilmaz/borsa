@@ -9,6 +9,16 @@ html {
   overscroll-behavior-y: none;
 }
 
+:where(a[href], button, input, select, textarea, summary, [role='button'], [role='tab'], [role='option']) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:where(a[href], button, summary, [role='button'], [role='tab'], [role='option']):where(
+  :active:not(:disabled, [aria-disabled='true'], [data-disabled])
+) {
+  opacity: 0.82;
+}
+
 html,
 body,
 #root {
