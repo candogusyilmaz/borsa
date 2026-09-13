@@ -4,6 +4,7 @@ import { getAccessToken } from '@/api/auth-state';
 import { resolveSession } from '@/api/session';
 import { LoginPage } from '@/features/auth/pages/login';
 import { siteConfig } from '@/shared/config/site';
+import { isStandaloneApp } from '@/shared/utils/is-standalone-app';
 import { createSeoMeta } from '@/shared/utils/seo';
 
 interface LoginSearch {
@@ -34,10 +35,9 @@ export const Route = createFileRoute('/login')({
     };
   },
   beforeLoad: async ({ context }) => {
-    // Session restoration is owned by the protected route. The login route
-    // only verifies an already-present access-token session, so a genuinely
-    // anonymous visitor renders login without any refresh-cookie attempt.
-    if (getAccessToken() === null) {
+    // Standalone launches must also check the refresh cookie because the
+    // access token may have been lost when the installed app was closed.
+    if (getAccessToken() === null && !isStandaloneApp()) {
       return;
     }
 

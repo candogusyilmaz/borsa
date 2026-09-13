@@ -119,8 +119,9 @@ export interface MobileBottomNavProps<TTo extends string = string> {
   /**
    * - flow: use inside AppShell.Footer
    * - fixed: component owns viewport positioning
+   * - sticky: stays at the bottom while participating in page layout
    */
-  position?: 'flow' | 'fixed';
+  position?: 'flow' | 'fixed' | 'sticky';
 
   /**
    * Optional center action.

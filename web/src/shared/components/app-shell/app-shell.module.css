@@ -17,11 +17,8 @@
   background-attachment: fixed;
 }
 
-/* Header: Sticky top bar with clean glassmorphism */
+/* Header: top bar with clean glassmorphism */
 .header {
-  position: sticky;
-  top: 0;
-  z-index: 40;
   height: 60px;
   background-color: var(--mantine-color-body);
   border-bottom: 1px solid var(--app-border-subtle);
@@ -136,11 +133,7 @@
   flex-direction: column;
   width: 100%;
   overflow-x: clip;
-  padding-bottom: calc(
-    var(--mobile-bottom-nav-height) +
-    env(safe-area-inset-bottom, 0px) +
-    var(--mantine-spacing-md)
-  );
+  padding-bottom: var(--mantine-spacing-md);
 }
 
 @media (min-width: 48em) {

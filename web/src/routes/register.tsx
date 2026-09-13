@@ -4,6 +4,7 @@ import { getAccessToken } from '@/api/auth-state';
 import { resolveSession } from '@/api/session';
 import { RegisterPage } from '@/features/auth/pages/register';
 import { siteConfig } from '@/shared/config/site';
+import { isStandaloneApp } from '@/shared/utils/is-standalone-app';
 import { createSeoMeta } from '@/shared/utils/seo';
 
 export interface RegisterSearch {
@@ -34,7 +35,7 @@ export const Route = createFileRoute('/register')({
     };
   },
   beforeLoad: async ({ context, search }) => {
-    if (getAccessToken() === null) {
+    if (getAccessToken() === null && !isStandaloneApp()) {
       return;
     }
 

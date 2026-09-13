@@ -43,6 +43,13 @@
   z-index: var(--mantine-z-index-app);
 }
 
+.root[data-position='sticky'] {
+  position: sticky;
+  bottom: 0;
+  flex-shrink: 0;
+  z-index: var(--mantine-z-index-app);
+}
+
 /*
  * Optional translucent visual variant.
  */
