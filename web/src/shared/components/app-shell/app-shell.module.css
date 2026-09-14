@@ -126,19 +126,32 @@
   box-shadow: 0 0 0 2px var(--app-focus-ring);
 }
 
-/* Main Content area */
 .main {
   flex: 1;
   display: flex;
   flex-direction: column;
   width: 100%;
   overflow-x: clip;
-  padding-bottom: var(--mantine-spacing-md);
+
+  /*
+   * MobileBottomNav is fixed and therefore does not reserve
+   * layout space. Keep the end of the page above it.
+   */
+  padding-bottom: calc(
+    var(--app-mobile-bottom-nav-height) +
+    var(--mantine-spacing-md)
+  );
+
+  scroll-padding-bottom: calc(
+    var(--app-mobile-bottom-nav-height) +
+    var(--mantine-spacing-md)
+  );
 }
 
 @media (min-width: 48em) {
   .main {
     padding-bottom: var(--mantine-spacing-xl);
+    scroll-padding-bottom: 0;
   }
 }
 

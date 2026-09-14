@@ -1,21 +1,21 @@
 .root {
   position: relative;
-   width: 100%;
+  width: 100%;
   height: var(--app-mobile-bottom-nav-height);
+
   box-sizing: border-box;
+
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
 
-  /*
-   * Keep navigation controls above the home indicator while
-   * still painting the bar background to the screen edge.
-   */
   padding-right: max(
     var(--mantine-spacing-xs),
     env(safe-area-inset-right, 0px)
   );
+
   padding-bottom: env(safe-area-inset-bottom, 0px);
+
   padding-left: max(
     var(--mantine-spacing-xs),
     env(safe-area-inset-left, 0px)
@@ -24,10 +24,41 @@
   background: var(--mantine-color-default);
   color: var(--mantine-color-text);
 
-  /*
-   * Inset separator avoids changing the bar's geometry
-   */
   box-shadow: inset 0 1px 0 var(--mantine-color-default-border);
+}
+
+.root::before {
+  content: '';
+  position: absolute;
+
+  inset-inline: 0;
+  bottom: 100%;
+
+  height: 20px;
+
+  pointer-events: none;
+
+  background: linear-gradient(
+    to top,
+    rgb(0 0 0 / 0.12),
+    transparent
+  );
+}
+
+:root[data-mantine-color-scheme='dark'] .root::before {
+  background: linear-gradient(
+    to top,
+    rgb(0 0 0 / 0.25),
+    transparent
+  );
+}
+
+:root[data-mantine-color-scheme='light'] .root::before {
+  background: linear-gradient(
+    to top,
+    rgb(0 0 0 / 0.08),
+    transparent
+  );
 }
 
 /*

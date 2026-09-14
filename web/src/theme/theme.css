@@ -292,7 +292,6 @@ body,
 .mantine-Drawer-content {
   background: var(--app-surface-elevated);
   color: var(--mantine-color-text);
-  border: 1px solid var(--app-border-subtle);
   box-shadow: var(--mantine-shadow-xl);
 }
 

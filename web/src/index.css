@@ -37,7 +37,14 @@ body,
 #root {
   display: flex;
   flex-direction: column;
-  /* Keep centered content steady as the page scrollbar appears or is locked by a modal. */
+  
+  /*
+   * Keep application geometry stable when Mantine overlays
+   * lock/unlock document scrolling and the desktop scrollbar
+   * disappears or returns.
+   *
+   * Do not replace with width: 100%.
+   */
   width: 100vw;
 }
 
