@@ -16,18 +16,8 @@ export function RouteDrawer({ children, title, desktopSize, onExited }: RouteDra
   const [opened, setOpened] = useState(false);
 
   useEffect(() => {
-    let secondFrame = 0;
-
-    const firstFrame = requestAnimationFrame(() => {
-      secondFrame = requestAnimationFrame(() => {
-        setOpened(true);
-      });
-    });
-
-    return () => {
-      cancelAnimationFrame(firstFrame);
-      cancelAnimationFrame(secondFrame);
-    };
+    const frame = requestAnimationFrame(() => setOpened(true));
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   const close = () => setOpened(false);
