@@ -1,4 +1,4 @@
-import { Alert, Badge, Button, Checkbox, Group, Modal, SegmentedControl, Stack, Text, TextInput } from '@mantine/core';
+import { Alert, Button, Checkbox, Group, SegmentedControl, Stack, Text, TextInput } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { ArrowDownLeftIcon, ArrowUpRightIcon, CheckCircleIcon, ClockIcon, InfoIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { useForm } from '@tanstack/react-form';
@@ -9,26 +9,25 @@ import type { BalanceResponse, FinancialAccount } from '../../types';
 import { formatCurrency, formatDateTime, POSITIVE_DECIMAL_REGEX, toDatetimeLocal } from '../../utils/account-formatters';
 import classes from './record-cash-activity-modal.module.css';
 
-interface RecordCashActivityModalProps {
+interface RecordCashActivityFormProps {
   account: FinancialAccount;
   balance?: BalanceResponse;
-  opened: boolean;
   onClose: () => void;
   defaultType?: 'CASH_DEPOSIT' | 'CASH_WITHDRAWAL';
-  onSuccess?: () => void;
 }
 
-export function RecordCashActivityModal({
-  account,
-  balance,
-  opened,
-  onClose,
-  defaultType = 'CASH_DEPOSIT',
-  onSuccess
-}: RecordCashActivityModalProps) {
+export function RecordCashActivityForm({ account, balance, onClose, defaultType = 'CASH_DEPOSIT' }: RecordCashActivityFormProps) {
   const queryClient = useQueryClient();
 
   const activityMutation = $api.useMutation('post', '/api/v1/accounts/{accountId}/activities', {
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/accounts'] });
+      queryClient.invalidateQueries({
+        queryKey: $api.queryOptions('get', '/api/v1/accounts/{accountId}', { params: { path: { accountId: account.id } } }).queryKey
+      });
+      queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/accounts/{accountId}/balance'] });
+      queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/activities'] });
+    },
     onError: (err) => {
       const apiErr = normalizeError(err);
       if (apiErr.code === 'FUTURE_TIME_NOT_ALLOWED') {
@@ -103,17 +102,6 @@ export function RecordCashActivityModal({
         },
         {
           onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/accounts'] });
-            queryClient.invalidateQueries({
-              queryKey: ['get', '/api/v1/accounts/{accountId}', { params: { path: { accountId: account.id } } }]
-            });
-            queryClient.invalidateQueries({
-              queryKey: ['get', '/api/v1/accounts/{accountId}/balance']
-            });
-            queryClient.invalidateQueries({
-              queryKey: ['get', '/api/v1/activities']
-            });
-
             const isDeposit = value.activityType === 'CASH_DEPOSIT';
             notifications.show({
               title: isDeposit ? 'Deposit Recorded' : 'Withdrawal Recorded',
@@ -122,223 +110,198 @@ export function RecordCashActivityModal({
               icon: <CheckCircleIcon size={18} weight="bold" />
             });
 
-            form.reset();
             onClose();
-            onSuccess?.();
           }
         }
       );
     }
   });
 
-  function handleClose() {
-    form.reset();
-    onClose();
-  }
-
   return (
-    <Modal
-      opened={opened}
-      onClose={handleClose}
-      title={
-        <Group gap="xs">
-          <Text fw={700} size="md">
-            Record Cash Activity
-          </Text>
-          <Badge color="teal" variant="light" size="sm">
-            {account.currency}
-          </Badge>
-        </Group>
-      }
-      size="md"
-      centered>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          form.handleSubmit();
-        }}
-        className={classes.form}>
-        {/* 1. Activity Type Segmented Control */}
-        <form.Field name="activityType">
-          {(field) => (
-            <div className={classes.segmentedWrap}>
-              <SegmentedControl
-                fullWidth
-                size="md"
-                className={classes.segmentedControl}
-                value={field.state.value}
-                onChange={(val) => field.handleChange(val as 'CASH_DEPOSIT' | 'CASH_WITHDRAWAL')}
-                data={[
-                  {
-                    value: 'CASH_DEPOSIT',
-                    label: (
-                      <Group gap={6} justify="center">
-                        <ArrowDownLeftIcon size={18} weight="bold" color="var(--mantine-color-teal-6)" />
-                        <span>Cash Deposit</span>
-                      </Group>
-                    )
-                  },
-                  {
-                    value: 'CASH_WITHDRAWAL',
-                    label: (
-                      <Group gap={6} justify="center">
-                        <ArrowUpRightIcon size={18} weight="bold" color="var(--mantine-color-orange-6)" />
-                        <span>Cash Withdrawal</span>
-                      </Group>
-                    )
-                  }
-                ]}
-              />
-            </div>
-          )}
-        </form.Field>
-
-        {/* Current Balance Overview */}
-        {balance && (
-          <div className={classes.balanceBox}>
-            <span className={classes.balanceLabel}>Current Real Balance</span>
-            <span className={classes.balanceValue}>
-              {formatCurrency(balance.clearedBalance ?? balance.ledgerBalance, account.currency)}
-            </span>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        form.handleSubmit();
+      }}
+      className={classes.form}>
+      {/* 1. Activity Type Segmented Control */}
+      <form.Field name="activityType">
+        {(field) => (
+          <div className={classes.segmentedWrap}>
+            <SegmentedControl
+              fullWidth
+              size="md"
+              className={classes.segmentedControl}
+              value={field.state.value}
+              onChange={(val) => field.handleChange(val as 'CASH_DEPOSIT' | 'CASH_WITHDRAWAL')}
+              data={[
+                {
+                  value: 'CASH_DEPOSIT',
+                  label: (
+                    <Group gap={6} justify="center">
+                      <ArrowDownLeftIcon size={18} weight="bold" color="var(--mantine-color-teal-6)" />
+                      <span>Cash Deposit</span>
+                    </Group>
+                  )
+                },
+                {
+                  value: 'CASH_WITHDRAWAL',
+                  label: (
+                    <Group gap={6} justify="center">
+                      <ArrowUpRightIcon size={18} weight="bold" color="var(--mantine-color-orange-6)" />
+                      <span>Cash Withdrawal</span>
+                    </Group>
+                  )
+                }
+              ]}
+            />
           </div>
         )}
+      </form.Field>
 
-        {/* 2. Amount Input */}
+      {/* Current Balance Overview */}
+      {balance && (
+        <div className={classes.balanceBox}>
+          <span className={classes.balanceLabel}>Current Real Balance</span>
+          <span className={classes.balanceValue}>{formatCurrency(balance.clearedBalance ?? balance.ledgerBalance, account.currency)}</span>
+        </div>
+      )}
+
+      {/* 2. Amount Input */}
+      <form.Field
+        name="amount"
+        validators={{
+          onChange: ({ value }) => {
+            const trimmed = value.trim();
+            if (!trimmed) return 'Amount is required.';
+            if (!POSITIVE_DECIMAL_REGEX.test(trimmed)) {
+              return 'Enter a valid positive number with decimal cents (e.g. 150.00).';
+            }
+            const num = Number.parseFloat(trimmed);
+            if (Number.isNaN(num) || num <= 0) {
+              return 'Amount must be greater than zero.';
+            }
+            return undefined;
+          }
+        }}>
+        {(field) => (
+          <TextInput
+            label="Transaction Amount"
+            placeholder="0.00"
+            size="md"
+            leftSection={
+              <Text size="sm" fw={700} c="dimmed">
+                {account.currency}
+              </Text>
+            }
+            value={field.state.value}
+            onChange={(e) => field.handleChange(e.target.value)}
+            onBlur={field.handleBlur}
+            error={field.state.meta.errors.join(', ')}
+            description={`Amount to ${form.getFieldValue('activityType') === 'CASH_DEPOSIT' ? 'deposit into' : 'withdraw from'} ${account.name}.`}
+            inputWrapperOrder={['label', 'input', 'description', 'error']}
+            required
+            aria-label="Transaction Amount"
+          />
+        )}
+      </form.Field>
+
+      {/* 3. Recording Mode */}
+      <form.Field name="recordingMode">
+        {(field) => (
+          <SegmentedControl
+            fullWidth
+            size="sm"
+            value={field.state.value}
+            onChange={(val) => {
+              field.handleChange(val as 'CURRENT_ACTION' | 'HISTORICAL_FACT');
+              if (val === 'CURRENT_ACTION') {
+                form.setFieldValue('effectiveAt', toDatetimeLocal(new Date()));
+              }
+            }}
+            data={[
+              { value: 'CURRENT_ACTION', label: 'Real-time (Now)' },
+              { value: 'HISTORICAL_FACT', label: 'Historical (Past Date)' }
+            ]}
+          />
+        )}
+      </form.Field>
+
+      {/* 4. Effective Date Picker if Historical */}
+      {form.getFieldValue('recordingMode') === 'HISTORICAL_FACT' && (
         <form.Field
-          name="amount"
+          name="effectiveAt"
           validators={{
             onChange: ({ value }) => {
-              const trimmed = value.trim();
-              if (!trimmed) return 'Amount is required.';
-              if (!POSITIVE_DECIMAL_REGEX.test(trimmed)) {
-                return 'Enter a valid positive number with decimal cents (e.g. 150.00).';
-              }
-              const num = Number.parseFloat(trimmed);
-              if (Number.isNaN(num) || num <= 0) {
-                return 'Amount must be greater than zero.';
+              if (!value) return 'Effective date is required for historical entries.';
+              const parsed = new Date(value);
+              if (Number.isNaN(parsed.getTime())) return 'Invalid date format.';
+              if (parsed.getTime() > Date.now() + 60000) {
+                return 'Effective date cannot be in the future.';
               }
               return undefined;
             }
           }}>
           {(field) => (
-            <TextInput
-              label="Transaction Amount"
-              placeholder="0.00"
-              size="md"
-              leftSection={
-                <Text size="sm" fw={700} c="dimmed">
-                  {account.currency}
-                </Text>
-              }
-              value={field.state.value}
-              onChange={(e) => field.handleChange(e.target.value)}
-              onBlur={field.handleBlur}
-              error={field.state.meta.errors.join(', ')}
-              description={`Amount to ${form.getFieldValue('activityType') === 'CASH_DEPOSIT' ? 'deposit into' : 'withdraw from'} ${account.name}.`}
-              inputWrapperOrder={['label', 'input', 'description', 'error']}
-              required
-              aria-label="Transaction Amount"
-            />
-          )}
-        </form.Field>
-
-        {/* 3. Recording Mode */}
-        <form.Field name="recordingMode">
-          {(field) => (
-            <SegmentedControl
-              fullWidth
-              size="sm"
-              value={field.state.value}
-              onChange={(val) => {
-                field.handleChange(val as 'CURRENT_ACTION' | 'HISTORICAL_FACT');
-                if (val === 'CURRENT_ACTION') {
-                  form.setFieldValue('effectiveAt', toDatetimeLocal(new Date()));
-                }
-              }}
-              data={[
-                { value: 'CURRENT_ACTION', label: 'Real-time (Now)' },
-                { value: 'HISTORICAL_FACT', label: 'Historical (Past Date)' }
-              ]}
-            />
-          )}
-        </form.Field>
-
-        {/* 4. Effective Date Picker if Historical */}
-        {form.getFieldValue('recordingMode') === 'HISTORICAL_FACT' && (
-          <form.Field
-            name="effectiveAt"
-            validators={{
-              onChange: ({ value }) => {
-                if (!value) return 'Effective date is required for historical entries.';
-                const parsed = new Date(value);
-                if (Number.isNaN(parsed.getTime())) return 'Invalid date format.';
-                if (parsed.getTime() > Date.now() + 60000) {
-                  return 'Effective date cannot be in the future.';
-                }
-                return undefined;
-              }
-            }}>
-            {(field) => (
-              <Stack gap="xs">
-                <TextInput
-                  type="datetime-local"
-                  label="Effective Date & Time"
-                  size="md"
-                  leftSection={<ClockIcon size={16} />}
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  error={field.state.meta.errors.join(', ')}
-                  description="The economic moment when this money actually entered or left your account."
-                  inputWrapperOrder={['label', 'input', 'description', 'error']}
-                  required
-                  aria-label="Effective Date and Time"
-                />
-
-                {account.coverageFrom && new Date(field.state.value).getTime() < new Date(account.coverageFrom).getTime() && (
-                  <Alert icon={<InfoIcon size={18} />} color="orange" variant="light">
-                    This date precedes account opening ({formatDateTime(account.coverageFrom)}). Past postings will be recorded as of the
-                    opening date watermark.
-                  </Alert>
-                )}
-              </Stack>
-            )}
-          </form.Field>
-        )}
-
-        {/* 5. Policy Breach Confirmation (primarily for withdrawals) */}
-        {form.getFieldValue('activityType') === 'CASH_WITHDRAWAL' && (
-          <form.Field name="confirmPolicyBreach">
-            {(field) => (
-              <Checkbox
-                label="Confirm Overdraft / Limit Exception"
-                description="Check this if this withdrawal may bring the balance below zero and your account policy permits overdraft."
-                checked={field.state.value}
-                onChange={(e) => field.handleChange(e.currentTarget.checked)}
-                size="sm"
-                color="orange"
+            <Stack gap="xs">
+              <TextInput
+                type="datetime-local"
+                label="Effective Date & Time"
+                size="md"
+                leftSection={<ClockIcon size={16} />}
+                value={field.state.value}
+                onChange={(e) => field.handleChange(e.target.value)}
+                onBlur={field.handleBlur}
+                error={field.state.meta.errors.join(', ')}
+                description="The economic moment when this money actually entered or left your account."
+                inputWrapperOrder={['label', 'input', 'description', 'error']}
+                required
+                aria-label="Effective Date and Time"
               />
-            )}
-          </form.Field>
-        )}
 
-        {/* 6. Form Actions */}
-        <div className={classes.actions}>
-          <Button variant="default" size="md" className={classes.actionBtn} onClick={handleClose} disabled={activityMutation.isPending}>
-            Cancel
-          </Button>
+              {account.coverageFrom && new Date(field.state.value).getTime() < new Date(account.coverageFrom).getTime() && (
+                <Alert icon={<InfoIcon size={18} />} color="orange" variant="light">
+                  This date precedes account opening ({formatDateTime(account.coverageFrom)}). Past postings will be recorded as of the
+                  opening date watermark.
+                </Alert>
+              )}
+            </Stack>
+          )}
+        </form.Field>
+      )}
 
-          <Button
-            type="submit"
-            color={form.getFieldValue('activityType') === 'CASH_DEPOSIT' ? 'teal' : 'orange'}
-            size="md"
-            className={classes.actionBtn}
-            loading={activityMutation.isPending}>
-            {form.getFieldValue('activityType') === 'CASH_DEPOSIT' ? 'Confirm Deposit' : 'Confirm Withdrawal'}
-          </Button>
-        </div>
-      </form>
-    </Modal>
+      {/* 5. Policy Breach Confirmation (primarily for withdrawals) */}
+      {form.getFieldValue('activityType') === 'CASH_WITHDRAWAL' && (
+        <form.Field name="confirmPolicyBreach">
+          {(field) => (
+            <Checkbox
+              label="Confirm Overdraft / Limit Exception"
+              description="Check this if this withdrawal may bring the balance below zero and your account policy permits overdraft."
+              checked={field.state.value}
+              onChange={(e) => field.handleChange(e.currentTarget.checked)}
+              size="sm"
+              color="orange"
+            />
+          )}
+        </form.Field>
+      )}
+
+      {/* 6. Form Actions */}
+      <div className={classes.actions}>
+        <Button variant="default" size="md" className={classes.actionBtn} onClick={onClose} disabled={activityMutation.isPending}>
+          Cancel
+        </Button>
+
+        <Button
+          type="submit"
+          color={form.getFieldValue('activityType') === 'CASH_DEPOSIT' ? 'teal' : 'orange'}
+          size="md"
+          className={classes.actionBtn}
+          loading={activityMutation.isPending}>
+          {form.getFieldValue('activityType') === 'CASH_DEPOSIT' ? 'Confirm Deposit' : 'Confirm Withdrawal'}
+        </Button>
+      </div>
+    </form>
   );
 }

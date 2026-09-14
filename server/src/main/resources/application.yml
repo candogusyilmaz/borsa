@@ -56,4 +56,4 @@ management:
 stocks:
   web:
     cors:
-      allowed-origins: ${CORS_ALLOWED_ORIGINS:https://platform.canverse.dev}
+      allowed-origins: ${CORS_ALLOWED_ORIGINS:https://platform.canverse.dev,http://localhost:5173}

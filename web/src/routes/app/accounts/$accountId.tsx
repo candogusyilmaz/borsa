@@ -1,6 +1,8 @@
 import { Alert, Button, Skeleton, Text } from '@mantine/core';
 import { WarningCircleIcon } from '@phosphor-icons/react';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, Outlet, useNavigate } from '@tanstack/react-router';
+import { $api } from '@/api/client';
+import { normalizeError } from '@/api/errors';
 import {
   AccountDetailContent,
   AccountDetailOverlayHost,
@@ -29,13 +31,21 @@ export const Route = createFileRoute('/app/accounts/$accountId')({
 function AccountDetailRouteComponent() {
   const { accountId } = Route.useParams();
   const navigate = useNavigate();
-  const { accounts, activeAccounts, isLoading, isFetching, isError, openCreateModal, openPickerDrawer, refetchAccounts } =
-    useAccountsLayout();
+  const {
+    accounts,
+    activeAccounts,
+    isLoading: accountsLoading,
+    isError: accountsError,
+    openCreateModal,
+    openPickerDrawer,
+    refetchAccounts
+  } = useAccountsLayout();
+  const accountQuery = $api.useQuery('get', '/api/v1/accounts/{accountId}', { params: { path: { accountId } } });
 
-  const account = accounts.find((a) => a.id === accountId);
+  const account = accountQuery.data;
 
-  // Render loading skeleton during initial fetch or when refetching in background for a missing account
-  if (isLoading || (!account && isFetching)) {
+  // The URL selects the account; the layout list may still be loading on a direct visit.
+  if (accountQuery.isPending || (!account && accountQuery.isFetching)) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
         <Skeleton height={58} radius="md" />
@@ -45,13 +55,31 @@ function AccountDetailRouteComponent() {
     );
   }
 
-  // If layout encountered an API error, suppress child alerts (the layout displays the retry banner)
-  if (isError) {
-    return null;
+  if (!account && accountQuery.isError && normalizeError(accountQuery.error).status !== 404) {
+    return (
+      <Alert icon={<WarningCircleIcon size={20} />} title="Could not load account" color="red" variant="light">
+        <Text size="sm" mb="xs">
+          The requested financial account could not be loaded. Please try again.
+        </Text>
+        <Button size="sm" variant="outline" color="red" style={{ minHeight: 44 }} onClick={() => accountQuery.refetch()}>
+          Retry
+        </Button>
+      </Alert>
+    );
   }
 
-  // If no accounts exist in the workspace, render the empty state
-  if (accounts.length === 0) {
+  if (!account && accountsLoading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <Skeleton height={58} radius="md" />
+        <Skeleton height={80} radius="md" />
+        <Skeleton height={80} radius="md" />
+      </div>
+    );
+  }
+
+  // Preserve the workspace empty state only when the list actually loaded empty.
+  if (!account && !accountsError && accounts.length === 0) {
     return <AccountEmptyState onOpenCreate={openCreateModal} />;
   }
 
@@ -99,6 +127,7 @@ function AccountDetailRouteComponent() {
     <AccountDetailOverlayProvider key={selectedAccount.id}>
       <AccountDetailContent account={selectedAccount} allAccounts={accounts} onOpenAccountPicker={openPickerDrawer} />
       <AccountDetailOverlayHost account={selectedAccount} refetchAccounts={refetchAccounts} onAccountArchived={handleAccountArchived} />
+      <Outlet />
     </AccountDetailOverlayProvider>
   );
 }

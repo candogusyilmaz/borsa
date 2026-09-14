@@ -5,7 +5,6 @@ export type AccountDetailOverlay =
   | { type: 'info' }
   | { type: 'activities' }
   | { type: 'transfer' }
-  | { type: 'cash-activity'; activityType: 'CASH_DEPOSIT' | 'CASH_WITHDRAWAL' }
   | { type: 'settings' }
   | { type: 'archive' }
   | { type: 'opening-correction' };

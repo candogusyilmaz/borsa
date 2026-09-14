@@ -1,12 +1,21 @@
 import { Drawer, type DrawerProps, type MantineTransition } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import type { ReactNode } from 'react';
+
 import classes from './responsive-drawer.module.css';
 
 export const mobileSheetTransition: MantineTransition = {
-  in: { opacity: 1, transform: 'translateY(0)' },
-  out: { opacity: 1, transform: 'translateY(100%)' },
-  common: { transformOrigin: 'bottom' },
+  in: {
+    opacity: 1,
+    transform: 'translateY(0)'
+  },
+  out: {
+    opacity: 1,
+    transform: 'translateY(100%)'
+  },
+  common: {
+    transformOrigin: 'bottom'
+  },
   transitionProperty: 'transform'
 };
 
@@ -19,7 +28,9 @@ export interface ResponsiveDrawerProps extends Omit<DrawerProps, 'size' | 'class
 }
 
 export function ResponsiveDrawer({ children, desktopSize = '380px', classNames, title, ...rest }: ResponsiveDrawerProps) {
-  const isMobile = useMediaQuery('(max-width: 47.99em)', undefined, { getInitialValueInEffect: false });
+  const isMobile = useMediaQuery('(max-width: 47.99em)', undefined, {
+    getInitialValueInEffect: false
+  });
 
   const customContent = classNames?.content ? ` ${classNames.content}` : '';
   const customHeader = classNames?.header ? ` ${classNames.header}` : '';
@@ -29,7 +40,7 @@ export function ResponsiveDrawer({ children, desktopSize = '380px', classNames, 
     <Drawer
       position={isMobile ? 'bottom' : 'right'}
       size={isMobile ? 'auto' : desktopSize}
-      radius={isMobile ? undefined : 0}
+      radius={0}
       transitionProps={{
         transition: isMobile ? mobileSheetTransition : 'slide-left',
         duration: isMobile ? 280 : 200,

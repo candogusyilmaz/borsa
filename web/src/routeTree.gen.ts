@@ -18,6 +18,8 @@ import { Route as AppAccountsRouteRouteImport } from './routes/app/accounts/rout
 import { Route as AppSessionsRouteImport } from './routes/app/sessions'
 import { Route as AppAccountsIndexRouteImport } from './routes/app/accounts/index'
 import { Route as AppAccountsAccountIdRouteImport } from './routes/app/accounts/$accountId'
+import { Route as AppAccountsAccountIdDepositRouteImport } from './routes/app/accounts/$accountId/deposit'
+import { Route as AppAccountsAccountIdWithdrawRouteImport } from './routes/app/accounts/$accountId/withdraw'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -64,6 +66,18 @@ const AppAccountsAccountIdRoute = AppAccountsAccountIdRouteImport.update({
   path: '/$accountId',
   getParentRoute: () => AppAccountsRouteRoute,
 } as any)
+const AppAccountsAccountIdDepositRoute =
+  AppAccountsAccountIdDepositRouteImport.update({
+    id: '/deposit',
+    path: '/deposit',
+    getParentRoute: () => AppAccountsAccountIdRoute,
+  } as any)
+const AppAccountsAccountIdWithdrawRoute =
+  AppAccountsAccountIdWithdrawRouteImport.update({
+    id: '/withdraw',
+    path: '/withdraw',
+    getParentRoute: () => AppAccountsAccountIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -73,8 +87,10 @@ export interface FileRoutesByFullPath {
   '/app/accounts': typeof AppAccountsRouteRouteWithChildren
   '/app/sessions': typeof AppSessionsRoute
   '/app/': typeof AppIndexRoute
-  '/app/accounts/$accountId': typeof AppAccountsAccountIdRoute
+  '/app/accounts/$accountId': typeof AppAccountsAccountIdRouteWithChildren
   '/app/accounts/': typeof AppAccountsIndexRoute
+  '/app/accounts/$accountId/deposit': typeof AppAccountsAccountIdDepositRoute
+  '/app/accounts/$accountId/withdraw': typeof AppAccountsAccountIdWithdrawRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -82,8 +98,10 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/app/sessions': typeof AppSessionsRoute
   '/app': typeof AppIndexRoute
-  '/app/accounts/$accountId': typeof AppAccountsAccountIdRoute
+  '/app/accounts/$accountId': typeof AppAccountsAccountIdRouteWithChildren
   '/app/accounts': typeof AppAccountsIndexRoute
+  '/app/accounts/$accountId/deposit': typeof AppAccountsAccountIdDepositRoute
+  '/app/accounts/$accountId/withdraw': typeof AppAccountsAccountIdWithdrawRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -94,8 +112,10 @@ export interface FileRoutesById {
   '/app/accounts': typeof AppAccountsRouteRouteWithChildren
   '/app/sessions': typeof AppSessionsRoute
   '/app/': typeof AppIndexRoute
-  '/app/accounts/$accountId': typeof AppAccountsAccountIdRoute
+  '/app/accounts/$accountId': typeof AppAccountsAccountIdRouteWithChildren
   '/app/accounts/': typeof AppAccountsIndexRoute
+  '/app/accounts/$accountId/deposit': typeof AppAccountsAccountIdDepositRoute
+  '/app/accounts/$accountId/withdraw': typeof AppAccountsAccountIdWithdrawRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -109,6 +129,8 @@ export interface FileRouteTypes {
     | '/app/'
     | '/app/accounts/$accountId'
     | '/app/accounts/'
+    | '/app/accounts/$accountId/deposit'
+    | '/app/accounts/$accountId/withdraw'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -118,6 +140,8 @@ export interface FileRouteTypes {
     | '/app'
     | '/app/accounts/$accountId'
     | '/app/accounts'
+    | '/app/accounts/$accountId/deposit'
+    | '/app/accounts/$accountId/withdraw'
   id:
     | '__root__'
     | '/'
@@ -129,6 +153,8 @@ export interface FileRouteTypes {
     | '/app/'
     | '/app/accounts/$accountId'
     | '/app/accounts/'
+    | '/app/accounts/$accountId/deposit'
+    | '/app/accounts/$accountId/withdraw'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -203,16 +229,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAccountsAccountIdRouteImport
       parentRoute: typeof AppAccountsRouteRoute
     }
+    '/app/accounts/$accountId/deposit': {
+      id: '/app/accounts/$accountId/deposit'
+      path: '/deposit'
+      fullPath: '/app/accounts/$accountId/deposit'
+      preLoaderRoute: typeof AppAccountsAccountIdDepositRouteImport
+      parentRoute: typeof AppAccountsAccountIdRoute
+    }
+    '/app/accounts/$accountId/withdraw': {
+      id: '/app/accounts/$accountId/withdraw'
+      path: '/withdraw'
+      fullPath: '/app/accounts/$accountId/withdraw'
+      preLoaderRoute: typeof AppAccountsAccountIdWithdrawRouteImport
+      parentRoute: typeof AppAccountsAccountIdRoute
+    }
   }
 }
 
+interface AppAccountsAccountIdRouteChildren {
+  AppAccountsAccountIdDepositRoute: typeof AppAccountsAccountIdDepositRoute
+  AppAccountsAccountIdWithdrawRoute: typeof AppAccountsAccountIdWithdrawRoute
+}
+
+const AppAccountsAccountIdRouteChildren: AppAccountsAccountIdRouteChildren = {
+  AppAccountsAccountIdDepositRoute: AppAccountsAccountIdDepositRoute,
+  AppAccountsAccountIdWithdrawRoute: AppAccountsAccountIdWithdrawRoute,
+}
+
+const AppAccountsAccountIdRouteWithChildren =
+  AppAccountsAccountIdRoute._addFileChildren(AppAccountsAccountIdRouteChildren)
+
 interface AppAccountsRouteRouteChildren {
-  AppAccountsAccountIdRoute: typeof AppAccountsAccountIdRoute
+  AppAccountsAccountIdRoute: typeof AppAccountsAccountIdRouteWithChildren
   AppAccountsIndexRoute: typeof AppAccountsIndexRoute
 }
 
 const AppAccountsRouteRouteChildren: AppAccountsRouteRouteChildren = {
-  AppAccountsAccountIdRoute: AppAccountsAccountIdRoute,
+  AppAccountsAccountIdRoute: AppAccountsAccountIdRouteWithChildren,
   AppAccountsIndexRoute: AppAccountsIndexRoute,
 }
 

@@ -7,7 +7,6 @@ import { AccountInfoDrawer } from '../account-info-drawer';
 import { AccountSettingsModal } from '../account-settings-modal/account-settings-modal';
 import { ArchiveAccountModal } from '../archive-account-modal/archive-account-modal';
 import { OpeningCorrectionModal } from '../opening-correction-modal/opening-correction-modal';
-import { RecordCashActivityModal } from '../record-cash-activity-modal/record-cash-activity-modal';
 import { TransferModal } from '../transfer-modal/transfer-modal';
 import { useAccountDetailOverlay } from './account-detail-overlay-provider';
 
@@ -44,15 +43,6 @@ export function AccountDetailOverlayHost({ account, refetchAccounts, onAccountAr
         opened={active?.type === 'transfer'}
         onClose={close}
         defaultSourceAccountId={account.id}
-        onSuccess={refreshSelectedAccount}
-      />
-
-      <RecordCashActivityModal
-        key={active?.type === 'cash-activity' ? active.activityType : 'cash-activity'}
-        account={account}
-        opened={active?.type === 'cash-activity'}
-        onClose={close}
-        defaultType={active?.type === 'cash-activity' ? active.activityType : 'CASH_DEPOSIT'}
         onSuccess={refreshSelectedAccount}
       />
 

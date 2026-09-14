@@ -1,4 +1,5 @@
 import { ArrowDownLeftIcon, ArrowsLeftRightIcon, ArrowUpRightIcon, DotsThreeIcon } from '@phosphor-icons/react';
+import { useNavigate } from '@tanstack/react-router';
 import type { FinancialAccount } from '../../types';
 import { isCashFundingCapable } from '../../utils/account-formatters';
 import { useAccountDetailOverlay } from '../account-detail-overlay/account-detail-overlay-provider';
@@ -10,6 +11,7 @@ interface AccountQuickActionsProps {
 
 export function AccountQuickActions({ account }: AccountQuickActionsProps) {
   const { open } = useAccountDetailOverlay();
+  const navigate = useNavigate();
   const isHoldings = account.trackingMode === 'HOLDINGS_ONLY';
   const canCashTransact = !isHoldings && isCashFundingCapable(account.kind) && !account.archived;
 
@@ -19,7 +21,13 @@ export function AccountQuickActions({ account }: AccountQuickActionsProps) {
       <button
         type="button"
         className={`${classes.actionBtn} ${classes.depositBtn}`}
-        onClick={() => open({ type: 'cash-activity', activityType: 'CASH_DEPOSIT' })}
+        onClick={() =>
+          navigate({
+            to: '/app/accounts/$accountId/deposit',
+            params: { accountId: account.id },
+            resetScroll: false
+          })
+        }
         disabled={!canCashTransact}
         aria-label={canCashTransact ? `Deposit into ${account.name}` : 'Deposit not available for this account'}>
         <ArrowDownLeftIcon size={20} weight="bold" />
@@ -30,7 +38,13 @@ export function AccountQuickActions({ account }: AccountQuickActionsProps) {
       <button
         type="button"
         className={`${classes.actionBtn} ${classes.withdrawBtn}`}
-        onClick={() => open({ type: 'cash-activity', activityType: 'CASH_WITHDRAWAL' })}
+        onClick={() =>
+          navigate({
+            to: '/app/accounts/$accountId/withdraw',
+            params: { accountId: account.id },
+            resetScroll: false
+          })
+        }
         disabled={!canCashTransact}
         aria-label={canCashTransact ? `Withdraw from ${account.name}` : 'Withdrawal not available for this account'}>
         <ArrowUpRightIcon size={20} weight="bold" />

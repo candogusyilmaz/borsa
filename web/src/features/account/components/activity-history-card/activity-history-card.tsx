@@ -12,6 +12,7 @@ import {
   SlidersIcon,
   WarningCircleIcon
 } from '@phosphor-icons/react';
+import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { $api } from '@/api/client';
 import type { ActivityType, FinancialAccount } from '../../types';
@@ -52,6 +53,7 @@ function getActivityIcon(type: ActivityType) {
 
 export function ActivityHistoryCard({ account, onActivityUpdated }: ActivityHistoryCardProps) {
   const { open } = useAccountDetailOverlay();
+  const navigate = useNavigate();
   const [page, setPage] = useState(0);
   const [sortOption, setSortOption] = useState('recordedAt,desc');
   const [typeFilter, setTypeFilter] = useState('ALL');
@@ -214,7 +216,13 @@ export function ActivityHistoryCard({ account, onActivityUpdated }: ActivityHist
                   color="teal"
                   variant="light"
                   className={classes.actionBtn}
-                  onClick={() => open({ type: 'cash-activity', activityType: 'CASH_DEPOSIT' })}>
+                  onClick={() =>
+                    navigate({
+                      to: '/app/accounts/$accountId/deposit',
+                      params: { accountId: account.id },
+                      resetScroll: false
+                    })
+                  }>
                   Deposit Cash
                 </Button>
                 <Button
@@ -222,7 +230,13 @@ export function ActivityHistoryCard({ account, onActivityUpdated }: ActivityHist
                   color="orange"
                   variant="light"
                   className={classes.actionBtn}
-                  onClick={() => open({ type: 'cash-activity', activityType: 'CASH_WITHDRAWAL' })}>
+                  onClick={() =>
+                    navigate({
+                      to: '/app/accounts/$accountId/withdraw',
+                      params: { accountId: account.id },
+                      resetScroll: false
+                    })
+                  }>
                   Withdraw Cash
                 </Button>
                 <Button size="md" color="blue" variant="light" className={classes.actionBtn} onClick={() => open({ type: 'transfer' })}>
