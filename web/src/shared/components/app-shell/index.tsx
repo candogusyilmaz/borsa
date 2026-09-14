@@ -258,7 +258,7 @@ export function AppShell({ children, user }: AppShellProps) {
         activeId={activeId}
         activeIndicator="pill"
         surface="solid"
-        position="sticky"
+        position="fixed"
         onItemSelect={handleItemSelect}
         renderLink={({ item, linkProps, children }) => {
           if (item.id === 'menu') {

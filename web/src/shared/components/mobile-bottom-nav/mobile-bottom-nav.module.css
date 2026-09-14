@@ -1,10 +1,7 @@
 .root {
   position: relative;
-  width: 100%;
-  height: calc(
-    var(--mobile-bottom-nav-height) +
-    env(safe-area-inset-bottom, 0px)
-  );
+   width: 100%;
+  height: var(--app-mobile-bottom-nav-height);
   box-sizing: border-box;
   -webkit-user-select: none;
   user-select: none;

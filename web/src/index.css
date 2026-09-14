@@ -4,6 +4,13 @@
   box-sizing: border-box;
 }
 
+:root {
+  --app-mobile-bottom-nav-height: calc(
+    var(--mobile-bottom-nav-height) +
+    env(safe-area-inset-bottom, 0px)
+  );
+}
+
 html {
   scroll-behavior: smooth;
   overscroll-behavior-y: none;
