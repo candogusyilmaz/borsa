@@ -25,7 +25,8 @@ export function AccountQuickActions({ account }: AccountQuickActionsProps) {
           navigate({
             to: '/app/accounts/$accountId/deposit',
             params: { accountId: account.id },
-            resetScroll: false
+            resetScroll: false,
+            viewTransition: false
           })
         }
         disabled={!canCashTransact}
@@ -42,7 +43,8 @@ export function AccountQuickActions({ account }: AccountQuickActionsProps) {
           navigate({
             to: '/app/accounts/$accountId/withdraw',
             params: { accountId: account.id },
-            resetScroll: false
+            resetScroll: false,
+            viewTransition: false
           })
         }
         disabled={!canCashTransact}

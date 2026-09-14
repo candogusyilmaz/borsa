@@ -45,7 +45,7 @@ function EditRoute() {
   return (
     <RouteDrawer
       title="Edit"
-      onExited={() => navigate({ to: '/app/resources/$resourceId', params: { resourceId }, replace: true, resetScroll: false })}>
+      onExited={() => navigate({ to: '/app/resources/$resourceId', params: { resourceId }, replace: true, resetScroll: false, viewTransition: false })}>
       {({ close }) => <EditForm resource={resource} onClose={close} />}
     </RouteDrawer>
   );
