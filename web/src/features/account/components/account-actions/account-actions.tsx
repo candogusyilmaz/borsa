@@ -4,19 +4,19 @@ import { useQueryClient } from '@tanstack/react-query';
 import { $api } from '@/api/client';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
 import { getAccountKindLabel, getTrackingModeLabel } from '../../utils/account-formatters';
-import { useOptionalAccountDetailOverlay } from '../account-detail-overlay/account-detail-overlay-provider';
 import { AccountInfoOverlay } from '../account-info';
+import { AccountSettingsOverlay } from '../account-settings/account-settings';
+import { ArchiveAccountOverlay } from '../archive-account/archive-account';
 import classes from './account-actions.module.css';
 
 export interface AccountActionsProps {
   accountId: string;
-  onRefresh?: () => void;
+  onAccountArchived?: () => Promise<void>;
 }
 
-export function AccountActions({ accountId, onRefresh }: AccountActionsProps) {
+export function AccountActions({ accountId, onAccountArchived }: AccountActionsProps) {
   const current = useCurrentOverlay();
   const queryClient = useQueryClient();
-  const accountDetailOverlay = useOptionalAccountDetailOverlay();
 
   const accountQuery = $api.useQuery('get', '/api/v1/accounts/{accountId}', {
     params: { path: { accountId } }
@@ -58,8 +58,7 @@ export function AccountActions({ accountId, onRefresh }: AccountActionsProps) {
       }),
       queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/accounts'] })
     ]);
-    onRefresh?.();
-    current.close('refreshed');
+    current.dismiss('refreshed');
   }
 
   return (
@@ -92,10 +91,7 @@ export function AccountActions({ accountId, onRefresh }: AccountActionsProps) {
         className={classes.actionItem}
         disabled={account.archived}
         onClick={() => {
-          if (accountDetailOverlay) {
-            current.close();
-            accountDetailOverlay.open({ type: 'settings' });
-          }
+          AccountSettingsOverlay.replace({ accountId });
         }}>
         <div className={classes.actionItemLeft}>
           <GearIcon size={20} />
@@ -109,7 +105,7 @@ export function AccountActions({ accountId, onRefresh }: AccountActionsProps) {
         type="button"
         className={classes.actionItem}
         onClick={() => {
-          AccountInfoOverlay.open({ accountId });
+          AccountInfoOverlay.replace({ accountId });
         }}>
         <div className={classes.actionItemLeft}>
           <InfoIcon size={20} />
@@ -126,10 +122,12 @@ export function AccountActions({ accountId, onRefresh }: AccountActionsProps) {
         className={`${classes.actionItem} ${classes.destructiveItem}`}
         disabled={account.archived}
         onClick={() => {
-          if (accountDetailOverlay) {
-            current.close();
-            accountDetailOverlay.open({ type: 'archive' });
-          }
+          const handle = ArchiveAccountOverlay.replace({ accountId });
+          void handle.closed.then(async (outcome) => {
+            if (outcome.status === 'completed') {
+              await onAccountArchived?.();
+            }
+          });
         }}>
         <div className={classes.actionItemLeft}>
           <ArchiveIcon size={20} />

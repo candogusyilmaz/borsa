@@ -1,7 +1,7 @@
 import { Button, Divider, Stack, Text } from '@mantine/core';
 import { CheckCircleIcon } from '@phosphor-icons/react';
 import { formatCurrency, formatDateTime } from '../../utils/account-formatters';
-import classes from './transfer-modal.module.css';
+import classes from './transfer.module.css';
 import type { TransferSessionResult } from './use-transfer-session';
 
 interface TransferSuccessProps {

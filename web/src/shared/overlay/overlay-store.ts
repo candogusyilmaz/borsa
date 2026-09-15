@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { OverlayDefinition, OverlayHandle, OverlayNavigationDirection, OverlayOutcome, OverlayStackItem } from './types';
 
 export interface OverlayStoreState {
@@ -119,14 +120,18 @@ class OverlayStore {
   };
 
   public back = (): void => {
+    this.dismissCurrent('back');
+  };
+
+  public dismissCurrent = (reason = 'dismissed'): void => {
     if (this.stack.length > 1) {
       const popped = this.stack[this.stack.length - 1];
       this.stack = this.stack.slice(0, -1);
       this.direction = 'backward';
       this.notify();
-      popped?.resolveClosed(popped.completedOutcome ?? { status: 'dismissed', reason: 'back' });
+      popped?.resolveClosed(popped.completedOutcome ?? { status: 'dismissed', reason });
     } else if (this.stack.length === 1) {
-      this.close('back');
+      this.close(reason);
     }
   };
 
@@ -145,6 +150,17 @@ class OverlayStore {
       this.isOpen = false;
       this.notify();
     }
+  };
+
+  public setTitle = (id: string, title: ReactNode): void => {
+    const index = this.stack.findIndex((item) => item.id === id);
+    if (index < 0) return;
+
+    const item = this.stack[index];
+    if (!item) return;
+
+    this.stack = [...this.stack.slice(0, index), { ...item, titleOverride: title }, ...this.stack.slice(index + 1)];
+    this.notify();
   };
 
   public close = (reason = 'dismissed'): void => {

@@ -1,10 +1,12 @@
-import { Box, Burger, Button, Container, Drawer, Group, Stack } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
+import { Box, Burger, Button, Container, Group, Stack } from '@mantine/core';
 import { ArrowRightIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
+import { useRef, useState } from 'react';
 import { BrandLogo } from '@/shared/components/brand-logo';
 import { ThemeToggle } from '@/shared/components/theme-toggle';
 import { siteConfig } from '@/shared/config/site';
+import type { OverlayHandle } from '@/shared/overlay';
+import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
 import classes from './marketing-header.module.css';
 
 const NAV_LINKS = [
@@ -14,8 +16,62 @@ const NAV_LINKS = [
   { label: 'FAQ', href: '#faq' }
 ];
 
+function MarketingMenu() {
+  const current = useCurrentOverlay();
+
+  return (
+    <Stack component="nav" aria-label="Mobile navigation" gap="md" mt="md">
+      {NAV_LINKS.map((link) => (
+        <a key={link.href} href={link.href} className={classes.mobileNavLink} onClick={() => current.close('navigation')}>
+          {link.label}
+        </a>
+      ))}
+      <Box pt="md">
+        <Button component={Link} to="/login" variant="default" fullWidth mb="sm" onClick={() => current.close('navigation')}>
+          Sign in
+        </Button>
+        <Button
+          component={Link}
+          to="/app"
+          fullWidth
+          color="brand"
+          rightSection={<ArrowRightIcon size={14} weight="bold" />}
+          onClick={() => current.close('navigation')}>
+          Launch App
+        </Button>
+      </Box>
+    </Stack>
+  );
+}
+
+export const MarketingMenuOverlay = registerOverlay(MarketingMenu, {
+  name: 'marketing-menu',
+  title: <BrandLogo variant="full" size="sm" />,
+  presentation: 'drawer',
+  desktopSize: '280px',
+  hiddenFrom: 'md'
+});
+
 export function MarketingHeader() {
-  const [opened, { toggle, close }] = useDisclosure(false);
+  const [menuOpened, setMenuOpened] = useState(false);
+  const menuHandle = useRef<OverlayHandle | null>(null);
+
+  function toggleMenu() {
+    if (menuOpened) {
+      menuHandle.current?.close('toggle');
+      return;
+    }
+
+    const handle = MarketingMenuOverlay.open();
+    menuHandle.current = handle;
+    setMenuOpened(true);
+    void handle.closed.then(() => {
+      if (menuHandle.current?.id === handle.id) {
+        menuHandle.current = null;
+        setMenuOpened(false);
+      }
+    });
+  }
 
   return (
     <header className={classes.header}>
@@ -49,33 +105,17 @@ export function MarketingHeader() {
             Launch App
           </Button>
 
-          <Burger opened={opened} onClick={toggle} hiddenFrom="md" size="sm" aria-label="Toggle navigation menu" />
+          <Burger
+            opened={menuOpened}
+            onClick={toggleMenu}
+            hiddenFrom="md"
+            size="sm"
+            aria-label="Toggle navigation menu"
+            aria-expanded={menuOpened}
+            aria-haspopup="dialog"
+          />
         </div>
       </Container>
-
-      <Drawer opened={opened} onClose={close} size="280px" padding="md" title={<BrandLogo variant="full" size="sm" />} hiddenFrom="md">
-        <Stack component="nav" aria-label="Mobile navigation" gap="md" mt="md">
-          {NAV_LINKS.map((link) => (
-            <a key={link.href} href={link.href} className={classes.mobileNavLink} onClick={close}>
-              {link.label}
-            </a>
-          ))}
-          <Box pt="md">
-            <Button component={Link} to="/login" variant="default" fullWidth mb="sm" onClick={close}>
-              Sign in
-            </Button>
-            <Button
-              component={Link}
-              to="/app"
-              fullWidth
-              color="brand"
-              rightSection={<ArrowRightIcon size={14} weight="bold" />}
-              onClick={close}>
-              Launch App
-            </Button>
-          </Box>
-        </Stack>
-      </Drawer>
     </header>
   );
 }

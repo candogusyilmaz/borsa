@@ -1,14 +1,14 @@
-import { Alert, Button, Skeleton, Stack, Text } from '@mantine/core';
-import { InfoIcon, WarningCircleIcon } from '@phosphor-icons/react';
+import { Alert, Badge, Button, Group, Skeleton, Stack, Text } from '@mantine/core';
+import { ArrowsLeftRightIcon, InfoIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { useEffect } from 'react';
 import { $api } from '@/api/client';
-import type { ActivityResponse } from '../../types';
+import { useCurrentOverlay } from '@/shared/overlay';
+import classes from './transfer.module.css';
 import { getEligibleTransferAccounts } from './transfer-domain';
 import { TransferForm } from './transfer-form';
-import classes from './transfer-modal.module.css';
 import { TransferPreview } from './transfer-preview';
 import { TransferSuccess } from './transfer-success';
-import type { TransferHeaderInfo } from './transfer-types';
+import type { TransferStep } from './transfer-types';
 import { useTransferSession } from './use-transfer-session';
 
 export interface TransferSessionProps {
@@ -16,9 +16,7 @@ export interface TransferSessionProps {
   defaultDestinationAccountId?: string;
   lockSourceAccount?: boolean;
   onClose: () => void;
-  onSuccess?: (activity: ActivityResponse) => void;
   onStartAnother: () => void;
-  onHeaderChange?: (header: TransferHeaderInfo) => void;
 }
 
 export function TransferSession({
@@ -26,9 +24,7 @@ export function TransferSession({
   defaultDestinationAccountId,
   lockSourceAccount,
   onClose,
-  onSuccess,
-  onStartAnother,
-  onHeaderChange
+  onStartAnother
 }: TransferSessionProps) {
   // Query all non-archived financial accounts for the user
   const accountsQuery = $api.useQuery('get', '/api/v1/accounts', {
@@ -98,9 +94,7 @@ export function TransferSession({
       defaultDestinationAccountId={defaultDestinationAccountId}
       lockSourceAccount={lockSourceAccount}
       onClose={onClose}
-      onSuccess={onSuccess}
       onStartAnother={onStartAnother}
-      onHeaderChange={onHeaderChange}
     />
   );
 }
@@ -110,22 +104,20 @@ interface TransferWorkflowProps extends TransferSessionProps {
 }
 
 function TransferWorkflow(props: TransferWorkflowProps) {
+  const current = useCurrentOverlay();
   const session = useTransferSession({
     accounts: props.accounts,
     defaultSourceAccountId: props.defaultSourceAccountId,
     defaultDestinationAccountId: props.defaultDestinationAccountId,
-    lockSourceAccount: props.lockSourceAccount,
-    onClose: props.onClose,
-    onSuccess: props.onSuccess
+    lockSourceAccount: props.lockSourceAccount
   });
 
-  const { onHeaderChange } = props;
   const step = session.state.step;
   const currency = session.sourceAccount?.currency;
 
   useEffect(() => {
-    onHeaderChange?.({ step, currency });
-  }, [onHeaderChange, step, currency]);
+    current.setTitle(<TransferHeaderTitle step={step} currency={currency} />);
+  }, [current, step, currency]);
 
   return (
     <>
@@ -139,5 +131,23 @@ function TransferWorkflow(props: TransferWorkflowProps) {
         <TransferSuccess session={session} onDone={props.onClose} onStartAnother={props.onStartAnother} />
       )}
     </>
+  );
+}
+
+function TransferHeaderTitle({ step, currency }: { step: TransferStep; currency?: string }) {
+  const title = step === 'success' ? 'Transfer Completed' : step === 'preview' ? 'Review & Confirm Transfer' : 'Transfer Funds';
+
+  return (
+    <Group gap="xs">
+      <ArrowsLeftRightIcon size={20} weight="bold" color="var(--mantine-primary-color-filled)" />
+      <Text fw={700} size="md">
+        {title}
+      </Text>
+      {currency && step !== 'success' && (
+        <Badge color="teal" variant="light" size="sm">
+          {currency}
+        </Badge>
+      )}
+    </Group>
   );
 }

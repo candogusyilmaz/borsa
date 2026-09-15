@@ -3,13 +3,7 @@ import { WarningCircleIcon } from '@phosphor-icons/react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { $api } from '@/api/client';
 import { normalizeError } from '@/api/errors';
-import {
-  AccountDetailContent,
-  AccountDetailOverlayHost,
-  AccountDetailOverlayProvider,
-  AccountEmptyState,
-  useAccountsLayout
-} from '@/features/account';
+import { AccountDetailContent, AccountEmptyState, useAccountsLayout } from '@/features/account';
 import type { FinancialAccount } from '@/features/account/types';
 import { createSeoMeta } from '@/shared/utils/seo';
 
@@ -36,8 +30,8 @@ function AccountDetailRouteComponent() {
     activeAccounts,
     isLoading: accountsLoading,
     isError: accountsError,
-    openCreateModal,
-    openPickerDrawer,
+    openCreateAccount,
+    openAccountPicker,
     refetchAccounts
   } = useAccountsLayout();
   const accountQuery = $api.useQuery('get', '/api/v1/accounts/{accountId}', { params: { path: { accountId } } });
@@ -80,7 +74,7 @@ function AccountDetailRouteComponent() {
 
   // Preserve the workspace empty state only when the list actually loaded empty.
   if (!account && !accountsError && accounts.length === 0) {
-    return <AccountEmptyState onOpenCreate={openCreateModal} />;
+    return <AccountEmptyState onOpenCreate={openCreateAccount} />;
   }
 
   // If specific account was not found
@@ -124,9 +118,11 @@ function AccountDetailRouteComponent() {
   }
 
   return (
-    <AccountDetailOverlayProvider key={selectedAccount.id}>
-      <AccountDetailContent account={selectedAccount} allAccounts={accounts} onOpenAccountPicker={openPickerDrawer} />
-      <AccountDetailOverlayHost account={selectedAccount} refetchAccounts={refetchAccounts} onAccountArchived={handleAccountArchived} />
-    </AccountDetailOverlayProvider>
+    <AccountDetailContent
+      account={selectedAccount}
+      allAccounts={accounts}
+      onOpenAccountPicker={openAccountPicker}
+      onAccountArchived={handleAccountArchived}
+    />
   );
 }

@@ -1,8 +1,8 @@
 import { Alert, Badge, Button, Checkbox, Stack, Text } from '@mantine/core';
 import { ArrowClockwiseIcon, ArrowRightIcon, InfoIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { formatCurrency } from '../../utils/account-formatters';
+import classes from './transfer.module.css';
 import { getTransferPolicyPresentation } from './transfer-domain';
-import classes from './transfer-modal.module.css';
 import type { TransferSessionResult } from './use-transfer-session';
 
 interface TransferPreviewProps {

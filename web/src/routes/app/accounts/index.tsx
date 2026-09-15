@@ -20,7 +20,7 @@ export const Route = createFileRoute('/app/accounts/')({
 });
 
 function AccountsIndexRouteComponent() {
-  const { accounts, activeAccounts, isLoading, isFetching, isError, openCreateModal } = useAccountsLayout();
+  const { accounts, activeAccounts, isLoading, isFetching, isError, openCreateAccount } = useAccountsLayout();
 
   if (isLoading || (accounts.length === 0 && isFetching)) {
     return (
@@ -37,12 +37,12 @@ function AccountsIndexRouteComponent() {
   }
 
   if (accounts.length === 0) {
-    return <AccountEmptyState onOpenCreate={openCreateModal} />;
+    return <AccountEmptyState onOpenCreate={openCreateAccount} />;
   }
 
   const targetAccount = activeAccounts[0] ?? accounts[0];
   if (!targetAccount) {
-    return <AccountEmptyState onOpenCreate={openCreateModal} />;
+    return <AccountEmptyState onOpenCreate={openCreateAccount} />;
   }
 
   return <Navigate to="/app/accounts/$accountId" params={{ accountId: targetAccount.id }} replace />;

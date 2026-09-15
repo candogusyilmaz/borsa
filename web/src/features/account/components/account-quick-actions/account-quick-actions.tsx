@@ -2,16 +2,16 @@ import { ArrowDownLeftIcon, ArrowsLeftRightIcon, ArrowUpRightIcon, DotsThreeIcon
 import type { FinancialAccount } from '../../types';
 import { isCashFundingCapable } from '../../utils/account-formatters';
 import { AccountActionsOverlay } from '../account-actions';
-import { useAccountDetailOverlay } from '../account-detail-overlay/account-detail-overlay-provider';
 import { CashActivityOverlay } from '../record-cash-activity';
+import { TransferOverlay } from '../transfer/transfer';
 import classes from './account-quick-actions.module.css';
 
 interface AccountQuickActionsProps {
   account: FinancialAccount;
+  onAccountArchived?: () => Promise<void>;
 }
 
-export function AccountQuickActions({ account }: AccountQuickActionsProps) {
-  const { open } = useAccountDetailOverlay();
+export function AccountQuickActions({ account, onAccountArchived }: AccountQuickActionsProps) {
   const isHoldings = account.trackingMode === 'HOLDINGS_ONLY';
   const canCashTransact = !isHoldings && isCashFundingCapable(account.kind) && !account.archived;
 
@@ -43,7 +43,7 @@ export function AccountQuickActions({ account }: AccountQuickActionsProps) {
       <button
         type="button"
         className={`${classes.actionBtn} ${classes.transferBtn}`}
-        onClick={() => open({ type: 'transfer' })}
+        onClick={() => TransferOverlay.open({ defaultSourceAccountId: account.id })}
         disabled={!canCashTransact}
         aria-label={canCashTransact ? `Transfer funds from ${account.name}` : 'Transfer not available for this account'}>
         <ArrowsLeftRightIcon size={20} weight="bold" />
@@ -54,7 +54,7 @@ export function AccountQuickActions({ account }: AccountQuickActionsProps) {
       <button
         type="button"
         className={`${classes.actionBtn} ${classes.moreBtn}`}
-        onClick={() => AccountActionsOverlay.open({ accountId: account.id })}
+        onClick={() => AccountActionsOverlay.open({ accountId: account.id, onAccountArchived })}
         aria-label={`More actions for ${account.name}`}>
         <DotsThreeIcon size={22} weight="bold" />
         <span className={classes.btnLabel}>More</span>

@@ -1,3 +1,4 @@
+import type { MantineBreakpoint } from '@mantine/core';
 import type { ComponentType, ReactNode } from 'react';
 
 export type OverlayPresentation = 'drawer' | 'modal';
@@ -26,6 +27,7 @@ export interface OverlayMetadata<TProps> {
   presentation?: OverlayPresentation;
   size?: string | number;
   desktopSize?: string | number;
+  hiddenFrom?: MantineBreakpoint;
   closeOnClickOutside?: boolean;
   closeOnEscape?: boolean;
 }
@@ -47,12 +49,15 @@ export interface OverlayStackItem<TProps = unknown, TResult = unknown> {
   handle: OverlayHandle<TResult>;
   resolveClosed: (outcome: OverlayOutcome<TResult>) => void;
   completedOutcome?: OverlayOutcome<TResult>;
+  titleOverride?: ReactNode;
 }
 
 export interface CurrentOverlayContextValue<TResult = void> {
   id: string;
   close: (reason?: string) => void;
+  dismiss: (reason?: string) => void;
   back: () => void;
   complete: (result: TResult) => void;
+  setTitle: (title: ReactNode) => void;
   canGoBack: boolean;
 }

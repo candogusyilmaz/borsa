@@ -1,5 +1,4 @@
 import { Badge, Collapse, Skeleton } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
 import {
   ArrowCounterClockwiseIcon,
   ArrowDownLeftIcon,
@@ -12,11 +11,10 @@ import {
   ReceiptIcon,
   SlidersIcon
 } from '@phosphor-icons/react';
-import { useState } from 'react';
 import { $api } from '@/api/client';
 import type { ActivityResponse, ActivityType, FinancialAccount } from '../../types';
 import { formatCurrency, formatDateTime, getActivityTypeLabel } from '../../utils/account-formatters';
-import { ActivityDetailModal } from '../activity-detail-modal/activity-detail-modal';
+import { ActivityDetailOverlay } from '../activity-detail/activity-detail';
 import classes from './recent-activity-card.module.css';
 
 interface RecentActivityCardProps {
@@ -46,9 +44,6 @@ function getActivityIcon(type: ActivityType) {
 }
 
 export function RecentActivityCard({ account, expanded, onToggle, onViewAll }: RecentActivityCardProps) {
-  const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
-  const [detailOpened, { open: openDetail, close: closeDetail }] = useDisclosure(false);
-
   const activitiesQuery = $api.useQuery('get', '/api/v1/activities', {
     params: {
       query: {
@@ -75,8 +70,7 @@ export function RecentActivityCard({ account, expanded, onToggle, onViewAll }: R
         className={`${classes.activityRow} ${isSingle ? classes.activityRowSingle : ''}`}
         onClick={(e) => {
           e.stopPropagation();
-          setSelectedActivityId(act.id);
-          openDetail();
+          ActivityDetailOverlay.open({ activityId: act.id, isAccountArchived: account.archived });
         }}
         aria-label={`View details for ${getActivityTypeLabel(act.activityType)}: ${formatCurrency(postingAmount, account.currency)}`}>
         <div className={classes.activityItemLeft}>
@@ -108,82 +102,68 @@ export function RecentActivityCard({ account, expanded, onToggle, onViewAll }: R
   }
 
   return (
-    <>
-      <section className={classes.card} aria-labelledby="recent-activity-title">
-        {/* Accordion Header (No nested buttons) */}
-        <div className={classes.cardHeader}>
+    <section className={classes.card} aria-labelledby="recent-activity-title">
+      {/* Accordion Header (No nested buttons) */}
+      <div className={classes.cardHeader}>
+        <button
+          type="button"
+          className={classes.headerMain}
+          onClick={onToggle}
+          aria-expanded={expanded}
+          aria-controls="recent-activity-content">
+          <div className={classes.headerLeft}>
+            <div className={classes.iconSquircle} aria-hidden="true">
+              <ClockCounterClockwiseIcon size={22} weight="duotone" />
+            </div>
+            <span id="recent-activity-title" className={classes.cardTitle}>
+              Recent Activity
+            </span>
+          </div>
+        </button>
+
+        <div className={classes.headerRight}>
+          {expanded && items.length > 0 && (
+            <button type="button" className={classes.viewAllBtn} onClick={onViewAll} aria-label="View all account activities">
+              View All
+            </button>
+          )}
+
           <button
             type="button"
-            className={classes.headerMain}
+            className={classes.chevronBtn}
             onClick={onToggle}
-            aria-expanded={expanded}
-            aria-controls="recent-activity-content">
-            <div className={classes.headerLeft}>
-              <div className={classes.iconSquircle} aria-hidden="true">
-                <ClockCounterClockwiseIcon size={22} weight="duotone" />
-              </div>
-              <span id="recent-activity-title" className={classes.cardTitle}>
-                Recent Activity
-              </span>
+            aria-label={expanded ? 'Collapse Recent Activity' : 'Expand Recent Activity'}>
+            <div className={classes.chevronIcon} aria-hidden="true">
+              {expanded ? <CaretUpIcon size={18} weight="bold" /> : <CaretDownIcon size={18} weight="bold" />}
             </div>
           </button>
+        </div>
+      </div>
 
-          <div className={classes.headerRight}>
-            {expanded && items.length > 0 && (
-              <button type="button" className={classes.viewAllBtn} onClick={onViewAll} aria-label="View all account activities">
-                View All
-              </button>
-            )}
-
-            <button
-              type="button"
-              className={classes.chevronBtn}
-              onClick={onToggle}
-              aria-label={expanded ? 'Collapse Recent Activity' : 'Expand Recent Activity'}>
-              <div className={classes.chevronIcon} aria-hidden="true">
-                {expanded ? <CaretUpIcon size={18} weight="bold" /> : <CaretDownIcon size={18} weight="bold" />}
-              </div>
-            </button>
+      {/* Card Body */}
+      <div className={classes.cardBody} id="recent-activity-content">
+        {activitiesQuery.isLoading ? (
+          <div style={{ paddingBlock: '0.5rem' }}>
+            <Skeleton height={44} radius="sm" />
           </div>
-        </div>
+        ) : items.length === 0 ? (
+          <div className={classes.emptyState}>No recent activity recorded.</div>
+        ) : (
+          <>
+            {/* Always render latest activity without unmounting */}
+            {latestItem && renderActivityRow(latestItem, !expanded || items.length === 1)}
 
-        {/* Card Body */}
-        <div className={classes.cardBody} id="recent-activity-content">
-          {activitiesQuery.isLoading ? (
-            <div style={{ paddingBlock: '0.5rem' }}>
-              <Skeleton height={44} radius="sm" />
-            </div>
-          ) : items.length === 0 ? (
-            <div className={classes.emptyState}>No recent activity recorded.</div>
-          ) : (
-            <>
-              {/* Always render latest activity without unmounting */}
-              {latestItem && renderActivityRow(latestItem, !expanded || items.length === 1)}
-
-              {/* Additional items expand smoothly below without duplicate mounting */}
-              {items.length > 1 && (
-                <Collapse expanded={expanded}>
-                  <div className={classes.expandedContent}>
-                    {items.slice(1, 5).map((act, idx, arr) => renderActivityRow(act, idx === arr.length - 1))}
-                  </div>
-                </Collapse>
-              )}
-            </>
-          )}
-        </div>
-      </section>
-
-      {/* Activity Detail Modal */}
-      {selectedActivityId && (
-        <ActivityDetailModal
-          activityId={selectedActivityId}
-          opened={detailOpened}
-          onClose={() => {
-            closeDetail();
-            setSelectedActivityId(null);
-          }}
-        />
-      )}
-    </>
+            {/* Additional items expand smoothly below without duplicate mounting */}
+            {items.length > 1 && (
+              <Collapse expanded={expanded}>
+                <div className={classes.expandedContent}>
+                  {items.slice(1, 5).map((act, idx, arr) => renderActivityRow(act, idx === arr.length - 1))}
+                </div>
+              </Collapse>
+            )}
+          </>
+        )}
+      </div>
+    </section>
   );
 }

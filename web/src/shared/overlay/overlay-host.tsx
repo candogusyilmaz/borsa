@@ -22,17 +22,21 @@ export function OverlayHost() {
   }, [isOpen]);
 
   const currentItem = stack[stack.length - 1];
+  const currentItemId = currentItem?.id;
 
   const currentContextValue = useMemo<CurrentOverlayContextValue<unknown> | null>(() => {
-    if (!currentItem) return null;
+    if (!currentItemId) return null;
+    const id = currentItemId;
     return {
-      id: currentItem.id,
+      id,
       close: (reason?: string) => overlayStore.close(reason),
+      dismiss: (reason?: string) => overlayStore.dismissCurrent(reason),
       back: () => overlayStore.back(),
       complete: (result: unknown) => overlayStore.complete(result),
+      setTitle: (title) => overlayStore.setTitle(id, title),
       canGoBack: stack.length > 1
     };
-  }, [currentItem, stack.length]);
+  }, [currentItemId, stack.length]);
 
   if (!currentItem && !isOpen) {
     return null;
@@ -47,7 +51,7 @@ export function OverlayHost() {
   const Component = definition.component as ComponentType<Record<string, unknown>>;
   const presentation = metadata.presentation ?? 'drawer';
 
-  const rawTitle = typeof metadata.title === 'function' ? metadata.title(props) : metadata.title;
+  const rawTitle = currentItem.titleOverride ?? (typeof metadata.title === 'function' ? metadata.title(props) : metadata.title);
 
   const headerTitle = (
     <div className={classes.headerTitleWrapper}>
@@ -69,6 +73,10 @@ export function OverlayHost() {
         ? classes.contentReplace
         : classes.contentForward;
 
+  function handleClose() {
+    overlayStore.dismissCurrent('backdrop-or-escape');
+  }
+
   const renderedContent = (
     <CurrentOverlayContext.Provider value={currentContextValue}>
       <div key={currentItem.id} className={`${classes.contentContainer} ${animationClass}`}>
@@ -81,7 +89,7 @@ export function OverlayHost() {
     return (
       <Modal
         opened={activeOpened}
-        onClose={() => overlayStore.close('backdrop-or-escape')}
+        onClose={handleClose}
         transitionProps={{ onExited: overlayStore.onExited }}
         title={headerTitle}
         size={metadata.size ?? 'md'}
@@ -96,10 +104,11 @@ export function OverlayHost() {
   return (
     <ResponsiveDrawer
       opened={activeOpened}
-      onClose={() => overlayStore.close('backdrop-or-escape')}
+      onClose={handleClose}
       onExitTransitionEnd={overlayStore.onExited}
       title={headerTitle}
       desktopSize={metadata.desktopSize ?? metadata.size ?? '420px'}
+      hiddenFrom={metadata.hiddenFrom}
       closeOnClickOutside={metadata.closeOnClickOutside}
       closeOnEscape={metadata.closeOnEscape}>
       {renderedContent}

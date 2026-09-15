@@ -3,7 +3,6 @@ import {
   Button,
   Card,
   Group,
-  Modal,
   NumberInput,
   SegmentedControl,
   Select,
@@ -14,7 +13,6 @@ import {
   Title,
   UnstyledButton
 } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import {
   ArrowCounterClockwiseIcon,
@@ -34,14 +32,15 @@ import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { $api } from '@/api/client';
 import {
-  ActivityDetailModal,
+  ActivityDetailOverlay,
   formatCurrency,
   formatDateTime,
   getActivityTypeLabel,
-  TransferModal,
+  TransferOverlay,
   toRelativeTime
 } from '@/features/account';
 import { siteConfig } from '@/shared/config/site';
+import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
 import type { User } from '@/shared/types/auth';
 import classes from './dashboard-page.module.css';
 
@@ -125,14 +124,141 @@ const RECENT_ACTIVITIES = [
   }
 ];
 
-export function DashboardPage({ user }: DashboardPageProps) {
-  // Interactive Modals
-  const [buyOpened, { open: openBuy, close: closeBuy }] = useDisclosure(false);
-  const [depositOpened, { open: openDeposit, close: closeDeposit }] = useDisclosure(false);
-  const [transferOpened, { open: openTransfer, close: closeTransfer }] = useDisclosure(false);
-  const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
-  const [detailOpened, { open: openDetail, close: closeDetail }] = useDisclosure(false);
+interface QuickTradeOverlayProps {
+  initialTicker?: string;
+}
 
+function QuickTrade({ initialTicker = 'NVDA' }: QuickTradeOverlayProps) {
+  const current = useCurrentOverlay();
+  const [selectedTicker, setSelectedTicker] = useState(initialTicker);
+  const [shares, setShares] = useState(10);
+
+  const selectedTickerData = WATCHLIST_TICKERS.find((ticker) => ticker.symbol === selectedTicker) ?? DEFAULT_TICKER;
+  const estimatedTotal = (selectedTickerData.priceNum * (shares || 1)).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+
+  function handleExecuteBuy() {
+    notifications.show({
+      title: 'Order Executed',
+      message: `Successfully purchased ${shares} shares of ${selectedTicker} for ${selectedTickerData.currency}${estimatedTotal}.`,
+      color: 'teal',
+      icon: <CheckCircleIcon size={18} weight="bold" />
+    });
+    current.complete();
+  }
+
+  return (
+    <Stack gap="md">
+      <Select
+        label="Symbol"
+        value={selectedTicker}
+        onChange={(value) => setSelectedTicker(value || 'NVDA')}
+        data={WATCHLIST_TICKERS.map((ticker) => ({ value: ticker.symbol, label: `${ticker.symbol} — ${ticker.name} (${ticker.price})` }))}
+      />
+
+      <NumberInput
+        label="Shares Quantity"
+        value={shares}
+        onChange={(value) => setShares(typeof value === 'number' ? value : 1)}
+        min={1}
+        max={10000}
+        step={1}
+      />
+
+      <Card withBorder p="sm">
+        <Group justify="space-between">
+          <Text size="sm" c="dimmed">
+            Estimated Total:
+          </Text>
+          <Text size="lg" fw={700} c="brand">
+            {selectedTickerData.currency}
+            {estimatedTotal}
+          </Text>
+        </Group>
+        <Text size="xs" c="dimmed" mt={4}>
+          Zero commission fee and instant execution.
+        </Text>
+      </Card>
+
+      <div className={classes.modalActions}>
+        <Button variant="default" onClick={() => current.dismiss('cancelled')}>
+          Cancel
+        </Button>
+        <Button color="brand" onClick={handleExecuteBuy}>
+          Buy Shares
+        </Button>
+      </div>
+    </Stack>
+  );
+}
+
+export const QuickTradeOverlay = registerOverlay(QuickTrade, {
+  name: 'quick-trade',
+  title: 'Quick Trade',
+  presentation: 'modal',
+  size: 'md'
+});
+
+function DepositFunds() {
+  const current = useCurrentOverlay();
+
+  function handleExecuteDeposit() {
+    notifications.show({
+      title: 'Deposit Successful',
+      message: 'Your funds have been deposited and are now available.',
+      color: 'teal',
+      icon: <CheckCircleIcon size={18} weight="bold" />
+    });
+    current.complete();
+  }
+
+  return (
+    <Stack gap="md">
+      <Select
+        label="Payment Method"
+        defaultValue="ach"
+        data={[
+          { value: 'ach', label: 'ACH Bank Transfer (Instant, No Fee)' },
+          { value: 'card', label: 'Debit Card (Instant Deposit)' }
+        ]}
+      />
+
+      <NumberInput label="Deposit Amount (USD)" defaultValue={1000} min={10} max={100000} prefix="$" />
+
+      <SimpleGrid cols={3} spacing="xs">
+        <Button variant="default" className={classes.depositPresetBtn} onClick={handleExecuteDeposit}>
+          +$500
+        </Button>
+        <Button variant="default" className={classes.depositPresetBtn} onClick={handleExecuteDeposit}>
+          +$1,000
+        </Button>
+        <Button variant="default" className={classes.depositPresetBtn} onClick={handleExecuteDeposit}>
+          +$5,000
+        </Button>
+      </SimpleGrid>
+
+      <div className={classes.modalActions}>
+        <Button variant="default" onClick={() => current.dismiss('cancelled')}>
+          Cancel
+        </Button>
+        <Button color="brand" onClick={handleExecuteDeposit}>
+          Deposit Funds
+        </Button>
+      </div>
+    </Stack>
+  );
+}
+
+export const DepositFundsOverlay = registerOverlay(DepositFunds, {
+  name: 'deposit-funds',
+  title: 'Deposit Funds',
+  presentation: 'modal',
+  size: 'md'
+});
+
+export function DashboardPage({ user }: DashboardPageProps) {
   // Authoritative recent activities query
   const activitiesQuery = $api.useQuery('get', '/api/v1/activities', {
     params: {
@@ -146,47 +272,14 @@ export function DashboardPage({ user }: DashboardPageProps) {
     }
   });
 
-  // Buy Modal State
-  const [selectedTicker, setSelectedTicker] = useState<string>('NVDA');
-  const [shares, setShares] = useState<number>(10);
-
   // Timeframe filter state
   const [timeframe, setTimeframe] = useState<string>('1D');
 
   const displayName = user.email ? user.email.split('@')[0] : 'User';
 
-  function handleExecuteBuy() {
-    const item = WATCHLIST_TICKERS.find((t) => t.symbol === selectedTicker);
-    const total = item ? (item.priceNum * shares).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00';
-    notifications.show({
-      title: 'Order Executed',
-      message: `Successfully purchased ${shares} shares of ${selectedTicker} for ${item?.currency ?? '$'}${total}.`,
-      color: 'teal',
-      icon: <CheckCircleIcon size={18} weight="bold" />
-    });
-    closeBuy();
-  }
-
-  function handleExecuteDeposit() {
-    notifications.show({
-      title: 'Deposit Successful',
-      message: 'Your funds have been deposited and are now available.',
-      color: 'teal',
-      icon: <CheckCircleIcon size={18} weight="bold" />
-    });
-    closeDeposit();
-  }
-
   function handleTickerClick(ticker: TickerItem) {
-    setSelectedTicker(ticker.symbol);
-    openBuy();
+    QuickTradeOverlay.open({ initialTicker: ticker.symbol });
   }
-
-  const selectedTickerData: TickerItem = WATCHLIST_TICKERS.find((t) => t.symbol === selectedTicker) ?? DEFAULT_TICKER;
-  const estimatedTotal = (selectedTickerData.priceNum * (shares || 1)).toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
 
   return (
     <div className={classes.page}>
@@ -245,8 +338,7 @@ export function DashboardPage({ user }: DashboardPageProps) {
           className={classes.actionBtn}
           leftSection={<PlusIcon size={18} weight="bold" />}
           onClick={() => {
-            setSelectedTicker('NVDA');
-            openBuy();
+            QuickTradeOverlay.open({ initialTicker: 'NVDA' });
           }}>
           Trade
         </Button>
@@ -256,7 +348,7 @@ export function DashboardPage({ user }: DashboardPageProps) {
           size="md"
           className={classes.actionBtn}
           leftSection={<BankIcon size={18} weight="bold" />}
-          onClick={openDeposit}>
+          onClick={() => DepositFundsOverlay.open()}>
           Deposit
         </Button>
 
@@ -265,7 +357,7 @@ export function DashboardPage({ user }: DashboardPageProps) {
           size="md"
           className={classes.actionBtn}
           leftSection={<ArrowsLeftRightIcon size={18} weight="bold" />}
-          onClick={openTransfer}
+          onClick={() => TransferOverlay.open()}
           aria-label="Transfer funds between accounts">
           Transfer
         </Button>
@@ -355,8 +447,7 @@ export function DashboardPage({ user }: DashboardPageProps) {
                     key={act.id}
                     className={classes.activityRow}
                     onClick={() => {
-                      setSelectedActivityId(act.id);
-                      openDetail();
+                      ActivityDetailOverlay.open({ activityId: act.id });
                     }}
                     aria-label={`View details for ${getActivityTypeLabel(act.activityType)}`}>
                     <div className={classes.activityIcon}>
@@ -423,99 +514,6 @@ export function DashboardPage({ user }: DashboardPageProps) {
           {user.email || 'Authenticated'}
         </Badge>
       </footer>
-
-      {/* Quick Trade Modal */}
-      <Modal opened={buyOpened} onClose={closeBuy} title="Quick Trade" centered radius="md">
-        <Stack gap="md">
-          <Select
-            label="Symbol"
-            value={selectedTicker}
-            onChange={(val) => setSelectedTicker(val || 'NVDA')}
-            data={WATCHLIST_TICKERS.map((t) => ({ value: t.symbol, label: `${t.symbol} — ${t.name} (${t.price})` }))}
-          />
-
-          <NumberInput
-            label="Shares Quantity"
-            value={shares}
-            onChange={(val) => setShares(typeof val === 'number' ? val : 1)}
-            min={1}
-            max={10000}
-            step={1}
-          />
-
-          <Card withBorder p="sm">
-            <Group justify="space-between">
-              <Text size="sm" c="dimmed">
-                Estimated Total:
-              </Text>
-              <Text size="lg" fw={700} c="brand">
-                {selectedTickerData.currency}
-                {estimatedTotal}
-              </Text>
-            </Group>
-            <Text size="xs" c="dimmed" mt={4}>
-              Zero commission fee and instant execution.
-            </Text>
-          </Card>
-
-          <div className={classes.modalActions}>
-            <Button variant="default" onClick={closeBuy}>
-              Cancel
-            </Button>
-            <Button color="brand" onClick={handleExecuteBuy}>
-              Buy Shares
-            </Button>
-          </div>
-        </Stack>
-      </Modal>
-
-      {/* Deposit Funds Modal */}
-      <Modal opened={depositOpened} onClose={closeDeposit} title="Deposit Funds" centered radius="md">
-        <Stack gap="md">
-          <Select
-            label="Payment Method"
-            defaultValue="ach"
-            data={[
-              { value: 'ach', label: 'ACH Bank Transfer (Instant, No Fee)' },
-              { value: 'card', label: 'Debit Card (Instant Deposit)' }
-            ]}
-          />
-
-          <NumberInput label="Deposit Amount (USD)" defaultValue={1000} min={10} max={100000} prefix="$" />
-
-          <SimpleGrid cols={3} spacing="xs">
-            <Button variant="default" className={classes.depositPresetBtn} onClick={handleExecuteDeposit}>
-              +$500
-            </Button>
-            <Button variant="default" className={classes.depositPresetBtn} onClick={handleExecuteDeposit}>
-              +$1,000
-            </Button>
-            <Button variant="default" className={classes.depositPresetBtn} onClick={handleExecuteDeposit}>
-              +$5,000
-            </Button>
-          </SimpleGrid>
-
-          <div className={classes.modalActions}>
-            <Button variant="default" onClick={closeDeposit}>
-              Cancel
-            </Button>
-            <Button color="brand" onClick={handleExecuteDeposit}>
-              Deposit Funds
-            </Button>
-          </div>
-        </Stack>
-      </Modal>
-
-      {/* Internal Transfer Modal */}
-      <TransferModal opened={transferOpened} onClose={closeTransfer} onSuccess={() => activitiesQuery.refetch()} />
-
-      {/* Activity Detail Modal */}
-      <ActivityDetailModal
-        activityId={selectedActivityId}
-        opened={detailOpened}
-        onClose={closeDetail}
-        onActivityUpdated={() => activitiesQuery.refetch()}
-      />
     </div>
   );
 }

@@ -80,6 +80,6 @@ export interface AccountsLayoutContext {
   isFetching: boolean;
   isError: boolean;
   refetchAccounts: () => Promise<unknown>;
-  openCreateModal: () => void;
-  openPickerDrawer: () => void;
+  openCreateAccount: () => void;
+  openAccountPicker: () => void;
 }

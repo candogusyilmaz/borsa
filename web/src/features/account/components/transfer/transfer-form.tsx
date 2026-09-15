@@ -2,8 +2,8 @@ import { ActionIcon, Alert, Button, Checkbox, SegmentedControl, Select, Skeleton
 import { ArrowsDownUpIcon, ClockIcon, InfoIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import type { RecordingMode } from '../../types';
 import { formatCurrency, POSITIVE_DECIMAL_REGEX, toDatetimeLocal } from '../../utils/account-formatters';
+import classes from './transfer.module.css';
 import { getDestinationAccounts } from './transfer-domain';
-import classes from './transfer-modal.module.css';
 import type { TransferSessionResult } from './use-transfer-session';
 
 interface TransferFormProps {

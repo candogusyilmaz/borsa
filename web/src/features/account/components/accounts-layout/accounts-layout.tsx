@@ -1,5 +1,4 @@
 import { Alert, Button, Skeleton } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
 import { WarningCircleIcon } from '@phosphor-icons/react';
 import { Outlet, useNavigate, useParams } from '@tanstack/react-router';
 import { createContext, useContext } from 'react';
@@ -7,8 +6,8 @@ import { $api } from '@/api/client';
 import type { AccountsLayoutContext } from '../../types';
 import { AccountCarousel } from '../account-carousel';
 import { AccountLayoutHeader } from '../account-layout-header';
-import { AccountPickerDrawer } from '../account-picker-drawer';
-import { CreateAccountModal } from '../create-account-modal/create-account-modal';
+import { AccountPickerOverlay } from '../account-picker/account-picker';
+import { CreateAccountOverlay } from '../create-account/create-account';
 import classes from './accounts-layout.module.css';
 
 const AccountsContext = createContext<AccountsLayoutContext | null>(null);
@@ -56,9 +55,31 @@ export function AccountsLayout() {
         : activeAccounts
       : rawAccounts;
 
-  // Modals / Drawers at layout level
-  const [createModalOpened, { open: openCreateModal, close: closeCreateModal }] = useDisclosure(false);
-  const [pickerDrawerOpened, { open: openPickerDrawer, close: closePickerDrawer }] = useDisclosure(false);
+  function openCreateAccount() {
+    const handle = CreateAccountOverlay.open();
+    void handle.closed.then((outcome) => {
+      if (outcome.status === 'completed') {
+        void navigate({
+          to: '/app/accounts/$accountId',
+          params: { accountId: outcome.value.id },
+          replace: !currentAccountId
+        });
+      }
+    });
+  }
+
+  function openAccountPicker() {
+    const handle = AccountPickerOverlay.open({ accounts: rawAccounts, selectedAccountId });
+    void handle.closed.then((outcome) => {
+      if (outcome.status === 'completed' && outcome.value !== currentAccountId) {
+        void navigate({
+          to: '/app/accounts/$accountId',
+          params: { accountId: outcome.value },
+          replace: true
+        });
+      }
+    });
+  }
 
   function handleSelectAccount(accountId: string) {
     if (accountId === currentAccountId) return;
@@ -76,15 +97,15 @@ export function AccountsLayout() {
     isFetching: accountsQuery.isFetching,
     isError: accountsQuery.isError,
     refetchAccounts: () => accountsQuery.refetch(),
-    openCreateModal,
-    openPickerDrawer
+    openCreateAccount,
+    openAccountPicker
   };
 
   return (
     <AccountsContext.Provider value={contextValue}>
       <section className={classes.container} aria-labelledby="accounts-page-title">
         {/* 1. Header Row */}
-        <AccountLayoutHeader activeCount={activeAccounts.length} onOpenCreate={openCreateModal} />
+        <AccountLayoutHeader activeCount={activeAccounts.length} onOpenCreate={openCreateAccount} />
 
         {/* 2. Loading / Error / Carousel States */}
         {accountsQuery.isLoading && (
@@ -110,34 +131,6 @@ export function AccountsLayout() {
 
         {/* 3. Child Outlet */}
         <Outlet />
-
-        {/* 4. Global Modals / Drawers */}
-        <CreateAccountModal
-          opened={createModalOpened}
-          onClose={closeCreateModal}
-          onSuccess={(created) => {
-            navigate({
-              to: '/app/accounts/$accountId',
-              params: { accountId: created.id },
-              replace: !currentAccountId
-            });
-          }}
-        />
-
-        <AccountPickerDrawer
-          accounts={rawAccounts}
-          selectedAccountId={selectedAccountId}
-          opened={pickerDrawerOpened}
-          onClose={closePickerDrawer}
-          onSelectAccount={(accountId) => {
-            navigate({
-              to: '/app/accounts/$accountId',
-              params: { accountId },
-              replace: true
-            });
-            closePickerDrawer();
-          }}
-        />
       </section>
     </AccountsContext.Provider>
   );

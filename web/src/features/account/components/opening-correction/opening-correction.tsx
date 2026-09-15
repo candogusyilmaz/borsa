@@ -1,4 +1,4 @@
-import { Alert, Badge, Button, Group, Modal, Stack, Text, Textarea, TextInput } from '@mantine/core';
+import { Alert, Badge, Button, Group, Skeleton, Stack, Text, Textarea, TextInput } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import {
   ArrowClockwiseIcon,
@@ -12,19 +12,57 @@ import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { $api } from '@/api/client';
 import { normalizeError } from '@/api/errors';
+import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
 import type { FinancialAccount } from '../../types';
 import { formatCurrency, formatDateTime, PLAIN_DECIMAL_REGEX } from '../../utils/account-formatters';
-import classes from './opening-correction-modal.module.css';
+import classes from './opening-correction.module.css';
 
-interface OpeningCorrectionModalProps {
+interface OpeningCorrectionOverlayProps {
+  accountId: string;
+  currentOpeningBalance?: string | null;
+}
+
+interface OpeningCorrectionFormProps {
   account: FinancialAccount;
   currentOpeningBalance?: string | null;
-  opened: boolean;
-  onClose: () => void;
   onRefetchAccount: () => Promise<unknown>;
 }
 
-export function OpeningCorrectionModal({ account, currentOpeningBalance, opened, onClose, onRefetchAccount }: OpeningCorrectionModalProps) {
+export function OpeningCorrection({ accountId, currentOpeningBalance }: OpeningCorrectionOverlayProps) {
+  const accountQuery = $api.useQuery('get', '/api/v1/accounts/{accountId}', {
+    params: { path: { accountId } }
+  });
+
+  if (accountQuery.isLoading) {
+    return (
+      <Stack gap="md" p="md">
+        <Skeleton height={36} radius="sm" />
+        <Skeleton height={82} radius="md" />
+        <Skeleton height={96} radius="md" />
+      </Stack>
+    );
+  }
+
+  if (accountQuery.isError || !accountQuery.data) {
+    return (
+      <Alert icon={<WarningCircleIcon size={20} />} title="Could not load account" color="red" variant="light" m="md">
+        <Text size="sm">The requested financial account could not be loaded.</Text>
+      </Alert>
+    );
+  }
+
+  return (
+    <OpeningCorrectionForm
+      key={`${accountQuery.data.id}-${accountQuery.data.version ?? 0}`}
+      account={accountQuery.data}
+      currentOpeningBalance={currentOpeningBalance}
+      onRefetchAccount={accountQuery.refetch}
+    />
+  );
+}
+
+function OpeningCorrectionForm({ account, currentOpeningBalance, onRefetchAccount }: OpeningCorrectionFormProps) {
+  const current = useCurrentOverlay();
   const queryClient = useQueryClient();
 
   const correctionMutation = $api.useMutation('put', '/api/v1/accounts/{accountId}/opening-state', {
@@ -95,8 +133,7 @@ export function OpeningCorrectionModal({ account, currentOpeningBalance, opened,
               color: 'teal',
               icon: <CheckCircleIcon size={18} weight="bold" />
             });
-            handleClose();
-            onRefetchAccount();
+            current.complete();
           }
         }
       );
@@ -122,27 +159,16 @@ export function OpeningCorrectionModal({ account, currentOpeningBalance, opened,
   function handleClose() {
     correctionMutation.reset();
     form.reset();
-    onClose();
+    current.dismiss('cancelled');
   }
 
   return (
-    <Modal
-      opened={opened}
-      onClose={handleClose}
-      title={
-        <Group justify="space-between" w="100%" pr="md">
-          <Group gap="xs">
-            <PencilSimpleIcon size={20} weight="bold" color="var(--mantine-primary-color-filled)" />
-            <Text fw={600}>Correct Opening State</Text>
-          </Group>
-          <Badge variant="outline" color="gray" className={classes.versionBadge}>
-            Version: {account.version ?? 0}
-          </Badge>
-        </Group>
-      }
-      size="md"
-      centered
-      radius="md">
+    <>
+      <Group justify="flex-end" mb="md">
+        <Badge variant="outline" color="gray" className={classes.versionBadge}>
+          Version: {account.version ?? 0}
+        </Badge>
+      </Group>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -294,6 +320,18 @@ export function OpeningCorrectionModal({ account, currentOpeningBalance, opened,
           </div>
         </Stack>
       </form>
-    </Modal>
+    </>
   );
 }
+
+export const OpeningCorrectionOverlay = registerOverlay(OpeningCorrection, {
+  name: 'opening-correction',
+  title: (
+    <Group gap="xs">
+      <PencilSimpleIcon size={20} weight="bold" color="var(--mantine-primary-color-filled)" />
+      <Text fw={600}>Correct Opening State</Text>
+    </Group>
+  ),
+  presentation: 'modal',
+  size: 'md'
+});

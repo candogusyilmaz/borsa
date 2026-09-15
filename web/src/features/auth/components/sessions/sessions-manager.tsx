@@ -5,7 +5,6 @@ import {
   CopyButton,
   Group,
   Loader,
-  Modal,
   Skeleton,
   Stack,
   Switch,
@@ -14,7 +13,6 @@ import {
   Tooltip,
   UnstyledButton
 } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
 import { notifications } from '@mantine/notifications';
 import {
   ArrowClockwiseIcon,
@@ -40,6 +38,7 @@ import { $api, client } from '@/api/client';
 import { normalizeError } from '@/api/errors';
 import type { components } from '@/api/schema';
 import { useAuth } from '@/shared/hooks/use-auth';
+import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
 import classes from './sessions.module.css';
 
 type DeviceSession = components['schemas']['DeviceSessionResponse'];
@@ -105,15 +104,206 @@ export function formatRelativeTime(isoString?: string): string {
   }
 }
 
+interface RevokeSessionOverlayProps {
+  familyId: string;
+  deviceLabel?: string;
+  isCurrent: boolean;
+}
+
+function RevokeSessionConfirmation({ familyId, deviceLabel, isCurrent }: RevokeSessionOverlayProps) {
+  const overlay = useCurrentOverlay();
+  const queryClient = useQueryClient();
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const revokeMutation = $api.useMutation('delete', '/api/v1/auth/sessions/{familyId}', {
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/auth/sessions'] });
+      notifications.show({
+        title: 'Session Revoked',
+        message: 'The selected device session has been signed out.',
+        color: 'green'
+      });
+      overlay.complete();
+      if (isCurrent) {
+        await logout();
+        await navigate({ to: '/login', replace: true });
+      }
+    },
+    onError: (err) => {
+      const apiErr = normalizeError(err);
+      notifications.show({
+        title: 'Revocation Failed',
+        message: apiErr.message || 'Could not revoke session. Please try again.',
+        color: 'red'
+      });
+    }
+  });
+
+  return (
+    <Stack gap="md">
+      <Text size="sm">
+        Are you sure you want to revoke access for <strong>{deviceLabel || 'this device'}</strong>?
+      </Text>
+      <Text size="xs" c="dimmed">
+        This device will be immediately signed out and all access or refresh tokens issued to it will become invalid.
+      </Text>
+
+      <Group justify="flex-end" gap="sm" mt="sm">
+        <Button variant="default" onClick={() => overlay.dismiss('cancelled')}>
+          Cancel
+        </Button>
+        <Button
+          color="red"
+          loading={revokeMutation.isPending}
+          onClick={() => revokeMutation.mutate({ params: { path: { familyId } } })}
+          leftSection={<TrashSimpleIcon size={16} weight="bold" />}>
+          Revoke Session
+        </Button>
+      </Group>
+    </Stack>
+  );
+}
+
+export const RevokeSessionOverlay = registerOverlay(RevokeSessionConfirmation, {
+  name: 'revoke-session',
+  title: 'Revoke Device Session',
+  presentation: 'modal',
+  size: 'md'
+});
+
+interface TerminateOthersOverlayProps {
+  familyIds: string[];
+}
+
+function TerminateOthersConfirmation({ familyIds }: TerminateOthersOverlayProps) {
+  const overlay = useCurrentOverlay();
+  const queryClient = useQueryClient();
+  const [isTerminating, setIsTerminating] = useState(false);
+
+  async function handleConfirm() {
+    if (familyIds.length === 0) return;
+    setIsTerminating(true);
+
+    try {
+      await Promise.all(
+        familyIds.map((familyId) =>
+          client.DELETE('/api/v1/auth/sessions/{familyId}', {
+            params: { path: { familyId } }
+          })
+        )
+      );
+      await queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/auth/sessions'] });
+      notifications.show({
+        title: 'Other Sessions Terminated',
+        message: `Successfully signed out of ${familyIds.length} other active session(s).`,
+        color: 'green'
+      });
+      overlay.complete();
+    } catch (error) {
+      const apiErr = normalizeError(error);
+      notifications.show({
+        title: 'Termination Incomplete',
+        message: apiErr.message || 'Some sessions could not be terminated. Refreshing list...',
+        color: 'red'
+      });
+      void queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/auth/sessions'] });
+    } finally {
+      setIsTerminating(false);
+    }
+  }
+
+  return (
+    <Stack gap="md">
+      <Text size="sm">
+        Are you sure you want to terminate <strong>{familyIds.length} other session(s)</strong>?
+      </Text>
+      <Text size="xs" c="dimmed">
+        Your current device will remain signed in. All other phones, tablets, and computers connected to your account will be signed out
+        immediately.
+      </Text>
+
+      <Group justify="flex-end" gap="sm" mt="sm">
+        <Button variant="default" onClick={() => overlay.dismiss('cancelled')}>
+          Cancel
+        </Button>
+        <Button color="red" loading={isTerminating} onClick={handleConfirm} leftSection={<ShieldWarningIcon size={16} weight="bold" />}>
+          Terminate Others
+        </Button>
+      </Group>
+    </Stack>
+  );
+}
+
+export const TerminateOthersOverlay = registerOverlay(TerminateOthersConfirmation, {
+  name: 'terminate-others',
+  title: 'Terminate All Other Sessions',
+  presentation: 'modal',
+  size: 'md'
+});
+
+function SignOutCurrentConfirmation() {
+  const overlay = useCurrentOverlay();
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  async function handleConfirm() {
+    setIsSigningOut(true);
+    try {
+      await logout();
+      notifications.show({
+        title: 'Signed Out',
+        message: 'You have been safely signed out of this device.',
+        color: 'blue'
+      });
+      overlay.complete();
+      await navigate({ to: '/login', replace: true });
+    } catch (error) {
+      const apiErr = normalizeError(error);
+      notifications.show({
+        title: 'Sign Out Error',
+        message: apiErr.message || 'An error occurred while signing out.',
+        color: 'red'
+      });
+      setIsSigningOut(false);
+    }
+  }
+
+  return (
+    <Stack gap="md">
+      <Text size="sm">Are you sure you want to sign out of this device?</Text>
+      <Text size="xs" c="dimmed">
+        You will be redirected to the login page and will need to sign in again to access your portfolio.
+      </Text>
+
+      <Group justify="flex-end" gap="sm" mt="sm">
+        <Button variant="default" onClick={() => overlay.dismiss('cancelled')}>
+          Cancel
+        </Button>
+        <Button color="red" loading={isSigningOut} onClick={handleConfirm} leftSection={<SignOutIcon size={16} weight="bold" />}>
+          Sign Out
+        </Button>
+      </Group>
+    </Stack>
+  );
+}
+
+export const SignOutCurrentOverlay = registerOverlay(SignOutCurrentConfirmation, {
+  name: 'sign-out-current',
+  title: 'Sign Out of Current Device',
+  presentation: 'modal',
+  size: 'md'
+});
+
 interface SessionCardProps {
   session: DeviceSession;
   onRevokeClick: (session: DeviceSession) => void;
   onSignOutCurrent: () => void;
-  isRevoking: boolean;
   isHistory?: boolean;
 }
 
-function SessionCard({ session, onRevokeClick, onSignOutCurrent, isRevoking, isHistory }: SessionCardProps) {
+function SessionCard({ session, onRevokeClick, onSignOutCurrent, isHistory }: SessionCardProps) {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const IconComponent = getDeviceIcon(session.deviceLabel);
 
@@ -269,7 +459,6 @@ function SessionCard({ session, onRevokeClick, onSignOutCurrent, isRevoking, isH
                 variant="light"
                 size="sm"
                 leftSection={<TrashSimpleIcon size={16} weight="bold" />}
-                loading={isRevoking}
                 onClick={() => onRevokeClick(session)}
                 aria-label={`Revoke session for ${session.deviceLabel || 'device'}`}>
                 Revoke Session
@@ -283,51 +472,13 @@ function SessionCard({ session, onRevokeClick, onSignOutCurrent, isRevoking, isH
 }
 
 export function SessionsManager() {
-  const queryClient = useQueryClient();
-  const { logout } = useAuth();
-  const navigate = useNavigate();
-
   // Queries
   const sessionsQuery = $api.useQuery('get', '/api/v1/auth/sessions');
-
-  // Revoke Mutation
-  const revokeMutation = $api.useMutation('delete', '/api/v1/auth/sessions/{familyId}', {
-    onSuccess: async () => {
-      queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/auth/sessions'] });
-      notifications.show({
-        title: 'Session Revoked',
-        message: 'The selected device session has been signed out.',
-        color: 'green'
-      });
-      closeRevokeModal();
-      if (selectedSession?.current) {
-        await logout();
-        await navigate({ to: '/login', replace: true });
-      }
-      setSelectedSession(null);
-    },
-    onError: (err) => {
-      const apiErr = normalizeError(err);
-      notifications.show({
-        title: 'Revocation Failed',
-        message: apiErr.message || 'Could not revoke session. Please try again.',
-        color: 'red'
-      });
-    }
-  });
 
   // State: Row caps (Load More) and History toggle
   const [showHistory, setShowHistory] = useState(false);
   const [activeLimit, setActiveLimit] = useState(5);
   const [historyLimit, setHistoryLimit] = useState(5);
-
-  // Modals state
-  const [selectedSession, setSelectedSession] = useState<DeviceSession | null>(null);
-  const [revokeModalOpened, { open: openRevokeModal, close: closeRevokeModal }] = useDisclosure(false);
-  const [terminateOthersOpened, { open: openTerminateOthers, close: closeTerminateOthers }] = useDisclosure(false);
-  const [terminatingOthers, setTerminatingOthers] = useState(false);
-  const [signOutCurrentOpened, { open: openSignOutCurrent, close: closeSignOutCurrent }] = useDisclosure(false);
-  const [signingOutCurrent, setSigningOutCurrent] = useState(false);
 
   // Sorted sessions: Current session always first, then by lastUsedAt / createdAt descending
   const sortedSessions = useMemo(() => {
@@ -381,74 +532,21 @@ export function SessionsManager() {
 
   // Handle single revocation
   function handleRevokePrompt(session: DeviceSession) {
-    setSelectedSession(session);
-    openRevokeModal();
-  }
-
-  async function handleConfirmRevoke() {
-    if (!selectedSession) return;
-    await revokeMutation.mutateAsync({
-      params: { path: { familyId: selectedSession.familyId } }
+    RevokeSessionOverlay.open({
+      familyId: session.familyId,
+      deviceLabel: session.deviceLabel,
+      isCurrent: Boolean(session.current)
     });
   }
 
   // Handle terminate other sessions
-  async function handleConfirmTerminateOthers() {
-    if (otherActiveSessions.length === 0) return;
-    setTerminatingOthers(true);
-
-    try {
-      await Promise.all(
-        otherActiveSessions.map((session) =>
-          client.DELETE('/api/v1/auth/sessions/{familyId}', {
-            params: { path: { familyId: session.familyId } }
-          })
-        )
-      );
-
-      await queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/auth/sessions'] });
-
-      notifications.show({
-        title: 'Other Sessions Terminated',
-        message: `Successfully signed out of ${otherActiveSessions.length} other active session(s).`,
-        color: 'green'
-      });
-      closeTerminateOthers();
-    } catch (error) {
-      const apiErr = normalizeError(error);
-      notifications.show({
-        title: 'Termination Incomplete',
-        message: apiErr.message || 'Some sessions could not be terminated. Refreshing list...',
-        color: 'red'
-      });
-      queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/auth/sessions'] });
-    } finally {
-      setTerminatingOthers(false);
-    }
+  function handleTerminateOthers() {
+    TerminateOthersOverlay.open({ familyIds: otherActiveSessions.map((session) => session.familyId) });
   }
 
   // Handle signing out the current device
-  async function handleConfirmSignOutCurrent() {
-    setSigningOutCurrent(true);
-    closeSignOutCurrent();
-    try {
-      await logout();
-      notifications.show({
-        title: 'Signed Out',
-        message: 'You have been safely signed out of this device.',
-        color: 'blue'
-      });
-      await navigate({ to: '/login', replace: true });
-    } catch (error) {
-      const apiErr = normalizeError(error);
-      notifications.show({
-        title: 'Sign Out Error',
-        message: apiErr.message || 'An error occurred while signing out.',
-        color: 'red'
-      });
-    } finally {
-      setSigningOutCurrent(false);
-    }
+  function handleSignOutCurrent() {
+    SignOutCurrentOverlay.open();
   }
 
   return (
@@ -488,7 +586,7 @@ export function SessionsManager() {
             size="sm"
             leftSection={<ShieldWarningIcon size={16} weight="bold" />}
             disabled={otherActiveSessions.length === 0}
-            onClick={openTerminateOthers}
+            onClick={handleTerminateOthers}
             aria-label="Terminate all other active sessions">
             Terminate Other Sessions
             {otherActiveSessions.length > 0 && ` (${otherActiveSessions.length})`}
@@ -571,8 +669,7 @@ export function SessionsManager() {
                   key={session.familyId}
                   session={session}
                   onRevokeClick={handleRevokePrompt}
-                  onSignOutCurrent={openSignOutCurrent}
-                  isRevoking={revokeMutation.isPending && selectedSession?.familyId === session.familyId}
+                  onSignOutCurrent={handleSignOutCurrent}
                 />
               ))}
 
@@ -632,8 +729,7 @@ export function SessionsManager() {
               key={session.familyId}
               session={session}
               onRevokeClick={handleRevokePrompt}
-              onSignOutCurrent={openSignOutCurrent}
-              isRevoking={false}
+              onSignOutCurrent={handleSignOutCurrent}
               isHistory
             />
           ))}
@@ -651,80 +747,6 @@ export function SessionsManager() {
           )}
         </div>
       )}
-
-      {/* 7. Modal: Revoke Single Session Confirmation */}
-      <Modal opened={revokeModalOpened} onClose={closeRevokeModal} title="Revoke Device Session" centered radius="md">
-        <Stack gap="md">
-          <Text size="sm">
-            Are you sure you want to revoke access for <strong>{selectedSession?.deviceLabel || 'this device'}</strong>?
-          </Text>
-          <Text size="xs" c="dimmed">
-            This device will be immediately signed out and all access or refresh tokens issued to it will become invalid.
-          </Text>
-
-          <Group justify="flex-end" gap="sm" mt="sm">
-            <Button variant="default" onClick={closeRevokeModal}>
-              Cancel
-            </Button>
-            <Button
-              color="red"
-              loading={revokeMutation.isPending}
-              onClick={handleConfirmRevoke}
-              leftSection={<TrashSimpleIcon size={16} weight="bold" />}>
-              Revoke Session
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
-
-      {/* 8. Modal: Terminate Other Sessions Confirmation */}
-      <Modal opened={terminateOthersOpened} onClose={closeTerminateOthers} title="Terminate All Other Sessions" centered radius="md">
-        <Stack gap="md">
-          <Text size="sm">
-            Are you sure you want to terminate <strong>{otherActiveSessions.length} other session(s)</strong>?
-          </Text>
-          <Text size="xs" c="dimmed">
-            Your current device will remain signed in. All other phones, tablets, and computers connected to your account will be signed out
-            immediately.
-          </Text>
-
-          <Group justify="flex-end" gap="sm" mt="sm">
-            <Button variant="default" onClick={closeTerminateOthers}>
-              Cancel
-            </Button>
-            <Button
-              color="red"
-              loading={terminatingOthers}
-              onClick={handleConfirmTerminateOthers}
-              leftSection={<ShieldWarningIcon size={16} weight="bold" />}>
-              Terminate Others
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
-
-      {/* 9. Modal: Sign Out Current Device Confirmation */}
-      <Modal opened={signOutCurrentOpened} onClose={closeSignOutCurrent} title="Sign Out of Current Device" centered radius="md">
-        <Stack gap="md">
-          <Text size="sm">Are you sure you want to sign out of this device?</Text>
-          <Text size="xs" c="dimmed">
-            You will be redirected to the login page and will need to sign in again to access your portfolio.
-          </Text>
-
-          <Group justify="flex-end" gap="sm" mt="sm">
-            <Button variant="default" onClick={closeSignOutCurrent}>
-              Cancel
-            </Button>
-            <Button
-              color="red"
-              loading={signingOutCurrent}
-              onClick={handleConfirmSignOutCurrent}
-              leftSection={<SignOutIcon size={16} weight="bold" />}>
-              Sign Out
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
     </section>
   );
 }

@@ -1,16 +1,15 @@
-import { Avatar, Badge, Button, Divider, Group, Stack, Text, UnstyledButton } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
-import { BankIcon, DevicesIcon, HouseIcon, SignOutIcon, UserIcon } from '@phosphor-icons/react';
-import { Link, useLocation, useNavigate } from '@tanstack/react-router';
-import { type MouseEvent, type ReactNode, useCallback, useMemo } from 'react';
+import { Avatar, Badge, Button, UnstyledButton } from '@mantine/core';
+import { BankIcon, DevicesIcon, HouseIcon, UserIcon } from '@phosphor-icons/react';
+import { Link, useLocation } from '@tanstack/react-router';
+import { type MouseEvent, type ReactNode, useMemo, useRef, useState } from 'react';
 import { $api } from '@/api/client';
 import { BrandLogo } from '@/shared/components/brand-logo';
 import { type BottomNavItem, MobileBottomNav } from '@/shared/components/mobile-bottom-nav';
-import { ResponsiveDrawer } from '@/shared/components/responsive-drawer';
 import { ThemeToggle } from '@/shared/components/theme-toggle';
 import { siteConfig } from '@/shared/config/site';
-import { useAuth } from '@/shared/hooks/use-auth';
+import type { OverlayHandle } from '@/shared/overlay';
 import type { User } from '@/shared/types/auth';
+import { AccountMenuOverlay } from './account-menu';
 import classes from './app-shell.module.css';
 
 interface AppShellProps {
@@ -19,15 +18,14 @@ interface AppShellProps {
 }
 
 export function AppShell({ children, user }: AppShellProps) {
-  const [drawerOpened, { close: closeDrawer, toggle: toggleDrawer }] = useDisclosure(false);
-  const { logout } = useAuth();
-  const navigate = useNavigate();
   const pathname = useLocation({
     select: (location) => location.pathname
   });
 
   const sessionsQuery = $api.useQuery('get', '/api/v1/auth/sessions');
   const activeSessionsCount = sessionsQuery.data ? sessionsQuery.data.filter((s) => s.status === 'ACTIVE').length : undefined;
+  const [accountMenuOpened, setAccountMenuOpened] = useState(false);
+  const accountMenuHandle = useRef<OverlayHandle | null>(null);
 
   const activeId = useMemo(() => {
     if (pathname === '/app/accounts' || pathname.startsWith('/app/accounts/')) {
@@ -82,20 +80,28 @@ export function AppShell({ children, user }: AppShellProps) {
     [activeSessionsCount]
   );
 
-  const handleItemSelect = useCallback(
-    (item: BottomNavItem, event: MouseEvent<HTMLAnchorElement>) => {
-      if (item.id === 'menu') {
-        event.preventDefault();
-        toggleDrawer();
-      }
-    },
-    [toggleDrawer]
-  );
+  function toggleAccountMenu() {
+    if (accountMenuOpened) {
+      accountMenuHandle.current?.close('toggle');
+      return;
+    }
 
-  async function handleLogout() {
-    closeDrawer();
-    await logout();
-    await navigate({ to: '/login', replace: true });
+    const handle = AccountMenuOverlay.open({ user, activeSessionsCount });
+    accountMenuHandle.current = handle;
+    setAccountMenuOpened(true);
+    void handle.closed.then(() => {
+      if (accountMenuHandle.current?.id === handle.id) {
+        accountMenuHandle.current = null;
+        setAccountMenuOpened(false);
+      }
+    });
+  }
+
+  function handleItemSelect(item: BottomNavItem, event: MouseEvent<HTMLAnchorElement>) {
+    if (item.id === 'menu') {
+      event.preventDefault();
+      toggleAccountMenu();
+    }
   }
 
   const initial = user.email ? user.email.charAt(0).toUpperCase() : 'U';
@@ -144,13 +150,13 @@ export function AppShell({ children, user }: AppShellProps) {
 
             <ThemeToggle />
 
-            {/* User Avatar Button -> Opens Drawer */}
+            {/* User Avatar Button -> Opens account menu */}
             <UnstyledButton
               className={classes.avatarButton}
-              onClick={toggleDrawer}
+              onClick={toggleAccountMenu}
               aria-label="Account and Settings Menu"
-              aria-expanded={drawerOpened}
-              aria-haspopup="dialog">
+              aria-haspopup="dialog"
+              aria-expanded={accountMenuOpened}>
               <Avatar size={34} radius="xl" color="brand">
                 {initial}
               </Avatar>
@@ -164,95 +170,7 @@ export function AppShell({ children, user }: AppShellProps) {
         <div className={classes.container}>{children}</div>
       </main>
 
-      {/* 3. Responsive Account & Settings Drawer (iOS-style floating bottom sheet on mobile) */}
-      <ResponsiveDrawer opened={drawerOpened} onClose={closeDrawer} desktopSize="320px" title={<BrandLogo variant="full" size="sm" />}>
-        <Stack gap="md">
-          {/* User profile card */}
-          <div className={classes.drawerCard}>
-            <Group gap="sm">
-              <Avatar size={44} radius="xl" color="brand">
-                {initial}
-              </Avatar>
-              <div className={classes.drawerUserMeta}>
-                <Text size="sm" fw={600} truncate>
-                  {user.email || 'User'}
-                </Text>
-                <Text size="xs" c="dimmed">
-                  User ID: {user.id ? `${user.id.slice(0, 12)}...` : 'N/A'}
-                </Text>
-              </div>
-            </Group>
-
-            <Divider my="sm" />
-
-            <Group justify="space-between">
-              <Text size="xs" c="dimmed">
-                Session Status
-              </Text>
-              <Badge color="teal" variant="light" size="sm">
-                Authenticated
-              </Badge>
-            </Group>
-          </div>
-
-          {/* Financial Accounts link */}
-          <Button
-            component={Link}
-            to="/app/accounts"
-            variant="default"
-            size="md"
-            fullWidth
-            leftSection={<BankIcon size={18} weight="bold" />}
-            onClick={closeDrawer}>
-            Financial Accounts
-          </Button>
-
-          {/* Active Devices & Sessions link */}
-          <Button
-            component={Link}
-            to="/app/sessions"
-            variant="default"
-            size="md"
-            fullWidth
-            leftSection={<DevicesIcon size={18} weight="bold" />}
-            onClick={closeDrawer}
-            rightSection={
-              activeSessionsCount !== undefined ? (
-                <Badge color="teal" variant="light" size="xs">
-                  {activeSessionsCount} active
-                </Badge>
-              ) : null
-            }>
-            Sessions
-          </Button>
-
-          {/* Theme setting row */}
-          <Group justify="space-between" className={classes.drawerCard}>
-            <div>
-              <Text size="sm" fw={500}>
-                Appearance
-              </Text>
-              <Text size="xs" c="dimmed">
-                Toggle light / dark mode
-              </Text>
-            </div>
-            <ThemeToggle />
-          </Group>
-
-          {/* Log out action */}
-          <Button
-            color="red"
-            variant="light"
-            size="md"
-            fullWidth
-            leftSection={<SignOutIcon size={18} weight="bold" />}
-            onClick={handleLogout}>
-            Sign Out
-          </Button>
-        </Stack>
-      </ResponsiveDrawer>
-
-      {/* 4. Mobile Bottom Navigation */}
+      {/* 3. Mobile Bottom Navigation */}
       <MobileBottomNav
         items={navItems}
         activeId={activeId}
@@ -263,7 +181,7 @@ export function AppShell({ children, user }: AppShellProps) {
         renderLink={({ item, linkProps, children }) => {
           if (item.id === 'menu') {
             return (
-              <UnstyledButton component="a" href="#menu" aria-haspopup="dialog" aria-expanded={drawerOpened} {...linkProps}>
+              <UnstyledButton component="a" href="#menu" aria-haspopup="dialog" aria-expanded={accountMenuOpened} {...linkProps}>
                 {children}
               </UnstyledButton>
             );
@@ -279,3 +197,5 @@ export function AppShell({ children, user }: AppShellProps) {
     </div>
   );
 }
+
+export { AccountMenuOverlay } from './account-menu';

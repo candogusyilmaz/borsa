@@ -363,7 +363,7 @@ export function RecordCashActivityForm({ accountId, defaultType = 'CASH_DEPOSIT'
           variant="default"
           size="md"
           className={classes.actionBtn}
-          onClick={() => current.close('cancelled')}
+          onClick={() => current.dismiss('cancelled')}
           disabled={activityMutation.isPending}>
           Cancel
         </Button>

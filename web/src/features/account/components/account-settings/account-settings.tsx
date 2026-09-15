@@ -1,22 +1,59 @@
-import { Alert, Badge, Button, Divider, Group, Modal, Select, Stack, Text, TextInput } from '@mantine/core';
+import { Alert, Badge, Button, Divider, Group, Select, Skeleton, Stack, Text, TextInput } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { ArrowClockwiseIcon, CheckCircleIcon, GearIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { useForm, useStore } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { $api } from '@/api/client';
 import { normalizeError } from '@/api/errors';
+import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
 import type { FinancialAccount, NegativeBalancePolicy } from '../../types';
 import { COMMON_TIMEZONES, getPolicyDescription, isAssetKind, isLiabilityKind } from '../../utils/account-formatters';
-import classes from './account-settings-modal.module.css';
+import classes from './account-settings.module.css';
 
-interface AccountSettingsModalProps {
+interface AccountSettingsOverlayProps {
+  accountId: string;
+}
+
+interface AccountSettingsFormProps {
   account: FinancialAccount;
-  opened: boolean;
-  onClose: () => void;
   onRefetchAccount: () => Promise<unknown>;
 }
 
-export function AccountSettingsModal({ account, opened, onClose, onRefetchAccount }: AccountSettingsModalProps) {
+export function AccountSettings({ accountId }: AccountSettingsOverlayProps) {
+  const accountQuery = $api.useQuery('get', '/api/v1/accounts/{accountId}', {
+    params: { path: { accountId } }
+  });
+
+  if (accountQuery.isLoading) {
+    return (
+      <Stack gap="md" p="md">
+        <Skeleton height={36} radius="sm" />
+        <Skeleton height={48} radius="sm" />
+        <Skeleton height={48} radius="sm" />
+        <Skeleton height={96} radius="md" />
+      </Stack>
+    );
+  }
+
+  if (accountQuery.isError || !accountQuery.data) {
+    return (
+      <Alert icon={<WarningCircleIcon size={20} />} title="Could not load account settings" color="red" variant="light" m="md">
+        <Text size="sm">The requested financial account could not be loaded.</Text>
+      </Alert>
+    );
+  }
+
+  return (
+    <AccountSettingsForm
+      key={`${accountQuery.data.id}-${accountQuery.data.version ?? 0}`}
+      account={accountQuery.data}
+      onRefetchAccount={accountQuery.refetch}
+    />
+  );
+}
+
+function AccountSettingsForm({ account, onRefetchAccount }: AccountSettingsFormProps) {
+  const current = useCurrentOverlay();
   const queryClient = useQueryClient();
 
   const canConfigurePolicy = account.trackingMode === 'FULL_LEDGER' && isAssetKind(account.kind) && !isLiabilityKind(account.kind);
@@ -214,29 +251,18 @@ export function AccountSettingsModal({ account, opened, onClose, onRefetchAccoun
     metadataMutation.reset();
     policyMutation.reset();
     form.reset();
-    onClose();
+    current.dismiss('cancelled');
   }
 
   const isSaving = metadataMutation.isPending || policyMutation.isPending;
 
   return (
-    <Modal
-      opened={opened}
-      onClose={handleClose}
-      title={
-        <Group justify="space-between" w="100%" pr="md">
-          <Group gap="xs">
-            <GearIcon size={20} weight="bold" color="var(--mantine-primary-color-filled)" />
-            <Text fw={600}>Account Settings &amp; Policies</Text>
-          </Group>
-          <Badge variant="outline" color="gray" className={classes.versionBadge}>
-            Version: {account.version ?? 0}
-          </Badge>
-        </Group>
-      }
-      size="md"
-      centered
-      radius="md">
+    <>
+      <Group justify="flex-end" mb="md">
+        <Badge variant="outline" color="gray" className={classes.versionBadge}>
+          Version: {account.version ?? 0}
+        </Badge>
+      </Group>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -406,6 +432,18 @@ export function AccountSettingsModal({ account, opened, onClose, onRefetchAccoun
           </div>
         </Stack>
       </form>
-    </Modal>
+    </>
   );
 }
+
+export const AccountSettingsOverlay = registerOverlay(AccountSettings, {
+  name: 'account-settings',
+  title: (
+    <Group gap="xs">
+      <GearIcon size={20} weight="bold" color="var(--mantine-primary-color-filled)" />
+      <Text fw={600}>Account Settings &amp; Policies</Text>
+    </Group>
+  ),
+  presentation: 'modal',
+  size: 'md'
+});

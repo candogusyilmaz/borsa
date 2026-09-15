@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { $api } from '@/api/client';
 import { normalizeError } from '@/api/errors';
-import type { ActivityResponse, FinancialAccount } from '../../types';
+import type { FinancialAccount } from '../../types';
 import { POSITIVE_DECIMAL_REGEX } from '../../utils/account-formatters';
 import { createTransferFormDefaults, getDestinationAccounts, resolveEffectiveAt, resolveInitialTransferAccounts } from './transfer-domain';
 import { invalidateTransferRelatedQueries, notifyCommitError, notifyPreviewError } from './transfer-errors';
@@ -15,8 +15,6 @@ export interface UseTransferSessionOptions {
   defaultSourceAccountId?: string;
   defaultDestinationAccountId?: string;
   lockSourceAccount?: boolean;
-  onClose: () => void;
-  onSuccess?: (activity: ActivityResponse) => void;
 }
 
 export function useTransferSession(options: UseTransferSessionOptions) {
@@ -65,8 +63,6 @@ export function useTransferSession(options: UseTransferSessionOptions) {
           preview: state.session.preview
         });
       }
-
-      options.onSuccess?.(activity);
     },
     onError: notifyCommitError
   });

@@ -26,11 +26,6 @@ export interface TransferPreviewSession {
 
 export type TransferStep = 'edit' | 'preview' | 'success';
 
-export interface TransferHeaderInfo {
-  step: TransferStep;
-  currency?: string;
-}
-
 export type TransferState =
   | { step: 'edit' }
   | {
