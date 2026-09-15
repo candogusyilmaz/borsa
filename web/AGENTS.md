@@ -1,43 +1,76 @@
-# Frontend agent instructions
+# Frontend Agent Instructions
 
-This file is the initial operating contract and context router for the frontend application under `web/`.
+This file is the operating contract and context router for work under `web/`.
 
-## Context routing
+## Context
 
-1. Scope is strictly `web/`.
-2. Read root [AGENTS.md](../AGENTS.md).
-3. Frontend implementation track is located under:
-   - Pointer: [CURRENT.md](../docs/implementation/web/CURRENT.md)
-   - State: [STATE.md](../docs/implementation/web/STATE.md)
-   - Workflow: [README.md](../docs/implementation/web/README.md)
-   - Standards: [frontend-standards.md](../docs/engineering/frontend-standards.md)
-   - UI Design Guidelines: [ui-design-guidelines.md](../docs/engineering/ui-design-guidelines.md)
-   Future frontend units use the `UI-xxx` specification namespace (e.g. `UI-001`).
+Before substantial frontend work:
 
-## Operating rules
+1. Read the root [AGENTS.md](../AGENTS.md).
+2. Read the relevant current implementation context when needed:
+   - [CURRENT.md](../docs/implementation/web/CURRENT.md)
+   - [STATE.md](../docs/implementation/web/STATE.md)
+   - [README.md](../docs/implementation/web/README.md)
+3. Follow:
+   - [frontend-standards.md](../docs/engineering/frontend-standards.md) for frontend engineering decisions.
+   - [ui-design-guidelines.md](../docs/engineering/ui-design-guidelines.md) for UI and interaction decisions.
 
+Do not duplicate those documents here. Inspect the current codebase for implementation details and existing patterns.
+
+## Scope
+
+- Frontend implementation changes belong under `web/` unless explicitly requested otherwise.
 - Do not modify `server/` unless explicitly requested.
-- Backend API contracts are authoritative. Do not invent server endpoints, query parameters, or response fields.
-- When API behavior is unclear, inspect the relevant server controller/request/response code without modifying it unless authorized.
-- Follow [ui-design-guidelines.md](../docs/engineering/ui-design-guidelines.md) for all frontend styling, component creation, and layout architecture:
-  - **No tests in frontend**: Never author `.test.ts` or `.test.tsx` files.
-  - **Touch targets >= 44px**: All buttons, inputs, pills, chips, and interactive elements must have `min-height: 44px`.
-  - **Card elevation tokens**: Use `box-shadow: var(--mantine-shadow-sm)` for resting cards and `var(--mantine-shadow-md)` for hover cards; avoid raw `rgba()` shadows; buttons have no resting shadow.
-  - **Light mode canvas**: Keep light mode canvas flat and solid (`var(--mantine-color-body)`); radial gradients are strictly dark-mode only.
-  - **Dropdown single-line truncation**: Dropdown options must never wrap to multiple lines (`min-width: 0; white-space: nowrap; text-overflow: ellipsis;`).
-  - **Input layout stability**: Anchor inputs directly beneath labels; render descriptions underneath (`inputWrapperOrder: ['label', 'input', 'description', 'error']`).
-  - **Mobile layout standards**: Stack action buttons full-width on mobile (< 36em); arrange presets in structured grids; stack modal actions vertically (`column-reverse`).
-  - **Approachable copy**: Write plain, clear English; avoid dense accounting/ledger jargon.
-  - **State management**: Use `$api.useQuery` and `$api.useMutation` directly; do not manage async loading/error states with ad-hoc `useState`.
-  - **Notifications**: Call `notifications.show(...)` directly without wrapping or forwarding.
-- The user owns Git lifecycle. Never branch, commit, merge, rebase, push, stage, or reset unless explicitly requested. Keep changes in the working tree for review.
+- You may inspect relevant backend code when necessary to understand an API contract or domain behavior.
+- Backend/API contracts are authoritative. Do not invent endpoints, parameters, fields, or server behavior.
+- Generated files should not be edited manually unless the repository explicitly expects that workflow.
 
-## Frontend verification conventions
+## Working Style
 
-Run frontend commands from `web/`:
+- Inspect the relevant existing implementation before making changes.
+- Prefer small, focused changes over broad rewrites.
+- Reuse good existing patterns, but do not preserve an awkward pattern merely because it already exists.
+- Do not introduce abstractions, dependencies, state managers, or infrastructure without a concrete need.
+- Keep feature-specific code local unless there is a real cross-feature reason to share it.
+- When requirements or existing behavior are ambiguous, investigate before guessing.
+
+## Frontend-Specific Rules
+
+- Do not author new frontend test files unless explicitly requested.
+- Use the existing typed API/query infrastructure for server state.
+- Do not duplicate remote server state into local or global client state without a concrete reason.
+- Follow the current project's established form, error-handling, notification, styling, and routing conventions rather than inventing parallel systems.
+- Follow the UI guidelines for mobile-first design and interaction behavior.
+
+## Git
+
+The user owns the Git lifecycle.
+
+Do not:
+- branch
+- commit
+- merge
+- rebase
+- push
+- stage
+- reset
+
+unless explicitly requested.
+
+Leave changes in the working tree for review.
+
+## Verification
+
+Use the current scripts defined by `web/package.json`.
+
+For normal frontend implementation work, verify at least:
 
 ```powershell
 npm run typecheck
 npx biome check ./src
 npm run build
-```
+````
+
+If a command or script changes, follow the repository's current configuration rather than this document.
+
+Report verification failures clearly; do not hide or work around them.
