@@ -1,6 +1,6 @@
 import { Alert, Button, Skeleton, Text } from '@mantine/core';
 import { WarningCircleIcon } from '@phosphor-icons/react';
-import { createFileRoute, Outlet, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { $api } from '@/api/client';
 import { normalizeError } from '@/api/errors';
 import {
@@ -127,7 +127,6 @@ function AccountDetailRouteComponent() {
     <AccountDetailOverlayProvider key={selectedAccount.id}>
       <AccountDetailContent account={selectedAccount} allAccounts={accounts} onOpenAccountPicker={openPickerDrawer} />
       <AccountDetailOverlayHost account={selectedAccount} refetchAccounts={refetchAccounts} onAccountArchived={handleAccountArchived} />
-      <Outlet />
     </AccountDetailOverlayProvider>
   );
 }

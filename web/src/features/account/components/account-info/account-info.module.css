@@ -1,4 +1,4 @@
-.drawerContent {
+.content {
   display: flex;
   flex-direction: column;
   gap: var(--mantine-spacing-md);

@@ -1,8 +1,11 @@
+export { AccountActions, AccountActionsOverlay } from './components/account-actions';
 export { AccountDetailContent } from './components/account-detail-content';
 export { AccountDetailOverlayHost } from './components/account-detail-overlay/account-detail-overlay-host';
 export { AccountDetailOverlayProvider } from './components/account-detail-overlay/account-detail-overlay-provider';
 export { AccountEmptyState } from './components/account-empty-state';
+export { AccountInfo, AccountInfoOverlay } from './components/account-info';
 export { AccountsLayout, useAccountsLayout } from './components/accounts-layout';
 export { ActivityDetailModal } from './components/activity-detail-modal/activity-detail-modal';
+export { CashActivityOverlay, RecordCashActivityForm, RecordCashActivityOverlay } from './components/record-cash-activity';
 export { TransferModal } from './components/transfer-modal/transfer-modal';
 export { formatCurrency, formatDateTime, getActivityTypeLabel, toRelativeTime } from './utils/account-formatters';

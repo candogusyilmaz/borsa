@@ -25,6 +25,10 @@ export function useAccountDetailOverlay() {
   return context;
 }
 
+export function useOptionalAccountDetailOverlay() {
+  return useContext(AccountDetailOverlayContext);
+}
+
 export function AccountDetailOverlayProvider({ children }: { children: ReactNode }) {
   const [active, setActive] = useState<AccountDetailOverlay | null>(null);
 

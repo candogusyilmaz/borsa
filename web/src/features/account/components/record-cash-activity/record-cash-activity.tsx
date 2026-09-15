@@ -1,29 +1,69 @@
-import { Alert, Button, Checkbox, Group, SegmentedControl, Stack, Text, TextInput } from '@mantine/core';
+import { Alert, Badge, Button, Checkbox, Group, SegmentedControl, Skeleton, Stack, Text, TextInput } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { ArrowDownLeftIcon, ArrowUpRightIcon, CheckCircleIcon, ClockIcon, InfoIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { $api } from '@/api/client';
 import { normalizeError } from '@/api/errors';
-import type { BalanceResponse, FinancialAccount } from '../../types';
-import { formatCurrency, formatDateTime, POSITIVE_DECIMAL_REGEX, toDatetimeLocal } from '../../utils/account-formatters';
-import classes from './record-cash-activity-modal.module.css';
+import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import {
+  formatCurrency,
+  formatDateTime,
+  isCashFundingCapable,
+  POSITIVE_DECIMAL_REGEX,
+  toDatetimeLocal
+} from '../../utils/account-formatters';
+import classes from './record-cash-activity.module.css';
 
-interface RecordCashActivityFormProps {
-  account: FinancialAccount;
-  balance?: BalanceResponse;
-  onClose: () => void;
+export interface RecordCashActivityProps {
+  accountId: string;
   defaultType?: 'CASH_DEPOSIT' | 'CASH_WITHDRAWAL';
 }
 
-export function RecordCashActivityForm({ account, balance, onClose, defaultType = 'CASH_DEPOSIT' }: RecordCashActivityFormProps) {
+function CashActivityTitle({ accountId, defaultType }: RecordCashActivityProps) {
+  const { data: account } = $api.useQuery('get', '/api/v1/accounts/{accountId}', {
+    params: { path: { accountId } }
+  });
+
+  const titleText = defaultType === 'CASH_WITHDRAWAL' ? 'Withdraw Cash' : 'Record Cash Activity';
+
+  return (
+    <Group gap="xs">
+      <Text fw={700} size="md">
+        {titleText}
+      </Text>
+      {account?.currency && (
+        <Badge color="teal" variant="light" size="sm">
+          {account.currency}
+        </Badge>
+      )}
+    </Group>
+  );
+}
+
+export function RecordCashActivityForm({ accountId, defaultType = 'CASH_DEPOSIT' }: RecordCashActivityProps) {
+  const current = useCurrentOverlay();
   const queryClient = useQueryClient();
+
+  const accountQuery = $api.useQuery('get', '/api/v1/accounts/{accountId}', {
+    params: { path: { accountId } }
+  });
+
+  const balanceQuery = $api.useQuery(
+    'get',
+    '/api/v1/accounts/{accountId}/balance',
+    { params: { path: { accountId } } },
+    { enabled: Boolean(accountQuery.data) }
+  );
+
+  const account = accountQuery.data;
+  const balance = balanceQuery.data;
 
   const activityMutation = $api.useMutation('post', '/api/v1/accounts/{accountId}/activities', {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/accounts'] });
       queryClient.invalidateQueries({
-        queryKey: $api.queryOptions('get', '/api/v1/accounts/{accountId}', { params: { path: { accountId: account.id } } }).queryKey
+        queryKey: $api.queryOptions('get', '/api/v1/accounts/{accountId}', { params: { path: { accountId } } }).queryKey
       });
       queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/accounts/{accountId}/balance'] });
       queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/activities'] });
@@ -85,6 +125,8 @@ export function RecordCashActivityForm({ account, balance, onClose, defaultType 
       confirmPolicyBreach: false
     },
     onSubmit: async ({ value }) => {
+      if (!account) return;
+
       const effectiveDate =
         value.recordingMode === 'CURRENT_ACTION' ? new Date(Date.now() - 1000).toISOString() : new Date(value.effectiveAt).toISOString();
 
@@ -110,12 +152,40 @@ export function RecordCashActivityForm({ account, balance, onClose, defaultType 
               icon: <CheckCircleIcon size={18} weight="bold" />
             });
 
-            onClose();
+            current.complete();
           }
         }
       );
     }
   });
+
+  if (accountQuery.isLoading) {
+    return (
+      <Stack gap="md" p="md">
+        <Skeleton height={42} radius="sm" />
+        <Skeleton height={50} radius="sm" />
+        <Skeleton height={140} radius="md" />
+      </Stack>
+    );
+  }
+
+  if (accountQuery.isError || !account) {
+    return (
+      <Alert icon={<WarningCircleIcon size={20} />} title="Could not load account" color="red" variant="light" m="md">
+        <Text size="sm">The requested financial account could not be loaded.</Text>
+      </Alert>
+    );
+  }
+
+  const canCashTransact = account.trackingMode !== 'HOLDINGS_ONLY' && isCashFundingCapable(account.kind) && !account.archived;
+
+  if (!canCashTransact) {
+    return (
+      <Alert icon={<WarningCircleIcon size={20} />} title="Cash Transactions Unavailable" color="orange" variant="light" m="md">
+        <Text size="sm">This account is either archived or cannot record cash transactions.</Text>
+      </Alert>
+    );
+  }
 
   return (
     <form
@@ -289,7 +359,12 @@ export function RecordCashActivityForm({ account, balance, onClose, defaultType 
 
       {/* 6. Form Actions */}
       <div className={classes.actions}>
-        <Button variant="default" size="md" className={classes.actionBtn} onClick={onClose} disabled={activityMutation.isPending}>
+        <Button
+          variant="default"
+          size="md"
+          className={classes.actionBtn}
+          onClick={() => current.close('cancelled')}
+          disabled={activityMutation.isPending}>
           Cancel
         </Button>
 
@@ -305,3 +380,12 @@ export function RecordCashActivityForm({ account, balance, onClose, defaultType 
     </form>
   );
 }
+
+export const RecordCashActivityOverlay = registerOverlay(RecordCashActivityForm, {
+  name: 'record-cash-activity',
+  title: (props) => <CashActivityTitle accountId={props.accountId} defaultType={props.defaultType} />,
+  presentation: 'drawer',
+  desktopSize: '480px'
+});
+
+export const CashActivityOverlay = RecordCashActivityOverlay;

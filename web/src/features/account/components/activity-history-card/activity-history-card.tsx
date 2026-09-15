@@ -12,7 +12,6 @@ import {
   SlidersIcon,
   WarningCircleIcon
 } from '@phosphor-icons/react';
-import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { $api } from '@/api/client';
 import type { ActivityType, FinancialAccount } from '../../types';
@@ -25,6 +24,7 @@ import {
 } from '../../utils/account-formatters';
 import { useAccountDetailOverlay } from '../account-detail-overlay/account-detail-overlay-provider';
 import { ActivityDetailModal } from '../activity-detail-modal/activity-detail-modal';
+import { CashActivityOverlay } from '../record-cash-activity';
 import classes from './activity-history-card.module.css';
 
 interface ActivityHistoryCardProps {
@@ -53,7 +53,6 @@ function getActivityIcon(type: ActivityType) {
 
 export function ActivityHistoryCard({ account, onActivityUpdated }: ActivityHistoryCardProps) {
   const { open } = useAccountDetailOverlay();
-  const navigate = useNavigate();
   const [page, setPage] = useState(0);
   const [sortOption, setSortOption] = useState('recordedAt,desc');
   const [typeFilter, setTypeFilter] = useState('ALL');
@@ -217,10 +216,9 @@ export function ActivityHistoryCard({ account, onActivityUpdated }: ActivityHist
                   variant="light"
                   className={classes.actionBtn}
                   onClick={() =>
-                    navigate({
-                      to: '/app/accounts/$accountId/deposit',
-                      params: { accountId: account.id },
-                      resetScroll: false
+                    CashActivityOverlay.open({
+                      accountId: account.id,
+                      defaultType: 'CASH_DEPOSIT'
                     })
                   }>
                   Deposit Cash
@@ -231,10 +229,9 @@ export function ActivityHistoryCard({ account, onActivityUpdated }: ActivityHist
                   variant="light"
                   className={classes.actionBtn}
                   onClick={() =>
-                    navigate({
-                      to: '/app/accounts/$accountId/withdraw',
-                      params: { accountId: account.id },
-                      resetScroll: false
+                    CashActivityOverlay.open({
+                      accountId: account.id,
+                      defaultType: 'CASH_WITHDRAWAL'
                     })
                   }>
                   Withdraw Cash

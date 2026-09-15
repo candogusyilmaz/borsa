@@ -1,6 +1,7 @@
 import { Button, Center, Container, Stack, Text, Title } from '@mantine/core';
 import type { QueryClient } from '@tanstack/react-query';
 import { createRootRouteWithContext, HeadContent, Link, Outlet } from '@tanstack/react-router';
+import { OverlayHost } from '@/shared/overlay';
 import { createSeoMeta } from '@/shared/utils/seo';
 
 interface RouterContext {
@@ -30,6 +31,7 @@ function RootComponent() {
     <>
       <HeadContent />
       <Outlet />
+      <OverlayHost />
     </>
   );
 }

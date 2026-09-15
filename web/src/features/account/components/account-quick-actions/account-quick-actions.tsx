@@ -1,8 +1,9 @@
 import { ArrowDownLeftIcon, ArrowsLeftRightIcon, ArrowUpRightIcon, DotsThreeIcon } from '@phosphor-icons/react';
-import { useNavigate } from '@tanstack/react-router';
 import type { FinancialAccount } from '../../types';
 import { isCashFundingCapable } from '../../utils/account-formatters';
+import { AccountActionsOverlay } from '../account-actions';
 import { useAccountDetailOverlay } from '../account-detail-overlay/account-detail-overlay-provider';
+import { CashActivityOverlay } from '../record-cash-activity';
 import classes from './account-quick-actions.module.css';
 
 interface AccountQuickActionsProps {
@@ -11,7 +12,6 @@ interface AccountQuickActionsProps {
 
 export function AccountQuickActions({ account }: AccountQuickActionsProps) {
   const { open } = useAccountDetailOverlay();
-  const navigate = useNavigate();
   const isHoldings = account.trackingMode === 'HOLDINGS_ONLY';
   const canCashTransact = !isHoldings && isCashFundingCapable(account.kind) && !account.archived;
 
@@ -21,14 +21,7 @@ export function AccountQuickActions({ account }: AccountQuickActionsProps) {
       <button
         type="button"
         className={`${classes.actionBtn} ${classes.depositBtn}`}
-        onClick={() =>
-          navigate({
-            to: '/app/accounts/$accountId/deposit',
-            params: { accountId: account.id },
-            resetScroll: false,
-            viewTransition: false
-          })
-        }
+        onClick={() => CashActivityOverlay.open({ accountId: account.id, defaultType: 'CASH_DEPOSIT' })}
         disabled={!canCashTransact}
         aria-label={canCashTransact ? `Deposit into ${account.name}` : 'Deposit not available for this account'}>
         <ArrowDownLeftIcon size={20} weight="bold" />
@@ -39,14 +32,7 @@ export function AccountQuickActions({ account }: AccountQuickActionsProps) {
       <button
         type="button"
         className={`${classes.actionBtn} ${classes.withdrawBtn}`}
-        onClick={() =>
-          navigate({
-            to: '/app/accounts/$accountId/withdraw',
-            params: { accountId: account.id },
-            resetScroll: false,
-            viewTransition: false
-          })
-        }
+        onClick={() => CashActivityOverlay.open({ accountId: account.id, defaultType: 'CASH_WITHDRAWAL' })}
         disabled={!canCashTransact}
         aria-label={canCashTransact ? `Withdraw from ${account.name}` : 'Withdrawal not available for this account'}>
         <ArrowUpRightIcon size={20} weight="bold" />
@@ -68,7 +54,7 @@ export function AccountQuickActions({ account }: AccountQuickActionsProps) {
       <button
         type="button"
         className={`${classes.actionBtn} ${classes.moreBtn}`}
-        onClick={() => open({ type: 'actions' })}
+        onClick={() => AccountActionsOverlay.open({ accountId: account.id })}
         aria-label={`More actions for ${account.name}`}>
         <DotsThreeIcon size={22} weight="bold" />
         <span className={classes.btnLabel}>More</span>

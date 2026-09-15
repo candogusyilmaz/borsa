@@ -1,9 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { $api } from '@/api/client';
 import type { FinancialAccount } from '../../types';
-import { AccountActionsDrawer } from '../account-actions-drawer';
 import { AccountActivitiesDrawer } from '../account-activities-drawer';
-import { AccountInfoDrawer } from '../account-info-drawer';
 import { AccountSettingsModal } from '../account-settings-modal/account-settings-modal';
 import { ArchiveAccountModal } from '../archive-account-modal/archive-account-modal';
 import { OpeningCorrectionModal } from '../opening-correction-modal/opening-correction-modal';
@@ -45,10 +43,6 @@ export function AccountDetailOverlayHost({ account, refetchAccounts, onAccountAr
         defaultSourceAccountId={account.id}
         onSuccess={refreshSelectedAccount}
       />
-
-      <AccountActionsDrawer account={account} opened={active?.type === 'actions'} onClose={close} onRefresh={refreshSelectedAccount} />
-
-      <AccountInfoDrawer account={account} opened={active?.type === 'info'} onClose={close} />
 
       <AccountSettingsModal
         key={`settings-${account.id}-${account.version ?? 0}`}

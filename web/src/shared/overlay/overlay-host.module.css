@@ -1,0 +1,92 @@
+.contentContainer {
+  position: relative;
+  width: 100%;
+  min-height: 100%;
+}
+
+.contentForward {
+  animation: slideForward 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.contentBackward {
+  animation: slideBackward 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.contentReplace {
+  animation: fadeIn 150ms ease-out;
+}
+
+@keyframes slideForward {
+  from {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideBackward {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contentForward,
+  .contentBackward,
+  .contentReplace {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+.headerTitleWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  background: transparent;
+  border: none;
+  border-radius: var(--mantine-radius-sm);
+  color: var(--mantine-color-text);
+  cursor: pointer;
+  transition: background-color 120ms ease;
+  padding: 0;
+}
+
+.backBtn:hover {
+  background-color: var(--mantine-color-default-hover);
+}
+
+.backBtn:active {
+  background-color: var(--mantine-color-default-active);
+}
+
+.backBtn:focus-visible {
+  outline: 2px solid var(--mantine-color-brand-6);
+  outline-offset: 2px;
+}
