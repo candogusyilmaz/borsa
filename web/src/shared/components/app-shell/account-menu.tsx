@@ -1,7 +1,9 @@
 import { Avatar, Badge, Button, Divider, Group, Stack, Text } from '@mantine/core';
 import { BankIcon, BookOpenIcon, DevicesIcon, SignOutIcon, StackIcon } from '@phosphor-icons/react';
 import { Link, useNavigate } from '@tanstack/react-router';
+import { useState } from 'react';
 import { $api } from '@/api/client';
+import { showApiError } from '@/api/errors';
 import { ReferenceCatalogOverlay } from '@/features/reference';
 import { BrandLogo } from '@/shared/components/brand-logo';
 import { ThemeToggle } from '@/shared/components/theme-toggle';
@@ -17,6 +19,7 @@ function AccountMenu({ activeSessionsCount }: AccountMenuOverlayProps) {
   const current = useCurrentOverlay();
   const { logout } = useAuth();
   const navigate = useNavigate();
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   const meQuery = $api.useQuery('get', '/api/v1/me');
   const user = meQuery.data;
@@ -26,9 +29,19 @@ function AccountMenu({ activeSessionsCount }: AccountMenuOverlayProps) {
   const userId = user?.id ? `${user.id.slice(0, 12)}...` : 'N/A';
 
   async function handleLogout() {
-    current.close('logout');
-    await logout();
-    await navigate({ to: '/login', replace: true });
+    setIsSigningOut(true);
+    try {
+      await logout();
+      current.close('logout');
+      await navigate({ to: '/login', replace: true });
+    } catch (error) {
+      showApiError(error, {
+        title: 'Sign Out Failed',
+        fallbackMessage: 'Could not sign out. Please try again.'
+      });
+    } finally {
+      setIsSigningOut(false);
+    }
   }
 
   return (
@@ -124,7 +137,14 @@ function AccountMenu({ activeSessionsCount }: AccountMenuOverlayProps) {
         <ThemeToggle />
       </Group>
 
-      <Button color="red" variant="light" size="md" fullWidth leftSection={<SignOutIcon size={18} weight="bold" />} onClick={handleLogout}>
+      <Button
+        color="red"
+        variant="light"
+        size="md"
+        fullWidth
+        loading={isSigningOut}
+        leftSection={<SignOutIcon size={18} weight="bold" />}
+        onClick={handleLogout}>
         Sign Out
       </Button>
     </Stack>

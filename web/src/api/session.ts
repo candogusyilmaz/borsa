@@ -227,17 +227,17 @@ export async function resolveSession(queryClient: QueryClient): Promise<SessionR
 
 export async function logoutSession(queryClient: QueryClient): Promise<void> {
   const epochAtStart = currentSessionEpoch();
+  let logoutError: unknown;
 
   try {
-    if (getAccessToken()) {
-      await client.POST('/api/v1/auth/logout', {
-        body: {
-          scope: 'CURRENT_SESSION'
-        }
-      });
-    }
-  } catch {
-    // Server logout is best-effort.
+    const { error } = await client.POST('/api/v1/auth/logout', {
+      body: {
+        scope: 'CURRENT_SESSION'
+      }
+    });
+    logoutError = error;
+  } catch (error) {
+    logoutError = error;
   }
 
   const currentEpoch = currentSessionEpoch();
@@ -250,6 +250,11 @@ export async function logoutSession(queryClient: QueryClient): Promise<void> {
    */
   if (currentEpoch !== epochAtStart && hasToken) {
     return;
+  }
+
+  // A rejected refresh proves the old session is already unusable.
+  if (logoutError && !(currentEpoch !== epochAtStart && !hasToken && isAuthenticationError(logoutError))) {
+    throw logoutError;
   }
 
   /*

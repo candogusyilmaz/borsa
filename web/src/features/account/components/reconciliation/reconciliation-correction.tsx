@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { $api } from '@/api/client';
 import { showApiError } from '@/api/errors';
 import type { FinancialAccount } from '../../types';
-import { PLAIN_DECIMAL_REGEX } from '../../utils/account-formatters';
+import { PLAIN_DECIMAL_REGEX, toDatetimeLocal } from '../../utils/account-formatters';
 import classes from './reconciliation.module.css';
 import { ReconciliationPreview } from './reconciliation-preview';
 import type { ReconciliationAction, ReconciliationPreviewResponse, ReconciliationResponse } from './reconciliation-types';
@@ -20,6 +20,8 @@ interface ReconciliationCorrectionProps {
 export function ReconciliationCorrection({ account, targetReconciliation, onSuccess, onCancel }: ReconciliationCorrectionProps) {
   const [step, setStep] = useState<'edit' | 'preview'>('edit');
   const [previewData, setPreviewData] = useState<ReconciliationPreviewResponse | null>(null);
+  const openingLocal = toDatetimeLocal(new Date(targetReconciliation.statementOpeningAt), true);
+  const closingLocal = toDatetimeLocal(new Date(targetReconciliation.statementClosingAt), true);
 
   const previewMutation = $api.useMutation('post', '/api/v1/accounts/{accountId}/reconciliation-previews', {
     onError: (err) => {
@@ -42,15 +44,21 @@ export function ReconciliationCorrection({ account, targetReconciliation, onSucc
   const form = useForm({
     defaultValues: {
       statementReference: targetReconciliation.statementReference,
-      statementOpeningAt: targetReconciliation.statementOpeningAt.slice(0, 16),
-      statementClosingAt: targetReconciliation.statementClosingAt.slice(0, 16),
+      statementOpeningAt: openingLocal,
+      statementClosingAt: closingLocal,
       statementOpeningBalance: targetReconciliation.statementOpeningBalance,
       statementClosingBalance: targetReconciliation.statementClosingBalance,
       correctionReason: ''
     },
     onSubmit: async ({ value }) => {
-      const openingIso = new Date(value.statementOpeningAt).toISOString();
-      const closingIso = new Date(value.statementClosingAt).toISOString();
+      const openingIso =
+        value.statementOpeningAt === openingLocal
+          ? targetReconciliation.statementOpeningAt
+          : new Date(value.statementOpeningAt).toISOString();
+      const closingIso =
+        value.statementClosingAt === closingLocal
+          ? targetReconciliation.statementClosingAt
+          : new Date(value.statementClosingAt).toISOString();
 
       previewMutation.mutate(
         {
@@ -207,6 +215,7 @@ export function ReconciliationCorrection({ account, targetReconciliation, onSucc
               <TextInput
                 label="Statement Opening Date &amp; Time"
                 type="datetime-local"
+                step={1}
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.currentTarget.value)}
                 onBlur={field.handleBlur}
@@ -235,6 +244,7 @@ export function ReconciliationCorrection({ account, targetReconciliation, onSucc
               <TextInput
                 label="Statement Closing Date &amp; Time"
                 type="datetime-local"
+                step={1}
                 value={field.state.value}
                 onChange={(e) => field.handleChange(e.currentTarget.value)}
                 onBlur={field.handleBlur}

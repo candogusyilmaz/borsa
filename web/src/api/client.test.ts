@@ -1228,6 +1228,34 @@ describe('actual logout command terminal recovery', () => {
     expect(navigatedTo).toBe('/login'); // caller-owned navigation
   });
 
+  it('server logout failure keeps the local session and cache so the user can retry', async () => {
+    setAccessToken('TOKEN_A');
+    const queryClient = new QueryClient();
+    queryClient.setQueryData(['test'], 'data');
+    const epochBefore = currentSessionEpoch();
+
+    vi.mocked(fetch).mockResolvedValueOnce(response500());
+
+    await expect(logoutSession(queryClient)).rejects.toMatchObject({ status: 500 });
+    expect(currentSessionEpoch()).toBe(epochBefore);
+    expect(getAccessToken()).toBe('TOKEN_A');
+    expect(queryClient.getQueryData(['test'])).toBe('data');
+  });
+
+  it('logout network failure keeps the local session and cache so the user can retry', async () => {
+    setAccessToken('TOKEN_A');
+    const queryClient = new QueryClient();
+    queryClient.setQueryData(['test'], 'data');
+    const epochBefore = currentSessionEpoch();
+
+    vi.mocked(fetch).mockRejectedValueOnce(new TypeError('Failed to fetch'));
+
+    await expect(logoutSession(queryClient)).rejects.toThrow('Failed to fetch');
+    expect(currentSessionEpoch()).toBe(epochBefore);
+    expect(getAccessToken()).toBe('TOKEN_A');
+    expect(queryClient.getQueryData(['test'])).toBe('data');
+  });
+
   it('new logical session supersedes old logout: does not clear new session or token', async () => {
     setAccessToken('TOKEN_A');
     const queryClient = new QueryClient();
