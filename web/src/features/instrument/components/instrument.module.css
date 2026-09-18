@@ -1,0 +1,202 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.headerBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.titleArea {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filterBar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.filterControls {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+@media (min-width: 48em) {
+  .filterControls {
+    grid-template-columns: 1fr 1fr auto;
+    align-items: flex-end;
+  }
+}
+
+.instrumentList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.instrumentCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.875rem;
+  border-radius: var(--mantine-radius-md);
+  border: 1px solid var(--mantine-color-default-border);
+  background-color: var(--mantine-color-default);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color var(--app-motion-fast, 120ms) ease, border-color var(--app-motion-fast, 120ms) ease;
+}
+
+.instrumentCard:hover {
+  background-color: var(--mantine-color-default-hover);
+}
+
+.instrumentCardManual {
+  border-left: 3px solid var(--mantine-color-violet-6);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.symbolNameArea {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.symbolRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.symbol {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--mantine-color-text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.name {
+  font-size: 0.8125rem;
+  color: var(--mantine-color-dimmed);
+  line-height: 1.25;
+}
+
+.badgesRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.25rem;
+}
+
+.aliasesRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid var(--mantine-color-default-border);
+}
+
+.detailCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: var(--mantine-radius-md);
+  background-color: var(--mantine-color-default);
+  border: 1px solid var(--mantine-color-default-border);
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.375rem 0;
+  font-size: 0.875rem;
+}
+
+.detailLabel {
+  color: var(--mantine-color-dimmed);
+  font-size: 0.8125rem;
+}
+
+.detailValue {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.aliasEditor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: var(--mantine-radius-md);
+  background-color: var(--mantine-color-default);
+  border: 1px dashed var(--mantine-color-default-border);
+}
+
+.aliasInputRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+@media (min-width: 36em) {
+  .aliasInputRow {
+    grid-template-columns: 140px 1fr auto;
+    align-items: flex-end;
+  }
+}
+
+.aliasTagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-top: 0.25rem;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--mantine-color-dimmed);
+  gap: 0.5rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.actionBtn {
+  flex: 1;
+  min-height: 44px;
+}
+
+.paginationBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--mantine-color-default-border);
+}

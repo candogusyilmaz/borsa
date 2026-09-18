@@ -191,7 +191,7 @@ export function ActivityDetail({ activityId, isAccountArchived = false, isAlread
                 size="md"
                 className={classes.actionBtn}
                 leftSection={<ArrowCounterClockwiseIcon size={16} weight="bold" />}
-                onClick={() => ReverseActivityOverlay.open({ activity })}>
+                onClick={() => ReverseActivityOverlay.open({ activityId: activity.id })}>
                 Reverse Transaction
               </Button>
             )}

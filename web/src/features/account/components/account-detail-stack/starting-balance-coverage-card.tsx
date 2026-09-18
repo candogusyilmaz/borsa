@@ -1,8 +1,9 @@
-import { Badge, Button, Collapse, Skeleton, Text } from '@mantine/core';
-import { CaretDownIcon, CaretUpIcon, ShieldCheckIcon } from '@phosphor-icons/react';
+import { Badge, Button, Collapse, Group, Skeleton, Text } from '@mantine/core';
+import { CaretDownIcon, CaretUpIcon, ShieldCheckIcon, SlidersIcon } from '@phosphor-icons/react';
 import { $api } from '@/api/client';
 import type { FinancialAccount } from '../../types';
 import { formatCurrency, formatDate, formatDateTime, getCoverageStatusPresentation } from '../../utils/account-formatters';
+import { ReconciliationOverlay } from '../reconciliation';
 import classes from './starting-balance-coverage-card.module.css';
 
 interface StartingBalanceCoverageCardProps {
@@ -113,14 +114,29 @@ export function StartingBalanceCoverageCard({ account, expanded, onToggle, onOpe
             </Text>
 
             {!account.archived && (
-              <Button
-                variant="default"
-                size="md"
-                className={classes.actionButton}
-                onClick={onOpenCorrection}
-                aria-label="Correct account opening balance">
-                Correct Opening Balance
-              </Button>
+              <Group gap="xs" mt="sm">
+                <Button
+                  variant="default"
+                  size="sm"
+                  className={classes.actionButton}
+                  onClick={onOpenCorrection}
+                  aria-label="Correct account opening balance">
+                  Correct Opening Balance
+                </Button>
+
+                {account.trackingMode === 'FULL_LEDGER' && (
+                  <Button
+                    color="brand"
+                    variant="light"
+                    size="sm"
+                    className={classes.actionButton}
+                    leftSection={<SlidersIcon size={16} weight="bold" />}
+                    onClick={() => ReconciliationOverlay.open({ accountId: account.id })}
+                    aria-label="Reconcile account statements">
+                    Reconcile Statements
+                  </Button>
+                )}
+              </Group>
             )}
           </div>
         </Collapse>

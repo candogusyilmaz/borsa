@@ -1,29 +1,34 @@
 import { Button, Text, TextInput } from '@mantine/core';
 import { CalendarBlankIcon, ClockCounterClockwiseIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
+import { $api } from '@/api/client';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
-import type { FinancialAccount } from '../../types';
 import { toDatetimeLocal } from '../../utils/account-formatters';
 import classes from './as-of-date.module.css';
 
-interface AsOfDateProps {
-  account: FinancialAccount;
+export interface AsOfDateProps {
+  accountId: string;
   selectedAsOf: string | null;
 }
 
-export function AsOfDate({ account, selectedAsOf }: AsOfDateProps) {
+export function AsOfDate({ accountId, selectedAsOf }: AsOfDateProps) {
   const current = useCurrentOverlay<string | null>();
   const [customInput, setCustomInput] = useState(() =>
     selectedAsOf ? toDatetimeLocal(new Date(selectedAsOf)) : toDatetimeLocal(new Date())
   );
+
+  const accountQuery = $api.useQuery('get', '/api/v1/accounts/{accountId}', {
+    params: { path: { accountId } }
+  });
+  const coverageFrom = accountQuery.data?.coverageFrom;
 
   function handleLive() {
     current.complete(null);
   }
 
   function handleOpening() {
-    if (account.coverageFrom) {
-      current.complete(account.coverageFrom);
+    if (coverageFrom) {
+      current.complete(coverageFrom);
     }
   }
 
@@ -74,7 +79,7 @@ export function AsOfDate({ account, selectedAsOf }: AsOfDateProps) {
           Live Balance (Reset)
         </Button>
 
-        {account.coverageFrom && (
+        {coverageFrom && (
           <Button variant="default" className={classes.presetBtn} leftSection={<CalendarBlankIcon size={18} />} onClick={handleOpening}>
             Opening Date
           </Button>
@@ -120,7 +125,7 @@ export function AsOfDate({ account, selectedAsOf }: AsOfDateProps) {
   );
 }
 
-export const AsOfDateOverlay = registerOverlay<AsOfDateProps, string | null>(AsOfDate, {
+export const AsOfDateOverlay = registerOverlay.withResult<string | null>()(AsOfDate, {
   name: 'as-of-date',
   title: 'View Balance As Of',
   presentation: 'drawer',

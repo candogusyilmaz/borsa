@@ -5,10 +5,10 @@ import { useForm, useStore } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { $api } from '@/api/client';
 import { getApiErrorMessage, normalizeError, showApiError } from '@/api/errors';
+import { CurrencySelect } from '@/features/reference';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
 import type { AccountKind, FinancialAccount, NegativeBalancePolicy, TrackingMode } from '../../types';
 import {
-  COMMON_CURRENCIES,
   COMMON_TIMEZONES,
   getAccountKindDescription,
   getAccountKindLabel,
@@ -23,13 +23,9 @@ import {
 } from '../../utils/account-formatters';
 import classes from './create-account.module.css';
 
-type CreateAccountProps = Record<string, never>;
-
 export function CreateAccount() {
   const current = useCurrentOverlay<FinancialAccount>();
   const queryClient = useQueryClient();
-
-  const currenciesQuery = $api.useQuery('get', '/api/v1/reference/currencies');
 
   const createMutation = $api.useMutation('post', '/api/v1/accounts', {
     onSuccess: (data) => {
@@ -55,19 +51,6 @@ export function CreateAccount() {
       });
     }
   });
-
-  const currencyOptions =
-    currenciesQuery.data && currenciesQuery.data.length > 0
-      ? currenciesQuery.data
-          .filter((c) => c.active !== false)
-          .map((c) => ({
-            value: c.code,
-            label: `${c.code} — ${c.name} (${c.symbol})`
-          }))
-      : COMMON_CURRENCIES.map((c) => ({
-          value: c.code,
-          label: `${c.code} — ${c.name} (${c.symbol})`
-        }));
 
   const userTimeZone =
     typeof Intl !== 'undefined' && Intl.DateTimeFormat ? Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC' : 'UTC';
@@ -272,12 +255,10 @@ export function CreateAccount() {
               onChange: ({ value }) => (!value ? 'Currency is required.' : undefined)
             }}>
             {(field) => (
-              <Select
+              <CurrencySelect
                 label="Account Currency"
-                searchable
                 value={field.state.value}
                 onChange={(val) => field.handleChange(val || 'USD')}
-                data={currencyOptions}
                 required
               />
             )}
@@ -511,7 +492,7 @@ export function CreateAccount() {
   );
 }
 
-export const CreateAccountOverlay = registerOverlay<CreateAccountProps, FinancialAccount>(CreateAccount, {
+export const CreateAccountOverlay = registerOverlay.withResult<FinancialAccount>()(CreateAccount, {
   name: 'create-account',
   title: (
     <Group gap="xs">

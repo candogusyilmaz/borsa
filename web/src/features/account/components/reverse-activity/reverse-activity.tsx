@@ -1,4 +1,4 @@
-import { Alert, Badge, Button, Group, Text, Textarea } from '@mantine/core';
+import { Alert, Badge, Button, Group, Skeleton, Stack, Text, Textarea } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { ArrowCounterClockwiseIcon, CheckCircleIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { useForm } from '@tanstack/react-form';
@@ -10,11 +10,42 @@ import type { ActivityResponse } from '../../types';
 import { formatCurrency, formatDateTime, getActivityTypeLabel } from '../../utils/account-formatters';
 import classes from './reverse-activity.module.css';
 
-interface ReverseActivityProps {
+export interface ReverseActivityProps {
+  activityId: string;
+}
+
+interface ReverseActivityFormProps {
   activity: ActivityResponse;
 }
 
-export function ReverseActivity({ activity }: ReverseActivityProps) {
+export function ReverseActivity({ activityId }: ReverseActivityProps) {
+  const activityQuery = $api.useQuery('get', '/api/v1/activities/{activityId}', {
+    params: { path: { activityId } }
+  });
+
+  if (activityQuery.isLoading) {
+    return (
+      <Stack gap="md" p="md">
+        <Skeleton height={50} radius="md" />
+        <Skeleton height={100} radius="md" />
+        <Skeleton height={80} radius="md" />
+        <Skeleton height={42} radius="sm" />
+      </Stack>
+    );
+  }
+
+  if (activityQuery.isError || !activityQuery.data) {
+    return (
+      <Alert icon={<WarningCircleIcon size={20} />} title="Could not load transaction" color="red" variant="light" m="md">
+        <Text size="sm">The requested transaction could not be loaded.</Text>
+      </Alert>
+    );
+  }
+
+  return <ReverseActivityForm activity={activityQuery.data} />;
+}
+
+function ReverseActivityForm({ activity }: ReverseActivityFormProps) {
   const current = useCurrentOverlay();
   const queryClient = useQueryClient();
 

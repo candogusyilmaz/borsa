@@ -10,6 +10,7 @@ export { ActivityDetail, ActivityDetailOverlay } from './components/activity-det
 export { ArchiveAccount, ArchiveAccountOverlay } from './components/archive-account/archive-account';
 export { CreateAccount, CreateAccountOverlay } from './components/create-account/create-account';
 export { OpeningCorrection, OpeningCorrectionOverlay } from './components/opening-correction/opening-correction';
+export { Reconciliation, ReconciliationOverlay } from './components/reconciliation';
 export { CashActivityOverlay, RecordCashActivityForm, RecordCashActivityOverlay } from './components/record-cash-activity';
 export { ReverseActivity, ReverseActivityOverlay } from './components/reverse-activity/reverse-activity';
 export { Transfer, TransferOverlay } from './components/transfer/transfer';

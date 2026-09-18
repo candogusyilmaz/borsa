@@ -1,6 +1,7 @@
 import { Button, Divider, Stack, Text } from '@mantine/core';
-import { CheckCircleIcon } from '@phosphor-icons/react';
+import { CheckCircleIcon, ReceiptIcon } from '@phosphor-icons/react';
 import { formatCurrency, formatDateTime } from '../../utils/account-formatters';
+import { ActivityDetailOverlay } from '../activity-detail/activity-detail';
 import classes from './transfer.module.css';
 import type { TransferSessionResult } from './use-transfer-session';
 
@@ -18,6 +19,11 @@ export function TransferSuccess({ session, onDone, onStartAnother }: TransferSuc
   const { activity, preview } = session.state;
   const sourceAccount = session.accounts.find((a) => a.id === preview.sourceAccountId) ?? session.sourceAccount;
   const destinationAccount = session.accounts.find((a) => a.id === preview.destinationAccountId) ?? session.destinationAccount;
+
+  function handleViewActivity() {
+    onDone();
+    ActivityDetailOverlay.open({ activityId: activity.id });
+  }
 
   return (
     <div className={classes.successScreen}>
@@ -63,13 +69,25 @@ export function TransferSuccess({ session, onDone, onStartAnother }: TransferSuc
 
         <div className={classes.detailRow}>
           <span className={classes.detailLabel}>Activity Reference ID:</span>
-          <span className={classes.detailValue}>{activity.id.slice(0, 16)}...</span>
+          <button type="button" className={classes.referenceIdBtn} onClick={handleViewActivity} title="View activity details in ledger">
+            {activity.id.slice(0, 16)}...
+          </button>
         </div>
       </div>
 
       <div className={classes.actions}>
         <Button variant="default" size="md" className={classes.actionBtn} onClick={onStartAnother}>
           Make Another Transfer
+        </Button>
+
+        <Button
+          variant="light"
+          color="brand"
+          size="md"
+          className={classes.actionBtn}
+          leftSection={<ReceiptIcon size={18} weight="bold" />}
+          onClick={handleViewActivity}>
+          View in History
         </Button>
 
         <Button color="brand" size="md" className={classes.actionBtn} onClick={onDone}>

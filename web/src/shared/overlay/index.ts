@@ -1,7 +1,7 @@
 export { OverlayHost } from './overlay-host';
 export { OverlayProvider, type OverlayProviderProps } from './overlay-provider';
 export { overlayStore } from './overlay-store';
-export { registerOverlay } from './register-overlay';
+export { registerOverlay, registerOverlayWithResult } from './register-overlay';
 export type {
   CurrentOverlayContextValue,
   OpenArgs,

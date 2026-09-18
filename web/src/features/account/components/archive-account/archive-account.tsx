@@ -195,7 +195,7 @@ function ArchiveAccountForm({ account, onRefetchAccount }: ArchiveAccountFormPro
   );
 }
 
-export const ArchiveAccountOverlay = registerOverlay<ArchiveAccountOverlayProps, FinancialAccount>(ArchiveAccount, {
+export const ArchiveAccountOverlay = registerOverlay(ArchiveAccount, {
   name: 'archive-account',
   title: (
     <Group gap="xs">

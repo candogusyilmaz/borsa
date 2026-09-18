@@ -1,0 +1,184 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.headerBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.titleArea {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.reconcileList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.reconcileCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.875rem;
+  border-radius: var(--mantine-radius-md);
+  border: 1px solid var(--mantine-color-default-border);
+  background-color: var(--mantine-color-default);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color var(--app-motion-fast, 120ms) ease, border-color var(--app-motion-fast, 120ms) ease;
+}
+
+.reconcileCard:hover {
+  background-color: var(--mantine-color-default-hover);
+}
+
+.reconcileCardSuperSeded {
+  opacity: 0.65;
+  border-style: dashed;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.statementRef {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--mantine-color-text);
+}
+
+.statementPeriod {
+  font-size: 0.75rem;
+  color: var(--mantine-color-dimmed);
+}
+
+.cardBody {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  padding-top: 0.375rem;
+  border-top: 1px solid var(--mantine-color-default-border);
+}
+
+.dataCell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.dataLabel {
+  font-size: 0.6875rem;
+  color: var(--mantine-color-dimmed);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.dataValue {
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.deltaPositive {
+  color: var(--mantine-color-teal-6);
+}
+
+.deltaNegative {
+  color: var(--mantine-color-orange-6);
+}
+
+.comparisonCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: var(--mantine-radius-md);
+  background-color: var(--mantine-color-default);
+  border: 1px solid var(--mantine-color-default-border);
+}
+
+.comparisonRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.375rem 0;
+  font-size: 0.875rem;
+}
+
+.comparisonLabel {
+  color: var(--mantine-color-dimmed);
+  font-size: 0.8125rem;
+}
+
+.comparisonValue {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.fieldGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+@media (min-width: 48em) {
+  .fieldGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.presetContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.presetBtn {
+  font-size: 0.75rem;
+  padding: 0.375rem 0.75rem;
+  height: auto;
+  min-height: 36px;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: var(--mantine-color-dimmed);
+  gap: 0.5rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.actionBtn {
+  flex: 1;
+  min-height: 44px;
+}
+
+.paginationBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--mantine-color-default-border);
+}

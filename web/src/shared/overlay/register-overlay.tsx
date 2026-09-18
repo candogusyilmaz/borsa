@@ -22,3 +22,14 @@ export function registerOverlay<TProps, TResult = void>(
 
   return definition;
 }
+
+export function registerOverlayWithResult<TResult>() {
+  return function register<TProps>(
+    component: ComponentType<TProps>,
+    metadata: OverlayMetadata<TProps>
+  ): OverlayDefinition<TProps, TResult> {
+    return registerOverlay<TProps, TResult>(component, metadata);
+  };
+}
+
+registerOverlay.withResult = registerOverlayWithResult;

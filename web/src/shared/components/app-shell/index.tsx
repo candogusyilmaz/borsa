@@ -1,5 +1,5 @@
 import { Avatar, Badge, Button, UnstyledButton } from '@mantine/core';
-import { BankIcon, DevicesIcon, HouseIcon, UserIcon } from '@phosphor-icons/react';
+import { BankIcon, DevicesIcon, HouseIcon, StackIcon, UserIcon } from '@phosphor-icons/react';
 import { Link, useLocation } from '@tanstack/react-router';
 import { type MouseEvent, type ReactNode, useMemo, useRef, useState } from 'react';
 import { $api } from '@/api/client';
@@ -30,6 +30,9 @@ export function AppShell({ children, user }: AppShellProps) {
   const activeId = useMemo(() => {
     if (pathname === '/app/accounts' || pathname.startsWith('/app/accounts/')) {
       return 'accounts';
+    }
+    if (pathname === '/app/instruments' || pathname.startsWith('/app/instruments/')) {
+      return 'instruments';
     }
     if (pathname === '/app/sessions' || pathname.startsWith('/app/sessions/')) {
       return 'sessions';
@@ -86,7 +89,7 @@ export function AppShell({ children, user }: AppShellProps) {
       return;
     }
 
-    const handle = AccountMenuOverlay.open({ user, activeSessionsCount });
+    const handle = AccountMenuOverlay.open({ activeSessionsCount });
     accountMenuHandle.current = handle;
     setAccountMenuOpened(true);
     void handle.closed.then(() => {
@@ -139,6 +142,15 @@ export function AppShell({ children, user }: AppShellProps) {
               size="sm"
               leftSection={<BankIcon size={16} weight="bold" />}>
               Accounts
+            </Button>
+            <Button
+              component={Link}
+              to="/app/instruments"
+              activeOptions={{ exact: true }}
+              variant="subtle"
+              size="sm"
+              leftSection={<StackIcon size={16} weight="bold" />}>
+              Instruments
             </Button>
           </nav>
 

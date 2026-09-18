@@ -1,12 +1,24 @@
 import { Alert, Skeleton, Stack, Text } from '@mantine/core';
-import { ArchiveIcon, ArrowClockwiseIcon, BankIcon, CaretRightIcon, GearIcon, InfoIcon, WarningCircleIcon } from '@phosphor-icons/react';
+import {
+  ArchiveIcon,
+  ArrowClockwiseIcon,
+  ArrowsLeftRightIcon,
+  BankIcon,
+  CaretRightIcon,
+  GearIcon,
+  InfoIcon,
+  SlidersIcon,
+  WarningCircleIcon
+} from '@phosphor-icons/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { $api } from '@/api/client';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
-import { getAccountKindLabel, getTrackingModeLabel } from '../../utils/account-formatters';
+import { getAccountKindLabel, getTrackingModeLabel, isCashFundingCapable } from '../../utils/account-formatters';
 import { AccountInfoOverlay } from '../account-info';
 import { AccountSettingsOverlay } from '../account-settings/account-settings';
 import { ArchiveAccountOverlay } from '../archive-account/archive-account';
+import { ReconciliationOverlay } from '../reconciliation';
+import { TransferOverlay } from '../transfer/transfer';
 import classes from './account-actions.module.css';
 
 export interface AccountActionsProps {
@@ -113,6 +125,38 @@ export function AccountActions({ accountId, onAccountArchived }: AccountActionsP
         </div>
         <CaretRightIcon size={16} color="var(--mantine-color-dimmed)" />
       </button>
+
+      {/* 4. Reconciliations */}
+      {account.trackingMode === 'FULL_LEDGER' && (
+        <button
+          type="button"
+          className={classes.actionItem}
+          onClick={() => {
+            ReconciliationOverlay.replace({ accountId });
+          }}>
+          <div className={classes.actionItemLeft}>
+            <SlidersIcon size={20} />
+            <span>Statement Reconciliations</span>
+          </div>
+          <CaretRightIcon size={16} color="var(--mantine-color-dimmed)" />
+        </button>
+      )}
+
+      {/* 5. Transfer Funds */}
+      {!account.archived && isCashFundingCapable(account.kind) && (
+        <button
+          type="button"
+          className={classes.actionItem}
+          onClick={() => {
+            TransferOverlay.replace({ defaultSourceAccountId: accountId });
+          }}>
+          <div className={classes.actionItemLeft}>
+            <ArrowsLeftRightIcon size={20} />
+            <span>Transfer Funds</span>
+          </div>
+          <CaretRightIcon size={16} color="var(--mantine-color-dimmed)" />
+        </button>
+      )}
 
       <div className={classes.divider} />
 

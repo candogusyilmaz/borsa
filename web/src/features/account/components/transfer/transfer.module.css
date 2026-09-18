@@ -270,6 +270,23 @@
   font-variant-numeric: tabular-nums;
 }
 
+.referenceIdBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--mantine-primary-color-filled);
+  font-size: var(--mantine-font-size-xs);
+  font-weight: var(--mantine-font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.referenceIdBtn:hover {
+  opacity: 0.8;
+}
+
 .selectOptionText {
   display: flex;
   flex-direction: column;

@@ -69,7 +69,7 @@ export function AccountsLayout() {
   }
 
   function openAccountPicker() {
-    const handle = AccountPickerOverlay.open({ accounts: rawAccounts, selectedAccountId });
+    const handle = AccountPickerOverlay.open({ selectedAccountId });
     void handle.closed.then((outcome) => {
       if (outcome.status === 'completed' && outcome.value !== currentAccountId) {
         void navigate({

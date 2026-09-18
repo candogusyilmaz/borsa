@@ -1,4 +1,4 @@
-import { Badge, Select, Switch, Text, TextInput } from '@mantine/core';
+import { Badge, Select, Skeleton, Stack, Switch, Text, TextInput } from '@mantine/core';
 import {
   BankIcon,
   CaretRightIcon,
@@ -10,14 +10,14 @@ import {
   WalletIcon
 } from '@phosphor-icons/react';
 import { useState } from 'react';
+import { $api } from '@/api/client';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
-import type { AccountKind, FinancialAccount } from '../../types';
+import type { AccountKind } from '../../types';
 import { getAccountKindBadgeColor, getAccountKindLabel, getTrackingModeLabel } from '../../utils/account-formatters';
 import classes from './account-picker.module.css';
 
-interface AccountPickerProps {
-  accounts: FinancialAccount[];
-  selectedAccountId: string;
+export interface AccountPickerProps {
+  selectedAccountId?: string | null;
 }
 
 function getAccountIcon(kind: AccountKind) {
@@ -39,12 +39,28 @@ function getAccountIcon(kind: AccountKind) {
   }
 }
 
-export function AccountPicker({ accounts, selectedAccountId }: AccountPickerProps) {
+export function AccountPicker({ selectedAccountId }: AccountPickerProps) {
   const current = useCurrentOverlay<string>();
   const [search, setSearch] = useState('');
   const [modeFilter, setModeFilter] = useState('ALL');
   const [kindFilter, setKindFilter] = useState('ALL');
   const [showArchived, setShowArchived] = useState(false);
+
+  const accountsQuery = $api.useQuery('get', '/api/v1/accounts');
+  const accounts = accountsQuery.data ?? [];
+
+  if (accountsQuery.isLoading) {
+    return (
+      <div className={classes.drawerContent}>
+        <Stack gap="xs">
+          <Skeleton height={36} radius="sm" />
+          <Skeleton height={68} radius="md" />
+          <Skeleton height={68} radius="md" />
+          <Skeleton height={68} radius="md" />
+        </Stack>
+      </div>
+    );
+  }
 
   const filteredAccounts = accounts.filter((account) => {
     if (search.trim()) {
@@ -176,7 +192,7 @@ export function AccountPicker({ accounts, selectedAccountId }: AccountPickerProp
   );
 }
 
-export const AccountPickerOverlay = registerOverlay<AccountPickerProps, string>(AccountPicker, {
+export const AccountPickerOverlay = registerOverlay.withResult<string>()(AccountPicker, {
   name: 'account-picker',
   title: 'All Financial Accounts',
   presentation: 'drawer',

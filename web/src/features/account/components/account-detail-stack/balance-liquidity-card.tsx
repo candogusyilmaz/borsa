@@ -27,7 +27,7 @@ export function BalanceLiquidityCard({ account, expanded, onToggle }: BalanceLiq
   const [selectedAsOf, setSelectedAsOf] = useState<string | null>(null);
 
   function openAsOfDate() {
-    const handle = AsOfDateOverlay.open({ account, selectedAsOf });
+    const handle = AsOfDateOverlay.open({ accountId: account.id, selectedAsOf });
     void handle.closed.then((outcome) => {
       if (outcome.status === 'completed') {
         setSelectedAsOf(outcome.value);
