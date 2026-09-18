@@ -4,7 +4,7 @@ import { ArrowCounterClockwiseIcon, CheckCircleIcon, WarningCircleIcon } from '@
 import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { $api } from '@/api/client';
-import { normalizeError } from '@/api/errors';
+import { showApiError } from '@/api/errors';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
 import type { ActivityResponse } from '../../types';
 import { formatCurrency, formatDateTime, getActivityTypeLabel } from '../../utils/account-formatters';
@@ -20,29 +20,10 @@ export function ReverseActivity({ activity }: ReverseActivityProps) {
 
   const reversalMutation = $api.useMutation('post', '/api/v1/activities/{activityId}/reversals', {
     onError: (err) => {
-      const apiErr = normalizeError(err);
-      if (apiErr.code === 'ACTIVITY_ALREADY_REVERSED') {
-        notifications.show({
-          title: 'Already Reversed',
-          message: 'This transaction has already been reversed in the ledger.',
-          color: 'orange',
-          icon: <WarningCircleIcon size={18} weight="bold" />
-        });
-      } else if (apiErr.code === 'ACCOUNT_ACTION_NOT_SUPPORTED') {
-        notifications.show({
-          title: 'Reversal Not Supported',
-          message: 'This type of transaction cannot be reversed directly.',
-          color: 'red',
-          icon: <WarningCircleIcon size={18} weight="bold" />
-        });
-      } else {
-        notifications.show({
-          title: 'Reversal Failed',
-          message: apiErr.message || 'Could not reverse the selected activity.',
-          color: 'red',
-          icon: <WarningCircleIcon size={18} weight="bold" />
-        });
-      }
+      showApiError(err, {
+        title: 'Reversal Failed',
+        fallbackMessage: 'Could not reverse the selected activity.'
+      });
     }
   });
 

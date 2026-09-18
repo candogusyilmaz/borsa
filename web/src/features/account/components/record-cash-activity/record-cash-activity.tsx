@@ -4,7 +4,7 @@ import { ArrowDownLeftIcon, ArrowUpRightIcon, CheckCircleIcon, ClockIcon, InfoIc
 import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { $api } from '@/api/client';
-import { normalizeError } from '@/api/errors';
+import { showApiError } from '@/api/errors';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
 import {
   formatCurrency,
@@ -69,50 +69,9 @@ export function RecordCashActivityForm({ accountId, defaultType = 'CASH_DEPOSIT'
       queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/activities'] });
     },
     onError: (err) => {
-      const apiErr = normalizeError(err);
-      if (apiErr.code === 'FUTURE_TIME_NOT_ALLOWED') {
-        notifications.show({
-          title: 'Future Date Blocked',
-          message: 'Effective time cannot be in the future. Please select the current or past date and time.',
-          color: 'red',
-          icon: <WarningCircleIcon size={18} weight="bold" />
-        });
-      } else if (apiErr.code === 'POLICY_BREACH_NOT_CONFIRMED') {
-        notifications.show({
-          title: 'Overdraft Confirmation Required',
-          message: 'This withdrawal exceeds available funds. Please check the overdraft confirmation box to proceed.',
-          color: 'orange',
-          icon: <WarningCircleIcon size={18} weight="bold" />
-        });
-      } else if (apiErr.code === 'HARD_FLOOR_BREACHED') {
-        notifications.show({
-          title: 'Overdraft Not Allowed',
-          message: 'This account has a strict zero-minimum balance policy. Withdrawal amounts exceeding your balance are prohibited.',
-          color: 'red',
-          icon: <WarningCircleIcon size={18} weight="bold" />
-        });
-      } else if (apiErr.code === 'ACCOUNT_ARCHIVED') {
-        notifications.show({
-          title: 'Account Archived',
-          message: 'Cannot record transactions on an archived financial account.',
-          color: 'gray',
-          icon: <WarningCircleIcon size={18} weight="bold" />
-        });
-      } else if (apiErr.code === 'BALANCE_VERSION_CONFLICT') {
-        notifications.show({
-          title: 'Balance Conflict',
-          message: 'The account balance has been updated in another session. Please refresh and review latest balance.',
-          color: 'orange',
-          icon: <WarningCircleIcon size={18} weight="bold" />
-        });
-      } else {
-        notifications.show({
-          title: 'Transaction Failed',
-          message: apiErr.message || 'Could not record cash activity. Please review your inputs.',
-          color: 'red',
-          icon: <WarningCircleIcon size={18} weight="bold" />
-        });
-      }
+      showApiError(err, {
+        title: 'Transaction Failed'
+      });
     }
   });
 

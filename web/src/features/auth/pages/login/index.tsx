@@ -13,7 +13,7 @@ import {
 import { useForm } from '@tanstack/react-form';
 import { Link, useNavigate, useSearch } from '@tanstack/react-router';
 import { useState } from 'react';
-import type { ApiError } from '@/api/errors';
+import { showApiError } from '@/api/errors';
 import { BrandLogo } from '@/shared/components/brand-logo';
 import { PasswordField, TextField } from '@/shared/components/fields';
 import { ThemeToggle } from '@/shared/components/theme-toggle';
@@ -45,11 +45,9 @@ export function LoginPage() {
         await login(value);
         await navigate({ to: search.redirect ?? '/app', replace: true });
       } catch (err) {
-        const apiError = err as ApiError;
-        notifications.show({
+        showApiError(err, {
           title: 'Authentication error',
-          message: apiError.message || 'Invalid credentials or connection error.',
-          color: 'red'
+          fallbackMessage: 'Invalid credentials or connection error.'
         });
       } finally {
         setIsSubmitting(false);

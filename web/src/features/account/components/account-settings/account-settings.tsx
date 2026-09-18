@@ -4,7 +4,7 @@ import { ArrowClockwiseIcon, CheckCircleIcon, GearIcon, WarningCircleIcon } from
 import { useForm, useStore } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { $api } from '@/api/client';
-import { normalizeError } from '@/api/errors';
+import { getApiErrorMessage, normalizeError, showApiError } from '@/api/errors';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
 import type { FinancialAccount, NegativeBalancePolicy } from '../../types';
 import { COMMON_TIMEZONES, getPolicyDescription, isAssetKind, isLiabilityKind } from '../../utils/account-formatters';
@@ -60,43 +60,19 @@ function AccountSettingsForm({ account, onRefetchAccount }: AccountSettingsFormP
 
   const metadataMutation = $api.useMutation('put', '/api/v1/accounts/{accountId}', {
     onError: (err) => {
-      const apiErr = normalizeError(err);
-      if (apiErr.status === 409 || apiErr.code === 'ACCOUNT_VERSION_CONFLICT') {
-        notifications.show({
-          title: 'Version Conflict (HTTP 409)',
-          message: 'The account was modified by another session. Please reload latest server data.',
-          color: 'orange',
-          icon: <WarningCircleIcon size={18} weight="bold" />
-        });
-      } else {
-        notifications.show({
-          title: 'Update Failed',
-          message: apiErr.message || 'Could not update account settings.',
-          color: 'red',
-          icon: <WarningCircleIcon size={18} weight="bold" />
-        });
-      }
+      showApiError(err, {
+        title: 'Update Failed',
+        fallbackMessage: 'Could not update account settings.'
+      });
     }
   });
 
   const policyMutation = $api.useMutation('put', '/api/v1/accounts/{accountId}/policy', {
     onError: (err) => {
-      const apiErr = normalizeError(err);
-      if (apiErr.status === 409 || apiErr.code === 'ACCOUNT_VERSION_CONFLICT') {
-        notifications.show({
-          title: 'Version Conflict (HTTP 409)',
-          message: 'The account was modified by another session. Please reload latest server data.',
-          color: 'orange',
-          icon: <WarningCircleIcon size={18} weight="bold" />
-        });
-      } else {
-        notifications.show({
-          title: 'Policy Update Failed',
-          message: apiErr.message || 'Could not update account policy.',
-          color: 'red',
-          icon: <WarningCircleIcon size={18} weight="bold" />
-        });
-      }
+      showApiError(err, {
+        title: 'Policy Update Failed',
+        fallbackMessage: 'Could not update account policy.'
+      });
     }
   });
 
@@ -299,11 +275,7 @@ function AccountSettingsForm({ account, onRefetchAccount }: AccountSettingsFormP
           {/* General API Error Feedback */}
           {!isConflict && activeError && (
             <Alert icon={<WarningCircleIcon size={20} weight="bold" />} title="Save Failed" color="red" variant="light">
-              <Text size="sm">
-                {activeError.fieldErrors?.length
-                  ? activeError.fieldErrors.map((f) => f.detail).join('; ')
-                  : activeError.message || 'Could not save account changes.'}
-              </Text>
+              <Text size="sm">{getApiErrorMessage(activeError, 'Could not save account changes.')}</Text>
             </Alert>
           )}
 

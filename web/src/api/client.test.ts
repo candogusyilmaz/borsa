@@ -1,3 +1,4 @@
+import { notifications } from '@mantine/notifications';
 import { QueryClient } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createRecoveringFetch, requestTokenRefresh } from './auth-recovery';
@@ -10,6 +11,7 @@ import {
   setAccessToken
 } from './auth-state';
 import { createApiClient } from './client';
+import { getApiErrorMessage, isApiError, normalizeError, showApiError } from './errors';
 import { logoutSession, resolveSession } from './session';
 
 // All tests use the exact same recoveringFetch as production via createApiClient.
@@ -1248,5 +1250,186 @@ describe('actual logout command terminal recovery', () => {
     expect(getAccessToken()).toBe('TOKEN_NEW'); // new token preserved!
     expect(queryClient.getQueryData(['new-user'])).toBe('active'); // new cache preserved!
     expect(currentSessionEpoch()).toBe(epochBefore + 1); // not bumped again
+  });
+});
+
+// 24. API error normalization, message resolution, and presentation
+describe('API error normalization and presentation', () => {
+  it('normalizes native Error instances preserving message and setting status 500', () => {
+    const error = new Error('Network timeout');
+    const normalized = normalizeError(error);
+
+    expect(normalized.status).toBe(500);
+    expect(normalized.message).toBe('Network timeout');
+    expect(normalized.title).toBeUndefined();
+    expect(normalized.detail).toBeUndefined();
+    expect(normalized.code).toBeUndefined();
+    expect(normalized.fieldErrors).toBeUndefined();
+    expect(isApiError(normalized)).toBe(true);
+  });
+
+  it('normalizes native Error with empty message to generic fallback', () => {
+    const error = new Error('');
+    const normalized = normalizeError(error);
+
+    expect(normalized.status).toBe(500);
+    expect(normalized.message).toBe('An unexpected error occurred');
+  });
+
+  it('normalizes primitives (string, null, undefined, number)', () => {
+    expect(normalizeError('Direct failure message')).toMatchObject({
+      status: 500,
+      message: 'Direct failure message'
+    });
+    expect(normalizeError(null)).toMatchObject({
+      status: 500,
+      message: 'An unexpected error occurred'
+    });
+    expect(normalizeError(undefined)).toMatchObject({
+      status: 500,
+      message: 'An unexpected error occurred'
+    });
+    expect(normalizeError(404)).toMatchObject({
+      status: 500,
+      message: 'An unexpected error occurred'
+    });
+  });
+
+  it('normalizes structured RFC 7807 problem details preserving all fields', () => {
+    const raw = {
+      status: 400,
+      title: 'Bad Request',
+      detail: 'Negative balance is prohibited',
+      code: 'NEGATIVE_BALANCE_NOT_ALLOWED',
+      key: 'error.ledger.negative_balance',
+      traceId: 'trace-xyz-123'
+    };
+
+    const normalized = normalizeError(raw);
+
+    expect(normalized.status).toBe(400);
+    expect(normalized.title).toBe('Bad Request');
+    expect(normalized.detail).toBe('Negative balance is prohibited');
+    expect(normalized.message).toBe('Negative balance is prohibited');
+    expect(normalized.code).toBe('NEGATIVE_BALANCE_NOT_ALLOWED');
+    expect(normalized.key).toBe('error.ledger.negative_balance');
+    expect(normalized.traceId).toBe('trace-xyz-123');
+    expect(normalized.fieldErrors).toBeUndefined();
+  });
+
+  it('extracts detail from params.detail when top-level detail is absent', () => {
+    const raw = {
+      status: 409,
+      params: { detail: 'Account balance version conflict' }
+    };
+
+    const normalized = normalizeError(raw);
+
+    expect(normalized.status).toBe(409);
+    expect(normalized.detail).toBe('Account balance version conflict');
+    expect(normalized.message).toBe('Account balance version conflict');
+  });
+
+  it('normalizes candidate.fieldErrors array', () => {
+    const raw = {
+      status: 422,
+      fieldErrors: [
+        { field: 'amount', key: 'error.amount.positive', detail: 'Amount must be positive' },
+        { field: 'currency', detail: 'Currency not supported' }
+      ]
+    };
+
+    const normalized = normalizeError(raw);
+
+    expect(normalized.fieldErrors).toEqual([
+      { field: 'amount', key: 'error.amount.positive', detail: 'Amount must be positive' },
+      { field: 'currency', key: undefined, detail: 'Currency not supported' }
+    ]);
+    expect(normalized.message).toBe('Amount must be positive; Currency not supported');
+  });
+
+  it('normalizes candidate.params.errors array when top-level fieldErrors is absent or empty', () => {
+    const rawWithMissing = {
+      status: 422,
+      params: {
+        errors: [{ field: 'email', key: 'error.fields.not_blank', detail: 'Email must not be blank' }]
+      }
+    };
+
+    const normalized1 = normalizeError(rawWithMissing);
+    expect(normalized1.fieldErrors).toEqual([{ field: 'email', key: 'error.fields.not_blank', detail: 'Email must not be blank' }]);
+    expect(normalized1.message).toBe('Email must not be blank');
+
+    const rawWithEmptyFieldErrors = {
+      status: 422,
+      fieldErrors: [],
+      params: {
+        errors: [{ field: 'name', detail: 'Name is required' }]
+      }
+    };
+
+    const normalized2 = normalizeError(rawWithEmptyFieldErrors);
+    expect(normalized2.fieldErrors).toEqual([{ field: 'name', key: undefined, detail: 'Name is required' }]);
+    expect(normalized2.message).toBe('Name is required');
+  });
+
+  it('sets fieldErrors to undefined when empty arrays are supplied', () => {
+    const raw = { status: 400, fieldErrors: [], params: { errors: [] } };
+    const normalized = normalizeError(raw);
+    expect(normalized.fieldErrors).toBeUndefined();
+  });
+
+  it('prevents double normalization of already-normalized ApiError', () => {
+    const raw = { status: 409, detail: 'Conflict', code: 'VERSION_CONFLICT' };
+    const first = normalizeError(raw);
+    const second = normalizeError(first);
+
+    expect(second).toBe(first);
+    expect(isApiError(second)).toBe(true);
+  });
+
+  it('resolves user-facing error message with proper precedence via getApiErrorMessage', () => {
+    const withFieldErrors = normalizeError({
+      status: 422,
+      detail: 'Validation failed',
+      fieldErrors: [{ field: 'email', detail: 'Email already exists' }]
+    });
+    expect(getApiErrorMessage(withFieldErrors, 'Fallback')).toBe('Email already exists');
+
+    const withDetailOnly = normalizeError({
+      status: 400,
+      detail: 'Specific domain detail'
+    });
+    expect(getApiErrorMessage(withDetailOnly, 'Fallback')).toBe('Specific domain detail');
+
+    const withGenericOnly = normalizeError({ status: 500 });
+    expect(getApiErrorMessage(withGenericOnly, 'Custom contextual fallback')).toBe('Custom contextual fallback');
+
+    const withoutFallback = normalizeError({ status: 500 });
+    expect(getApiErrorMessage(withoutFallback)).toBe('An unexpected error occurred');
+  });
+
+  it('shows Mantine notification and returns normalized error via showApiError', () => {
+    const showSpy = vi.spyOn(notifications, 'show');
+
+    const raw = { status: 403, detail: 'Permission denied', code: 'FORBIDDEN' };
+    const returned = showApiError(raw, { title: 'Access Denied' });
+
+    expect(returned.code).toBe('FORBIDDEN');
+    expect(returned.detail).toBe('Permission denied');
+    expect(showSpy).toHaveBeenCalledTimes(1);
+    expect(showSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Access Denied',
+        message: 'Permission denied',
+        color: 'red'
+      })
+    );
+
+    // Calling showApiError with already normalized error does not double normalize
+    showSpy.mockClear();
+    const returnedAgain = showApiError(returned, { title: 'Access Denied' });
+    expect(returnedAgain).toBe(returned);
+    expect(showSpy).toHaveBeenCalledTimes(1);
   });
 });

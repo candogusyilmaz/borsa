@@ -35,7 +35,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
 import { $api, client } from '@/api/client';
-import { normalizeError } from '@/api/errors';
+import { showApiError } from '@/api/errors';
 import type { components } from '@/api/schema';
 import { useAuth } from '@/shared/hooks/use-auth';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
@@ -131,11 +131,9 @@ function RevokeSessionConfirmation({ familyId, deviceLabel, isCurrent }: RevokeS
       }
     },
     onError: (err) => {
-      const apiErr = normalizeError(err);
-      notifications.show({
+      showApiError(err, {
         title: 'Revocation Failed',
-        message: apiErr.message || 'Could not revoke session. Please try again.',
-        color: 'red'
+        fallbackMessage: 'Could not revoke session. Please try again.'
       });
     }
   });
@@ -201,11 +199,9 @@ function TerminateOthersConfirmation({ familyIds }: TerminateOthersOverlayProps)
       });
       overlay.complete();
     } catch (error) {
-      const apiErr = normalizeError(error);
-      notifications.show({
+      showApiError(error, {
         title: 'Termination Incomplete',
-        message: apiErr.message || 'Some sessions could not be terminated. Refreshing list...',
-        color: 'red'
+        fallbackMessage: 'Some sessions could not be terminated. Refreshing list...'
       });
       void queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/auth/sessions'] });
     } finally {
@@ -260,11 +256,9 @@ function SignOutCurrentConfirmation() {
       overlay.complete();
       await navigate({ to: '/login', replace: true });
     } catch (error) {
-      const apiErr = normalizeError(error);
-      notifications.show({
+      showApiError(error, {
         title: 'Sign Out Error',
-        message: apiErr.message || 'An error occurred while signing out.',
-        color: 'red'
+        fallbackMessage: 'An error occurred while signing out.'
       });
       setIsSigningOut(false);
     }

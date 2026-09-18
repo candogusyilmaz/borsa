@@ -4,7 +4,7 @@ import { CalendarBlankIcon, CheckCircleIcon, CurrencyCircleDollarIcon, InfoIcon,
 import { useForm, useStore } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { $api } from '@/api/client';
-import { normalizeError } from '@/api/errors';
+import { getApiErrorMessage, normalizeError, showApiError } from '@/api/errors';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
 import type { AccountKind, FinancialAccount, NegativeBalancePolicy, TrackingMode } from '../../types';
 import {
@@ -49,12 +49,9 @@ export function CreateAccount() {
       current.complete(data);
     },
     onError: (err) => {
-      const apiErr = normalizeError(err);
-      notifications.show({
+      showApiError(err, {
         title: 'Account Creation Failed',
-        message: apiErr.message || 'Could not create account. Please check your inputs.',
-        color: 'red',
-        icon: <WarningCircleIcon size={18} weight="bold" />
+        fallbackMessage: 'Could not create account. Please check your inputs.'
       });
     }
   });
@@ -133,11 +130,7 @@ export function CreateAccount() {
   const isLiability = isLiabilityKind(currentKind);
 
   const createError = createMutation.isError ? normalizeError(createMutation.error) : null;
-  const createErrorMessage = createError
-    ? createError.fieldErrors?.length
-      ? createError.fieldErrors.map((f) => f.detail).join('; ')
-      : createError.message || 'Could not create account. Please check your inputs.'
-    : null;
+  const createErrorMessage = createError ? getApiErrorMessage(createError, 'Could not create account. Please check your inputs.') : null;
 
   function handleClose() {
     createMutation.reset();

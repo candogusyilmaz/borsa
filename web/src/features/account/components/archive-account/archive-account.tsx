@@ -3,7 +3,7 @@ import { notifications } from '@mantine/notifications';
 import { ArchiveIcon, ArrowClockwiseIcon, CheckCircleIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { $api } from '@/api/client';
-import { normalizeError } from '@/api/errors';
+import { getApiErrorMessage, normalizeError, showApiError } from '@/api/errors';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
 import type { FinancialAccount } from '../../types';
 import {
@@ -74,22 +74,10 @@ function ArchiveAccountForm({ account, onRefetchAccount }: ArchiveAccountFormPro
       current.complete(data);
     },
     onError: (err) => {
-      const apiErr = normalizeError(err);
-      if (apiErr.status === 409 || apiErr.code === 'ACCOUNT_VERSION_CONFLICT') {
-        notifications.show({
-          title: 'Archive Conflict (HTTP 409)',
-          message: 'The account was modified elsewhere. Please refresh before archiving.',
-          color: 'orange',
-          icon: <WarningCircleIcon size={18} weight="bold" />
-        });
-      } else {
-        notifications.show({
-          title: 'Archive Failed',
-          message: apiErr.message || 'Could not archive this account.',
-          color: 'red',
-          icon: <WarningCircleIcon size={18} weight="bold" />
-        });
-      }
+      showApiError(err, {
+        title: 'Archive Failed',
+        fallbackMessage: 'Could not archive this account.'
+      });
     }
   });
 
@@ -150,7 +138,7 @@ function ArchiveAccountForm({ account, onRefetchAccount }: ArchiveAccountFormPro
 
       {!isConflict && archiveError && (
         <Alert icon={<WarningCircleIcon size={20} weight="bold" />} title="Archive Failed" color="red" variant="light">
-          <Text size="sm">{archiveError.message || 'Could not archive this account.'}</Text>
+          <Text size="sm">{getApiErrorMessage(archiveError, 'Could not archive this account.')}</Text>
         </Alert>
       )}
 

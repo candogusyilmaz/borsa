@@ -11,7 +11,7 @@ import {
 import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { $api } from '@/api/client';
-import { normalizeError } from '@/api/errors';
+import { getApiErrorMessage, normalizeError, showApiError } from '@/api/errors';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
 import type { FinancialAccount } from '../../types';
 import { formatCurrency, formatDateTime, PLAIN_DECIMAL_REGEX } from '../../utils/account-formatters';
@@ -67,22 +67,10 @@ function OpeningCorrectionForm({ account, currentOpeningBalance, onRefetchAccoun
 
   const correctionMutation = $api.useMutation('put', '/api/v1/accounts/{accountId}/opening-state', {
     onError: (err) => {
-      const apiErr = normalizeError(err);
-      if (apiErr.status === 409 || apiErr.code === 'ACCOUNT_VERSION_CONFLICT' || apiErr.code === 'OPENING_STATE_CONFLICT') {
-        notifications.show({
-          title: 'Conflict Detected (HTTP 409)',
-          message: 'The account or opening state was modified by another session. Please reload latest server data.',
-          color: 'orange',
-          icon: <WarningCircleIcon size={18} weight="bold" />
-        });
-      } else {
-        notifications.show({
-          title: 'Opening Correction Failed',
-          message: apiErr.message || 'Could not correct opening state. Please check your inputs.',
-          color: 'red',
-          icon: <WarningCircleIcon size={18} weight="bold" />
-        });
-      }
+      showApiError(err, {
+        title: 'Opening Correction Failed',
+        fallbackMessage: 'Could not correct opening state. Please check your inputs.'
+      });
     }
   });
 
@@ -205,11 +193,7 @@ function OpeningCorrectionForm({ account, currentOpeningBalance, onRefetchAccoun
           {/* General API Error Feedback */}
           {!isConflict && correctionError && (
             <Alert icon={<WarningCircleIcon size={20} weight="bold" />} title="Correction Failed" color="red" variant="light">
-              <Text size="sm">
-                {correctionError.fieldErrors?.length
-                  ? correctionError.fieldErrors.map((f) => f.detail).join('; ')
-                  : correctionError.message || 'Could not correct opening state.'}
-              </Text>
+              <Text size="sm">{getApiErrorMessage(correctionError, 'Could not correct opening state.')}</Text>
             </Alert>
           )}
 

@@ -1,5 +1,6 @@
 import { ActionIcon, Alert, Button, Checkbox, SegmentedControl, Select, Skeleton, Text, TextInput } from '@mantine/core';
 import { ArrowsDownUpIcon, ClockIcon, InfoIcon, WarningCircleIcon } from '@phosphor-icons/react';
+import { getApiErrorMessage } from '@/api/errors';
 import type { RecordingMode } from '../../types';
 import { formatCurrency, POSITIVE_DECIMAL_REGEX, toDatetimeLocal } from '../../utils/account-formatters';
 import classes from './transfer.module.css';
@@ -301,7 +302,7 @@ export function TransferForm({ session, lockSourceAccount = false, onCancel }: T
       {/* Preview error inline alert */}
       {previewError && (
         <Alert icon={<WarningCircleIcon size={18} />} color="red" variant="light">
-          {previewError.message || 'Could not preview transfer. Please verify your inputs.'}
+          {getApiErrorMessage(previewError, 'Could not preview transfer. Please verify your inputs.')}
         </Alert>
       )}
 

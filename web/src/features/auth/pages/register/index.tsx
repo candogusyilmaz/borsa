@@ -14,7 +14,7 @@ import {
 import { useForm } from '@tanstack/react-form';
 import { Link, useNavigate, useSearch } from '@tanstack/react-router';
 import { $api } from '@/api/client';
-import { normalizeError } from '@/api/errors';
+import { getApiErrorMessage, normalizeError, showApiError } from '@/api/errors';
 import { BrandLogo } from '@/shared/components/brand-logo';
 import { PasswordField, TextField } from '@/shared/components/fields';
 import { ThemeToggle } from '@/shared/components/theme-toggle';
@@ -88,24 +88,9 @@ export function RegisterPage() {
       }
     },
     onError: (err) => {
-      const apiError = normalizeError(err);
-      if (apiError.code === 'EMAIL_ALREADY_REGISTERED' || apiError.status === 409) {
-        notifications.show({
-          title: 'Email already registered',
-          message: 'An account with this email address already exists. Please sign in instead.',
-          color: 'red'
-        });
-        return;
-      }
-
-      const message = apiError.fieldErrors?.length
-        ? apiError.fieldErrors.map((f) => f.detail).join('; ')
-        : apiError.message || 'Could not complete registration. Please try again.';
-
-      notifications.show({
+      showApiError(err, {
         title: 'Registration failed',
-        message,
-        color: 'red'
+        fallbackMessage: 'Could not complete registration. Please try again.'
       });
     }
   });
@@ -134,9 +119,7 @@ export function RegisterPage() {
   const errorMessage = mutationError
     ? isConflict
       ? 'An account with this email address already exists. Please sign in instead.'
-      : mutationError.fieldErrors?.length
-        ? mutationError.fieldErrors.map((f) => f.detail).join('; ')
-        : mutationError.message || 'Could not complete registration. Please try again.'
+      : getApiErrorMessage(mutationError, 'Could not complete registration. Please try again.')
     : null;
 
   return (
