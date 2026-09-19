@@ -12,6 +12,7 @@ One short paragraph describing the observable outcome of this PR.
 - Combined behaviors: identify the tightly coupled database, domain, application, API, security, and test behaviors that belong together and why separating them would leave an incomplete or mechanical boundary.
 - Excluded neighbor: name the independent capability deliberately left for later.
 - Focused review: explain why one careful human can verify the scope, invariants, and tests as one review unit.
+- Execution-self-contained: inline every exact invariant, formula, changed schema detail, API contract detail, error code, ordering rule, transaction requirement, and acceptance behavior required to implement and verify that PR. Do not duplicate unrelated architecture or domain documentation.
 - Judge size by capability and review coherence. Do not use a fixed line-count, file-count, or production-LOC target, and do not add padding to reach one.
 
 ## Source documents
@@ -20,6 +21,8 @@ One short paragraph describing the observable outcome of this PR.
 - `docs/review/accounting-contract.md` - relevant sections, if financial
 - `docs/engineering/coding-standards.md`
 - other feature-specific design documents, if needed
+
+*These documents serve as provenance and authoritative backing. The implementer should not need to preload or read them unless resolving an unstated invariant or ambiguity.*
 
 ## Starting state
 
@@ -60,7 +63,7 @@ Endpoints/requests/responses/problem codes added or changed. Write `None` when t
 - ...
 - ...
 
-Do not restate cross-cutting rules already owned by `accounting-contract.md`; reference the relevant sections instead.
+Inline all specific domain rules, calculation formulas, rounding/precision rules, and state invariants required to implement this unit. Reference cross-cutting documents for provenance, but do not omit execution-critical invariants from this section.
 
 ## Required tests
 
@@ -97,11 +100,25 @@ Update `docs/review/progress-report.md` when project-level status or an architec
 
 ## Verification commands
 
-```bash
-./mvnw test
+### Inner-loop verification
+
+Smallest focused test gate to run while implementing:
+
+```powershell
+.\mvnw.cmd "-Dtest=FocusedTestA,FocusedTestB" test
 ```
 
-Add narrower/full commands required by this PR.
+*Do not run the complete test suite or Maven `verify` during normal inner-loop development.*
+
+### Exit gate
+
+Run once only after implementation and inner-loop verification are complete:
+
+```powershell
+.\mvnw.cmd verify
+```
+
+Run `.\mvnw.cmd spotless:apply` beforehand if formatting adjustments are needed.
 
 ## Completion record
 

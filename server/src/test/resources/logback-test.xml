@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <root level="WARN">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <!-- Application logging remains visible at INFO for test visibility -->
+    <logger name="dev.canverse.stocks" level="INFO"/>
+
+    <!-- Suppress verbose Spring Boot Condition Evaluation Report (DEBUG report) -->
+    <logger name="org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLogger" level="OFF"/>
+
+    <!-- Suppress routine Spring framework wiring and bootstrap noise -->
+    <logger name="org.springframework" level="WARN"/>
+
+    <!-- Suppress Testcontainers and container lifecycle logs -->
+    <logger name="org.testcontainers" level="WARN"/>
+    <logger name="tc" level="WARN"/>
+    <logger name="com.github.dockerjava" level="WARN"/>
+
+    <!-- Suppress Hibernate SQL queries and dialect/JTA startup noise -->
+    <logger name="org.hibernate.SQL" level="WARN"/>
+    <logger name="org.hibernate.orm.core" level="WARN"/>
+</configuration>

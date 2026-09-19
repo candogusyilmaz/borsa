@@ -7,21 +7,31 @@ This file is the operating contract and context router for the Spring Boot appli
 For backend implementation or review:
 
 1. Read [CURRENT.md](../docs/implementation/CURRENT.md).
-2. Read the active PR specification named there completely.
-3. Use that specification's references and changed surfaces to identify relevant sections of:
-   - [coding standards](../docs/engineering/coding-standards.md)
-   - [backend master plan](../docs/review/backend-master-plan.md)
-   - [accounting contract](../docs/review/accounting-contract.md)
-   - feature-specific design documents
-4. Expand documentation context only when affected code or concrete repository evidence requires another authoritative rule.
+2. Read the active PR specification named there completely. Treat the active PR specification as the primary execution-self-contained contract: it inlines every exact invariant, formula, changed schema detail, API contract detail, error code, ordering rule, transaction requirement, and acceptance behavior required to implement and verify that PR.
+3. Do not preload long-lived design, review, or contract documents (`backend-master-plan.md`, `accounting-contract.md`, feature design documents, or historical PRs).
+4. Consult an external authority document only when:
+   - the active PR explicitly leaves an unstated invariant there;
+   - the PR is ambiguous or contradictory;
+   - current source code conflicts with the PR specification;
+   - a security, accounting, or domain invariant cannot be resolved locally.
+   When consulting external documents, read only the smallest relevant section rather than loading the entire file.
 
 For backend planning:
 
 1. Read [STATE.md](../docs/implementation/STATE.md), `CURRENT.md`, and [the implementation workflow](../docs/implementation/README.md).
 2. Read [PR-TEMPLATE.md](../docs/implementation/PR-TEMPLATE.md).
-3. Read only the roadmap, domain, accounting, and feature-design sections needed to define the next bounded unit.
+3. Read only the roadmap, domain, accounting, and feature-design sections needed to define the next bounded unit. Ensure the generated specification is execution-self-contained so implementers do not need to preload external documents.
 
 Completed PR specifications and Git history are historical evidence; do not preload them unless current code or a concrete compatibility question requires them. If no implementation PR is active, do not invent production scope.
+
+## Context and tool output discipline
+
+- Search before reading (`rg`, `find_by_name`).
+- Read the smallest relevant source region; avoid loading entire large classes when inspecting methods.
+- Do not repeatedly dump or re-read unchanged source files after edits.
+- Prefer targeted diffs during implementation (`git diff -- path/to/file`) instead of repository-wide diffs.
+- Prefer the smallest focused test gate during the inner loop.
+- Verbose Maven, test, or build output should be redirected to a file when practical (e.g. `.\mvnw.cmd "-Dtest=..." test *> target/agent-logs/test.log`). On success, inspect only the summary tail (e.g. `Get-Content target/agent-logs/test.log -Tail 20`). On failure, inspect only the relevant failing-test section or bounded tail and expand only if necessary. Never dump large build logs into the conversational context.
 
 ## Instruction precedence
 
@@ -47,13 +57,31 @@ If authoritative documents conflict, report the conflict instead of silently cho
 
 ## Backend verification conventions
 
-Run Maven commands from `server/`:
+Separate verification into two distinct phases:
 
+### Inner-loop verification
+During implementation, run only the smallest focused test gate specified by the active PR:
 ```powershell
-.\mvnw.cmd spotless:check
-.\mvnw.cmd test
+.\mvnw.cmd "-Dtest=FocusedTestA,FocusedTestB" test
+```
+Do not run the complete test suite or Maven `verify` during normal inner-loop development.
+
+### Exit gate
+Run once only after implementation and inner-loop verification are complete:
+```powershell
 .\mvnw.cmd verify
 ```
+Maven `verify` automatically executes Enforcer, compilation, tests, packaging, and Spotless checks in a single lifecycle execution. Run `.\mvnw.cmd spotless:apply` beforehand if formatting adjustments are needed.
+
+### Exit gate failure handling
+If the full exit gate fails:
+```text
+identify specific failure
+-> run only the affected focused test/check
+-> fix until focused gate is green
+-> rerun the complete exit gate once
+```
+Do not run `full verify -> tiny fix -> full verify` loops.
 
 ## Completion and context maintenance
 
