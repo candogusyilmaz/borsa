@@ -1,6 +1,6 @@
 .actionsGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 0.5rem;
   width: 100%;
   margin: 0;
@@ -76,6 +76,28 @@
   border-color: rgb(59 130 246 / 0.45);
 }
 
+.feeBtn {
+  background: rgb(220 38 38 / 0.12);
+  border-color: rgb(220 38 38 / 0.28);
+  color: var(--mantine-color-red-6);
+}
+
+.feeBtn:hover:not(:disabled) {
+  background: rgb(220 38 38 / 0.2);
+  border-color: rgb(220 38 38 / 0.45);
+}
+
+.interestBtn {
+  background: rgb(8 145 178 / 0.12);
+  border-color: rgb(8 145 178 / 0.28);
+  color: var(--mantine-color-cyan-6);
+}
+
+.interestBtn:hover:not(:disabled) {
+  background: rgb(8 145 178 / 0.2);
+  border-color: rgb(8 145 178 / 0.45);
+}
+
 .moreBtn {
   background: var(--mantine-color-default);
   border-color: var(--app-border-subtle);
@@ -92,4 +114,10 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+@media (min-width: 48em) {
+  .actionsGrid {
+    grid-template-columns: repeat(6, 1fr);
+  }
 }

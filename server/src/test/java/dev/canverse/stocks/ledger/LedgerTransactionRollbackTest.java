@@ -6,21 +6,25 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.reset;
 
+import dev.canverse.stocks.ledger.application.CashActivityCommandService;
 import dev.canverse.stocks.ledger.application.FinancialAccountOnboardingService;
 import dev.canverse.stocks.ledger.application.ReconciliationCommandService;
 import dev.canverse.stocks.ledger.domain.AccountBalanceProjection;
 import dev.canverse.stocks.ledger.domain.AccountKind;
 import dev.canverse.stocks.ledger.domain.Activity;
+import dev.canverse.stocks.ledger.domain.ActivityType;
 import dev.canverse.stocks.ledger.domain.IdempotencyRecord;
 import dev.canverse.stocks.ledger.domain.MoneyPosting;
 import dev.canverse.stocks.ledger.domain.NegativeBalancePolicy;
 import dev.canverse.stocks.ledger.domain.Reconciliation;
+import dev.canverse.stocks.ledger.domain.RecordingMode;
 import dev.canverse.stocks.ledger.domain.TrackingMode;
 import dev.canverse.stocks.ledger.infrastructure.AccountBalanceProjectionRepository;
 import dev.canverse.stocks.ledger.infrastructure.ActivityRepository;
 import dev.canverse.stocks.ledger.infrastructure.IdempotencyRecordRepository;
 import dev.canverse.stocks.ledger.infrastructure.MoneyPostingRepository;
 import dev.canverse.stocks.ledger.infrastructure.ReconciliationRepository;
+import dev.canverse.stocks.ledger.web.request.CashActivityRequest;
 import dev.canverse.stocks.ledger.web.request.CreateFinancialAccountRequest;
 import dev.canverse.stocks.ledger.web.request.OpeningStateRequest;
 import dev.canverse.stocks.ledger.web.request.ReconciliationAction;
@@ -55,6 +59,9 @@ class LedgerTransactionRollbackTest {
 
     @Autowired
     FinancialAccountOnboardingService accountService;
+
+    @Autowired
+    CashActivityCommandService activityService;
 
     @Autowired
     ReconciliationCommandService reconciliationCommandService;
@@ -96,6 +103,28 @@ class LedgerTransactionRollbackTest {
         assertThatThrownBy(() -> accountService.create(ownerId, request())).isInstanceOf(DataIntegrityViolationException.class);
 
         assertNoLedgerRows(ownerId);
+    }
+
+    @Test
+    void feePostingFailureRollsBackTheFeeActivityProjectionAndIdempotencyRecord() {
+        var ownerId = insertUser("fee-posting-failure");
+        var openingAt = Instant.now().minusSeconds(20).truncatedTo(java.time.temporal.ChronoUnit.MICROS);
+        var account = accountService.create(ownerId, new CreateFinancialAccountRequest(UUID.randomUUID(), "Fee rollback account", AccountKind.CASH_CURRENT,
+                TrackingMode.FULL_LEDGER, "USD", "UTC", NegativeBalancePolicy.HARD_FLOOR, null, new OpeningStateRequest("25", openingAt)));
+        reset(moneyPostingRepository);
+        doThrow(new DataIntegrityViolationException("fee posting failure")).when(moneyPostingRepository).save(any(MoneyPosting.class));
+
+        assertThatThrownBy(() -> activityService.recordCashActivity(ownerId, account.id(), new CashActivityRequest(UUID.randomUUID(), ActivityType.CASH_FEE,
+                "5", RecordingMode.CURRENT_ACTION, Instant.now().minusSeconds(1), false, null))).isInstanceOf(DataIntegrityViolationException.class);
+
+        assertThat(countActivity(ownerId, "CASH_FEE")).isZero();
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ledger.money_posting WHERE owner_user_account_id = ? AND posting_role = 'FEE'",
+                Integer.class, ownerId)).isZero();
+        assertThat(jdbcTemplate.queryForObject("SELECT ledger_balance FROM ledger.account_balance_projection WHERE owner_user_account_id = ?",
+                java.math.BigDecimal.class, ownerId)).isEqualByComparingTo("25");
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM ledger.idempotency_record WHERE owner_user_account_id = ? AND operation_scope = 'ledger.cash-activity'", Integer.class,
+                ownerId)).isEqualTo(0);
     }
 
     @Test

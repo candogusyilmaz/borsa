@@ -90,6 +90,30 @@ class CashLedgerConcurrencyTest {
     }
 
     @Test
+    void concurrentHardFloorFeesHaveOneSeriallyValidWinner() throws Exception {
+        var ownerId = insertUser("ledger-concurrent-fee@example.com");
+        var account = createAccount(ownerId, "Concurrent fee", "100");
+        var start = new CountDownLatch(1);
+        var executor = Executors.newFixedThreadPool(2);
+        try {
+            var first = executor.submit(() -> runCashCommand(start, ownerId, account.id(), ActivityType.CASH_FEE, "75"));
+            var second = executor.submit(() -> runCashCommand(start, ownerId, account.id(), ActivityType.CASH_FEE, "75"));
+            start.countDown();
+            var outcomes = List.of(first.get(15, TimeUnit.SECONDS), second.get(15, TimeUnit.SECONDS));
+
+            assertThat(outcomes.stream().filter(Outcome::succeeded)).hasSize(1);
+            assertThat(outcomes.stream().map(Outcome::errorCode).filter(java.util.Objects::nonNull)).containsExactly(LedgerErrorCode.INSUFFICIENT_FUNDS);
+            assertThat(queryService.balance(ownerId, account.id(), null).ledgerBalance()).isEqualTo("25");
+            assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ledger.activity WHERE owner_user_account_id = ?", Integer.class, ownerId))
+                    .isEqualTo(2);
+            assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ledger.money_posting WHERE owner_user_account_id = ? AND posting_role = 'FEE'",
+                    Integer.class, ownerId)).isEqualTo(1);
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
     void concurrentAuthorizedLimitWithdrawalsHaveOneBoundaryWinnerWithoutOverspend() throws Exception {
         var ownerId = insertUser("ledger-concurrent-authorized-limit@example.com");
         var account = createAccount(ownerId, "Concurrent authorized limit", "0", NegativeBalancePolicy.AUTHORIZED_LIMIT, "50");
@@ -260,11 +284,15 @@ class CashLedgerConcurrencyTest {
     }
 
     private Outcome runCashCommand(CountDownLatch start, UUID ownerId, UUID accountId, String amount) {
+        return runCashCommand(start, ownerId, accountId, ActivityType.CASH_WITHDRAWAL, amount);
+    }
+
+    private Outcome runCashCommand(CountDownLatch start, UUID ownerId, UUID accountId, ActivityType activityType, String amount) {
         await(start);
         try {
             var response = new TransactionTemplate(transactionManager)
-                    .execute(status -> activityService.recordCashActivity(ownerId, accountId, new CashActivityRequest(UUID.randomUUID(),
-                            ActivityType.CASH_WITHDRAWAL, amount, RecordingMode.CURRENT_ACTION, Instant.now().minusSeconds(1), false, null)));
+                    .execute(status -> activityService.recordCashActivity(ownerId, accountId, new CashActivityRequest(UUID.randomUUID(), activityType, amount,
+                            RecordingMode.CURRENT_ACTION, Instant.now().minusSeconds(1), false, null)));
             return Outcome.success(response.id());
         } catch (Throwable exception) {
             return Outcome.failure(errorCode(exception));

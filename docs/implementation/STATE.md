@@ -1,6 +1,6 @@
 # Backend implementation state
 
-Last updated: 2026-09-11
+Last updated: 2026-09-18
 
 ## Technology baseline
 
@@ -41,6 +41,7 @@ Last updated: 2026-09-11
 
 - V3 provides owner-scoped cash, brokerage, card, and loan account onboarding, explicit opening-state coverage, cash pockets, immutable activities/postings, and a rebuildable native balance projection.
 - Deposits, withdrawals, same-currency owned transfers and previews, policy evaluation, idempotent retries, deterministic locking, reversal, opening correction, current/as-of balance reads, an unpaged owner-scoped account list, and owner-scoped activity/reconciliation `Pageable`/`Slice` reads are implemented.
+- PR-029 adds owner-entered `CASH_FEE` and `CASH_INTEREST_CREDIT` facts with signed `FEE`/`INTEREST_CREDIT` postings, the existing current/historical policy and idempotency lifecycle, generic reasoned reversal, exact as-of effects, and reconciliation staleness by effective time.
 - The ledger exposes the required authenticated HTTP boundaries. Immutable postings remain the financial fact authority; projections are derived state.
 
 ### Reconciliation
@@ -50,7 +51,7 @@ Last updated: 2026-09-11
 
 ## Current database
 
-Migration: `V4` (`V1__foundation.sql`, `V2__reference_catalog.sql`, `V3__financial_account_cash_ledger.sql`, `V4__cash_statement_reconciliation.sql`).
+Migration: `V5` (`V1__foundation.sql`, `V2__reference_catalog.sql`, `V3__financial_account_cash_ledger.sql`, `V4__cash_statement_reconciliation.sql`, `V5__manual_cash_fees_and_interest.sql`).
 
 Schemas: `identity`, `reference`, `ledger`, `data`, `money`, `analysis`, `asset`, `platform`.
 
@@ -69,13 +70,13 @@ Tables:
 - Spring Boot owns Spring Data web configuration, including the 100-row maximum page size and stable DTO page serialization. Generated OpenAPI pagination schemas mark all guaranteed page and project-owned `SliceResponse<T>` fields as required.
 - PR-023 adopted the governing simplicity direction in the current standards: direct/local code, no pagination for naturally small bounded collections, Spring `Pageable` for ordinary pagination, and custom cursor/keyset infrastructure only for a demonstrated requirement. Ledger accounts are now unpaged, ledger activities/reconciliations use compact project-owned `SliceResponse<T>` results, and PR-025 now applies the same direct approach to complete device-session lists and instrument search. The ordinary-list cursor infrastructure has been removed after source search proved it dead.
 - `platform.job` is unused storage scaffolding only. No scheduler, worker, batch, queue, retry framework, or generic workflow runtime is part of the current implementation.
-- The preserved frontend still targets legacy APIs and is outside the backend rewrite baseline.
+- The frontend account workflow now consumes the current generated API contract for ledger activities, including the PR-029 fee and interest actions; unrelated frontend migration work remains outside this backend state document.
 
 ## Current implementation scope
 
 - PR-025 is accepted and committed; Cleanup B is complete. Device-session listing is a complete owner-scoped logical-family array, instrument search uses Spring `Pageable` plus compact `SliceResponse<InstrumentSummaryResponse>` results, and the remaining session/instrument/generic cursor stack was deleted after consumer removal.
 - PR-026 through PR-028 are accepted and committed; Cleanup C, Cleanup D, and the identity authentication-boundary consolidation are complete.
-- No backend implementation PR is active. R4, migrations, identity domain/repository/configuration changes, new authentication capabilities, and frontend work remain deferred until a separate unit is explicitly activated.
+- PR-029 implementation is present in the working tree and awaiting user review. `CURRENT.md` remains `NONE` because this invocation does not advance the user-owned implementation pointer. R4, unrelated migrations, identity domain/repository/configuration changes, new authentication capabilities, and later frontend work remain deferred.
 
 ## Deferred capabilities
 
@@ -84,11 +85,11 @@ Tables:
 - Spending, income classification, bills, card and debt workflows, planning/scenarios, households, shared expenses, claims, and settlements.
 - Global reference administration, persistent signing keys, OIDC/recovery/MFA, roles/permissions, cross-site deployment hardening, and account export/deletion.
 - Background execution and commodity async infrastructure until a concrete workload establishes its requirements.
-- Frontend migration to the current API.
+- Frontend migration outside the implemented account cash workflow.
 
 ## Verification state
 
-The current OpenAPI workspace changes pass the focused configuration and HTTP contract tests and the complete Maven `verify` lifecycle: 374 tests, 0 failures, 0 errors, and 0 skips against PostgreSQL 17 Testcontainers. Spotless passes across 258 Java files, `/v3/api-docs` exposes the controller contract with required slice fields, existing pagination normalization remains intact, and the executable archive is repackaged successfully.
+PR-029 verification is green. The focused fee/interest/migration/reconciliation/HTTP gate passes 93 tests with 0 failures, errors, or skips against PostgreSQL 17 Testcontainers; fresh V5 and V4-to-V5 migration paths, including seeded V4 balanced/adjusted reconciliations and their adjustment activity/posting/linkage, pass with Hibernate validation. `spotless:check`, full Maven `test`, and full Maven `verify` pass; both lifecycles run 382 tests with 0 failures, errors, or skips. The refresh test now expects the existing CORS behavior for a disallowed-origin preflight: HTTP 403 with no `Access-Control-Allow-Origin`, before refresh rotation. OpenAPI generation and drift checking pass against the PR-029 backend; frontend typecheck, changed-file Biome, existing suite (62 tests), and production build pass. The repository-wide frontend Biome check still reports 12 untouched pre-existing formatting violations documented in the PR-029 completion record.
 
 PR-028 is accepted and committed in `ac4d7e7`. Registration/login/refresh use one HTTP boundary and one non-transactional attempt-policy boundary; logout is colocated with device-session HTTP operations; the transactional registration/login/rotation workflows and separate device-session query/revocation boundaries are preserved. Duplicate login/refresh result and response records and superseded operation-specific controllers/attempt wrappers are removed. The focused identity/security gate passed 108 tests, and the full suite plus Maven `verify` passed 371 tests each with 0 failures, 0 errors, and 0 skips against PostgreSQL 17 Testcontainers. Spotless passed across 255 Java files (192 production and 63 test), the executable archive was repackaged, and no required tests were skipped or replaced. Static audits pass: exactly three identity REST controllers and ten identity `@Service` classes remain, no deleted symbols remain, `AuthenticationAttemptService` has no transaction annotation, and `git diff --check` is clean.
 
@@ -96,13 +97,13 @@ PR-026 and PR-027 are accepted and committed; Cleanup C and Cleanup D are comple
 
 WORKSPACE-001 repository restructuring verified: full Maven lifecycle (`.\mvnw.cmd verify` without test skipping) from `server/` passed with 371 tests (0 failures, 0 errors, 0 skips), Spotless passed with 261 files clean, and Spring Boot executable archive repackaged successfully. Root Docker build (`docker build -t stocks-workspace-check .`) verified cleanly.
 
-Last updated: 2026-09-11
+Last updated: 2026-09-19
 
 ## Resume context
 
 - Operating contract and context router: [server/AGENTS.md](../../server/AGENTS.md) (repository router: [AGENTS.md](../../AGENTS.md))
 - Active pointer: [CURRENT.md](CURRENT.md)
-- Active scope: none.
+- Active scope: PR-029 implementation is complete in the working tree and awaiting review; the pointer itself remains `NONE` under the user-owned transition rule.
 - Last completed scope: [PR-028 - Identity authentication boundary consolidation](PR-028-identity-authentication-boundary-consolidation.md), accepted in `ac4d7e7`.
 
 Load only the standards, contracts, design sections, and repository code relevant to the current role and affected behavior.

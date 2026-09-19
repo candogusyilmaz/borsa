@@ -73,6 +73,18 @@ public class Activity {
                 recordedAt, policyDecision);
     }
 
+    public static Activity cashFee(UUID id, UUID ownerUserAccountId, UUID clientEventId, String operationScope, long commandSequence,
+            RecordingMode recordingMode, Instant effectiveAt, Instant recordedAt, PolicyDecision policyDecision) {
+        return cashActivity(id, ownerUserAccountId, clientEventId, operationScope, commandSequence, ActivityType.CASH_FEE, recordingMode, effectiveAt,
+                recordedAt, policyDecision);
+    }
+
+    public static Activity cashInterestCredit(UUID id, UUID ownerUserAccountId, UUID clientEventId, String operationScope, long commandSequence,
+            RecordingMode recordingMode, Instant effectiveAt, Instant recordedAt, PolicyDecision policyDecision) {
+        return cashActivity(id, ownerUserAccountId, clientEventId, operationScope, commandSequence, ActivityType.CASH_INTEREST_CREDIT, recordingMode,
+                effectiveAt, recordedAt, policyDecision);
+    }
+
     public static Activity ownedTransfer(UUID id, UUID ownerUserAccountId, UUID clientEventId, String operationScope, long commandSequence,
             RecordingMode recordingMode, Instant effectiveAt, Instant recordedAt, PolicyDecision policyDecision) {
         return cashActivity(id, ownerUserAccountId, clientEventId, operationScope, commandSequence, ActivityType.OWNED_TRANSFER, recordingMode, effectiveAt,

@@ -1,4 +1,4 @@
-import { ArrowDownLeftIcon, ArrowsLeftRightIcon, ArrowUpRightIcon, DotsThreeIcon } from '@phosphor-icons/react';
+import { ArrowDownLeftIcon, ArrowsLeftRightIcon, ArrowUpRightIcon, DotsThreeIcon, ReceiptIcon, TrendUpIcon } from '@phosphor-icons/react';
 import type { FinancialAccount } from '../../types';
 import { isCashFundingCapable } from '../../utils/account-formatters';
 import { AccountActionsOverlay } from '../account-actions';
@@ -39,7 +39,29 @@ export function AccountQuickActions({ account, onAccountArchived }: AccountQuick
         <span className={classes.btnLabel}>Withdraw</span>
       </button>
 
-      {/* 3. Transfer */}
+      {/* 3. Fee */}
+      <button
+        type="button"
+        className={`${classes.actionBtn} ${classes.feeBtn}`}
+        onClick={() => CashActivityOverlay.open({ accountId: account.id, defaultType: 'CASH_FEE' })}
+        disabled={!canCashTransact}
+        aria-label={canCashTransact ? `Record a fee for ${account.name}` : 'Fees not available for this account'}>
+        <ReceiptIcon size={20} weight="bold" />
+        <span className={classes.btnLabel}>Fee</span>
+      </button>
+
+      {/* 4. Interest */}
+      <button
+        type="button"
+        className={`${classes.actionBtn} ${classes.interestBtn}`}
+        onClick={() => CashActivityOverlay.open({ accountId: account.id, defaultType: 'CASH_INTEREST_CREDIT' })}
+        disabled={!canCashTransact}
+        aria-label={canCashTransact ? `Record interest for ${account.name}` : 'Interest is not available for this account'}>
+        <TrendUpIcon size={20} weight="bold" />
+        <span className={classes.btnLabel}>Interest</span>
+      </button>
+
+      {/* 5. Transfer */}
       <button
         type="button"
         className={`${classes.actionBtn} ${classes.transferBtn}`}
@@ -50,7 +72,7 @@ export function AccountQuickActions({ account, onAccountArchived }: AccountQuick
         <span className={classes.btnLabel}>Transfer</span>
       </button>
 
-      {/* 4. More */}
+      {/* 6. More */}
       <button
         type="button"
         className={`${classes.actionBtn} ${classes.moreBtn}`}

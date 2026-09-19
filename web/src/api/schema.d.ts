@@ -596,7 +596,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            activityType: "OPENING_BALANCE" | "CASH_DEPOSIT" | "CASH_WITHDRAWAL" | "OWNED_TRANSFER" | "REVERSAL" | "RECONCILIATION_ADJUSTMENT";
+            activityType: "OPENING_BALANCE" | "CASH_DEPOSIT" | "CASH_WITHDRAWAL" | "CASH_FEE" | "CASH_INTEREST_CREDIT" | "OWNED_TRANSFER" | "REVERSAL" | "RECONCILIATION_ADJUSTMENT";
             /** @enum {string} */
             recordingMode: "CURRENT_ACTION" | "HISTORICAL_FACT";
             /** Format: date-time */
@@ -620,7 +620,7 @@ export interface components {
             currency: string;
             amount: string;
             /** @enum {string} */
-            role: "OPENING" | "DEPOSIT" | "WITHDRAWAL" | "TRANSFER_SOURCE" | "TRANSFER_DESTINATION" | "REVERSAL" | "ADJUSTMENT";
+            role: "OPENING" | "DEPOSIT" | "WITHDRAWAL" | "FEE" | "INTEREST_CREDIT" | "TRANSFER_SOURCE" | "TRANSFER_DESTINATION" | "REVERSAL" | "ADJUSTMENT";
         };
         TransferPreviewRequest: {
             /** Format: uuid */
@@ -851,7 +851,7 @@ export interface components {
             /** Format: uuid */
             clientRequestId: string;
             /** @enum {string} */
-            activityType: "OPENING_BALANCE" | "CASH_DEPOSIT" | "CASH_WITHDRAWAL" | "OWNED_TRANSFER" | "REVERSAL" | "RECONCILIATION_ADJUSTMENT";
+            activityType: "CASH_DEPOSIT" | "CASH_WITHDRAWAL" | "CASH_FEE" | "CASH_INTEREST_CREDIT";
             amount: string;
             /** @enum {string} */
             recordingMode: "CURRENT_ACTION" | "HISTORICAL_FACT";
@@ -1415,8 +1415,8 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
-            200: {
+            /** @description Activity reversal created */
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1589,8 +1589,8 @@ export interface operations {
             };
         };
         responses: {
-            /** @description OK */
-            200: {
+            /** @description Cash activity created */
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -1,6 +1,6 @@
 # Backend transformation progress report
 
-Report date: 2026-09-09
+Report date: 2026-09-18
 
 Scope: Spring Boot backend, PostgreSQL dump, database migration strategy, modular-monolith design, offline/fake data approach, and implementation readiness. Frontend implementation state is tracked separately under `docs/implementation/web/`.
 
@@ -47,10 +47,11 @@ Current-state handoff: use [docs/implementation/STATE.md](../implementation/STAT
 | PR-026 — Cleanup C validation, error, and trivial-abstraction simplification | **Complete in accepted commit `030b2e2`** | Future-time errors, direct validation/error paths, and trivial abstractions were simplified while preserving behavior; Cleanup D was kept separate |
 | PR-027 — Cleanup D redundant model, mapping, and fingerprint readability | **Complete in accepted commit `4e3108d`** | Transfer/reference redundant surfaces and unused projections are removed; five workflow-specific fingerprints preserve canonical identity; focused PR-027 gate: 99 tests passed; full test suite: 371 tests passed; Maven verify: 371 tests passed; PostgreSQL 17 Testcontainers executed successfully through Docker Desktop; Spotless passed across 261 Java files (198 production, 63 test); git diff --check passed |
 | PR-028 — Identity authentication boundary consolidation | **Complete in accepted commit `ac4d7e7`** | Registration/login/refresh now share one controller and one non-transactional attempt-policy service; logout is colocated with device-session HTTP operations; duplicate credential result/response types and superseded controllers/wrappers are removed while core transaction and session boundaries remain separate |
+| PR-029 — Manual cash fees and interest credits | **Implemented in the working tree; awaiting user review** | Cross-stack R3 completion adds V5 checks, signed `FEE`/`INTEREST_CREDIT` postings, current/historical command and reversal behavior, generated OpenAPI/UI actions, V4 reconciliation-adjustment preservation proof, and PostgreSQL/Testcontainers coverage; focused gate passes 93 tests, full Maven `test` and `verify` each pass 382 tests, and Spotless passes |
 | Backend standardization cleanup                    | **Complete in commit `cf895ac`; preserved through the current baseline** | Controller-only validation, standard JWT validators with lexical compatibility checks, Boot-managed Micrometer W3C tracing, centralized persistence error mapping, typed authenticated principals, application-owned search criteria, and current package/SQL conventions; no public route or response contract changed |
 | Automated backend coverage                         | Focused PR-028 gate: 108 tests passed; full test suite: 371 tests passed; Maven `verify`: 371 tests passed | The suite covers response/cookie delivery, exact session/token binding, credential failures and throttling, validation/parsing, rotation invalid states, rollback, reuse, registration/login/refresh/logout/session HTTP behavior, PostgreSQL V3-to-V4 migration preservation, reconciliation numeric shapes and lifecycle, transaction boundaries, route scope, reference and ledger reads, ownership, idempotency/concurrency, statelessness, centralized persistence handling, and W3C trace compatibility; PostgreSQL 17 Testcontainers executed successfully through Docker Desktop; Spotless passed across 255 Java files (192 production, 63 test); git diff --check passed |
 
-Overall status: **PR-028 is accepted and committed in `ac4d7e7`; no backend implementation PR is active.**
+Overall status: **PR-029 is implemented in the working tree and awaiting user review; PR-028 remains the last accepted commit (`ac4d7e7`), and the user-owned `CURRENT.md` pointer remains unchanged.**
 
 ## Current identity-boundary checkpoint
 

@@ -9,7 +9,8 @@ import {
   CaretUpIcon,
   ClockCounterClockwiseIcon,
   ReceiptIcon,
-  SlidersIcon
+  SlidersIcon,
+  TrendUpIcon
 } from '@phosphor-icons/react';
 import { $api } from '@/api/client';
 import type { ActivityResponse, ActivityType, FinancialAccount } from '../../types';
@@ -30,6 +31,10 @@ function getActivityIcon(type: ActivityType) {
       return <ArrowDownLeftIcon size={18} weight="bold" color="var(--mantine-color-teal-6)" />;
     case 'CASH_WITHDRAWAL':
       return <ArrowUpRightIcon size={18} weight="bold" color="var(--mantine-color-orange-6)" />;
+    case 'CASH_FEE':
+      return <ReceiptIcon size={18} weight="bold" color="var(--mantine-color-red-6)" />;
+    case 'CASH_INTEREST_CREDIT':
+      return <TrendUpIcon size={18} weight="bold" color="var(--mantine-color-cyan-6)" />;
     case 'OWNED_TRANSFER':
       return <ArrowsLeftRightIcon size={18} weight="bold" color="var(--mantine-color-blue-6)" />;
     case 'OPENING_BALANCE':

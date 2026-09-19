@@ -47,9 +47,10 @@ export type ActivityType = ActivityResponse['activityType'];
 export type PostingRole = PostingResponse['role'];
 export type RecordingMode = ActivityResponse['recordingMode'];
 export type PolicyDecision = ActivityResponse['policyDecision'];
+export type ManualCashActivityType = Extract<ActivityType, 'CASH_DEPOSIT' | 'CASH_WITHDRAWAL' | 'CASH_FEE' | 'CASH_INTEREST_CREDIT'>;
 
 export interface RecordCashActivityFormValues {
-  activityType: 'CASH_DEPOSIT' | 'CASH_WITHDRAWAL';
+  activityType: ManualCashActivityType;
   amount: string;
   recordingMode: RecordingMode;
   effectiveAt: string;

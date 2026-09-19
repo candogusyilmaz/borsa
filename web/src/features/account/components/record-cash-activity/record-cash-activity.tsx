@@ -1,14 +1,17 @@
-import { Alert, Badge, Button, Checkbox, Group, SegmentedControl, Skeleton, Stack, Text, TextInput } from '@mantine/core';
+import { Alert, Badge, Button, Checkbox, Group, SegmentedControl, Select, Skeleton, Stack, Text, TextInput } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { ArrowDownLeftIcon, ArrowUpRightIcon, CheckCircleIcon, ClockIcon, InfoIcon, WarningCircleIcon } from '@phosphor-icons/react';
+import { CheckCircleIcon, ClockIcon, InfoIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
+import { useRef } from 'react';
 import { $api } from '@/api/client';
 import { showApiError } from '@/api/errors';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import type { ManualCashActivityType } from '../../types';
 import {
   formatCurrency,
   formatDateTime,
+  getActivityTypeLabel,
   isCashFundingCapable,
   POSITIVE_DECIMAL_REGEX,
   toDatetimeLocal
@@ -17,7 +20,7 @@ import classes from './record-cash-activity.module.css';
 
 export interface RecordCashActivityProps {
   accountId: string;
-  defaultType?: 'CASH_DEPOSIT' | 'CASH_WITHDRAWAL';
+  defaultType?: ManualCashActivityType;
 }
 
 function CashActivityTitle({ accountId, defaultType }: RecordCashActivityProps) {
@@ -25,7 +28,14 @@ function CashActivityTitle({ accountId, defaultType }: RecordCashActivityProps) 
     params: { path: { accountId } }
   });
 
-  const titleText = defaultType === 'CASH_WITHDRAWAL' ? 'Withdraw Cash' : 'Record Cash Activity';
+  const titleText =
+    defaultType === 'CASH_WITHDRAWAL'
+      ? 'Withdraw Cash'
+      : defaultType === 'CASH_FEE'
+        ? 'Record Cash Fee'
+        : defaultType === 'CASH_INTEREST_CREDIT'
+          ? 'Record Interest Credit'
+          : 'Record Cash Activity';
 
   return (
     <Group gap="xs">
@@ -44,6 +54,7 @@ function CashActivityTitle({ accountId, defaultType }: RecordCashActivityProps) 
 export function RecordCashActivityForm({ accountId, defaultType = 'CASH_DEPOSIT' }: RecordCashActivityProps) {
   const current = useCurrentOverlay();
   const queryClient = useQueryClient();
+  const clientRequestRef = useRef<{ fingerprint: string; id: string; effectiveAt: string } | null>(null);
 
   const accountQuery = $api.useQuery('get', '/api/v1/accounts/{accountId}', {
     params: { path: { accountId } }
@@ -60,13 +71,18 @@ export function RecordCashActivityForm({ accountId, defaultType = 'CASH_DEPOSIT'
   const balance = balanceQuery.data;
 
   const activityMutation = $api.useMutation('post', '/api/v1/accounts/{accountId}/activities', {
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/accounts'] });
-      queryClient.invalidateQueries({
-        queryKey: $api.queryOptions('get', '/api/v1/accounts/{accountId}', { params: { path: { accountId } } }).queryKey
-      });
-      queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/accounts/{accountId}/balance'] });
-      queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/activities'] });
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/accounts'] }),
+        queryClient.invalidateQueries({
+          queryKey: $api.queryOptions('get', '/api/v1/accounts/{accountId}', { params: { path: { accountId } } }).queryKey
+        }),
+        queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/accounts/{accountId}/balance'] }),
+        queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/activities'] }),
+        queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/activities/{activityId}'] }),
+        queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/accounts/{accountId}/reconciliations'] }),
+        queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/reconciliations/{reconciliationId}'] })
+      ]);
     },
     onError: (err) => {
       showApiError(err, {
@@ -77,7 +93,7 @@ export function RecordCashActivityForm({ accountId, defaultType = 'CASH_DEPOSIT'
 
   const form = useForm({
     defaultValues: {
-      activityType: defaultType as 'CASH_DEPOSIT' | 'CASH_WITHDRAWAL',
+      activityType: defaultType,
       amount: '',
       recordingMode: 'CURRENT_ACTION' as 'CURRENT_ACTION' | 'HISTORICAL_FACT',
       effectiveAt: toDatetimeLocal(new Date()),
@@ -86,28 +102,53 @@ export function RecordCashActivityForm({ accountId, defaultType = 'CASH_DEPOSIT'
     onSubmit: async ({ value }) => {
       if (!account) return;
 
-      const effectiveDate =
-        value.recordingMode === 'CURRENT_ACTION' ? new Date(Date.now() - 1000).toISOString() : new Date(value.effectiveAt).toISOString();
+      const historicalEffectiveAt = value.recordingMode === 'HISTORICAL_FACT' ? new Date(value.effectiveAt).toISOString() : null;
+      const fingerprint = JSON.stringify({
+        accountId: account.id,
+        activityType: value.activityType,
+        amount: value.amount.trim(),
+        recordingMode: value.recordingMode,
+        effectiveAt: historicalEffectiveAt,
+        confirmPolicyBreach: value.confirmPolicyBreach
+      });
+      const previousRequest = clientRequestRef.current;
+      if (previousRequest?.fingerprint !== fingerprint) {
+        clientRequestRef.current = {
+          fingerprint,
+          id: crypto.randomUUID(),
+          effectiveAt: historicalEffectiveAt ?? new Date().toISOString()
+        };
+      }
+      const request = clientRequestRef.current;
+      if (!request) return;
 
       activityMutation.mutate(
         {
           params: { path: { accountId: account.id } },
           body: {
-            clientRequestId: crypto.randomUUID(),
+            clientRequestId: request.id,
             activityType: value.activityType,
             amount: value.amount.trim(),
             recordingMode: value.recordingMode,
-            effectiveAt: effectiveDate,
+            effectiveAt: request.effectiveAt,
             confirmPolicyBreach: value.confirmPolicyBreach
           }
         },
         {
           onSuccess: () => {
-            const isDeposit = value.activityType === 'CASH_DEPOSIT';
+            const isCredit = value.activityType === 'CASH_DEPOSIT' || value.activityType === 'CASH_INTEREST_CREDIT';
+            const action =
+              value.activityType === 'CASH_DEPOSIT'
+                ? 'Deposited'
+                : value.activityType === 'CASH_WITHDRAWAL'
+                  ? 'Withdrew'
+                  : value.activityType === 'CASH_FEE'
+                    ? 'Charged'
+                    : 'Credited';
             notifications.show({
-              title: isDeposit ? 'Deposit Recorded' : 'Withdrawal Recorded',
-              message: `${isDeposit ? 'Deposited' : 'Withdrew'} ${formatCurrency(value.amount.trim(), account.currency)} successfully into ${account.name}.`,
-              color: 'teal',
+              title: `${getActivityTypeLabel(value.activityType)} Recorded`,
+              message: `${action} ${formatCurrency(value.amount.trim(), account.currency)} ${isCredit ? 'to' : 'against'} ${account.name}.`,
+              color: value.activityType === 'CASH_FEE' ? 'red' : isCredit ? 'teal' : 'orange',
               icon: <CheckCircleIcon size={18} weight="bold" />
             });
 
@@ -154,36 +195,25 @@ export function RecordCashActivityForm({ accountId, defaultType = 'CASH_DEPOSIT'
         form.handleSubmit();
       }}
       className={classes.form}>
-      {/* 1. Activity Type Segmented Control */}
+      {/* 1. Activity Type */}
       <form.Field name="activityType">
         {(field) => (
           <div className={classes.segmentedWrap}>
-            <SegmentedControl
-              fullWidth
+            <Select
+              label="Activity Type"
               size="md"
-              className={classes.segmentedControl}
               value={field.state.value}
-              onChange={(val) => field.handleChange(val as 'CASH_DEPOSIT' | 'CASH_WITHDRAWAL')}
+              onChange={(val) => {
+                if (val) field.handleChange(val as ManualCashActivityType);
+              }}
               data={[
-                {
-                  value: 'CASH_DEPOSIT',
-                  label: (
-                    <Group gap={6} justify="center">
-                      <ArrowDownLeftIcon size={18} weight="bold" color="var(--mantine-color-teal-6)" />
-                      <span>Cash Deposit</span>
-                    </Group>
-                  )
-                },
-                {
-                  value: 'CASH_WITHDRAWAL',
-                  label: (
-                    <Group gap={6} justify="center">
-                      <ArrowUpRightIcon size={18} weight="bold" color="var(--mantine-color-orange-6)" />
-                      <span>Cash Withdrawal</span>
-                    </Group>
-                  )
-                }
+                { value: 'CASH_DEPOSIT', label: 'Cash Deposit' },
+                { value: 'CASH_WITHDRAWAL', label: 'Cash Withdrawal' },
+                { value: 'CASH_FEE', label: 'Cash Fee' },
+                { value: 'CASH_INTEREST_CREDIT', label: 'Interest Credit' }
               ]}
+              allowDeselect={false}
+              aria-label="Activity Type"
             />
           </div>
         )}
@@ -228,7 +258,15 @@ export function RecordCashActivityForm({ accountId, defaultType = 'CASH_DEPOSIT'
             onChange={(e) => field.handleChange(e.target.value)}
             onBlur={field.handleBlur}
             error={field.state.meta.errors.join(', ')}
-            description={`Amount to ${form.getFieldValue('activityType') === 'CASH_DEPOSIT' ? 'deposit into' : 'withdraw from'} ${account.name}.`}
+            description={`Amount to ${
+              form.getFieldValue('activityType') === 'CASH_DEPOSIT'
+                ? 'deposit into'
+                : form.getFieldValue('activityType') === 'CASH_WITHDRAWAL'
+                  ? 'withdraw from'
+                  : form.getFieldValue('activityType') === 'CASH_FEE'
+                    ? 'charge against'
+                    : 'credit to'
+            } ${account.name}.`}
             inputWrapperOrder={['label', 'input', 'description', 'error']}
             required
             aria-label="Transaction Amount"
@@ -300,13 +338,13 @@ export function RecordCashActivityForm({ accountId, defaultType = 'CASH_DEPOSIT'
         </form.Field>
       )}
 
-      {/* 5. Policy Breach Confirmation (primarily for withdrawals) */}
-      {form.getFieldValue('activityType') === 'CASH_WITHDRAWAL' && (
+      {/* 5. Policy Breach Confirmation (for outflows) */}
+      {(form.getFieldValue('activityType') === 'CASH_WITHDRAWAL' || form.getFieldValue('activityType') === 'CASH_FEE') && (
         <form.Field name="confirmPolicyBreach">
           {(field) => (
             <Checkbox
               label="Confirm Overdraft / Limit Exception"
-              description="Check this if this withdrawal may bring the balance below zero and your account policy permits overdraft."
+              description="Check this if the outflow may bring the balance below zero and your account policy permits overdraft."
               checked={field.state.value}
               onChange={(e) => field.handleChange(e.currentTarget.checked)}
               size="sm"
@@ -329,11 +367,23 @@ export function RecordCashActivityForm({ accountId, defaultType = 'CASH_DEPOSIT'
 
         <Button
           type="submit"
-          color={form.getFieldValue('activityType') === 'CASH_DEPOSIT' ? 'teal' : 'orange'}
+          color={
+            form.getFieldValue('activityType') === 'CASH_DEPOSIT' || form.getFieldValue('activityType') === 'CASH_INTEREST_CREDIT'
+              ? 'teal'
+              : form.getFieldValue('activityType') === 'CASH_FEE'
+                ? 'red'
+                : 'orange'
+          }
           size="md"
           className={classes.actionBtn}
           loading={activityMutation.isPending}>
-          {form.getFieldValue('activityType') === 'CASH_DEPOSIT' ? 'Confirm Deposit' : 'Confirm Withdrawal'}
+          {form.getFieldValue('activityType') === 'CASH_DEPOSIT'
+            ? 'Confirm Deposit'
+            : form.getFieldValue('activityType') === 'CASH_WITHDRAWAL'
+              ? 'Confirm Withdrawal'
+              : form.getFieldValue('activityType') === 'CASH_FEE'
+                ? 'Confirm Fee'
+                : 'Confirm Interest Credit'}
         </Button>
       </div>
     </form>

@@ -200,8 +200,10 @@ public class LedgerReadRepository {
                     WHEN 'OPENING' THEN 2
                     WHEN 'DEPOSIT' THEN 3
                     WHEN 'WITHDRAWAL' THEN 4
-                    WHEN 'REVERSAL' THEN 5
-                    ELSE 6
+                    WHEN 'FEE' THEN 5
+                    WHEN 'INTEREST_CREDIT' THEN 6
+                    WHEN 'REVERSAL' THEN 7
+                    ELSE 8
                 END, financial_account_id, id
                 """).param("ownerUserAccountId", ownerUserAccountId).param("activityIds", activityIds)
                 .query((resultSet, rowNumber) -> new PostingRow(resultSet.getObject("activity_id", UUID.class),

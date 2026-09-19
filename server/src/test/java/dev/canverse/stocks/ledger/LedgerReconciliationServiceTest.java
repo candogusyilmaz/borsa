@@ -486,7 +486,7 @@ class LedgerReconciliationServiceTest {
     }
 
     @Test
-    void laterRecordedBackdatedWithdrawalTransferReversalAndOpeningCorrectionMakeRowsStale() {
+    void laterRecordedBackdatedCashActivitiesAndCorrectionsMakeRowsStale() {
         var times = Times.create();
         var ownerId = insertUser("reconciliation-staleness-kinds@example.com");
 
@@ -519,10 +519,22 @@ class LedgerReconciliationServiceTest {
         accountLifecycleService.correctOpening(ownerId, openingAccount.id(),
                 new OpeningCorrectionRequest(UUID.randomUUID(), "101", times.openingAt(), "backdated opening correction", openingAccount.version()));
 
+        var feeAccount = createAccount(ownerId, "Stale fee", "100", times.openingAt());
+        var feeReconciliation = commitBalanced(ownerId, feeAccount.id(), times, "100", "stale-fee");
+        activityService.recordCashActivity(ownerId, feeAccount.id(),
+                new CashActivityRequest(UUID.randomUUID(), ActivityType.CASH_FEE, "1", RecordingMode.HISTORICAL_FACT, times.depositAt(), false, null));
+
+        var interestAccount = createAccount(ownerId, "Stale interest", "100", times.openingAt());
+        var interestReconciliation = commitBalanced(ownerId, interestAccount.id(), times, "100", "stale-interest");
+        activityService.recordCashActivity(ownerId, interestAccount.id(), new CashActivityRequest(UUID.randomUUID(), ActivityType.CASH_INTEREST_CREDIT, "1",
+                RecordingMode.HISTORICAL_FACT, times.depositAt(), false, null));
+
         assertThat(reconciliationReadService.detail(ownerId, withdrawalReconciliation.id()).lifecycleStatus()).hasToString("STALE");
         assertThat(reconciliationReadService.detail(ownerId, transferReconciliation.id()).lifecycleStatus()).hasToString("STALE");
         assertThat(reconciliationReadService.detail(ownerId, reversalReconciliation.id()).lifecycleStatus()).hasToString("STALE");
         assertThat(reconciliationReadService.detail(ownerId, openingReconciliation.id()).lifecycleStatus()).hasToString("STALE");
+        assertThat(reconciliationReadService.detail(ownerId, feeReconciliation.id()).lifecycleStatus()).hasToString("STALE");
+        assertThat(reconciliationReadService.detail(ownerId, interestReconciliation.id()).lifecycleStatus()).hasToString("STALE");
     }
 
     @Test

@@ -100,6 +100,10 @@ class CashActivityServiceTest {
         assertThatThrownBy(() -> activityService.recordCashActivity(ownerId, hard.id(), hardFailure))
                 .extracting(exception -> ((dev.canverse.stocks.platform.error.AppException) exception).getErrorCode())
                 .isEqualTo(LedgerErrorCode.INSUFFICIENT_FUNDS);
+        assertThatThrownBy(() -> activityService.recordCashActivity(ownerId, hard.id(),
+                cashRequest(ActivityType.CASH_FEE, "1", RecordingMode.CURRENT_ACTION, false, null)))
+                .extracting(exception -> ((dev.canverse.stocks.platform.error.AppException) exception).getErrorCode())
+                .isEqualTo(LedgerErrorCode.INSUFFICIENT_FUNDS);
 
         var soft = createAccount(ownerId, "Soft floor", NegativeBalancePolicy.SOFT_FLOOR, "0");
         var softRequest = cashRequest(ActivityType.CASH_WITHDRAWAL, "1", RecordingMode.CURRENT_ACTION, false, null);
@@ -109,12 +113,75 @@ class CashActivityServiceTest {
         var confirmed = activityService.recordCashActivity(ownerId, soft.id(), new CashActivityRequest(UUID.randomUUID(), ActivityType.CASH_WITHDRAWAL, "1",
                 RecordingMode.CURRENT_ACTION, Instant.now().minusSeconds(1), true, null));
         assertThat(confirmed.policyDecision().name()).isEqualTo("CONFIRMED_BREACH");
+        var confirmedFee = activityService.recordCashActivity(ownerId, soft.id(), new CashActivityRequest(UUID.randomUUID(), ActivityType.CASH_FEE, "1",
+                RecordingMode.CURRENT_ACTION, Instant.now().minusSeconds(1), true, null));
+        assertThat(confirmedFee.policyDecision().name()).isEqualTo("CONFIRMED_BREACH");
 
         var reality = createAccount(ownerId, "Historical reality", NegativeBalancePolicy.TRACK_REALITY, "0");
         var historical = activityService.recordCashActivity(ownerId, reality.id(), new CashActivityRequest(UUID.randomUUID(), ActivityType.CASH_WITHDRAWAL, "5",
                 RecordingMode.HISTORICAL_FACT, Instant.now().minusSeconds(2), false, null));
         assertThat(historical.policyDecision().name()).isEqualTo("HISTORICAL_BREACH_RECORDED");
         assertThat(accountQueryService.balance(ownerId, reality.id(), null).overdraftUsed()).isEqualTo("5");
+    }
+
+    @Test
+    void feeAndInterestActivitiesKeepExactAmountsAndAsOfSignedBalances() {
+        var ownerId = insertUser("cash-fee-interest-owner@example.com");
+        var openingAt = Instant.now().minusSeconds(30).truncatedTo(ChronoUnit.MICROS);
+        var feeAt = openingAt.plusSeconds(5);
+        var interestAt = openingAt.plusSeconds(10);
+        var account = createAccount(ownerId, "Fee and interest", NegativeBalancePolicy.HARD_FLOOR, "100", openingAt);
+
+        var feeRequest = new CashActivityRequest(UUID.randomUUID(), ActivityType.CASH_FEE, "12.5000", RecordingMode.HISTORICAL_FACT, feeAt, false, null);
+        var fee = activityService.recordCashActivity(ownerId, account.id(), feeRequest);
+        var interest = activityService.recordCashActivity(ownerId, account.id(), new CashActivityRequest(UUID.randomUUID(), ActivityType.CASH_INTEREST_CREDIT,
+                "2.5000", RecordingMode.HISTORICAL_FACT, interestAt, false, null));
+        var feeReplay = activityService.recordCashActivity(ownerId, account.id(),
+                new CashActivityRequest(feeRequest.clientRequestId(), ActivityType.CASH_FEE, "12.5", RecordingMode.HISTORICAL_FACT, feeAt, false, null));
+
+        assertThat(feeReplay.id()).isEqualTo(fee.id());
+        assertThat(fee.activityType()).isEqualTo(ActivityType.CASH_FEE);
+        assertThat(fee.postings()).singleElement().satisfies(posting -> {
+            assertThat(posting.amount()).isEqualTo("-12.5");
+            assertThat(posting.role().name()).isEqualTo("FEE");
+        });
+        assertThat(interest.activityType()).isEqualTo(ActivityType.CASH_INTEREST_CREDIT);
+        assertThat(interest.postings()).singleElement().satisfies(posting -> {
+            assertThat(posting.amount()).isEqualTo("2.5");
+            assertThat(posting.role().name()).isEqualTo("INTEREST_CREDIT");
+        });
+        assertThat(accountQueryService.balance(ownerId, account.id(), openingAt).ledgerBalance()).isEqualTo("100");
+        assertThat(accountQueryService.balance(ownerId, account.id(), feeAt).ledgerBalance()).isEqualTo("87.5");
+        assertThat(accountQueryService.balance(ownerId, account.id(), interestAt).ledgerBalance()).isEqualTo("90");
+        assertThat(accountQueryService.balance(ownerId, account.id(), null).ledgerBalance()).isEqualTo("90");
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ledger.activity WHERE owner_user_account_id = ?", Integer.class, ownerId)).isEqualTo(3);
+    }
+
+    @Test
+    void feeAndInterestActivitiesUseTheExistingGenericReversalWorkflow() {
+        var ownerId = insertUser("cash-fee-interest-reversal-owner@example.com");
+        var account = createAccount(ownerId, "Reversible fee and interest", NegativeBalancePolicy.HARD_FLOOR, "100");
+        var fee = activityService.recordCashActivity(ownerId, account.id(),
+                cashRequest(ActivityType.CASH_FEE, "5.00", RecordingMode.CURRENT_ACTION, false, null));
+        var interest = activityService.recordCashActivity(ownerId, account.id(),
+                cashRequest(ActivityType.CASH_INTEREST_CREDIT, "3.00", RecordingMode.CURRENT_ACTION, false, null));
+
+        var feeReversal = activityService.reverse(ownerId, fee.id(), new ReversalRequest(UUID.randomUUID(), "Incorrect fee"));
+        var interestReversal = activityService.reverse(ownerId, interest.id(), new ReversalRequest(UUID.randomUUID(), "Incorrect interest credit"));
+
+        assertThat(feeReversal.reversesActivityId()).isEqualTo(fee.id());
+        assertThat(feeReversal.effectiveAt()).isEqualTo(fee.effectiveAt());
+        assertThat(feeReversal.postings()).singleElement().satisfies(posting -> {
+            assertThat(posting.amount()).isEqualTo("5");
+            assertThat(posting.role().name()).isEqualTo("REVERSAL");
+        });
+        assertThat(interestReversal.reversesActivityId()).isEqualTo(interest.id());
+        assertThat(interestReversal.effectiveAt()).isEqualTo(interest.effectiveAt());
+        assertThat(interestReversal.postings()).singleElement().satisfies(posting -> {
+            assertThat(posting.amount()).isEqualTo("-3");
+            assertThat(posting.role().name()).isEqualTo("REVERSAL");
+        });
+        assertThat(accountQueryService.balance(ownerId, account.id(), null).ledgerBalance()).isEqualTo("100");
     }
 
     @Test

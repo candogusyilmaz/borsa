@@ -51,6 +51,18 @@ public class MoneyPosting {
         return create(id, ownerUserAccountId, activityId, financialAccountId, cashPocketId, currencyCode, amount, PostingRole.WITHDRAWAL, createdAt);
     }
 
+    public static MoneyPosting fee(UUID id, UUID ownerUserAccountId, UUID activityId, UUID financialAccountId, UUID cashPocketId, String currencyCode,
+            FinancialAmount amount, Instant createdAt) {
+        requirePositive(amount, PostingRole.FEE);
+        return create(id, ownerUserAccountId, activityId, financialAccountId, cashPocketId, currencyCode, amount.negate(), PostingRole.FEE, createdAt);
+    }
+
+    public static MoneyPosting interestCredit(UUID id, UUID ownerUserAccountId, UUID activityId, UUID financialAccountId, UUID cashPocketId,
+            String currencyCode, FinancialAmount amount, Instant createdAt) {
+        requirePositive(amount, PostingRole.INTEREST_CREDIT);
+        return create(id, ownerUserAccountId, activityId, financialAccountId, cashPocketId, currencyCode, amount, PostingRole.INTEREST_CREDIT, createdAt);
+    }
+
     public static MoneyPosting transferSource(UUID id, UUID ownerUserAccountId, UUID activityId, UUID financialAccountId, UUID cashPocketId,
             String currencyCode, FinancialAmount amount, Instant createdAt) {
         requireNegative(amount, PostingRole.TRANSFER_SOURCE);

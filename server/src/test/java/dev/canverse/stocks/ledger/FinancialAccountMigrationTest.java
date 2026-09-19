@@ -80,8 +80,8 @@ class FinancialAccountMigrationTest {
     PlatformTransactionManager transactionManager;
 
     @Test
-    void v4AddsExactlyTheReconciliationTableAndExpectedLedgerShape() {
-        assertThat(flyway.info().applied()).extracting(migration -> migration.getVersion().toString()).containsExactly("1", "2", "3", "4");
+    void v5AddsManualFeeAndInterestShapesToTheExistingLedger() {
+        assertThat(flyway.info().applied()).extracting(migration -> migration.getVersion().toString()).containsExactly("1", "2", "3", "4", "5");
 
         var tables = Set.copyOf(jdbcTemplate.queryForList("SELECT table_name FROM information_schema.tables WHERE table_schema = 'ledger'", String.class));
         assertThat(tables).isEqualTo(LEDGER_TABLES);
@@ -158,11 +158,71 @@ class FinancialAccountMigrationTest {
                     " ledger_balance, last_applied_recorded_at, last_applied_activity_id, updated_at, version)" + " VALUES (?, ?, ?, ?, 'USD', 10, ?, ?, ?, 0)",
                     UUID.randomUUID(), ownerId, accountId, pocketId, now, activityId, now);
 
+            var v4 = Flyway.configure().dataSource(targetUrl, postgres.getUsername(), postgres.getPassword()).locations("classpath:db/migration")
+                    .target(MigrationVersion.fromVersion("4")).load();
+            v4.migrate();
+            assertThat(v4.info().applied()).extracting(migration -> migration.getVersion().toString()).containsExactly("1", "2", "3", "4");
+
+            var balancedReconciliationId = UUID.randomUUID();
+            var adjustedReconciliationId = UUID.randomUUID();
+            var adjustmentActivityId = UUID.randomUUID();
+            var adjustmentPostingId = UUID.randomUUID();
+            var balancedClosingAt = openingAt;
+            var adjustedClosingAt = now;
+            v3Jdbc.update(
+                    "INSERT INTO ledger.reconciliation" + " (id, owner_user_account_id, financial_account_id, cash_pocket_id, currency_code," +
+                            " statement_reference, statement_opening_at, statement_closing_at, statement_opening_balance," +
+                            " statement_closing_balance, ledger_opening_balance, ledger_closing_balance_before_adjustment," +
+                            " period_net_posted_amount, closing_difference, adjustment_amount, period_posting_count," +
+                            " total_posting_count_through_closing, resolution, adjustment_activity_id, supersedes_reconciliation_id," +
+                            " source_kind, adjustment_reason, created_at)" +
+                            " VALUES (?, ?, ?, ?, 'USD', 'V4 balanced statement', ?, ?, 10, 10, 10, 10, 0, 0, NULL, 0, 1," +
+                            " 'BALANCED', NULL, NULL, 'USER_ENTERED', NULL, ?)",
+                    balancedReconciliationId, ownerId, accountId, pocketId, balancedClosingAt.minusMinutes(1), balancedClosingAt, now);
+            v3Jdbc.update(
+                    "INSERT INTO ledger.activity" + " (id, owner_user_account_id, client_event_id, operation_scope, command_sequence," +
+                            " activity_type, recording_mode, effective_at, recorded_at, source_kind, policy_decision, correction_reason)" +
+                            " VALUES (?, ?, ?, 'v4.upgrade.reconciliation-adjustment', 0, 'RECONCILIATION_ADJUSTMENT'," +
+                            " 'HISTORICAL_FACT', ?, ?, 'USER_ENTERED', 'ALLOWED', 'V4 migration adjustment')",
+                    adjustmentActivityId, ownerId, UUID.randomUUID(), adjustedClosingAt, now);
+            v3Jdbc.update(
+                    "INSERT INTO ledger.money_posting" + " (id, owner_user_account_id, activity_id, financial_account_id, cash_pocket_id," +
+                            " currency_code, amount, posting_role, created_at) VALUES (?, ?, ?, ?, ?, 'USD', 2, 'ADJUSTMENT', ?)",
+                    adjustmentPostingId, ownerId, adjustmentActivityId, accountId, pocketId, now);
+            v3Jdbc.update(
+                    "INSERT INTO ledger.reconciliation" + " (id, owner_user_account_id, financial_account_id, cash_pocket_id, currency_code," +
+                            " statement_reference, statement_opening_at, statement_closing_at, statement_opening_balance," +
+                            " statement_closing_balance, ledger_opening_balance, ledger_closing_balance_before_adjustment," +
+                            " period_net_posted_amount, closing_difference, adjustment_amount, period_posting_count," +
+                            " total_posting_count_through_closing, resolution, adjustment_activity_id, supersedes_reconciliation_id," +
+                            " source_kind, adjustment_reason, created_at)" +
+                            " VALUES (?, ?, ?, ?, 'USD', 'V4 adjusted statement', ?, ?, 10, 12, 10, 10, 0, 2, 2, 0, 1," +
+                            " 'ADJUSTED', ?, ?, 'USER_ENTERED', 'V4 migration adjustment', ?)",
+                    adjustedReconciliationId, ownerId, accountId, pocketId, openingAt, adjustedClosingAt, adjustmentActivityId, balancedReconciliationId, now);
+
             var latest = Flyway.configure().dataSource(targetUrl, postgres.getUsername(), postgres.getPassword()).locations("classpath:db/migration").load();
             latest.migrate();
-            assertThat(latest.info().applied()).extracting(migration -> migration.getVersion().toString()).containsExactly("1", "2", "3", "4");
+            assertThat(latest.info().applied()).extracting(migration -> migration.getVersion().toString()).containsExactly("1", "2", "3", "4", "5");
             assertThat(v3Jdbc.queryForObject("SELECT COUNT(*) FROM ledger.financial_account WHERE id = ?", Integer.class, accountId)).isEqualTo(1);
             assertThat(v3Jdbc.queryForObject("SELECT COUNT(*) FROM ledger.activity WHERE id = ?", Integer.class, activityId)).isEqualTo(1);
+            assertThat(v3Jdbc.queryForObject("SELECT COUNT(*) FROM ledger.reconciliation WHERE id IN (?, ?)", Integer.class, balancedReconciliationId,
+                    adjustedReconciliationId)).isEqualTo(2);
+            assertThat(v3Jdbc.queryForObject("SELECT COUNT(*) FROM ledger.reconciliation WHERE id = ? AND resolution = 'BALANCED'" +
+                    " AND adjustment_activity_id IS NULL AND supersedes_reconciliation_id IS NULL", Integer.class, balancedReconciliationId)).isEqualTo(1);
+            assertThat(v3Jdbc.queryForObject(
+                    "SELECT COUNT(*) FROM ledger.reconciliation WHERE id = ? AND resolution = 'ADJUSTED'" +
+                            " AND adjustment_activity_id = ? AND supersedes_reconciliation_id = ? AND adjustment_amount = 2" +
+                            " AND adjustment_reason = 'V4 migration adjustment'",
+                    Integer.class, adjustedReconciliationId, adjustmentActivityId, balancedReconciliationId)).isEqualTo(1);
+            assertThat(v3Jdbc.queryForObject("SELECT COUNT(*) FROM ledger.activity WHERE id = ? AND activity_type = 'RECONCILIATION_ADJUSTMENT'" +
+                    " AND correction_reason = 'V4 migration adjustment'", Integer.class, adjustmentActivityId)).isEqualTo(1);
+            assertThat(v3Jdbc.queryForObject(
+                    "SELECT COUNT(*) FROM ledger.money_posting WHERE id = ? AND activity_id = ?" + " AND amount = 2 AND posting_role = 'ADJUSTMENT'",
+                    Integer.class, adjustmentPostingId, adjustmentActivityId)).isEqualTo(1);
+            assertThatThrownBy(() -> v3Jdbc.update("UPDATE ledger.reconciliation SET adjustment_activity_id = ? WHERE id = ?", UUID.randomUUID(),
+                    adjustedReconciliationId)).isInstanceOf(DataAccessException.class);
+            assertThatThrownBy(() -> v3Jdbc.update("UPDATE ledger.reconciliation SET resolution = 'BALANCED' WHERE id = ?", adjustedReconciliationId))
+                    .isInstanceOf(DataAccessException.class);
             assertThat(v3Jdbc.queryForObject("SELECT ledger_balance FROM ledger.account_balance_projection WHERE financial_account_id = ?", String.class,
                     accountId)).isEqualTo("10.000000000000000000");
             try (var connection = DriverManager.getConnection(targetUrl, postgres.getUsername(), postgres.getPassword());
@@ -187,6 +247,9 @@ class FinancialAccountMigrationTest {
         assertThatThrownBy(() -> insertActivity(ownerId, "RECONCILIATION_ADJUSTMENT", "CURRENT_ACTION", "ALLOWED", "invalid adjustment"))
                 .isInstanceOf(DataIntegrityViolationException.class);
         assertThatThrownBy(() -> insertActivity(ownerId, "RECONCILIATION_ADJUSTMENT", "HISTORICAL_FACT", "ALLOWED", null))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> insertActivity(ownerId, "CASH_FEE", "CURRENT_ACTION", "NOT_APPLICABLE")).isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> insertActivity(ownerId, "CASH_INTEREST_CREDIT", "HISTORICAL_FACT", "CONFIRMED_BREACH"))
                 .isInstanceOf(DataIntegrityViolationException.class);
 
         assertThatThrownBy(() -> jdbcTemplate.update(
@@ -216,6 +279,22 @@ class FinancialAccountMigrationTest {
     }
 
     @Test
+    void databaseAcceptsValidFeeAndInterestFactsWithTheirSignedRoles() {
+        var ownerId = insertUser();
+        var accountId = insertAccount(ownerId);
+        var pocketId = insertPocket(ownerId, accountId);
+        var feeActivityId = insertActivity(ownerId, "CASH_FEE", "CURRENT_ACTION", "ALLOWED");
+        var interestActivityId = insertActivity(ownerId, "CASH_INTEREST_CREDIT", "HISTORICAL_FACT", "ALLOWED");
+
+        insertRawPosting(ownerId, feeActivityId, accountId, pocketId, "USD", "-2.50", "FEE");
+        insertRawPosting(ownerId, interestActivityId, accountId, pocketId, "USD", "3.25", "INTEREST_CREDIT");
+
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM ledger.money_posting WHERE owner_user_account_id = ? AND posting_role IN ('FEE', 'INTEREST_CREDIT')", Integer.class,
+                ownerId)).isEqualTo(2);
+    }
+
+    @Test
     void databasePreservesV3PostingRoleSignAndZeroShapesWhileAllowingSignedAdjustments() {
         var ownerId = insertUser();
         var accountId = insertAccount(ownerId);
@@ -234,7 +313,8 @@ class FinancialAccountMigrationTest {
         insertRawPosting(ownerId, activityId, accountId, pocketId, "USD", "-1", "ADJUSTMENT");
 
         for (var invalid : new String[][]{{"-1", "DEPOSIT"}, {"0", "DEPOSIT"}, {"1", "WITHDRAWAL"}, {"0", "WITHDRAWAL"}, {"1", "TRANSFER_SOURCE"},
-                {"0", "TRANSFER_SOURCE"}, {"-1", "TRANSFER_DESTINATION"}, {"0", "TRANSFER_DESTINATION"}, {"0", "ADJUSTMENT"}}) {
+                {"0", "TRANSFER_SOURCE"}, {"-1", "TRANSFER_DESTINATION"}, {"0", "TRANSFER_DESTINATION"}, {"0", "ADJUSTMENT"}, {"1", "FEE"}, {"0", "FEE"},
+                {"-1", "INTEREST_CREDIT"}, {"0", "INTEREST_CREDIT"}}) {
             assertThatThrownBy(() -> insertRawPosting(ownerId, activityId, accountId, pocketId, "USD", invalid[0], invalid[1]))
                     .isInstanceOf(DataIntegrityViolationException.class);
         }

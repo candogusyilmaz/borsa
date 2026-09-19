@@ -8,6 +8,7 @@ import dev.canverse.stocks.ledger.web.request.ReversalRequest;
 import dev.canverse.stocks.ledger.web.response.ActivityResponse;
 import dev.canverse.stocks.platform.web.CacheHeaders;
 import dev.canverse.stocks.platform.web.SliceResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.UUID;
@@ -34,6 +35,7 @@ public class CashActivityController {
     private final CashActivityQueryService queryService;
 
     @PostMapping("/api/v1/accounts/{accountId}/activities")
+    @ApiResponse(responseCode = "201", description = "Cash activity created")
     public ResponseEntity<ActivityResponse> record(@AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID accountId,
             @Valid @RequestBody CashActivityRequest request) {
         var response = commandService.recordCashActivity(identity.userAccountId(), accountId, request);
@@ -55,6 +57,7 @@ public class CashActivityController {
     }
 
     @PostMapping("/api/v1/activities/{activityId}/reversals")
+    @ApiResponse(responseCode = "201", description = "Activity reversal created")
     public ResponseEntity<ActivityResponse> reverse(@AuthenticationPrincipal AuthenticatedIdentity identity, @PathVariable UUID activityId,
             @Valid @RequestBody ReversalRequest request) {
         var response = commandService.reverse(identity.userAccountId(), activityId, request);

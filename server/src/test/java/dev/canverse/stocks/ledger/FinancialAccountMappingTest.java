@@ -121,6 +121,33 @@ class FinancialAccountMappingTest {
         assertThat(projection.balance().canonical()).isEqualTo("123.45");
         assertThat(projection.getVersion()).isZero();
 
+        var feeActivityId = UUID.randomUUID();
+        var interestActivityId = UUID.randomUUID();
+        jdbcTemplate.update("INSERT INTO ledger.activity" + " (id, owner_user_account_id, client_event_id, operation_scope, command_sequence," +
+                " activity_type, recording_mode, effective_at, recorded_at, source_kind, policy_decision)" + " VALUES (?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?)",
+                feeActivityId, ownerId, UUID.randomUUID(), "mapping.fee", "CASH_FEE", "CURRENT_ACTION", timestamp.plusSeconds(1), timestamp.plusSeconds(1),
+                "USER_ENTERED", "ALLOWED");
+        var feePostingId = UUID.randomUUID();
+        jdbcTemplate.update(
+                "INSERT INTO ledger.money_posting" + " (id, owner_user_account_id, activity_id, financial_account_id, cash_pocket_id," +
+                        " currency_code, amount, posting_role, created_at) VALUES (?, ?, ?, ?, ?, ?, ?::numeric, ?, ?)",
+                feePostingId, ownerId, feeActivityId, accountId, pocketId, "USD", "-2.50", "FEE", timestamp.plusSeconds(1));
+        jdbcTemplate.update("INSERT INTO ledger.activity" + " (id, owner_user_account_id, client_event_id, operation_scope, command_sequence," +
+                " activity_type, recording_mode, effective_at, recorded_at, source_kind, policy_decision)" + " VALUES (?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?)",
+                interestActivityId, ownerId, UUID.randomUUID(), "mapping.interest", "CASH_INTEREST_CREDIT", "HISTORICAL_FACT", timestamp.plusSeconds(2),
+                timestamp.plusSeconds(2), "USER_ENTERED", "ALLOWED");
+        var interestPostingId = UUID.randomUUID();
+        jdbcTemplate.update(
+                "INSERT INTO ledger.money_posting" + " (id, owner_user_account_id, activity_id, financial_account_id, cash_pocket_id," +
+                        " currency_code, amount, posting_role, created_at) VALUES (?, ?, ?, ?, ?, ?, ?::numeric, ?, ?)",
+                interestPostingId, ownerId, interestActivityId, accountId, pocketId, "USD", "3.75", "INTEREST_CREDIT", timestamp.plusSeconds(2));
+        entityManager.clear();
+
+        assertThat(activityRepository.findById(feeActivityId).orElseThrow().getActivityType()).isEqualTo(ActivityType.CASH_FEE);
+        assertThat(activityRepository.findById(interestActivityId).orElseThrow().getActivityType()).isEqualTo(ActivityType.CASH_INTEREST_CREDIT);
+        assertThat(postingRepository.findById(feePostingId).orElseThrow().getPostingRole()).isEqualTo(PostingRole.FEE);
+        assertThat(postingRepository.findById(interestPostingId).orElseThrow().getPostingRole()).isEqualTo(PostingRole.INTEREST_CREDIT);
+
         var reconciliationId = UUID.randomUUID();
         jdbcTemplate.update(
                 "INSERT INTO ledger.reconciliation" + " (id, owner_user_account_id, financial_account_id, cash_pocket_id, currency_code," +

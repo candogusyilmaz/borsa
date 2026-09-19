@@ -9,6 +9,7 @@ import {
   ClockCounterClockwiseIcon,
   ReceiptIcon,
   SlidersIcon,
+  TrendUpIcon,
   WarningCircleIcon
 } from '@phosphor-icons/react';
 import { useState } from 'react';
@@ -36,6 +37,10 @@ function getActivityIcon(type: ActivityType) {
       return <ArrowDownLeftIcon size={20} weight="bold" color="var(--mantine-color-teal-6)" />;
     case 'CASH_WITHDRAWAL':
       return <ArrowUpRightIcon size={20} weight="bold" color="var(--mantine-color-orange-6)" />;
+    case 'CASH_FEE':
+      return <ReceiptIcon size={20} weight="bold" color="var(--mantine-color-red-6)" />;
+    case 'CASH_INTEREST_CREDIT':
+      return <TrendUpIcon size={20} weight="bold" color="var(--mantine-color-cyan-6)" />;
     case 'OWNED_TRANSFER':
       return <ArrowsLeftRightIcon size={20} weight="bold" color="var(--mantine-color-blue-6)" />;
     case 'OPENING_BALANCE':
@@ -168,6 +173,8 @@ export function ActivityHistoryCard({ account }: ActivityHistoryCardProps) {
               { value: 'ALL', label: 'All Activities' },
               { value: 'CASH_DEPOSIT', label: 'Deposits' },
               { value: 'CASH_WITHDRAWAL', label: 'Withdrawals' },
+              { value: 'CASH_FEE', label: 'Fees' },
+              { value: 'CASH_INTEREST_CREDIT', label: 'Interest Credits' },
               { value: 'OWNED_TRANSFER', label: 'Transfers' },
               { value: 'OPENING_BALANCE', label: 'Opening Balances' },
               { value: 'REVERSAL', label: 'Reversals' },
@@ -231,6 +238,32 @@ export function ActivityHistoryCard({ account }: ActivityHistoryCardProps) {
                   })
                 }>
                 Withdraw Cash
+              </Button>
+              <Button
+                size="md"
+                color="red"
+                variant="light"
+                className={classes.actionBtn}
+                onClick={() =>
+                  CashActivityOverlay.open({
+                    accountId: account.id,
+                    defaultType: 'CASH_FEE'
+                  })
+                }>
+                Record Fee
+              </Button>
+              <Button
+                size="md"
+                color="cyan"
+                variant="light"
+                className={classes.actionBtn}
+                onClick={() =>
+                  CashActivityOverlay.open({
+                    accountId: account.id,
+                    defaultType: 'CASH_INTEREST_CREDIT'
+                  })
+                }>
+                Add Interest
               </Button>
               <Button
                 size="md"

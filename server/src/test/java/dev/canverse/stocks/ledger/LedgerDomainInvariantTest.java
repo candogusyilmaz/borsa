@@ -4,9 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import dev.canverse.stocks.ledger.domain.Activity;
+import dev.canverse.stocks.ledger.domain.ActivityType;
 import dev.canverse.stocks.ledger.domain.FinancialAmount;
 import dev.canverse.stocks.ledger.domain.MoneyPosting;
 import dev.canverse.stocks.ledger.domain.PolicyDecision;
+import dev.canverse.stocks.ledger.domain.PostingRole;
 import dev.canverse.stocks.ledger.domain.Reconciliation;
 import dev.canverse.stocks.ledger.domain.ReconciliationResolution;
 import dev.canverse.stocks.ledger.domain.RecordingMode;
@@ -28,6 +30,29 @@ class LedgerDomainInvariantTest {
                 .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> MoneyPosting.transferDestination(id(), id(), id(), id(), id(), "USD", FinancialAmount.zero(), TIME))
                 .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> MoneyPosting.fee(id(), id(), id(), id(), id(), "USD", FinancialAmount.zero(), TIME))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> MoneyPosting.fee(id(), id(), id(), id(), id(), "USD", FinancialAmount.parse("-1"), TIME))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> MoneyPosting.interestCredit(id(), id(), id(), id(), id(), "USD", FinancialAmount.zero(), TIME))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> MoneyPosting.interestCredit(id(), id(), id(), id(), id(), "USD", FinancialAmount.parse("-1"), TIME))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void feeAndInterestFactoriesPreserveExactEnteredAmountAndSignedRole() {
+        var feeActivity = Activity.cashFee(id(), id(), id(), "test", 0, RecordingMode.CURRENT_ACTION, TIME, TIME, PolicyDecision.ALLOWED);
+        var interestActivity = Activity.cashInterestCredit(id(), id(), id(), "test", 0, RecordingMode.HISTORICAL_FACT, TIME, TIME, PolicyDecision.ALLOWED);
+        var fee = MoneyPosting.fee(id(), id(), feeActivity.getId(), id(), id(), "USD", FinancialAmount.parse("12.5000"), TIME);
+        var interest = MoneyPosting.interestCredit(id(), id(), interestActivity.getId(), id(), id(), "USD", FinancialAmount.parse("2.5000"), TIME);
+
+        assertThat(feeActivity.getActivityType()).isEqualTo(ActivityType.CASH_FEE);
+        assertThat(interestActivity.getActivityType()).isEqualTo(ActivityType.CASH_INTEREST_CREDIT);
+        assertThat(fee.getPostingRole()).isEqualTo(PostingRole.FEE);
+        assertThat(fee.getAmount()).isEqualByComparingTo("-12.5");
+        assertThat(interest.getPostingRole()).isEqualTo(PostingRole.INTEREST_CREDIT);
+        assertThat(interest.getAmount()).isEqualByComparingTo("2.5");
     }
 
     @Test

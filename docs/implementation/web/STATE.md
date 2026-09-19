@@ -1,6 +1,6 @@
 # Frontend implementation state
 
-Last updated: 2026-09-11
+Last updated: 2026-09-19
 
 ## Technology baseline
 
@@ -22,20 +22,15 @@ Last updated: 2026-09-11
 
 ## Active implementation scope
 
-- Unit UI-001 (Frontend Foundation Rebuild) is currently active.
-- Legacy frontend has been purged and replaced with a clean foundation:
-  - Centralized typed API client (`src/api/client.ts`) with RFC 7807 `ProblemDetail` error normalization and Bearer auth middleware.
-  - `src/api/schema.d.ts` is generated from the backend `/v3/api-docs` contract, and its check script detects generated-schema drift.
-  - Core design tokens, semantic CSS variables, and Mantine v9 alpha theme (`src/app/theme.ts`, `src/index.css`).
-  - Strict scope discipline: all UI work strictly contained within `web/`.
-  - State management rule: TanStack Query exclusively owns remote state; no Zustand, no global stores.
+- The UI-001 foundation remains in place, and PR-029 extends the current account-ledger workflow rather than creating a parallel financial flow.
+- The typed API client and generated `src/api/schema.d.ts` now expose the four supported manual cash activity request types, including `CASH_FEE` and `CASH_INTEREST_CREDIT`.
+- Eligible account actions can open the existing record overlay for fees and interest credits; the form preserves canonical decimal strings, current/historical modes, policy confirmation, and server errors. Current-action effective time is captured at first submission with its request ID and reused for an unchanged uncertain retry; both rotate after a material payload change.
+- Account quick actions, empty states, recent/paginated history, detail, signed amount/type formatting, and generic reasoned reversal expose the two new facts. Reversal request IDs are retained by activity and trimmed correction reason. Successful entry/reversal invalidates account, balance, activity list/detail, and reconciliation queries through TanStack Query.
+- UI changes remain contained within `web/`; TanStack Query remains the sole remote-state mechanism and no new frontend test file was added.
 
 ## Verification state
 
-- Foundation baseline verification against `web/`:
-  - `npm run typecheck` (`tsc -b`) verified with 0 errors.
-  - `npx biome check ./src` verified with 0 errors.
-  - `npm run test` verified 64 tests with 0 failures.
-  - `npm run build` (`tsc -b && vite build`) passes cleanly.
-  - The installed OpenAPI CLI recognizes the configured `--output` and `--check` flags.
-  - Pre-commit hooks verify TypeScript and Biome via `npm run check:fix`.
+- `npm.cmd run generate:openapi` and `npm.cmd run check:openapi` pass against the PR-029 backend contract; the generated schema is not hand-edited.
+- `npm.cmd run typecheck` passes with 0 errors.
+- The changed TypeScript/TSX files pass the targeted `npx.cmd biome check` gate. The full `npx.cmd biome check ./src --reporter=summary` gate reports 12 pre-existing formatter violations in untouched account/marketing/dashboard/shared/theme files; the exact list is recorded in the PR-029 completion record.
+- `npm.cmd run test` passes 62 tests with 0 failures, and `npm.cmd run build` (`tsc -b && vite build`) passes.

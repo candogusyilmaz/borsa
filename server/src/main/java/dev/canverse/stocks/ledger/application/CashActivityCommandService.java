@@ -52,7 +52,7 @@ public class CashActivityCommandService {
         Objects.requireNonNull(request, "request");
 
         var amount = LedgerAmountParser.positive(request.amount(), "amount");
-        if (request.activityType() != ActivityType.CASH_DEPOSIT && request.activityType() != ActivityType.CASH_WITHDRAWAL) {
+        if (!isSupportedCashActivity(request.activityType())) {
             throw new AppException(LedgerErrorCode.ACCOUNT_ACTION_NOT_SUPPORTED);
         }
         var observedAt = clock.instant();
@@ -73,13 +73,14 @@ public class CashActivityCommandService {
         if (request.expectedBalanceVersion() != null && projection.getVersion() != request.expectedBalanceVersion()) {
             throw new AppException(LedgerErrorCode.BALANCE_VERSION_CONFLICT);
         }
-        var delta = request.activityType() == ActivityType.CASH_DEPOSIT ? amount : amount.negate();
+        var delta = request.activityType() == ActivityType.CASH_DEPOSIT || request.activityType() == ActivityType.CASH_INTEREST_CREDIT ? amount
+                : amount.negate();
         var evaluation = LedgerPolicyEvaluator.evaluate(account, projection.balance(), delta, request.recordingMode(), request.confirmPolicyBreach());
         if (!evaluation.allowed()) {
             throw new AppException(evaluation.errorCode());
         }
 
-        var activity = writeCashActivity(ownerUserAccountId, accountId, request, account, projection, delta, evaluation, observedAt);
+        var activity = writeCashActivity(ownerUserAccountId, accountId, request, account, projection, amount, delta, evaluation, observedAt);
         return saveResult(ownerUserAccountId, activity, hash, request.clientRequestId(), observedAt, LedgerCommandScopes.CASH_ACTIVITY);
     }
 
@@ -124,21 +125,39 @@ public class CashActivityCommandService {
     }
 
     private Activity writeCashActivity(UUID ownerUserAccountId, UUID accountId, CashActivityRequest request, FinancialAccount account,
-            AccountBalanceProjection projection, FinancialAmount delta, LedgerPolicyEvaluator.PolicyEvaluation evaluation, Instant observedAt) {
-        var activity = request.activityType() == ActivityType.CASH_DEPOSIT
-                ? Activity.cashDeposit(idGenerator.next(), ownerUserAccountId, request.clientRequestId(), LedgerCommandScopes.CASH_ACTIVITY, 0,
-                        request.recordingMode(), request.effectiveAt(), observedAt, evaluation.decision())
-                : Activity.cashWithdrawal(idGenerator.next(), ownerUserAccountId, request.clientRequestId(), LedgerCommandScopes.CASH_ACTIVITY, 0,
-                        request.recordingMode(), request.effectiveAt(), observedAt, evaluation.decision());
+            AccountBalanceProjection projection, FinancialAmount amount, FinancialAmount delta, LedgerPolicyEvaluator.PolicyEvaluation evaluation,
+            Instant observedAt) {
+        var activity = switch (request.activityType()) {
+            case CASH_DEPOSIT -> Activity.cashDeposit(idGenerator.next(), ownerUserAccountId, request.clientRequestId(), LedgerCommandScopes.CASH_ACTIVITY, 0,
+                    request.recordingMode(), request.effectiveAt(), observedAt, evaluation.decision());
+            case CASH_WITHDRAWAL -> Activity.cashWithdrawal(idGenerator.next(), ownerUserAccountId, request.clientRequestId(),
+                    LedgerCommandScopes.CASH_ACTIVITY, 0, request.recordingMode(), request.effectiveAt(), observedAt, evaluation.decision());
+            case CASH_FEE -> Activity.cashFee(idGenerator.next(), ownerUserAccountId, request.clientRequestId(), LedgerCommandScopes.CASH_ACTIVITY, 0,
+                    request.recordingMode(), request.effectiveAt(), observedAt, evaluation.decision());
+            case CASH_INTEREST_CREDIT -> Activity.cashInterestCredit(idGenerator.next(), ownerUserAccountId, request.clientRequestId(),
+                    LedgerCommandScopes.CASH_ACTIVITY, 0, request.recordingMode(), request.effectiveAt(), observedAt, evaluation.decision());
+            default -> throw new AppException(LedgerErrorCode.ACCOUNT_ACTION_NOT_SUPPORTED);
+        };
         activityRepository.save(activity);
-        var posting = request.activityType() == ActivityType.CASH_DEPOSIT
-                ? MoneyPosting.deposit(idGenerator.next(), ownerUserAccountId, activity.getId(), accountId, projection.getCashPocket().getId(),
-                        account.getCurrencyCode(), delta, observedAt)
-                : MoneyPosting.withdrawal(idGenerator.next(), ownerUserAccountId, activity.getId(), accountId, projection.getCashPocket().getId(),
-                        account.getCurrencyCode(), delta, observedAt);
+        var posting = switch (request.activityType()) {
+            case CASH_DEPOSIT -> MoneyPosting.deposit(idGenerator.next(), ownerUserAccountId, activity.getId(), accountId, projection.getCashPocket().getId(),
+                    account.getCurrencyCode(), delta, observedAt);
+            case CASH_WITHDRAWAL -> MoneyPosting.withdrawal(idGenerator.next(), ownerUserAccountId, activity.getId(), accountId,
+                    projection.getCashPocket().getId(), account.getCurrencyCode(), delta, observedAt);
+            case CASH_FEE -> MoneyPosting.fee(idGenerator.next(), ownerUserAccountId, activity.getId(), accountId, projection.getCashPocket().getId(),
+                    account.getCurrencyCode(), amount, observedAt);
+            case CASH_INTEREST_CREDIT -> MoneyPosting.interestCredit(idGenerator.next(), ownerUserAccountId, activity.getId(), accountId,
+                    projection.getCashPocket().getId(), account.getCurrencyCode(), amount, observedAt);
+            default -> throw new AppException(LedgerErrorCode.ACCOUNT_ACTION_NOT_SUPPORTED);
+        };
         postingRepository.save(posting);
         projection.apply(delta, observedAt, activity.getId(), observedAt);
         return activity;
+    }
+
+    private static boolean isSupportedCashActivity(ActivityType activityType) {
+        return activityType == ActivityType.CASH_DEPOSIT || activityType == ActivityType.CASH_WITHDRAWAL || activityType == ActivityType.CASH_FEE ||
+                activityType == ActivityType.CASH_INTEREST_CREDIT;
     }
 
     private Activity writeReversal(UUID ownerUserAccountId, UUID activityId, Activity original, List<MoneyPosting> originalPostings,

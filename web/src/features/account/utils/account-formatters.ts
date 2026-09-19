@@ -292,6 +292,10 @@ export function getActivityTypeLabel(type: ActivityType): string {
       return 'Cash Deposit';
     case 'CASH_WITHDRAWAL':
       return 'Cash Withdrawal';
+    case 'CASH_FEE':
+      return 'Cash Fee';
+    case 'CASH_INTEREST_CREDIT':
+      return 'Interest Credit';
     case 'OWNED_TRANSFER':
       return 'Account Transfer';
     case 'OPENING_BALANCE':
@@ -311,6 +315,10 @@ export function getActivityTypeDescription(type: ActivityType): string {
       return 'Funds deposited into this financial account.';
     case 'CASH_WITHDRAWAL':
       return 'Funds withdrawn from this financial account.';
+    case 'CASH_FEE':
+      return 'A fee charged against this financial account.';
+    case 'CASH_INTEREST_CREDIT':
+      return 'Interest credited to this financial account.';
     case 'OWNED_TRANSFER':
       return 'Money transferred between your own accounts.';
     case 'OPENING_BALANCE':
@@ -330,6 +338,10 @@ export function getActivityTypeBadgeColor(type: ActivityType): string {
       return 'teal';
     case 'CASH_WITHDRAWAL':
       return 'orange';
+    case 'CASH_FEE':
+      return 'red';
+    case 'CASH_INTEREST_CREDIT':
+      return 'cyan';
     case 'OWNED_TRANSFER':
       return 'blue';
     case 'OPENING_BALANCE':
@@ -349,6 +361,10 @@ export function getPostingRoleLabel(role: PostingRole): string {
       return 'Deposit';
     case 'WITHDRAWAL':
       return 'Withdrawal';
+    case 'FEE':
+      return 'Fee';
+    case 'INTEREST_CREDIT':
+      return 'Interest Credit';
     case 'TRANSFER_SOURCE':
       return 'Outgoing Transfer Leg';
     case 'TRANSFER_DESTINATION':

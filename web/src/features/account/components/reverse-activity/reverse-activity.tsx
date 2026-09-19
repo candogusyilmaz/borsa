@@ -3,6 +3,7 @@ import { notifications } from '@mantine/notifications';
 import { ArrowCounterClockwiseIcon, CheckCircleIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
+import { useRef } from 'react';
 import { $api } from '@/api/client';
 import { showApiError } from '@/api/errors';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
@@ -48,8 +49,20 @@ export function ReverseActivity({ activityId }: ReverseActivityProps) {
 function ReverseActivityForm({ activity }: ReverseActivityFormProps) {
   const current = useCurrentOverlay();
   const queryClient = useQueryClient();
+  const clientRequestRef = useRef<{ activityId: string; correctionReason: string; id: string } | null>(null);
 
   const reversalMutation = $api.useMutation('post', '/api/v1/activities/{activityId}/reversals', {
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/activities'] }),
+        queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/activities/{activityId}'] }),
+        queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/accounts'] }),
+        queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/accounts/{accountId}'] }),
+        queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/accounts/{accountId}/balance'] }),
+        queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/accounts/{accountId}/reconciliations'] }),
+        queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/reconciliations/{reconciliationId}'] })
+      ]);
+    },
     onError: (err) => {
       showApiError(err, {
         title: 'Reversal Failed',
@@ -65,23 +78,24 @@ function ReverseActivityForm({ activity }: ReverseActivityFormProps) {
     onSubmit: async ({ value }) => {
       if (!activity) return;
 
+      const correctionReason = value.correctionReason.trim();
+      const previousRequest = clientRequestRef.current;
+      if (!previousRequest || previousRequest.activityId !== activity.id || previousRequest.correctionReason !== correctionReason) {
+        clientRequestRef.current = { activityId: activity.id, correctionReason, id: crypto.randomUUID() };
+      }
+      const request = clientRequestRef.current;
+      if (!request) return;
+
       reversalMutation.mutate(
         {
           params: { path: { activityId: activity.id } },
           body: {
-            clientRequestId: crypto.randomUUID(),
-            correctionReason: value.correctionReason.trim()
+            clientRequestId: request.id,
+            correctionReason
           }
         },
         {
           onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/activities'] });
-            queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/activities/{activityId}'] });
-            queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/accounts'] });
-            queryClient.invalidateQueries({
-              queryKey: ['get', '/api/v1/accounts/{accountId}/balance']
-            });
-
             notifications.show({
               title: 'Transaction Reversed',
               message: 'An offsetting reversal entry has been recorded in the ledger.',

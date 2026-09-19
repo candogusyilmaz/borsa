@@ -173,6 +173,51 @@ class CashActivityHttpTest {
     }
 
     @Test
+    void feeAndInterestRoutesExposeSignedFactsAndUseGenericReversal() throws Exception {
+        var owner = authenticated("manual-fee-interest-http-owner@example.com");
+        var accountId = createAccount(owner, uuid("10500000-0000-4000-8000-000000000001"), "Manual fee cash", "100");
+        var feeRequestId = uuid("10500000-0000-4000-8000-000000000002");
+        var interestRequestId = uuid("10500000-0000-4000-8000-000000000003");
+        var effectiveAt = "2026-08-17T11:30:00Z";
+
+        var fee = mockMvc
+                .perform(post("/api/v1/accounts/{accountId}/activities", accountId).header(HttpHeaders.AUTHORIZATION, owner.bearer())
+                        .contentType(MediaType.APPLICATION_JSON).content(activityJson(feeRequestId, "CASH_FEE", "5.00", effectiveAt, false)))
+                .andExpect(status().isCreated()).andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-store"))
+                .andExpect(jsonPath("$.activityType", equalTo("CASH_FEE"))).andExpect(jsonPath("$.postings[0].amount", equalTo("-5")))
+                .andExpect(jsonPath("$.postings[0].role", equalTo("FEE"))).andReturn();
+        var feeId = idFrom(fee);
+
+        var interest = mockMvc
+                .perform(post("/api/v1/accounts/{accountId}/activities", accountId).header(HttpHeaders.AUTHORIZATION, owner.bearer())
+                        .contentType(MediaType.APPLICATION_JSON).content(activityJson(interestRequestId, "CASH_INTEREST_CREDIT", "2.50", effectiveAt, false)))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.activityType", equalTo("CASH_INTEREST_CREDIT")))
+                .andExpect(jsonPath("$.postings[0].amount", equalTo("2.5"))).andExpect(jsonPath("$.postings[0].role", equalTo("INTEREST_CREDIT"))).andReturn();
+        var interestId = idFrom(interest);
+
+        mockMvc.perform(get("/api/v1/accounts/{accountId}/balance", accountId).header(HttpHeaders.AUTHORIZATION, owner.bearer())).andExpect(status().isOk())
+                .andExpect(jsonPath("$.ledgerBalance", equalTo("97.5")));
+        mockMvc.perform(get("/api/v1/activities/{activityId}", interestId).header(HttpHeaders.AUTHORIZATION, owner.bearer())).andExpect(status().isOk())
+                .andExpect(jsonPath("$.activityType", equalTo("CASH_INTEREST_CREDIT"))).andExpect(jsonPath("$.postings[0].role", equalTo("INTEREST_CREDIT")));
+
+        mockMvc.perform(get("/api/v1/activities").param("accountId", accountId.toString()).header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.items.length()", equalTo(3)));
+
+        mockMvc.perform(post("/api/v1/activities/{activityId}/reversals", feeId).header(HttpHeaders.AUTHORIZATION, owner.bearer())
+                .contentType(MediaType.APPLICATION_JSON).content(reversalJson(uuid("10500000-0000-4000-8000-000000000004"), "Incorrect fee")))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.activityType", equalTo("REVERSAL")))
+                .andExpect(jsonPath("$.reversesActivityId", equalTo(feeId.toString()))).andExpect(jsonPath("$.postings[0].amount", equalTo("5")));
+
+        mockMvc.perform(get("/api/v1/accounts/{accountId}/balance", accountId).header(HttpHeaders.AUTHORIZATION, owner.bearer())).andExpect(status().isOk())
+                .andExpect(jsonPath("$.ledgerBalance", equalTo("102.5")));
+
+        mockMvc.perform(post("/api/v1/accounts/{accountId}/activities", accountId).header(HttpHeaders.AUTHORIZATION, owner.bearer())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(activityJson(uuid("10500000-0000-4000-8000-000000000005"), "OPENING_BALANCE", "1", effectiveAt, false)))
+                .andExpect(status().isUnprocessableContent()).andExpect(jsonPath("$.code", equalTo("ACCOUNT_ACTION_NOT_SUPPORTED")));
+    }
+
+    @Test
     void activitySlicesHonorSortPolicyPageSizeBoundsAndSpringNormalization() throws Exception {
         var owner = authenticated("activity-http-pageable-owner@example.com");
         var accountId = createAccount(owner, uuid("11000000-0000-4000-8000-000000000001"), "Pageable cash", "100");

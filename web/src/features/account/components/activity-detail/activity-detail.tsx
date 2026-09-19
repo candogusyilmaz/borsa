@@ -42,13 +42,15 @@ export function ActivityDetail({ activityId, isAccountArchived = false, isAlread
   }
 
   // Determine if this activity can be reversed:
-  // Must be deposit, withdrawal, or transfer; not already reversed; account not archived
+  // Must be a reversible manual cash activity; not already reversed; account not archived
   const isEligibleForReversal =
     activity &&
     !isAccountArchived &&
     !isAlreadyReversed &&
     (activity.activityType === 'CASH_DEPOSIT' ||
       activity.activityType === 'CASH_WITHDRAWAL' ||
+      activity.activityType === 'CASH_FEE' ||
+      activity.activityType === 'CASH_INTEREST_CREDIT' ||
       activity.activityType === 'OWNED_TRANSFER') &&
     !activity.reversesActivityId;
 

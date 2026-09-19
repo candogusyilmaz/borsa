@@ -255,7 +255,7 @@ class LocalRefreshHttpTest {
     }
 
     @Test
-    void malformedFormAndPreflightRequestsStopBeforeRotation() throws Exception {
+    void malformedFormAndDisallowedPreflightRequestsStopBeforeRotation() throws Exception {
         var login = login("c0000000-0000-4000-8000-00000000000c", "boundary@example.com", "RESPONSE_BODY");
         var before = persistedState();
         idGenerator.setNextIds(uuid("ffffffff-ffff-4fff-8fff-fffffffffff6"), uuid("ffffffff-ffff-4fff-8fff-fffffffffff7"),
@@ -270,7 +270,7 @@ class LocalRefreshHttpTest {
         mockMvc.perform(post("/api/v1/auth/refresh").contentType(MediaType.APPLICATION_JSON).content("{not-json")).andExpect(status().isBadRequest());
         var preflight = mockMvc
                 .perform(options("/api/v1/auth/refresh").header("Origin", "https://cross-origin.example").header("Access-Control-Request-Method", "POST"))
-                .andExpect(status().isUnauthorized()).andReturn();
+                .andExpect(status().isForbidden()).andReturn();
         assertThat(preflight.getResponse().getHeader("Access-Control-Allow-Origin")).isNull();
         assertThat(persistedState()).isEqualTo(before);
     }
