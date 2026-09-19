@@ -50,9 +50,16 @@ Last updated: 2026-09-19
 - V4 adds owner-scoped native-currency reconciliation evidence protected as append-only by PostgreSQL and Hibernate, exact opening continuity, explicit `RECONCILIATION_ADJUSTMENT` activities linked by exact owner/id/type identity, signed `ADJUSTMENT` postings, atomic correction by reversal plus superseding replacement, account-bound supersession, owner-only cleanup cascades, derived lifecycle staleness, owner-scoped reads, and deterministic balance last-reconciliation metadata. Balance reads use repeatable-read snapshots across the account, projection, and reconciliation queries.
 - Preview and commit use exact inclusive as-of arithmetic, mandatory opening continuity, projection version checks, advisory/account/projection locking, idempotent snapshots, and historical policy evaluation for archived full-ledger accounts. Holdings-only cash remains unsupported.
 
+### Investing — manual funded trade and position slice
+
+- V6 adds immutable `ledger.security_posting` facts linked to ledger activities, selected brokerage cash, owner-visible equity/ETF instruments, native currency, economic order, and exact reversal links. Trade cash stays in the selected account's existing cash pocket.
+- Authenticated preview/commit supports same-currency manual buys and sells for active, full-ledger brokerage accounts, using existing cash policy, idempotency, cash projection/version, and deterministic command locking. Historical facts may record the allowed cash-policy breach state; all modes reject short inventory or duplicate economic order.
+- `WEIGHTED_AVERAGE_ECONOMIC_V1` synchronously rebuilds one versioned projection per owner/account/instrument from immutable postings. Buy commission increases basis; sell commission reduces net proceeds and realized economic P&L; allocations retain the documented scale-18 `HALF_EVEN` remainder, and full close resets remaining basis to zero.
+- Backdated trades and generic reasoned activity reversals replay the complete affected position in the same transaction. Owner-scoped trade/activity reads expose cash and security facts; pageable open-position reads omit closed positions while exact detail retains them.
+
 ## Current database
 
-Migration: `V5` (`V1__foundation.sql`, `V2__reference_catalog.sql`, `V3__financial_account_cash_ledger.sql`, `V4__cash_statement_reconciliation.sql`, `V5__manual_cash_fees_and_interest.sql`).
+Migration: `V6` (`V1__foundation.sql`, `V2__reference_catalog.sql`, `V3__financial_account_cash_ledger.sql`, `V4__cash_statement_reconciliation.sql`, `V5__manual_cash_fees_and_interest.sql`, `V6__manual_funded_brokerage_trades.sql`).
 
 Schemas: `identity`, `reference`, `ledger`, `data`, `money`, `analysis`, `asset`, `platform`.
 
@@ -61,12 +68,12 @@ Tables:
 - `identity`: `user_account`, `auth_identity`, `device_session`
 - `platform`: `security_event`, `job`
 - `reference`: `country`, `currency`, `market`, `market_currency`, `instrument`, `instrument_alias`, `market_calendar`
-- `ledger`: `financial_account`, `account_cash_pocket`, `activity`, `money_posting`, `idempotency_record`, `account_balance_projection`, `reconciliation`
+- `ledger`: `financial_account`, `account_cash_pocket`, `activity`, `money_posting`, `idempotency_record`, `account_balance_projection`, `reconciliation`, `security_posting`, `position_projection`
 - Currently empty schemas: `data`, `money`, `analysis`, `asset`
 
 ## Current cross-cutting repository state
 
-- Current capability roots are `identity`, `reference`, `ledger`, and `platform`; HTTP records use capability-owned `web/request` and `web/response` packages, and use-case models use `application/model` where needed.
+- Current capability roots are `identity`, `reference`, `ledger`, `investing`, and `platform`; HTTP records use capability-owned `web/request` and `web/response` packages, and use-case models use `application/model` where needed.
 - The application uses controller-bound request validation, typed authenticated principals, one stateless bearer chain, centralized persistence/error translation, and UUID compatibility correlation alongside native tracing.
 - Spring Boot owns Spring Data web configuration, including the 100-row maximum page size and stable DTO page serialization. Generated OpenAPI pagination schemas mark all guaranteed page and project-owned `SliceResponse<T>` fields as required.
 - PR-023 adopted the governing simplicity direction in the current standards: direct/local code, no pagination for naturally small bounded collections, Spring `Pageable` for ordinary pagination, and custom cursor/keyset infrastructure only for a demonstrated requirement. Ledger accounts are now unpaged, ledger activities/reconciliations use compact project-owned `SliceResponse<T>` results, and PR-025 now applies the same direct approach to complete device-session lists and instrument search. The ordinary-list cursor infrastructure has been removed after source search proved it dead.
@@ -77,12 +84,12 @@ Tables:
 
 - PR-025 through PR-028 are accepted and committed; the governing pagination, validation/error, redundant-model/mapping, fingerprint-readability, and identity authentication-boundary cleanup is complete.
 - PR-029 is accepted and committed in `c01d708`; the implemented R3 manual cash activity, reconciliation, and native-balance boundary is complete.
-- `CURRENT.md` now activates PR-030, a backend-only R4 slice for same-currency manually funded brokerage buys/sells, deterministic weighted-average position projection, reversal, and owner-scoped trade/position reads. This is specification state only; no PR-030 production code or V6 migration is implemented yet. Portfolio grouping, imports, holdings-only opening positions, tax, income/corporate actions, FX/multi-currency, pending settlement, valuation, and frontend work remain deferred.
+- PR-030 completes the backend-only R4 slice for same-currency manually funded brokerage buys/sells, deterministic weighted-average position projection, reversal, and owner-scoped trade/position reads. It is user-accepted, and `CURRENT.md` intentionally remains on PR-030 until a separate next-PR planning action. Portfolio grouping, imports, holdings-only opening positions, tax, income/corporate actions, FX/multi-currency, pending settlement, valuation, and frontend work remain deferred.
 
 ## Deferred capabilities
 
 - Statement-line/file import, matching and duplicate detection, pending or settlement states, and provider synchronization.
-- Investments, trades, positions, cost basis, multi-currency, FX, rates, prices, observations, and valuation/performance features.
+- Portfolio grouping and broader investment analytics, imported/provider trades, holdings-only opening positions, lots/tax, multi-currency, FX, rates, prices, observations, and valuation/performance features. The manual funded same-currency trade and weighted-average position slice is implemented in PR-030.
 - Spending, income classification, bills, card and debt workflows, planning/scenarios, households, shared expenses, claims, and settlements.
 - Global reference administration, persistent signing keys, OIDC/recovery/MFA, roles/permissions, cross-site deployment hardening, and account export/deletion.
 - Background execution and commodity async infrastructure until a concrete workload establishes its requirements.
@@ -90,13 +97,7 @@ Tables:
 
 ## Verification state
 
-PR-029 is accepted and committed in `c01d708`. Its focused fee/interest/migration/reconciliation/HTTP gate passed 93 tests with 0 failures, errors, or skips against PostgreSQL 17 Testcontainers; fresh V5 and V4-to-V5 migration paths, including seeded V4 balanced/adjusted reconciliations and their adjustment activity/posting/linkage, passed with Hibernate validation. `spotless:check`, full Maven `test`, and full Maven `verify` passed; both full lifecycles ran 382 tests with 0 failures, errors, or skips. OpenAPI generation and drift checking passed against the PR-029 backend. Frontend verification associated with that accepted cross-stack unit is retained in its Completion Record; PR-030 and subsequent work are backend-only unless the user explicitly changes scope.
-
-PR-028 is accepted and committed in `ac4d7e7`. Registration/login/refresh use one HTTP boundary and one non-transactional attempt-policy boundary; logout is colocated with device-session HTTP operations; the transactional registration/login/rotation workflows and separate device-session query/revocation boundaries are preserved. Duplicate login/refresh result and response records and superseded operation-specific controllers/attempt wrappers are removed. The focused identity/security gate passed 108 tests, and the full suite plus Maven `verify` passed 371 tests each with 0 failures, 0 errors, and 0 skips against PostgreSQL 17 Testcontainers. Spotless passed across 255 Java files (192 production and 63 test), the executable archive was repackaged, and no required tests were skipped or replaced. Static audits pass: exactly three identity REST controllers and ten identity `@Service` classes remain, no deleted symbols remain, `AuthenticationAttemptService` has no transaction annotation, and `git diff --check` is clean.
-
-PR-026 and PR-027 are accepted and committed; Cleanup C and Cleanup D are complete. PR-027 was accepted in commit `4e3108d`: the redundant preview/reference row/model/factory surfaces and unused read projections are removed, genuine read models remain, five workflow-specific fingerprint methods preserve the existing canonical identity, and the historical policy decision is passed through unchanged.
-
-WORKSPACE-001 repository restructuring verified: full Maven lifecycle (`.\mvnw.cmd verify` without test skipping) from `server/` passed with 371 tests (0 failures, 0 errors, 0 skips), Spotless passed with 261 files clean, and Spring Boot executable archive repackaged successfully. Root Docker build (`docker build -t stocks-workspace-check .`) verified cleanly.
+PR-030 is complete and user-accepted; `CURRENT.md` intentionally remains on PR-030 until a separate next-PR planning action. The final focused PostgreSQL/Testcontainers gate passed 169 tests; the isolated V6 reference schema contract test passed 8 tests. Full Maven `test` and `verify` each passed 408 tests with 0 failures, errors, or skips; Spotless passed across 290 Java files, OpenAPI HTTP/configuration tests passed, and the executable archive was repackaged. Surefire logged a 30-second fork shutdown warning after the suites completed, but both Maven commands returned `BUILD SUCCESS` with no skipped tests. Detailed PR-030 evidence is in its Completion Record; prior accepted verification detail remains in the progress report and earlier Completion Records.
 
 Last updated: 2026-09-19
 
@@ -104,7 +105,7 @@ Last updated: 2026-09-19
 
 - Operating contract and context router: [server/AGENTS.md](../../server/AGENTS.md) (repository router: [AGENTS.md](../../AGENTS.md))
 - Active pointer: [CURRENT.md](CURRENT.md)
-- Active scope: [PR-030 - Manual funded brokerage trades and deterministic position projection](PR-030-manual-funded-brokerage-trades.md), backend-only and not yet implemented.
-- Last completed scope: [PR-029 - Manual cash fees and interest credits](PR-029-manual-cash-fees-and-interest.md), accepted in `c01d708`.
+- Current completed scope: [PR-030 - Manual funded brokerage trades and deterministic position projection](PR-030-manual-funded-brokerage-trades.md), complete and user-accepted; retained by the active pointer until a separate next-PR planning action.
+- Last completed scope: [PR-030 - Manual funded brokerage trades and deterministic position projection](PR-030-manual-funded-brokerage-trades.md), completed and user-accepted in this implementation commit.
 
 Load only the standards, contracts, design sections, and repository code relevant to the current role and affected behavior.

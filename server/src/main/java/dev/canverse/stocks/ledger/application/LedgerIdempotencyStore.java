@@ -15,13 +15,13 @@ import tools.jackson.databind.ObjectMapper;
 /** Stores and replays the serialized result of a ledger command. */
 @Component
 @RequiredArgsConstructor
-final class LedgerIdempotencyStore {
+public final class LedgerIdempotencyStore {
 
     private final IdempotencyRecordRepository repository;
     private final IdGenerator idGenerator;
     private final ObjectMapper objectMapper;
 
-    <T> T replay(UUID clientRequestId, UUID ownerId, String scope, String hash, Class<T> responseType) {
+    public <T> T replay(UUID clientRequestId, UUID ownerId, String scope, String hash, Class<T> responseType) {
         var record = repository.findByKey(ownerId, scope, clientRequestId).orElse(null);
         if (record == null) {
             return null;
@@ -36,7 +36,7 @@ final class LedgerIdempotencyStore {
         }
     }
 
-    void save(UUID ownerId, String scope, UUID clientRequestId, String hash, String resourceKind, UUID resourceId, Object response, Instant createdAt) {
+    public void save(UUID ownerId, String scope, UUID clientRequestId, String hash, String resourceKind, UUID resourceId, Object response, Instant createdAt) {
         String snapshot;
         try {
             snapshot = objectMapper.writeValueAsString(response);

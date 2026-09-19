@@ -125,7 +125,7 @@ class ReferenceCatalogMigrationTest {
                 "ck_reference_instrument_owner_source", "ck_reference_instrument_source_kind", "ck_reference_instrument_symbol",
                 "ck_reference_instrument_symbol_normalized", "ck_reference_instrument_type", "ck_reference_instrument_valuation_method",
                 "ck_reference_instrument_version_non_negative", "fk_reference_instrument_market", "fk_reference_instrument_market_currency",
-                "fk_reference_instrument_owner", "pk_reference_instrument");
+                "fk_reference_instrument_owner", "pk_reference_instrument", "uq_reference_instrument_id_currency");
         assertThat(constraintNames("instrument_alias")).containsExactlyInAnyOrder("ck_reference_instrument_alias_normalized",
                 "ck_reference_instrument_alias_type", "ck_reference_instrument_alias_value", "fk_reference_instrument_alias_instrument",
                 "pk_reference_instrument_alias", "uix_reference_instrument_alias_identity");
@@ -139,7 +139,7 @@ class ReferenceCatalogMigrationTest {
                         "pk_reference_country", "pk_reference_currency", "pk_reference_instrument", "pk_reference_instrument_alias", "pk_reference_market",
                         "pk_reference_market_calendar", "pk_reference_market_currency", "uix_reference_instrument_alias_identity",
                         "uix_reference_instrument_global_symbol", "uix_reference_instrument_owner_symbol", "uix_reference_market_currency_primary",
-                        "uq_reference_market_code_normalized");
+                        "uq_reference_instrument_id_currency", "uq_reference_market_code_normalized");
         assertThat(jdbcTemplate.queryForList(
                 "SELECT indexname FROM pg_indexes WHERE schemaname = 'reference'" + " AND indexname IN ('uix_reference_instrument_global_symbol'," +
                         " 'uix_reference_instrument_owner_symbol', 'ix_reference_instrument_global_visibility'," +

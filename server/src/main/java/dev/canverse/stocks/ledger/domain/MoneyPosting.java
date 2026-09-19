@@ -32,6 +32,8 @@ public class MoneyPosting {
     @Enumerated(EnumType.STRING)
     private PostingRole postingRole;
 
+    private UUID reversesMoneyPostingId;
+
     private Instant createdAt;
 
     public static MoneyPosting opening(UUID id, UUID ownerUserAccountId, UUID activityId, UUID financialAccountId, UUID cashPocketId, String currencyCode,
@@ -75,9 +77,29 @@ public class MoneyPosting {
         return create(id, ownerUserAccountId, activityId, financialAccountId, cashPocketId, currencyCode, amount, PostingRole.TRANSFER_DESTINATION, createdAt);
     }
 
+    public static MoneyPosting tradePurchase(UUID id, UUID ownerUserAccountId, UUID activityId, UUID financialAccountId, UUID cashPocketId, String currencyCode,
+            FinancialAmount grossAmount, Instant createdAt) {
+        requirePositive(grossAmount, PostingRole.TRADE_PURCHASE);
+        return create(id, ownerUserAccountId, activityId, financialAccountId, cashPocketId, currencyCode, grossAmount.negate(), PostingRole.TRADE_PURCHASE,
+                createdAt);
+    }
+
+    public static MoneyPosting tradeProceeds(UUID id, UUID ownerUserAccountId, UUID activityId, UUID financialAccountId, UUID cashPocketId, String currencyCode,
+            FinancialAmount grossAmount, Instant createdAt) {
+        requirePositive(grossAmount, PostingRole.TRADE_PROCEEDS);
+        return create(id, ownerUserAccountId, activityId, financialAccountId, cashPocketId, currencyCode, grossAmount, PostingRole.TRADE_PROCEEDS, createdAt);
+    }
+
     public static MoneyPosting reversal(UUID id, UUID ownerUserAccountId, UUID activityId, UUID financialAccountId, UUID cashPocketId, String currencyCode,
             FinancialAmount amount, Instant createdAt) {
         return create(id, ownerUserAccountId, activityId, financialAccountId, cashPocketId, currencyCode, amount, PostingRole.REVERSAL, createdAt);
+    }
+
+    public static MoneyPosting reversal(UUID id, UUID ownerUserAccountId, UUID activityId, UUID financialAccountId, UUID cashPocketId, String currencyCode,
+            FinancialAmount amount, UUID reversesMoneyPostingId, Instant createdAt) {
+        var posting = create(id, ownerUserAccountId, activityId, financialAccountId, cashPocketId, currencyCode, amount, PostingRole.REVERSAL, createdAt);
+        posting.reversesMoneyPostingId = Objects.requireNonNull(reversesMoneyPostingId, "reversesMoneyPostingId");
+        return posting;
     }
 
     public static MoneyPosting adjustment(UUID id, UUID ownerUserAccountId, UUID activityId, UUID financialAccountId, UUID cashPocketId, String currencyCode,

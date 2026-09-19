@@ -181,20 +181,31 @@ Fill this before marking the PR complete.
 
 ### Implemented
 
-- ...
+- Added V6 with immutable owner-scoped security postings and mutable synchronous position projections, currency/account/instrument constraints, unique economic ordering, reversal links, append-only protections, and deferred trade/reversal shape checks. The V5-to-V6 fixture preserves fee/interest facts, reconciliation history, and owner/global instruments; JPA validates both tables.
+- Added exact minor-unit `HALF_EVEN` settlement and deterministic `WEIGHTED_AVERAGE_ECONOMIC_V1` replay, including fee capitalization, scale-18 disposal allocation, full close/reopen, backdated insertion, and reversal equivalence.
+- Added owner-scoped preview/commit and trade/position reads. Commits reuse the existing brokerage cash pocket, policy evaluation, idempotency snapshots, locking, cash-balance version, and transaction boundary. Existing activity reversal now writes linked inverse money/security facts and rebuilds the position atomically.
+- Extended activity detail/history with security postings and added authenticated pageable trade history, open-position list, exact current/closed position detail, stable errors, no-store responses, `201`/`Location`, and OpenAPI contract coverage.
+- Updated the reference schema inventory test for the V6 composite instrument/currency key required by security-posting currency integrity.
 
 ### Deviations from specification
 
-- None / ...
+- None. The implementation stays backend-only and does not introduce the specified non-goal capabilities.
 
 ### New decisions
 
-- None / ...
+- Normalize request `effectiveAt` to PostgreSQL `timestamptz` microsecond precision before future-time validation, idempotency hashing, and replay so persisted order and request identity use the same instant.
+- Enforce Java/PostgreSQL `HALF_EVEN` agreement in the deferred gross check explicitly; PostgreSQL's normal numeric `round` rounds midpoint values differently. The checked midpoint fixture persists `1.025` as `1.02` for a two-decimal currency.
+- Translate arithmetic overflow or unrepresentable settled cash/position values to stable `INVALID_SETTLED_PRECISION` before facts can commit.
 
 ### Tests executed
 
-- ...
+- `.\mvnw.cmd "-Dtest=FinancialAccountMigrationTest,InvestingTradeHttpTest,InvestingTradeConcurrencyTest,WeightedAverageEconomicV1Test,OpenApiHttpTest,FinancialAccountServiceTest,FinancialAccountHttpTest,FinancialAccountMappingTest,CashActivityServiceTest,CashActivityHttpTest,CashLedgerConcurrencyTest,LedgerReconciliationServiceTest,LedgerReconciliationHttpTest,LedgerReconciliationConcurrencyTest,LedgerTransactionRollbackTest,LedgerDomainInvariantTest,LedgerValueObjectTest,ContextSmokeTest,ReferenceCatalogMigrationTest" test` — 169 passed, 0 failures/errors/skips against PostgreSQL 17 Testcontainers.
+- `.\mvnw.cmd test` — 408 passed, 0 failures/errors/skips against PostgreSQL 17 Testcontainers.
+- `.\mvnw.cmd spotless:check` — passed; all 290 Java files clean.
+- `.\mvnw.cmd verify` — passed; 408 tests, 0 failures/errors/skips, including Spotless and executable archive packaging.
+- `.\mvnw.cmd "-Dtest=ReferenceCatalogMigrationTest" test` — 8 passed, 0 failures/errors/skips after updating its V6 reference constraint/index inventory.
+- `git diff --check` — passed after the final documentation and code changes.
 
 ### Follow-up work
 
-- ...
+- None within PR-030. Portfolio grouping, imports, holdings-only openings, tax, FX/multi-currency, pending settlement, valuation, corporate actions/income, asynchronous infrastructure, and frontend work remain deferred as specified.

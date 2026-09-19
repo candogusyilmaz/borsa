@@ -3,6 +3,7 @@ package dev.canverse.stocks.ledger;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.math.BigDecimal;
 import java.sql.DriverManager;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -28,24 +29,30 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 class FinancialAccountMigrationTest {
 
+    private static final UUID MANUAL_MARKET_ID = UUID.fromString("10000000-0000-0000-0000-000000000002");
+
     private static final Set<String> LEDGER_TABLES = Set.of("account_balance_projection", "account_cash_pocket", "activity", "financial_account",
-            "idempotency_record", "money_posting", "reconciliation");
+            "idempotency_record", "money_posting", "position_projection", "reconciliation", "security_posting");
 
     private static final Set<String> LEDGER_CONSTRAINTS = Set.of("ck_ledger_account_balance_projection_version_non_negative",
             "ck_ledger_account_cash_pocket_coverage_status", "ck_ledger_account_cash_pocket_version_non_negative", "ck_ledger_activity_command_sequence",
             "ck_ledger_activity_correction_reason", "ck_ledger_activity_economic_sequence", "ck_ledger_activity_no_self_link",
             "ck_ledger_activity_operation_scope", "ck_ledger_activity_policy_decision", "ck_ledger_activity_policy_shape", "ck_ledger_activity_recording_mode",
             "ck_ledger_activity_reversal_shape", "ck_ledger_activity_source_kind", "ck_ledger_activity_supersession_shape", "ck_ledger_activity_type",
-            "ck_ledger_financial_account_authorized_limit", "ck_ledger_financial_account_kind", "ck_ledger_financial_account_name",
-            "ck_ledger_financial_account_name_normalized", "ck_ledger_financial_account_policy_shape", "ck_ledger_financial_account_time_zone",
-            "ck_ledger_financial_account_tracking", "ck_ledger_financial_account_version_non_negative", "ck_ledger_idempotency_operation_scope",
-            "ck_ledger_idempotency_request_hash", "ck_ledger_idempotency_result_kind", "ck_ledger_idempotency_snapshot_object",
-            "ck_ledger_idempotency_snapshot_size", "ck_ledger_money_posting_amount_zero_shape", "ck_ledger_money_posting_role",
-            "ck_ledger_money_posting_role_sign", "ck_ledger_reconciliation_counts", "ck_ledger_reconciliation_equation",
-            "ck_ledger_reconciliation_no_self_supersession", "ck_ledger_reconciliation_resolution", "ck_ledger_reconciliation_resolution_shape",
-            "ck_ledger_reconciliation_source_kind", "ck_ledger_reconciliation_statement_reference", "ck_ledger_reconciliation_time_order",
-            "fk_ledger_account_balance_projection_account", "fk_ledger_account_balance_projection_account_currency",
-            "fk_ledger_account_balance_projection_owner", "fk_ledger_account_balance_projection_pocket", "fk_ledger_account_balance_projection_pocket_identity",
+            "ck_ledger_activity_trade_sequence", "ck_ledger_financial_account_authorized_limit", "ck_ledger_financial_account_kind",
+            "ck_ledger_financial_account_name", "ck_ledger_financial_account_name_normalized", "ck_ledger_financial_account_policy_shape",
+            "ck_ledger_financial_account_time_zone", "ck_ledger_financial_account_tracking", "ck_ledger_financial_account_version_non_negative",
+            "ck_ledger_idempotency_operation_scope", "ck_ledger_idempotency_request_hash", "ck_ledger_idempotency_result_kind",
+            "ck_ledger_idempotency_snapshot_object", "ck_ledger_idempotency_snapshot_size", "ck_ledger_money_posting_amount_zero_shape",
+            "ck_ledger_money_posting_role", "ck_ledger_money_posting_role_sign", "ck_ledger_money_posting_reversal_link", "ck_ledger_reconciliation_counts",
+            "ck_ledger_reconciliation_equation", "ck_ledger_reconciliation_no_self_supersession", "ck_ledger_reconciliation_resolution",
+            "ck_ledger_reconciliation_resolution_shape", "ck_ledger_reconciliation_source_kind", "ck_ledger_reconciliation_statement_reference",
+            "ck_ledger_reconciliation_time_order", "ck_ledger_position_projection_basis_non_negative", "ck_ledger_position_projection_calculation_policy",
+            "ck_ledger_position_projection_close_basis", "ck_ledger_position_projection_quantity_non_negative", "ck_ledger_position_projection_stale_shape",
+            "ck_ledger_position_projection_status", "ck_ledger_position_projection_version_non_negative", "ck_ledger_security_posting_economic_sequence",
+            "ck_ledger_security_posting_role", "ck_ledger_security_posting_shape", "fk_ledger_account_balance_projection_account",
+            "fk_ledger_account_balance_projection_account_currency", "fk_ledger_account_balance_projection_owner",
+            "fk_ledger_account_balance_projection_pocket", "fk_ledger_account_balance_projection_pocket_identity",
             "fk_ledger_account_balance_projection_watermark_activity", "fk_ledger_account_cash_pocket_account_currency",
             "fk_ledger_account_cash_pocket_account_owner", "fk_ledger_account_cash_pocket_currency", "fk_ledger_account_cash_pocket_owner",
             "fk_ledger_activity_owner", "fk_ledger_activity_reverses", "fk_ledger_activity_supersedes", "fk_ledger_financial_account_currency",
@@ -53,18 +60,29 @@ class FinancialAccountMigrationTest {
             "fk_ledger_money_posting_account", "fk_ledger_money_posting_account_currency", "fk_ledger_money_posting_activity", "fk_ledger_money_posting_owner",
             "fk_ledger_money_posting_pocket", "fk_ledger_money_posting_pocket_identity", "fk_ledger_reconciliation_account_currency",
             "fk_ledger_reconciliation_account_owner", "fk_ledger_reconciliation_adjustment_activity", "fk_ledger_reconciliation_owner",
-            "fk_ledger_reconciliation_pocket_identity", "fk_ledger_reconciliation_supersedes", "pk_ledger_account_balance_projection",
-            "pk_ledger_account_cash_pocket", "pk_ledger_activity", "pk_ledger_financial_account", "pk_ledger_idempotency_record", "pk_ledger_money_posting",
-            "pk_ledger_reconciliation", "uq_ledger_account_balance_projection_pocket", "uq_ledger_account_cash_pocket_account_currency",
+            "fk_ledger_reconciliation_pocket_identity", "fk_ledger_reconciliation_supersedes", "fk_ledger_money_posting_reverses",
+            "fk_ledger_position_projection_account", "fk_ledger_position_projection_account_currency", "fk_ledger_position_projection_currency",
+            "fk_ledger_position_projection_instrument", "fk_ledger_position_projection_instrument_currency", "fk_ledger_position_projection_owner",
+            "fk_ledger_position_projection_watermark_activity", "fk_ledger_security_posting_account", "fk_ledger_security_posting_account_currency",
+            "fk_ledger_security_posting_activity", "fk_ledger_security_posting_currency", "fk_ledger_security_posting_instrument",
+            "fk_ledger_security_posting_instrument_currency", "fk_ledger_security_posting_owner", "fk_ledger_security_posting_reverses",
+            "pk_ledger_account_balance_projection", "pk_ledger_account_cash_pocket", "pk_ledger_activity", "pk_ledger_financial_account",
+            "pk_ledger_idempotency_record", "pk_ledger_money_posting", "pk_ledger_reconciliation", "pk_ledger_position_projection",
+            "pk_ledger_security_posting", "uq_ledger_account_balance_projection_pocket", "uq_ledger_account_cash_pocket_account_currency",
             "uq_ledger_account_cash_pocket_identity", "uq_ledger_account_cash_pocket_owner_id", "uq_ledger_activity_operation", "uq_ledger_activity_owner_id",
             "uq_ledger_activity_owner_id_type", "uq_ledger_activity_reversal", "uq_ledger_financial_account_id_currency",
             "uq_ledger_financial_account_owner_id", "uq_ledger_idempotency_owner_scope_request", "uq_ledger_reconciliation_adjustment_activity",
-            "uq_ledger_reconciliation_owner_account_id", "uq_ledger_reconciliation_owner_id", "uq_ledger_reconciliation_supersedes");
+            "uq_ledger_reconciliation_owner_account_id", "uq_ledger_reconciliation_owner_id", "uq_ledger_reconciliation_supersedes",
+            "uq_ledger_money_posting_owner_id", "uq_ledger_position_projection_owner_account_instrument", "uq_ledger_security_posting_owner_id",
+            "uq_ledger_security_posting_owner_activity", "uq_ledger_security_posting_reversal", "trg_ledger_trade_activity_shape",
+            "trg_ledger_trade_money_posting_shape", "trg_ledger_trade_security_posting_shape");
 
     private static final Set<String> LEDGER_INDEXES = Set.of("ix_ledger_account_balance_projection_owner_account",
             "ix_ledger_account_cash_pocket_owner_account", "ix_ledger_activity_owner_effective", "ix_ledger_activity_owner_recorded",
             "ix_ledger_financial_account_owner_name", "ix_ledger_money_posting_account", "ix_ledger_money_posting_activity",
-            "uix_ledger_financial_account_active_name", "ix_ledger_reconciliation_owner_account_closing");
+            "uix_ledger_financial_account_active_name", "ix_ledger_reconciliation_owner_account_closing", "uix_ledger_money_posting_activity_trade_role",
+            "uix_ledger_security_posting_economic_key", "ix_ledger_security_posting_owner_account_instrument_order",
+            "ix_ledger_position_projection_owner_account_open");
 
     @Container
     @ServiceConnection
@@ -80,8 +98,8 @@ class FinancialAccountMigrationTest {
     PlatformTransactionManager transactionManager;
 
     @Test
-    void v5AddsManualFeeAndInterestShapesToTheExistingLedger() {
-        assertThat(flyway.info().applied()).extracting(migration -> migration.getVersion().toString()).containsExactly("1", "2", "3", "4", "5");
+    void v6AddsFundedTradesAndPositionProjectionToTheExistingLedger() {
+        assertThat(flyway.info().applied()).extracting(migration -> migration.getVersion().toString()).containsExactly("1", "2", "3", "4", "5", "6");
 
         var tables = Set.copyOf(jdbcTemplate.queryForList("SELECT table_name FROM information_schema.tables WHERE table_schema = 'ledger'", String.class));
         assertThat(tables).isEqualTo(LEDGER_TABLES);
@@ -89,6 +107,12 @@ class FinancialAccountMigrationTest {
         assertNumericColumn("financial_account", "authorized_limit");
         assertNumericColumn("money_posting", "amount");
         assertNumericColumn("account_balance_projection", "ledger_balance");
+        for (var column : new String[]{"quantity_delta", "unit_price", "gross_amount"}) {
+            assertNumericColumn("security_posting", column);
+        }
+        for (var column : new String[]{"current_quantity", "remaining_economic_basis", "cumulative_realized_economic_pnl"}) {
+            assertNumericColumn("position_projection", column);
+        }
         for (var column : new String[]{"statement_opening_balance", "statement_closing_balance", "ledger_opening_balance",
                 "ledger_closing_balance_before_adjustment", "period_net_posted_amount", "closing_difference", "adjustment_amount"}) {
             assertNumericColumn("reconciliation", column);
@@ -104,11 +128,220 @@ class FinancialAccountMigrationTest {
     }
 
     @Test
-    void noExcludedLaterLedgerStructuresWereAddedToV4() {
+    void noExcludedLaterLedgerStructuresWereAddedToV6() {
         var forbidden = jdbcTemplate.queryForList("SELECT table_name FROM information_schema.tables WHERE table_schema = 'ledger'" +
-                " AND table_name IN ('security_posting', 'activity_split', 'import_batch'," +
-                " 'spending_entry', 'investment_position', 'household_member', 'observation', 'job')", String.class);
+                " AND table_name IN ('activity_split', 'import_batch'," + " 'spending_entry', 'investment_position', 'household_member', 'observation', 'job')",
+                String.class);
         assertThat(forbidden).isEmpty();
+    }
+
+    @Test
+    void rawV6TradeFactsEnforceOrderingCashShapesAndHalfEvenGross() {
+        var ownerId = insertUser();
+        var accountId = insertRawAccount(ownerId, "BROKERAGE", "FULL_LEDGER", "HARD_FLOOR", "USD", null);
+        var secondAccountId = insertRawAccount(ownerId, "BROKERAGE", "FULL_LEDGER", "HARD_FLOOR", "USD", null);
+        var pocketId = insertPocket(ownerId, accountId);
+        var instrumentId = insertRawInstrument(ownerId, "USD", "EQUITY", true);
+        var effectiveAt = timestamp().minusMinutes(2);
+
+        var midpointBuy = insertRawTrade(ownerId, accountId, pocketId, instrumentId, "BUY", "1", "1.025", "1.02", "0", effectiveAt, 0);
+        assertThat(jdbcTemplate.queryForObject("SELECT gross_amount FROM ledger.security_posting WHERE id = ?", String.class, midpointBuy.securityPostingId()))
+                .isEqualTo("1.020000000000000000");
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ledger.money_posting WHERE activity_id = ? AND posting_role = 'FEE'", Integer.class,
+                midpointBuy.activityId())).isZero();
+        var feeBuy = insertRawTrade(ownerId, accountId, pocketId, instrumentId, "BUY", "1", "2", "2", "0.50", effectiveAt.plusSeconds(10), 0);
+        assertThat(jdbcTemplate.queryForObject("SELECT amount FROM ledger.money_posting WHERE id = ?", String.class, feeBuy.feePostingId()))
+                .isEqualTo("-0.500000000000000000");
+        var feeAwareSale = insertRawTrade(ownerId, accountId, pocketId, instrumentId, "SELL", "1", "1.50", "1.50", "0.25", effectiveAt.plusSeconds(11), 0);
+        assertThat(jdbcTemplate.queryForObject("SELECT SUM(amount) FROM ledger.money_posting WHERE activity_id = ?", String.class, feeAwareSale.activityId()))
+                .isEqualTo("1.250000000000000000");
+
+        assertThatThrownBy(() -> insertRawTrade(ownerId, accountId, pocketId, instrumentId, "BUY", "1", "1.025", "1.03", "0", effectiveAt.plusSeconds(1), 0))
+                .isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> insertRawTrade(ownerId, accountId, pocketId, instrumentId, "BUY", "1", "1", "1", "0.001", effectiveAt.plusSeconds(2), 0))
+                .isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> insertRawTrade(ownerId, accountId, pocketId, instrumentId, "SELL", "1", "1", "1", "1", effectiveAt.plusSeconds(3), 0))
+                .isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> insertRawTrade(ownerId, accountId, pocketId, instrumentId, "BUY", "1", "1", "1", "0", effectiveAt, 0))
+                .isInstanceOf(DataAccessException.class);
+
+        assertThatThrownBy(() -> inTransaction(
+                () -> insertTradeActivityInTransaction(ownerId, "SECURITY_BUY", "CURRENT_ACTION", "ALLOWED", effectiveAt.plusSeconds(4), null, null, null)))
+                .isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> inTransaction(
+                () -> insertTradeActivityInTransaction(ownerId, "SECURITY_BUY", "CURRENT_ACTION", "ALLOWED", effectiveAt.plusSeconds(5), -1L, null, null)))
+                .isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> inTransaction(() -> insertTradeActivityInTransaction(ownerId, "SECURITY_BUY", "HISTORICAL_FACT", "CONFIRMED_BREACH",
+                effectiveAt.plusSeconds(6), 0L, null, null))).isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> inTransaction(
+                () -> insertTradeActivityInTransaction(ownerId, "SECURITY_BUY", "CURRENT_ACTION", "ALLOWED", effectiveAt.plusSeconds(7), 0L, null, null)))
+                .isInstanceOf(DataAccessException.class);
+
+        var depositId = insertActivity(ownerId, "CASH_DEPOSIT", "CURRENT_ACTION", "ALLOWED");
+        assertThatThrownBy(() -> insertRawMoneyPosting(ownerId, depositId, accountId, pocketId, "USD", "-1", "TRADE_PURCHASE", null))
+                .isInstanceOf(DataAccessException.class);
+        var feeActivityId = insertActivity(ownerId, "CASH_FEE", "HISTORICAL_FACT", "ALLOWED");
+        assertThatThrownBy(() -> insertRawMoneyPosting(ownerId, feeActivityId, accountId, pocketId, "USD", "0", "FEE", null))
+                .isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> insertRawMoneyPosting(ownerId, feeActivityId, accountId, pocketId, "USD", "1", "FEE", null))
+                .isInstanceOf(DataAccessException.class);
+
+        assertThatThrownBy(() -> inTransaction(() -> {
+            var mismatchedGrossActivityId = insertTradeActivityInTransaction(ownerId, "SECURITY_BUY", "CURRENT_ACTION", "ALLOWED", effectiveAt.plusSeconds(8),
+                    0L, null, null);
+            insertRawMoneyPostingInTransaction(ownerId, mismatchedGrossActivityId, accountId, pocketId, "USD", "-2", "TRADE_PURCHASE", null);
+            insertRawSecurityPostingInTransaction(ownerId, mismatchedGrossActivityId, accountId, instrumentId, "USD", "1", "1", "1", "BUY",
+                    effectiveAt.plusSeconds(8), 0, null);
+        })).isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> inTransaction(() -> {
+            var mismatchedAccountActivityId = insertTradeActivityInTransaction(ownerId, "SECURITY_BUY", "CURRENT_ACTION", "ALLOWED", effectiveAt.plusSeconds(9),
+                    0L, null, null);
+            insertRawMoneyPostingInTransaction(ownerId, mismatchedAccountActivityId, accountId, pocketId, "USD", "-1", "TRADE_PURCHASE", null);
+            insertRawSecurityPostingInTransaction(ownerId, mismatchedAccountActivityId, secondAccountId, instrumentId, "USD", "1", "1", "1", "BUY",
+                    effectiveAt.plusSeconds(9), 0, null);
+        })).isInstanceOf(DataAccessException.class);
+    }
+
+    @Test
+    void rawV6SecurityPostingsAndPositionProjectionsEnforceIdentityAndLifecycle() {
+        var ownerId = insertUser();
+        var otherOwnerId = insertUser();
+        var accountId = insertRawAccount(ownerId, "BROKERAGE", "FULL_LEDGER", "HARD_FLOOR", "USD", null);
+        var secondAccountId = insertRawAccount(ownerId, "BROKERAGE", "FULL_LEDGER", "HARD_FLOOR", "USD", null);
+        var cashAccountId = insertRawAccount(ownerId, "CASH_CURRENT", "FULL_LEDGER", "HARD_FLOOR", "USD", null);
+        var holdingsOnlyAccountId = insertRawAccount(ownerId, "BROKERAGE", "HOLDINGS_ONLY", null, "USD", null);
+        var otherOwnerAccountId = insertRawAccount(otherOwnerId, "BROKERAGE", "FULL_LEDGER", "HARD_FLOOR", "USD", null);
+        var pocketId = insertPocket(ownerId, accountId);
+        var cashPocketId = insertPocket(ownerId, cashAccountId);
+        var holdingsPocketId = insertPocket(ownerId, holdingsOnlyAccountId);
+        var instrumentId = insertRawInstrument(ownerId, "USD", "EQUITY", true);
+        var otherInstrumentId = insertRawInstrument(ownerId, "USD", "ETF", true);
+        var foreignInstrumentId = insertRawInstrument(otherOwnerId, "USD", "EQUITY", true);
+        var unsupportedInstrumentId = insertRawInstrument(ownerId, "USD", "BOND", true);
+        var inactiveInstrumentId = insertRawInstrument(ownerId, "USD", "EQUITY", false);
+        var foreignCurrencyInstrumentId = insertRawInstrument(ownerId, "GBP", "EQUITY", true);
+        var effectiveAt = timestamp().minusMinutes(2);
+        var original = insertRawTrade(ownerId, accountId, pocketId, instrumentId, "BUY", "2", "10", "20", "0", effectiveAt, 0);
+
+        assertThatThrownBy(() -> inTransaction(() -> {
+            var activityId = insertTradeActivityInTransaction(ownerId, "SECURITY_BUY", "CURRENT_ACTION", "ALLOWED", effectiveAt.plusSeconds(1), 0L, null, null);
+            insertRawSecurityPostingInTransaction(ownerId, activityId, accountId, instrumentId, "USD", "-1", "10", "10", "SELL", effectiveAt.plusSeconds(1), 0,
+                    null);
+        })).isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> inTransaction(() -> {
+            var activityId = insertTradeActivityInTransaction(ownerId, "SECURITY_BUY", "CURRENT_ACTION", "ALLOWED", effectiveAt.plusSeconds(2), 0L, null, null);
+            insertRawSecurityPostingInTransaction(ownerId, activityId, accountId, instrumentId, "USD", "1", "10", "10", "BUY", effectiveAt.plusSeconds(3), 0,
+                    null);
+        })).isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> inTransaction(() -> {
+            var activityId = insertTradeActivityInTransaction(ownerId, "SECURITY_BUY", "CURRENT_ACTION", "ALLOWED", effectiveAt.plusSeconds(4), 0L, null, null);
+            insertRawSecurityPostingInTransaction(ownerId, activityId, accountId, instrumentId, "USD", "1", "10", "10", "BUY", effectiveAt.plusSeconds(4), 1,
+                    null);
+        })).isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> inTransaction(() -> {
+            var activityId = insertTradeActivityInTransaction(ownerId, "SECURITY_BUY", "CURRENT_ACTION", "ALLOWED", effectiveAt.plusSeconds(13), 0L, null,
+                    null);
+            insertRawSecurityPostingInTransaction(ownerId, activityId, accountId, instrumentId, "USD", "0", "10", "10", "BUY", effectiveAt.plusSeconds(13), 0,
+                    null);
+        })).isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> inTransaction(() -> {
+            var activityId = insertTradeActivityInTransaction(ownerId, "SECURITY_BUY", "CURRENT_ACTION", "ALLOWED", effectiveAt.plusSeconds(14), 0L, null,
+                    null);
+            insertRawSecurityPostingInTransaction(ownerId, activityId, accountId, instrumentId, "USD", "1", "0", "10", "BUY", effectiveAt.plusSeconds(14), 0,
+                    null);
+        })).isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> inTransaction(() -> {
+            var activityId = insertTradeActivityInTransaction(ownerId, "SECURITY_BUY", "CURRENT_ACTION", "ALLOWED", effectiveAt.plusSeconds(15), 0L, null,
+                    null);
+            insertRawSecurityPostingInTransaction(ownerId, activityId, accountId, instrumentId, "USD", "1", "10", "0", "BUY", effectiveAt.plusSeconds(15), 0,
+                    null);
+        })).isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> inTransaction(() -> {
+            var activityId = insertTradeActivityInTransaction(otherOwnerId, "SECURITY_BUY", "CURRENT_ACTION", "ALLOWED", effectiveAt.plusSeconds(16), 0L, null,
+                    null);
+            insertRawSecurityPostingInTransaction(otherOwnerId, activityId, accountId, foreignInstrumentId, "USD", "1", "10", "10", "BUY",
+                    effectiveAt.plusSeconds(16), 0, null);
+        })).isInstanceOf(DataAccessException.class);
+
+        assertThatThrownBy(() -> insertRawTrade(ownerId, cashAccountId, cashPocketId, instrumentId, "BUY", "1", "10", "10", "0", effectiveAt.plusSeconds(5), 0))
+                .isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> insertRawTrade(ownerId, holdingsOnlyAccountId, holdingsPocketId, instrumentId, "BUY", "1", "10", "10", "0",
+                effectiveAt.plusSeconds(6), 0)).isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(
+                () -> insertRawTrade(ownerId, accountId, pocketId, unsupportedInstrumentId, "BUY", "1", "10", "10", "0", effectiveAt.plusSeconds(7), 0))
+                .isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> insertRawTrade(ownerId, accountId, pocketId, foreignInstrumentId, "BUY", "1", "10", "10", "0", effectiveAt.plusSeconds(8), 0))
+                .isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> insertRawTrade(ownerId, accountId, pocketId, inactiveInstrumentId, "BUY", "1", "10", "10", "0", effectiveAt.plusSeconds(9), 0))
+                .isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(
+                () -> insertRawTrade(ownerId, accountId, pocketId, foreignCurrencyInstrumentId, "BUY", "1", "10", "10", "0", effectiveAt.plusSeconds(10), 0))
+                .isInstanceOf(DataAccessException.class);
+
+        var historicalInactiveBuy = insertRawTrade(ownerId, accountId, pocketId, inactiveInstrumentId, "BUY", "1", "10", "10", "0", effectiveAt.plusSeconds(11),
+                0, "HISTORICAL_FACT", "ALLOWED");
+        var otherInstrumentTrade = insertRawTrade(ownerId, accountId, pocketId, otherInstrumentId, "BUY", "1", "10", "10", "0", effectiveAt.plusSeconds(12), 0);
+        var reversalId = insertRawTradeReversal(ownerId, original);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ledger.security_posting WHERE activity_id = ? AND posting_role = 'REVERSAL'",
+                Integer.class, reversalId)).isEqualTo(1);
+        assertThatThrownBy(() -> insertRawTradeReversal(ownerId, original)).isInstanceOf(DataAccessException.class);
+
+        assertThatThrownBy(() -> inTransaction(() -> {
+            var reversalActivityId = insertTradeActivityInTransaction(ownerId, "REVERSAL", "HISTORICAL_FACT", "NOT_APPLICABLE",
+                    otherInstrumentTrade.effectiveAt(), otherInstrumentTrade.economicSequence(), otherInstrumentTrade.activityId(), "raw wrong cash reversal");
+            insertRawMoneyPostingInTransaction(ownerId, reversalActivityId, accountId, pocketId, "USD", "9", "REVERSAL", otherInstrumentTrade.grossPostingId());
+        })).isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> inTransaction(() -> {
+            var reversalActivityId = insertTradeActivityInTransaction(ownerId, "REVERSAL", "HISTORICAL_FACT", "NOT_APPLICABLE",
+                    otherInstrumentTrade.effectiveAt(), otherInstrumentTrade.economicSequence(), otherInstrumentTrade.activityId(),
+                    "raw wrong quantity reversal");
+            insertRawSecurityPostingInTransaction(ownerId, reversalActivityId, accountId, otherInstrumentId, "USD", "-2", null, null, "REVERSAL",
+                    otherInstrumentTrade.effectiveAt(), otherInstrumentTrade.economicSequence(), otherInstrumentTrade.securityPostingId());
+        })).isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> inTransaction(() -> {
+            var reversalActivityId = insertTradeActivityInTransaction(ownerId, "REVERSAL", "HISTORICAL_FACT", "NOT_APPLICABLE", effectiveAt, 0L,
+                    original.activityId(), "raw cross-linked reversal");
+            insertRawSecurityPostingInTransaction(ownerId, reversalActivityId, accountId, instrumentId, "USD", "-2", null, null, "REVERSAL", effectiveAt, 0,
+                    otherInstrumentTrade.securityPostingId());
+        })).isInstanceOf(DataAccessException.class);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ledger.activity WHERE id = ?", Integer.class, historicalInactiveBuy.activityId()))
+                .isEqualTo(1);
+
+        insertRawPositionProjection(ownerId, accountId, instrumentId, "USD", "2", "20", "0", "WEIGHTED_AVERAGE_ECONOMIC_V1", "CURRENT", effectiveAt,
+                original.activityId(), effectiveAt, null, 0);
+        assertThatThrownBy(() -> insertRawPositionProjection(ownerId, accountId, instrumentId, "USD", "2", "20", "0", "WEIGHTED_AVERAGE_ECONOMIC_V1", "CURRENT",
+                effectiveAt, original.activityId(), effectiveAt, null, 0)).isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> insertRawPositionProjection(ownerId, secondAccountId, otherInstrumentId, "USD", "-1", "0", "0", "WEIGHTED_AVERAGE_ECONOMIC_V1",
+                "CURRENT", effectiveAt, original.activityId(), effectiveAt, null, 0)).isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> insertRawPositionProjection(ownerId, secondAccountId, otherInstrumentId, "USD", "1", "-1", "0", "WEIGHTED_AVERAGE_ECONOMIC_V1",
+                "CURRENT", effectiveAt, original.activityId(), effectiveAt, null, 0)).isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> insertRawPositionProjection(ownerId, secondAccountId, otherInstrumentId, "USD", "0", "1", "0", "WEIGHTED_AVERAGE_ECONOMIC_V1",
+                "CURRENT", effectiveAt, original.activityId(), effectiveAt, null, 0)).isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> insertRawPositionProjection(ownerId, secondAccountId, otherInstrumentId, "USD", "1", "1", "0", "FIFO", "CURRENT", effectiveAt,
+                original.activityId(), effectiveAt, null, 0)).isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> insertRawPositionProjection(ownerId, secondAccountId, otherInstrumentId, "USD", "1", "1", "0", "WEIGHTED_AVERAGE_ECONOMIC_V1",
+                "BROKEN", effectiveAt, original.activityId(), effectiveAt, null, 0)).isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> insertRawPositionProjection(ownerId, secondAccountId, otherInstrumentId, "USD", "1", "1", "0", "WEIGHTED_AVERAGE_ECONOMIC_V1",
+                "STALE", effectiveAt, original.activityId(), effectiveAt, null, 0)).isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> insertRawPositionProjection(ownerId, secondAccountId, otherInstrumentId, "USD", "1", "1", "0", "WEIGHTED_AVERAGE_ECONOMIC_V1",
+                "CURRENT", effectiveAt, original.activityId(), effectiveAt, null, -1)).isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> insertRawPositionProjection(ownerId, cashAccountId, otherInstrumentId, "USD", "1", "1", "0", "WEIGHTED_AVERAGE_ECONOMIC_V1",
+                "CURRENT", effectiveAt, original.activityId(), effectiveAt, null, 0)).isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> insertRawPositionProjection(otherOwnerId, otherOwnerAccountId, otherInstrumentId, "USD", "1", "1", "0",
+                "WEIGHTED_AVERAGE_ECONOMIC_V1", "CURRENT", effectiveAt, original.activityId(), effectiveAt, null, 0)).isInstanceOf(DataAccessException.class);
+
+        assertThatThrownBy(() -> updateCommitted("UPDATE ledger.activity SET source_kind = source_kind WHERE id = ?", original.activityId()))
+                .isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> updateCommitted("DELETE FROM ledger.activity WHERE id = ?", original.activityId())).isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> updateCommitted("UPDATE ledger.money_posting SET amount = amount WHERE id = ?", original.grossPostingId()))
+                .isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> updateCommitted("DELETE FROM ledger.money_posting WHERE id = ?", original.grossPostingId()))
+                .isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(
+                () -> updateCommitted("UPDATE ledger.security_posting SET quantity_delta = quantity_delta WHERE id = ?", original.securityPostingId()))
+                .isInstanceOf(DataAccessException.class);
+        assertThatThrownBy(() -> updateCommitted("DELETE FROM ledger.security_posting WHERE id = ?", original.securityPostingId()))
+                .isInstanceOf(DataAccessException.class);
     }
 
     @Test
@@ -200,9 +433,49 @@ class FinancialAccountMigrationTest {
                             " 'ADJUSTED', ?, ?, 'USER_ENTERED', 'V4 migration adjustment', ?)",
                     adjustedReconciliationId, ownerId, accountId, pocketId, openingAt, adjustedClosingAt, adjustmentActivityId, balancedReconciliationId, now);
 
+            var v5 = Flyway.configure().dataSource(targetUrl, postgres.getUsername(), postgres.getPassword()).locations("classpath:db/migration")
+                    .target(MigrationVersion.fromVersion("5")).load();
+            v5.migrate();
+            assertThat(v5.info().applied()).extracting(migration -> migration.getVersion().toString()).containsExactly("1", "2", "3", "4", "5");
+
+            var feeActivityId = UUID.randomUUID();
+            var interestActivityId = UUID.randomUUID();
+            var feePostingId = UUID.randomUUID();
+            var interestPostingId = UUID.randomUUID();
+            var ownerInstrumentId = UUID.randomUUID();
+            var globalInstrumentId = UUID.randomUUID();
+            v3Jdbc.update(
+                    "INSERT INTO ledger.activity (id, owner_user_account_id, client_event_id, operation_scope, command_sequence," +
+                            " activity_type, recording_mode, effective_at, recorded_at, source_kind, policy_decision)" +
+                            " VALUES (?, ?, ?, 'v5.upgrade.fee', 0, 'CASH_FEE', 'HISTORICAL_FACT', ?, ?, 'USER_ENTERED', 'ALLOWED')",
+                    feeActivityId, ownerId, UUID.randomUUID(), now.minusSeconds(20), now);
+            v3Jdbc.update(
+                    "INSERT INTO ledger.activity (id, owner_user_account_id, client_event_id, operation_scope, command_sequence," +
+                            " activity_type, recording_mode, effective_at, recorded_at, source_kind, policy_decision)" +
+                            " VALUES (?, ?, ?, 'v5.upgrade.interest', 0, 'CASH_INTEREST_CREDIT', 'HISTORICAL_FACT', ?, ?, 'USER_ENTERED', 'ALLOWED')",
+                    interestActivityId, ownerId, UUID.randomUUID(), now.minusSeconds(10), now);
+            v3Jdbc.update(
+                    "INSERT INTO ledger.money_posting (id, owner_user_account_id, activity_id, financial_account_id, cash_pocket_id," +
+                            " currency_code, amount, posting_role, created_at) VALUES (?, ?, ?, ?, ?, 'USD', -0.75, 'FEE', ?)",
+                    feePostingId, ownerId, feeActivityId, accountId, pocketId, now);
+            v3Jdbc.update(
+                    "INSERT INTO ledger.money_posting (id, owner_user_account_id, activity_id, financial_account_id, cash_pocket_id," +
+                            " currency_code, amount, posting_role, created_at) VALUES (?, ?, ?, ?, ?, 'USD', 0.25, 'INTEREST_CREDIT', ?)",
+                    interestPostingId, ownerId, interestActivityId, accountId, pocketId, now);
+
+            var manualMarketId = UUID.fromString("10000000-0000-0000-0000-000000000002");
+            v3Jdbc.update("INSERT INTO reference.instrument (id, owner_user_account_id, market_id, symbol, symbol_normalized, name, name_normalized," +
+                    " instrument_type, quotation_currency_code, valuation_method, active, source_kind, version, created_at, updated_at)" +
+                    " VALUES (?, NULL, ?, 'V5-GLOBAL', 'V5-GLOBAL', 'V5 Global Equity', 'V5 GLOBAL EQUITY', 'EQUITY', 'USD', 'NOT_VALUED'," +
+                    " TRUE, 'REFERENCE_SEED', 0, ?, ?)", globalInstrumentId, manualMarketId, now, now);
+            v3Jdbc.update("INSERT INTO reference.instrument (id, owner_user_account_id, market_id, symbol, symbol_normalized, name, name_normalized," +
+                    " instrument_type, quotation_currency_code, valuation_method, active, source_kind, version, created_at, updated_at)" +
+                    " VALUES (?, ?, ?, 'V5-OWNER', 'V5-OWNER', 'V5 Owner Equity', 'V5 OWNER EQUITY', 'EQUITY', 'USD', 'NOT_VALUED'," +
+                    " TRUE, 'USER_ENTERED', 0, ?, ?)", ownerInstrumentId, ownerId, manualMarketId, now, now);
+
             var latest = Flyway.configure().dataSource(targetUrl, postgres.getUsername(), postgres.getPassword()).locations("classpath:db/migration").load();
             latest.migrate();
-            assertThat(latest.info().applied()).extracting(migration -> migration.getVersion().toString()).containsExactly("1", "2", "3", "4", "5");
+            assertThat(latest.info().applied()).extracting(migration -> migration.getVersion().toString()).containsExactly("1", "2", "3", "4", "5", "6");
             assertThat(v3Jdbc.queryForObject("SELECT COUNT(*) FROM ledger.financial_account WHERE id = ?", Integer.class, accountId)).isEqualTo(1);
             assertThat(v3Jdbc.queryForObject("SELECT COUNT(*) FROM ledger.activity WHERE id = ?", Integer.class, activityId)).isEqualTo(1);
             assertThat(v3Jdbc.queryForObject("SELECT COUNT(*) FROM ledger.reconciliation WHERE id IN (?, ?)", Integer.class, balancedReconciliationId,
@@ -216,6 +489,13 @@ class FinancialAccountMigrationTest {
                     Integer.class, adjustedReconciliationId, adjustmentActivityId, balancedReconciliationId)).isEqualTo(1);
             assertThat(v3Jdbc.queryForObject("SELECT COUNT(*) FROM ledger.activity WHERE id = ? AND activity_type = 'RECONCILIATION_ADJUSTMENT'" +
                     " AND correction_reason = 'V4 migration adjustment'", Integer.class, adjustmentActivityId)).isEqualTo(1);
+            assertThat(v3Jdbc.queryForObject("SELECT COUNT(*) FROM ledger.money_posting WHERE id IN (?, ?)" + " AND posting_role IN ('FEE', 'INTEREST_CREDIT')",
+                    Integer.class, feePostingId, interestPostingId)).isEqualTo(2);
+            assertThat(v3Jdbc.queryForObject(
+                    "SELECT COUNT(*) FROM ledger.activity WHERE id IN (?, ?)" + " AND activity_type IN ('CASH_FEE', 'CASH_INTEREST_CREDIT')", Integer.class,
+                    feeActivityId, interestActivityId)).isEqualTo(2);
+            assertThat(v3Jdbc.queryForObject("SELECT COUNT(*) FROM reference.instrument WHERE id IN (?, ?)" + " AND quotation_currency_code = 'USD'",
+                    Integer.class, ownerInstrumentId, globalInstrumentId)).isEqualTo(2);
             assertThat(v3Jdbc.queryForObject(
                     "SELECT COUNT(*) FROM ledger.money_posting WHERE id = ? AND activity_id = ?" + " AND amount = 2 AND posting_role = 'ADJUSTMENT'",
                     Integer.class, adjustmentPostingId, adjustmentActivityId)).isEqualTo(1);
@@ -501,6 +781,10 @@ class FinancialAccountMigrationTest {
         var ownerId = insertUser();
         var accountId = insertAccount(ownerId);
         var pocketId = insertPocket(ownerId, accountId);
+        var brokerageId = insertRawAccount(ownerId, "BROKERAGE", "FULL_LEDGER", "HARD_FLOOR", "USD", null);
+        var brokeragePocketId = insertPocket(ownerId, brokerageId);
+        var globalInstrumentId = insertRawInstrument(null, "USD", "EQUITY", true);
+        var ownerInstrumentId = insertRawInstrument(ownerId, "USD", "ETF", true);
         var activityId = insertActivity(ownerId, "OPENING_BALANCE", "HISTORICAL_FACT", "ALLOWED");
         updateCommitted(
                 "INSERT INTO ledger.money_posting" + " (id, owner_user_account_id, activity_id, financial_account_id, cash_pocket_id," +
@@ -511,6 +795,10 @@ class FinancialAccountMigrationTest {
                 UUID.randomUUID(), ownerId, accountId, pocketId, timestamp(), activityId, timestamp());
         updateCommitted("UPDATE ledger.financial_account SET current_opening_activity_id = ? WHERE id = ?", activityId, accountId);
         insertRawReconciliation(ownerId, accountId, pocketId, "USD", "10", "10", "10", "10", "0", "0", null, 0, 1, "BALANCED", null, null, null);
+        var tradeAt = timestamp().minusMinutes(2);
+        var trade = insertRawTrade(ownerId, brokerageId, brokeragePocketId, ownerInstrumentId, "BUY", "1", "10", "10", "0", tradeAt, 0);
+        insertRawPositionProjection(ownerId, brokerageId, ownerInstrumentId, "USD", "1", "10", "0", "WEIGHTED_AVERAGE_ECONOMIC_V1", "CURRENT", tradeAt,
+                trade.activityId(), tradeAt, null, 0);
         var adjustmentActivityId = insertActivity(ownerId, "RECONCILIATION_ADJUSTMENT", "HISTORICAL_FACT", "ALLOWED", "owner deletion adjustment");
         var replacementAdjustmentActivityId = insertActivity(ownerId, "RECONCILIATION_ADJUSTMENT", "HISTORICAL_FACT", "ALLOWED", "owner deletion replacement");
         var adjustedId = insertRawReconciliation(ownerId, accountId, pocketId, "USD", "10", "12", "10", "10", "0", "2", "2", 0, 2, "ADJUSTED",
@@ -524,6 +812,8 @@ class FinancialAccountMigrationTest {
             assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ledger." + table + " WHERE owner_user_account_id = ?", Integer.class, ownerId))
                     .isZero();
         }
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM reference.instrument WHERE id = ?", Integer.class, globalInstrumentId)).isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM reference.instrument WHERE id = ?", Integer.class, ownerInstrumentId)).isZero();
     }
 
     @Test
@@ -684,6 +974,131 @@ class FinancialAccountMigrationTest {
                 UUID.randomUUID(), ownerId, scope, requestId, "a".repeat(64), UUID.randomUUID(), snapshot, timestamp());
     }
 
+    private UUID insertRawInstrument(UUID ownerId, String currency, String instrumentType, boolean active) {
+        var id = UUID.randomUUID();
+        var symbol = "MIG-" + id.toString().substring(0, 12).toUpperCase();
+        var name = "Migration " + symbol;
+        var now = timestamp();
+        updateCommitted(
+                "INSERT INTO reference.instrument" + " (id, owner_user_account_id, market_id, symbol, symbol_normalized, name, name_normalized," +
+                        " instrument_type, quotation_currency_code, valuation_method, active, source_kind, version, created_at, updated_at)" +
+                        " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'NOT_VALUED', ?, ?, 0, ?, ?)",
+                id, ownerId, MANUAL_MARKET_ID, symbol, symbol, name, name.toUpperCase(), instrumentType, currency, active,
+                ownerId == null ? "REFERENCE_SEED" : "USER_ENTERED", now, now);
+        return id;
+    }
+
+    private RawTrade insertRawTrade(UUID ownerId, UUID accountId, UUID cashPocketId, UUID instrumentId, String side, String quantity, String unitPrice,
+            String grossAmount, String commissionAmount, OffsetDateTime effectiveAt, long economicSequence) {
+        return insertRawTrade(ownerId, accountId, cashPocketId, instrumentId, side, quantity, unitPrice, grossAmount, commissionAmount, effectiveAt,
+                economicSequence, "CURRENT_ACTION", "ALLOWED");
+    }
+
+    private RawTrade insertRawTrade(UUID ownerId, UUID accountId, UUID cashPocketId, UUID instrumentId, String side, String quantity, String unitPrice,
+            String grossAmount, String commissionAmount, OffsetDateTime effectiveAt, long economicSequence, String recordingMode, String policyDecision) {
+        return new TransactionTemplate(transactionManager).execute(status -> insertRawTradeInTransaction(ownerId, accountId, cashPocketId, instrumentId, side,
+                quantity, unitPrice, grossAmount, commissionAmount, effectiveAt, economicSequence, recordingMode, policyDecision));
+    }
+
+    private RawTrade insertRawTradeInTransaction(UUID ownerId, UUID accountId, UUID cashPocketId, UUID instrumentId, String side, String quantity,
+            String unitPrice, String grossAmount, String commissionAmount, OffsetDateTime effectiveAt, long economicSequence, String recordingMode,
+            String policyDecision) {
+        var isBuy = "BUY".equals(side);
+        var activityId = insertTradeActivityInTransaction(ownerId, isBuy ? "SECURITY_BUY" : "SECURITY_SELL", recordingMode, policyDecision, effectiveAt,
+                economicSequence, null, null);
+        var grossCashAmount = isBuy ? new BigDecimal(grossAmount).negate().toPlainString() : grossAmount;
+        var grossPostingId = insertRawMoneyPostingInTransaction(ownerId, activityId, accountId, cashPocketId, "USD", grossCashAmount,
+                isBuy ? "TRADE_PURCHASE" : "TRADE_PROCEEDS", null);
+        UUID feePostingId = null;
+        String feeCashAmount = null;
+        if (new BigDecimal(commissionAmount).signum() != 0) {
+            feeCashAmount = new BigDecimal(commissionAmount).negate().toPlainString();
+            feePostingId = insertRawMoneyPostingInTransaction(ownerId, activityId, accountId, cashPocketId, "USD", feeCashAmount, "FEE", null);
+        }
+        var quantityDelta = isBuy ? quantity : new BigDecimal(quantity).negate().toPlainString();
+        var securityPostingId = insertRawSecurityPostingInTransaction(ownerId, activityId, accountId, instrumentId, "USD", quantityDelta, unitPrice,
+                grossAmount, isBuy ? "BUY" : "SELL", effectiveAt, economicSequence, null);
+        return new RawTrade(activityId, grossPostingId, feePostingId, securityPostingId, accountId, cashPocketId, instrumentId, "USD", quantityDelta,
+                grossCashAmount, feeCashAmount, effectiveAt, economicSequence);
+    }
+
+    private UUID insertRawTradeReversal(UUID ownerId, RawTrade original) {
+        return new TransactionTemplate(transactionManager).execute(status -> {
+            var reversalActivityId = insertTradeActivityInTransaction(ownerId, "REVERSAL", "HISTORICAL_FACT", "NOT_APPLICABLE", original.effectiveAt(),
+                    original.economicSequence(), original.activityId(), "raw trade reversal");
+            insertRawMoneyPostingInTransaction(ownerId, reversalActivityId, original.accountId(), original.cashPocketId(), original.currencyCode(),
+                    new BigDecimal(original.grossCashAmount()).negate().toPlainString(), "REVERSAL", original.grossPostingId());
+            if (original.feePostingId() != null) {
+                insertRawMoneyPostingInTransaction(ownerId, reversalActivityId, original.accountId(), original.cashPocketId(), original.currencyCode(),
+                        new BigDecimal(original.feeCashAmount()).negate().toPlainString(), "REVERSAL", original.feePostingId());
+            }
+            insertRawSecurityPostingInTransaction(ownerId, reversalActivityId, original.accountId(), original.instrumentId(), original.currencyCode(),
+                    new BigDecimal(original.quantityDelta()).negate().toPlainString(), null, null, "REVERSAL", original.effectiveAt(),
+                    original.economicSequence(), original.securityPostingId());
+            return reversalActivityId;
+        });
+    }
+
+    private UUID insertTradeActivityInTransaction(UUID ownerId, String activityType, String recordingMode, String policyDecision, OffsetDateTime effectiveAt,
+            Long economicSequence, UUID reversesActivityId, String correctionReason) {
+        var id = UUID.randomUUID();
+        jdbcTemplate.update(
+                "INSERT INTO ledger.activity" +
+                        " (id, owner_user_account_id, client_event_id, operation_scope, command_sequence, activity_type, recording_mode," +
+                        " effective_at, recorded_at, source_kind, policy_decision, correction_reason, reverses_activity_id, economic_sequence)" +
+                        " VALUES (?, ?, ?, ?, 0, ?, ?, ?, ?, 'USER_ENTERED', ?, ?, ?, ?)",
+                id, ownerId, UUID.randomUUID(), "migration.trade." + id, activityType, recordingMode, effectiveAt, timestamp(), policyDecision,
+                correctionReason, reversesActivityId, economicSequence);
+        return id;
+    }
+
+    private UUID insertRawMoneyPosting(UUID ownerId, UUID activityId, UUID accountId, UUID cashPocketId, String currency, String amount, String postingRole,
+            UUID reversesMoneyPostingId) {
+        return new TransactionTemplate(transactionManager).execute(status -> insertRawMoneyPostingInTransaction(ownerId, activityId, accountId, cashPocketId,
+                currency, amount, postingRole, reversesMoneyPostingId));
+    }
+
+    private UUID insertRawMoneyPostingInTransaction(UUID ownerId, UUID activityId, UUID accountId, UUID cashPocketId, String currency, String amount,
+            String postingRole, UUID reversesMoneyPostingId) {
+        var id = UUID.randomUUID();
+        jdbcTemplate.update(
+                "INSERT INTO ledger.money_posting" +
+                        " (id, owner_user_account_id, activity_id, financial_account_id, cash_pocket_id, currency_code, amount, posting_role," +
+                        " reverses_money_posting_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?::numeric, ?, ?, ?)",
+                id, ownerId, activityId, accountId, cashPocketId, currency, amount, postingRole, reversesMoneyPostingId, timestamp());
+        return id;
+    }
+
+    private UUID insertRawSecurityPostingInTransaction(UUID ownerId, UUID activityId, UUID accountId, UUID instrumentId, String currency, String quantityDelta,
+            String unitPrice, String grossAmount, String postingRole, OffsetDateTime effectiveAt, long economicSequence, UUID reversesSecurityPostingId) {
+        var id = UUID.randomUUID();
+        jdbcTemplate.update(
+                "INSERT INTO ledger.security_posting" +
+                        " (id, owner_user_account_id, activity_id, financial_account_id, instrument_id, trade_currency_code, quantity_delta," +
+                        " unit_price, gross_amount, posting_role, effective_at, economic_sequence, reverses_security_posting_id, created_at)" +
+                        " VALUES (?, ?, ?, ?, ?, ?, ?::numeric, ?::numeric, ?::numeric, ?, ?, ?, ?, ?)",
+                id, ownerId, activityId, accountId, instrumentId, currency, quantityDelta, unitPrice, grossAmount, postingRole, effectiveAt, economicSequence,
+                reversesSecurityPostingId, timestamp());
+        return id;
+    }
+
+    private void insertRawPositionProjection(UUID ownerId, UUID accountId, UUID instrumentId, String currency, String quantity, String remainingBasis,
+            String realizedPnl, String calculationPolicy, String status, OffsetDateTime asOf, UUID watermarkActivityId, OffsetDateTime lastSuccessfulBuildAt,
+            OffsetDateTime staleFrom, long version) {
+        updateCommitted(
+                "INSERT INTO ledger.position_projection" +
+                        " (id, owner_user_account_id, financial_account_id, instrument_id, currency_code, current_quantity," +
+                        " remaining_economic_basis, cumulative_realized_economic_pnl, calculation_policy, projection_status, as_of," +
+                        " input_watermark_activity_id, last_successful_build_at, stale_from, updated_at, version)" +
+                        " VALUES (?, ?, ?, ?, ?, ?::numeric, ?::numeric, ?::numeric, ?, ?, ?, ?, ?, ?, ?, ?)",
+                UUID.randomUUID(), ownerId, accountId, instrumentId, currency, quantity, remainingBasis, realizedPnl, calculationPolicy, status, asOf,
+                watermarkActivityId, lastSuccessfulBuildAt, staleFrom, timestamp(), version);
+    }
+
+    private void inTransaction(Runnable sql) {
+        new TransactionTemplate(transactionManager).executeWithoutResult(status -> sql.run());
+    }
+
     private void updateCommitted(String sql, Object... arguments) {
         new TransactionTemplate(transactionManager).executeWithoutResult(status -> jdbcTemplate.update(sql, arguments));
     }
@@ -697,4 +1112,8 @@ class FinancialAccountMigrationTest {
                 " WHERE table_schema = 'ledger' AND table_name = ? AND column_name = ?", table, column);
         assertThat(shape).containsEntry("numeric_precision", 38).containsEntry("numeric_scale", 18);
     }
+
+    private record RawTrade(UUID activityId, UUID grossPostingId, UUID feePostingId, UUID securityPostingId, UUID accountId, UUID cashPocketId,
+            UUID instrumentId, String currencyCode, String quantityDelta, String grossCashAmount, String feeCashAmount, OffsetDateTime effectiveAt,
+            long economicSequence) {}
 }

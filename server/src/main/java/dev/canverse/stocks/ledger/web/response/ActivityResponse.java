@@ -1,6 +1,7 @@
 package dev.canverse.stocks.ledger.web.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import dev.canverse.stocks.investing.web.response.SecurityPostingResponse;
 import dev.canverse.stocks.ledger.domain.ActivityType;
 import dev.canverse.stocks.ledger.domain.PolicyDecision;
 import dev.canverse.stocks.ledger.domain.RecordingMode;
@@ -12,9 +13,10 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ActivityResponse(@NotNull UUID id, @NotNull ActivityType activityType, @NotNull RecordingMode recordingMode, @NotNull Instant effectiveAt,
         @NotNull Instant recordedAt, @NotNull PolicyDecision policyDecision, @NotNull String sourceKind, UUID reversesActivityId, UUID supersedesActivityId,
-        @NotNull List<PostingResponse> postings) {
+        @NotNull List<PostingResponse> postings, @NotNull List<SecurityPostingResponse> securityPostings) {
 
     public ActivityResponse {
         postings = List.copyOf(postings);
+        securityPostings = List.copyOf(securityPostings);
     }
 }

@@ -50,14 +50,14 @@ public class Activity {
             Instant effectiveAt, Instant recordedAt, PolicyDecision policyDecision) {
         requireHistoricalDecision(policyDecision);
         return create(id, ownerUserAccountId, clientEventId, operationScope, commandSequence, ActivityType.OPENING_BALANCE, RecordingMode.HISTORICAL_FACT,
-                effectiveAt, recordedAt, policyDecision, null, null, null);
+                effectiveAt, recordedAt, null, policyDecision, null, null, null);
     }
 
     public static Activity correctedOpeningBalance(UUID id, UUID ownerUserAccountId, UUID clientEventId, String operationScope, long commandSequence,
             Instant effectiveAt, Instant recordedAt, PolicyDecision policyDecision, String correctionReason, UUID supersedesActivityId) {
         requireHistoricalDecision(policyDecision);
         return create(id, ownerUserAccountId, clientEventId, operationScope, commandSequence, ActivityType.OPENING_BALANCE, RecordingMode.HISTORICAL_FACT,
-                effectiveAt, recordedAt, policyDecision, requireReason(correctionReason), null,
+                effectiveAt, recordedAt, null, policyDecision, requireReason(correctionReason), null,
                 Objects.requireNonNull(supersedesActivityId, "supersedesActivityId"));
     }
 
@@ -95,14 +95,52 @@ public class Activity {
             Instant effectiveAt, Instant recordedAt, PolicyDecision policyDecision, String adjustmentReason) {
         requireHistoricalDecision(policyDecision);
         return create(id, ownerUserAccountId, clientEventId, operationScope, commandSequence, ActivityType.RECONCILIATION_ADJUSTMENT,
-                RecordingMode.HISTORICAL_FACT, effectiveAt, recordedAt, policyDecision, requireReason(adjustmentReason), null, null);
+                RecordingMode.HISTORICAL_FACT, effectiveAt, recordedAt, null, policyDecision, requireReason(adjustmentReason), null, null);
     }
 
     public static Activity reversal(UUID id, UUID ownerUserAccountId, UUID clientEventId, String operationScope, long commandSequence, Instant effectiveAt,
             Instant recordedAt, String correctionReason, UUID reversesActivityId) {
         return create(id, ownerUserAccountId, clientEventId, operationScope, commandSequence, ActivityType.REVERSAL, RecordingMode.HISTORICAL_FACT, effectiveAt,
-                recordedAt, PolicyDecision.NOT_APPLICABLE, requireReason(correctionReason), Objects.requireNonNull(reversesActivityId, "reversesActivityId"),
-                null);
+                recordedAt, null, PolicyDecision.NOT_APPLICABLE, requireReason(correctionReason),
+                Objects.requireNonNull(reversesActivityId, "reversesActivityId"), null);
+    }
+
+    public static Activity tradeReversal(UUID id, UUID ownerUserAccountId, UUID clientEventId, String operationScope, long commandSequence, Instant effectiveAt,
+            Instant recordedAt, long economicSequence, String correctionReason, UUID reversesActivityId) {
+        if (economicSequence < 0) {
+            throw new IllegalArgumentException("economicSequence must be non-negative");
+        }
+        return create(id, ownerUserAccountId, clientEventId, operationScope, commandSequence, ActivityType.REVERSAL, RecordingMode.HISTORICAL_FACT, effectiveAt,
+                recordedAt, economicSequence, PolicyDecision.NOT_APPLICABLE, requireReason(correctionReason),
+                Objects.requireNonNull(reversesActivityId, "reversesActivityId"), null);
+    }
+
+    public static Activity securityBuy(UUID id, UUID ownerUserAccountId, UUID clientEventId, String operationScope, long commandSequence,
+            RecordingMode recordingMode, Instant effectiveAt, Instant recordedAt, long economicSequence, PolicyDecision policyDecision) {
+        return trade(id, ownerUserAccountId, clientEventId, operationScope, commandSequence, ActivityType.SECURITY_BUY, recordingMode, effectiveAt, recordedAt,
+                economicSequence, policyDecision);
+    }
+
+    public static Activity securitySell(UUID id, UUID ownerUserAccountId, UUID clientEventId, String operationScope, long commandSequence,
+            RecordingMode recordingMode, Instant effectiveAt, Instant recordedAt, long economicSequence, PolicyDecision policyDecision) {
+        return trade(id, ownerUserAccountId, clientEventId, operationScope, commandSequence, ActivityType.SECURITY_SELL, recordingMode, effectiveAt, recordedAt,
+                economicSequence, policyDecision);
+    }
+
+    private static Activity trade(UUID id, UUID ownerUserAccountId, UUID clientEventId, String operationScope, long commandSequence, ActivityType activityType,
+            RecordingMode recordingMode, Instant effectiveAt, Instant recordedAt, long economicSequence, PolicyDecision policyDecision) {
+        if (economicSequence < 0) {
+            throw new IllegalArgumentException("economicSequence must be non-negative");
+        }
+        if (recordingMode == RecordingMode.CURRENT_ACTION) {
+            requireCurrentDecision(policyDecision);
+        } else if (recordingMode == RecordingMode.HISTORICAL_FACT) {
+            requireHistoricalDecision(policyDecision);
+        } else {
+            throw new NullPointerException("recordingMode");
+        }
+        return create(id, ownerUserAccountId, clientEventId, operationScope, commandSequence, activityType, recordingMode, effectiveAt, recordedAt,
+                economicSequence, policyDecision, null, null, null);
     }
 
     private static Activity cashActivity(UUID id, UUID ownerUserAccountId, UUID clientEventId, String operationScope, long commandSequence,
@@ -115,12 +153,12 @@ public class Activity {
         } else {
             requireHistoricalDecision(policyDecision);
         }
-        return create(id, ownerUserAccountId, clientEventId, operationScope, commandSequence, activityType, recordingMode, effectiveAt, recordedAt,
+        return create(id, ownerUserAccountId, clientEventId, operationScope, commandSequence, activityType, recordingMode, effectiveAt, recordedAt, null,
                 policyDecision, null, null, null);
     }
 
     private static Activity create(UUID id, UUID ownerUserAccountId, UUID clientEventId, String operationScope, long commandSequence, ActivityType activityType,
-            RecordingMode recordingMode, Instant effectiveAt, Instant recordedAt, PolicyDecision policyDecision, String correctionReason,
+            RecordingMode recordingMode, Instant effectiveAt, Instant recordedAt, Long economicSequence, PolicyDecision policyDecision, String correctionReason,
             UUID reversesActivityId, UUID supersedesActivityId) {
         var activity = new Activity();
         activity.id = Objects.requireNonNull(id, "id");
@@ -135,7 +173,7 @@ public class Activity {
         activity.recordingMode = Objects.requireNonNull(recordingMode, "recordingMode");
         activity.effectiveAt = Objects.requireNonNull(effectiveAt, "effectiveAt");
         activity.recordedAt = Objects.requireNonNull(recordedAt, "recordedAt");
-        activity.economicSequence = null;
+        activity.economicSequence = economicSequence;
         activity.sourceKind = SourceKind.USER_ENTERED;
         activity.policyDecision = Objects.requireNonNull(policyDecision, "policyDecision");
         activity.correctionReason = correctionReason;

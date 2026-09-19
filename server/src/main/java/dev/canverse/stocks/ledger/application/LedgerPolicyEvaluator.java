@@ -10,11 +10,11 @@ import dev.canverse.stocks.ledger.error.LedgerErrorCode;
 /**
  * Evaluates the policy attached to an account against a proposed balance change.
  */
-final class LedgerPolicyEvaluator {
+public final class LedgerPolicyEvaluator {
 
     private LedgerPolicyEvaluator() {}
 
-    static PolicyEvaluation evaluate(FinancialAccount account, FinancialAmount current, FinancialAmount delta, RecordingMode recordingMode,
+    public static PolicyEvaluation evaluate(FinancialAccount account, FinancialAmount current, FinancialAmount delta, RecordingMode recordingMode,
             boolean confirmPolicyBreach) {
         var after = current.add(delta);
         if (recordingMode == RecordingMode.HISTORICAL_FACT) {
@@ -41,5 +41,5 @@ final class LedgerPolicyEvaluator {
                 policy == NegativeBalancePolicy.SOFT_FLOOR ? PolicyDecision.CONFIRMED_BREACH : PolicyDecision.HISTORICAL_BREACH_RECORDED, null);
     }
 
-    record PolicyEvaluation(boolean allowed, PolicyDecision decision, LedgerErrorCode errorCode) {}
+    public record PolicyEvaluation(boolean allowed, PolicyDecision decision, LedgerErrorCode errorCode) {}
 }

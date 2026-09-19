@@ -1,5 +1,7 @@
 package dev.canverse.stocks.ledger.infrastructure;
 
+import dev.canverse.stocks.investing.domain.SecurityPostingRole;
+import dev.canverse.stocks.investing.web.response.SecurityPostingResponse;
 import dev.canverse.stocks.ledger.application.model.BalanceView;
 import dev.canverse.stocks.ledger.application.model.FinancialAccountView;
 import dev.canverse.stocks.ledger.application.model.LastReconciliationSummaryView;
@@ -183,9 +185,11 @@ public class LedgerReadRepository {
             return List.of();
         }
         var postingsByActivity = findPostings(rows.getFirst().ownerUserAccountId(), rows.stream().map(ActivityRow::id).toList());
+        var securityPostingsByActivity = findSecurityPostings(rows.getFirst().ownerUserAccountId(), rows.stream().map(ActivityRow::id).toList());
         return rows.stream()
                 .map(row -> new ActivityResponse(row.id(), row.activityType(), row.recordingMode(), row.effectiveAt(), row.recordedAt(), row.policyDecision(),
-                        row.sourceKind(), row.reversesActivityId(), row.supersedesActivityId(), postingsByActivity.getOrDefault(row.id(), List.of())))
+                        row.sourceKind(), row.reversesActivityId(), row.supersedesActivityId(), postingsByActivity.getOrDefault(row.id(), List.of()),
+                        securityPostingsByActivity.getOrDefault(row.id(), List.of())))
                 .toList();
     }
 
@@ -213,6 +217,26 @@ public class LedgerReadRepository {
                 .list();
         return rows.stream()
                 .collect(Collectors.groupingBy(PostingRow::activityId, LinkedHashMap::new, Collectors.mapping(PostingRow::posting, Collectors.toList())));
+    }
+
+    private Map<UUID, List<SecurityPostingResponse>> findSecurityPostings(UUID ownerUserAccountId, List<UUID> activityIds) {
+        var rows = jdbcClient.sql("""
+                SELECT activity_id, financial_account_id, instrument_id, trade_currency_code, quantity_delta,
+                       unit_price, gross_amount, posting_role, effective_at, economic_sequence,
+                       reverses_security_posting_id
+                FROM ledger.security_posting
+                WHERE owner_user_account_id = :ownerUserAccountId AND activity_id IN (:activityIds)
+                ORDER BY activity_id, CASE posting_role WHEN 'BUY' THEN 0 WHEN 'SELL' THEN 1 ELSE 2 END, id
+                """).param("ownerUserAccountId", ownerUserAccountId).param("activityIds", activityIds)
+                .query((resultSet, rowNumber) -> new SecurityPostingRow(resultSet.getObject("activity_id", UUID.class),
+                        new SecurityPostingResponse(resultSet.getObject("financial_account_id", UUID.class), resultSet.getObject("instrument_id", UUID.class),
+                                resultSet.getString("trade_currency_code"), FinancialAmount.of(resultSet.getBigDecimal("quantity_delta")).canonical(),
+                                canonicalNullable(resultSet.getBigDecimal("unit_price")), canonicalNullable(resultSet.getBigDecimal("gross_amount")),
+                                SecurityPostingRole.valueOf(resultSet.getString("posting_role")), instant(resultSet, "effective_at"),
+                                resultSet.getLong("economic_sequence"), resultSet.getObject("reverses_security_posting_id", UUID.class))))
+                .list();
+        return rows.stream().collect(Collectors.groupingBy(SecurityPostingRow::activityId, LinkedHashMap::new,
+                Collectors.mapping(SecurityPostingRow::posting, Collectors.toList())));
     }
 
     private BigDecimal historicalBalance(UUID ownerUserAccountId, UUID accountId, Instant asOf, Instant coverageFrom) {
@@ -295,4 +319,6 @@ public class LedgerReadRepository {
             Instant recordedAt, PolicyDecision policyDecision, String sourceKind, UUID reversesActivityId, UUID supersedesActivityId) {}
 
     private record PostingRow(UUID activityId, PostingResponse posting) {}
+
+    private record SecurityPostingRow(UUID activityId, SecurityPostingResponse posting) {}
 }

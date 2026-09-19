@@ -12,6 +12,10 @@ public interface InstrumentRepository extends JpaRepository<Instrument, UUID> {
     @Query("select i from Instrument i where i.id = :id and i.ownerUserAccount.id = :ownerUserAccountId")
     Optional<Instrument> findOwnedById(UUID id, UUID ownerUserAccountId);
 
+    @Query("select i from Instrument i left join i.ownerUserAccount owner where i.id = :instrumentId and (owner is null or" +
+            " owner.id = :ownerUserAccountId)")
+    Optional<Instrument> findVisibleById(UUID instrumentId, UUID ownerUserAccountId);
+
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
             update Instrument i

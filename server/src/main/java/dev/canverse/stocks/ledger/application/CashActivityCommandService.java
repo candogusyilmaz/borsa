@@ -1,5 +1,7 @@
 package dev.canverse.stocks.ledger.application;
 
+import dev.canverse.stocks.investing.application.InvestingTradeCommandService;
+import dev.canverse.stocks.investing.application.model.TradeReversalPlan;
 import dev.canverse.stocks.ledger.domain.AccountBalanceProjection;
 import dev.canverse.stocks.ledger.domain.Activity;
 import dev.canverse.stocks.ledger.domain.ActivityType;
@@ -41,6 +43,7 @@ public class CashActivityCommandService {
     private final LedgerCommandLockRepository commandLockRepository;
     private final LedgerReadRepository readRepository;
     private final LedgerIdempotencyStore idempotencyStore;
+    private final InvestingTradeCommandService investingTradeCommandService;
     private final Clock clock;
     private final CanonicalFingerprint fingerprint;
     private final IdGenerator idGenerator;
@@ -162,14 +165,25 @@ public class CashActivityCommandService {
 
     private Activity writeReversal(UUID ownerUserAccountId, UUID activityId, Activity original, List<MoneyPosting> originalPostings,
             Map<UUID, AccountBalanceProjection> projections, String correctionReason, UUID clientRequestId, Instant observedAt) {
-        var reversal = Activity.reversal(idGenerator.next(), ownerUserAccountId, clientRequestId, LedgerCommandScopes.ACTIVITY_REVERSAL, 0,
-                original.getEffectiveAt(), observedAt, correctionReason, activityId);
+        var reversalActivityId = idGenerator.next();
+        var isTrade = original.getActivityType() == ActivityType.SECURITY_BUY || original.getActivityType() == ActivityType.SECURITY_SELL;
+        var reversal = isTrade
+                ? Activity.tradeReversal(reversalActivityId, ownerUserAccountId, clientRequestId, LedgerCommandScopes.ACTIVITY_REVERSAL, 0,
+                        original.getEffectiveAt(), observedAt, Objects.requireNonNull(original.getEconomicSequence(), "trade economic sequence"),
+                        correctionReason, activityId)
+                : Activity.reversal(reversalActivityId, ownerUserAccountId, clientRequestId, LedgerCommandScopes.ACTIVITY_REVERSAL, 0,
+                        original.getEffectiveAt(), observedAt, correctionReason, activityId);
+        TradeReversalPlan tradeReversalPlan = isTrade
+                ? investingTradeCommandService.prepareTradeReversal(ownerUserAccountId, original, reversal.getId(), observedAt) : null;
         activityRepository.save(reversal);
         for (var originalPosting : originalPostings) {
             var inverse = FinancialAmount.of(originalPosting.getAmount()).negate();
             postingRepository.save(MoneyPosting.reversal(idGenerator.next(), ownerUserAccountId, reversal.getId(), originalPosting.getFinancialAccountId(),
-                    originalPosting.getCashPocketId(), originalPosting.getCurrencyCode(), inverse, observedAt));
+                    originalPosting.getCashPocketId(), originalPosting.getCurrencyCode(), inverse, originalPosting.getId(), observedAt));
             projections.get(originalPosting.getFinancialAccountId()).apply(inverse, observedAt, reversal.getId(), observedAt);
+        }
+        if (tradeReversalPlan != null) {
+            investingTradeCommandService.persistTradeReversal(tradeReversalPlan, observedAt);
         }
         return reversal;
     }

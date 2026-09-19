@@ -1,6 +1,7 @@
 package dev.canverse.stocks.platform.error;
 
 import dev.canverse.stocks.identity.error.IdentityErrorCode;
+import dev.canverse.stocks.investing.error.InvestingErrorCode;
 import dev.canverse.stocks.ledger.error.LedgerErrorCode;
 import dev.canverse.stocks.reference.error.ReferenceErrorCode;
 import java.util.Map;
@@ -21,7 +22,8 @@ public final class DatabaseConstraintRegistry {
             Map.entry("uix_ledger_financial_account_active_name", LedgerErrorCode.ACCOUNT_NAME_CONFLICT),
             Map.entry("uq_ledger_idempotency_owner_scope_request", LedgerErrorCode.IDEMPOTENCY_CONFLICT),
             Map.entry("uq_ledger_activity_operation", LedgerErrorCode.IDEMPOTENCY_CONFLICT),
-            Map.entry("uq_ledger_activity_reversal", LedgerErrorCode.ACTIVITY_ALREADY_REVERSED));
+            Map.entry("uq_ledger_activity_reversal", LedgerErrorCode.ACTIVITY_ALREADY_REVERSED),
+            Map.entry("uix_ledger_security_posting_economic_key", InvestingErrorCode.DUPLICATE_ECONOMIC_ORDER));
 
     private DatabaseConstraintRegistry() {}
 

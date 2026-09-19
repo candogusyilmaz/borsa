@@ -18,24 +18,24 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @RequiredArgsConstructor
-final class LedgerAccountAccess {
+public final class LedgerAccountAccess {
 
     private final FinancialAccountRepository accountRepository;
     private final AccountBalanceProjectionRepository projectionRepository;
 
-    FinancialAccount owned(UUID ownerUserAccountId, UUID accountId) {
+    public FinancialAccount owned(UUID ownerUserAccountId, UUID accountId) {
         return accountRepository.findOwned(accountId, ownerUserAccountId).orElseThrow(() -> new AppException(LedgerErrorCode.ACCOUNT_NOT_FOUND));
     }
 
-    FinancialAccount ownedForUpdate(UUID ownerUserAccountId, UUID accountId) {
+    public FinancialAccount ownedForUpdate(UUID ownerUserAccountId, UUID accountId) {
         return accountRepository.findOwnedForUpdate(accountId, ownerUserAccountId).orElseThrow(() -> new AppException(LedgerErrorCode.ACCOUNT_NOT_FOUND));
     }
 
-    AccountBalanceProjection projection(UUID ownerUserAccountId, UUID accountId) {
+    public AccountBalanceProjection projection(UUID ownerUserAccountId, UUID accountId) {
         return projectionRepository.findOwned(ownerUserAccountId, accountId).orElseThrow(() -> new AppException(LedgerErrorCode.ACCOUNT_NOT_FOUND));
     }
 
-    AccountBalanceProjection projectionForUpdate(UUID ownerUserAccountId, UUID accountId) {
+    public AccountBalanceProjection projectionForUpdate(UUID ownerUserAccountId, UUID accountId) {
         return projectionRepository.findOwnedForUpdate(ownerUserAccountId, accountId)
                 .orElseThrow(() -> new AppException(LedgerErrorCode.ACCOUNT_ACTION_NOT_SUPPORTED));
     }
