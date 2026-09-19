@@ -1,6 +1,6 @@
 # Backend implementation state
 
-Last updated: 2026-09-18
+Last updated: 2026-09-19
 
 ## Technology baseline
 
@@ -13,13 +13,14 @@ Last updated: 2026-09-18
 
 ## Accepted implementation baseline
 
-- The accepted baseline through PR-028 includes the identity/session security lifecycle, canonical offline reference catalogue, owner-scoped immutable native-currency cash ledger, cash-statement reconciliation, the governing simplicity standards, Cleanup B pagination simplification, Cleanup C validation/error/trivial-abstraction simplification, Cleanup D redundant model/mapping and fingerprint readability simplification, and the identity authentication-boundary consolidation.
+- The accepted baseline through PR-029 includes the identity/session security lifecycle, canonical offline reference catalogue, owner-scoped immutable native-currency cash ledger, cash-statement reconciliation, manual cash fees and interest credits, the governing simplicity standards, Cleanup B pagination simplification, Cleanup C validation/error/trivial-abstraction simplification, Cleanup D redundant model/mapping and fingerprint readability simplification, and the identity authentication-boundary consolidation.
 - PR-023 is accepted and committed. Its directness, bounded-list, Spring `Pageable`, `Slice`/`Page`, and evidence-based abstraction rules are authoritative; it changed documentation only and did not change runtime behavior.
 - PR-024 is accepted and committed. Financial accounts are a complete owner-scoped list; ledger activities and reconciliations use Spring `Pageable` with compact project-owned `SliceResponse<T>` results and no ledger cursor infrastructure.
 - PR-025 is accepted and committed. Cleanup B is complete.
 - PR-026 is accepted and committed. Cleanup C validation/error and trivial-abstraction simplification is complete.
 - PR-027 is accepted and committed in `4e3108d`. Cleanup D redundant model, mapping, and fingerprint readability simplification is complete.
 - PR-028 is accepted and committed in `ac4d7e7`. Identity authentication-boundary consolidation is complete.
+- PR-029 is accepted and committed in `c01d708`. Manual cash fees and interest credits complete the implemented R3 manual cash-activity set.
 
 ## Implemented capabilities
 
@@ -41,7 +42,7 @@ Last updated: 2026-09-18
 
 - V3 provides owner-scoped cash, brokerage, card, and loan account onboarding, explicit opening-state coverage, cash pockets, immutable activities/postings, and a rebuildable native balance projection.
 - Deposits, withdrawals, same-currency owned transfers and previews, policy evaluation, idempotent retries, deterministic locking, reversal, opening correction, current/as-of balance reads, an unpaged owner-scoped account list, and owner-scoped activity/reconciliation `Pageable`/`Slice` reads are implemented.
-- PR-029 adds owner-entered `CASH_FEE` and `CASH_INTEREST_CREDIT` facts with signed `FEE`/`INTEREST_CREDIT` postings, the existing current/historical policy and idempotency lifecycle, generic reasoned reversal, exact as-of effects, and reconciliation staleness by effective time.
+- Owner-entered `CASH_FEE` and `CASH_INTEREST_CREDIT` facts use signed `FEE`/`INTEREST_CREDIT` postings, the existing current/historical policy and idempotency lifecycle, generic reasoned reversal, exact as-of effects, and reconciliation staleness by effective time.
 - The ledger exposes the required authenticated HTTP boundaries. Immutable postings remain the financial fact authority; projections are derived state.
 
 ### Reconciliation
@@ -74,9 +75,9 @@ Tables:
 
 ## Current implementation scope
 
-- PR-025 is accepted and committed; Cleanup B is complete. Device-session listing is a complete owner-scoped logical-family array, instrument search uses Spring `Pageable` plus compact `SliceResponse<InstrumentSummaryResponse>` results, and the remaining session/instrument/generic cursor stack was deleted after consumer removal.
-- PR-026 through PR-028 are accepted and committed; Cleanup C, Cleanup D, and the identity authentication-boundary consolidation are complete.
-- PR-029 implementation is present in the working tree and awaiting user review. `CURRENT.md` remains `NONE` because this invocation does not advance the user-owned implementation pointer. R4, unrelated migrations, identity domain/repository/configuration changes, new authentication capabilities, and later frontend work remain deferred.
+- PR-025 through PR-028 are accepted and committed; the governing pagination, validation/error, redundant-model/mapping, fingerprint-readability, and identity authentication-boundary cleanup is complete.
+- PR-029 is accepted and committed in `c01d708`; the implemented R3 manual cash activity, reconciliation, and native-balance boundary is complete.
+- `CURRENT.md` now activates PR-030, a backend-only R4 slice for same-currency manually funded brokerage buys/sells, deterministic weighted-average position projection, reversal, and owner-scoped trade/position reads. This is specification state only; no PR-030 production code or V6 migration is implemented yet. Portfolio grouping, imports, holdings-only opening positions, tax, income/corporate actions, FX/multi-currency, pending settlement, valuation, and frontend work remain deferred.
 
 ## Deferred capabilities
 
@@ -89,7 +90,7 @@ Tables:
 
 ## Verification state
 
-PR-029 verification is green. The focused fee/interest/migration/reconciliation/HTTP gate passes 93 tests with 0 failures, errors, or skips against PostgreSQL 17 Testcontainers; fresh V5 and V4-to-V5 migration paths, including seeded V4 balanced/adjusted reconciliations and their adjustment activity/posting/linkage, pass with Hibernate validation. `spotless:check`, full Maven `test`, and full Maven `verify` pass; both lifecycles run 382 tests with 0 failures, errors, or skips. The refresh test now expects the existing CORS behavior for a disallowed-origin preflight: HTTP 403 with no `Access-Control-Allow-Origin`, before refresh rotation. OpenAPI generation and drift checking pass against the PR-029 backend; frontend typecheck, changed-file Biome, existing suite (62 tests), and production build pass. The repository-wide frontend Biome check still reports 12 untouched pre-existing formatting violations documented in the PR-029 completion record.
+PR-029 is accepted and committed in `c01d708`. Its focused fee/interest/migration/reconciliation/HTTP gate passed 93 tests with 0 failures, errors, or skips against PostgreSQL 17 Testcontainers; fresh V5 and V4-to-V5 migration paths, including seeded V4 balanced/adjusted reconciliations and their adjustment activity/posting/linkage, passed with Hibernate validation. `spotless:check`, full Maven `test`, and full Maven `verify` passed; both full lifecycles ran 382 tests with 0 failures, errors, or skips. OpenAPI generation and drift checking passed against the PR-029 backend. Frontend verification associated with that accepted cross-stack unit is retained in its Completion Record; PR-030 and subsequent work are backend-only unless the user explicitly changes scope.
 
 PR-028 is accepted and committed in `ac4d7e7`. Registration/login/refresh use one HTTP boundary and one non-transactional attempt-policy boundary; logout is colocated with device-session HTTP operations; the transactional registration/login/rotation workflows and separate device-session query/revocation boundaries are preserved. Duplicate login/refresh result and response records and superseded operation-specific controllers/attempt wrappers are removed. The focused identity/security gate passed 108 tests, and the full suite plus Maven `verify` passed 371 tests each with 0 failures, 0 errors, and 0 skips against PostgreSQL 17 Testcontainers. Spotless passed across 255 Java files (192 production and 63 test), the executable archive was repackaged, and no required tests were skipped or replaced. Static audits pass: exactly three identity REST controllers and ten identity `@Service` classes remain, no deleted symbols remain, `AuthenticationAttemptService` has no transaction annotation, and `git diff --check` is clean.
 
@@ -103,7 +104,7 @@ Last updated: 2026-09-19
 
 - Operating contract and context router: [server/AGENTS.md](../../server/AGENTS.md) (repository router: [AGENTS.md](../../AGENTS.md))
 - Active pointer: [CURRENT.md](CURRENT.md)
-- Active scope: PR-029 implementation is complete in the working tree and awaiting review; the pointer itself remains `NONE` under the user-owned transition rule.
-- Last completed scope: [PR-028 - Identity authentication boundary consolidation](PR-028-identity-authentication-boundary-consolidation.md), accepted in `ac4d7e7`.
+- Active scope: [PR-030 - Manual funded brokerage trades and deterministic position projection](PR-030-manual-funded-brokerage-trades.md), backend-only and not yet implemented.
+- Last completed scope: [PR-029 - Manual cash fees and interest credits](PR-029-manual-cash-fees-and-interest.md), accepted in `c01d708`.
 
 Load only the standards, contracts, design sections, and repository code relevant to the current role and affected behavior.

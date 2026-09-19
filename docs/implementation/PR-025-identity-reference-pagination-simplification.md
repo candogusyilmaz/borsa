@@ -1,6 +1,6 @@
 # PR-025 - Cleanup B2 identity/reference pagination simplification
 
-Status: **ACTIVE**
+Status: **COMPLETE**
 
 ## Goal
 

@@ -1,7 +1,7 @@
 # Current implementation PR
 
-Status: **NONE**
+Status: **ACTIVE**
 
-No backend implementation PR is active.
+Active specification: [PR-030 - Manual funded brokerage trades and deterministic position projection](PR-030-manual-funded-brokerage-trades.md).
 
-Last completed: [PR-028 - Identity authentication boundary consolidation](PR-028-identity-authentication-boundary-consolidation.md), accepted in `ac4d7e7`.
+Last completed: [PR-029 - Manual cash fees and interest credits](PR-029-manual-cash-fees-and-interest.md), accepted in `c01d708`.

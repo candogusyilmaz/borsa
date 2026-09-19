@@ -1,6 +1,6 @@
 # PR-029 - Manual cash fees and interest credits
 
-Status: IMPLEMENTED — AWAITING USER REVIEW
+Status: **COMPLETE**
 
 ## Goal
 

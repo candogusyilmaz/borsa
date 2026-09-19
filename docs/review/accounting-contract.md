@@ -1,6 +1,6 @@
 # Accounting contract
 
-Contract date: 2026-08-07
+Contract date: 2026-09-19
 
 Status: initial implementation contract for the scratch rewrite. This file governs cross-cutting financial semantics shared by ledger, investing, observations, valuation, performance and scenarios. Feature-specific rules belong in their feature design documents; they must not contradict this contract.
 
@@ -123,6 +123,7 @@ A funded trade records linked cash/security economics rather than mutating a pos
 - Buy transaction fees are stored exactly in their native currency.
 - For the initial **economic performance** cost-basis policy, directly attributable buy transaction fees are capitalized into economic cost basis.
 - Taxes/levies are stored as distinct components. Their inclusion in economic P&L is explicit; jurisdictional tax-basis treatment belongs to a separate versioned tax policy.
+- For an application-calculated manual trade with no source-stated gross, settled gross is `quantity * unitPrice`, rounded exactly once to the trade currency's `minor_unit` with `HALF_EVEN`. Persist that settled gross and do not round quantity, unit price, or intermediate position arithmetic for display. A later import/provider workflow may accept a source-stated gross only under an explicit provenance and normalization policy; it must not silently recalculate and replace source truth.
 
 ### Sell
 
@@ -151,6 +152,14 @@ Rules:
 - reopening after a full close starts a new economic holding cycle while prior facts remain in history;
 - fractional quantities are first-class;
 - invalid historical short/negative quantity is rejected unless the account/instrument explicitly supports that behavior.
+
+`WEIGHTED_AVERAGE_ECONOMIC_V1` uses this deterministic allocation rule:
+
+1. A buy adds its settled gross plus directly attributable buy fees to remaining economic basis.
+2. For a partial disposal, calculate `preDisposalBasis * disposedQuantity / preDisposalQuantity` and round that allocation exactly once to scale 18 with `HALF_EVEN`. Subtract the stored allocation from remaining basis so the rounding remainder stays with the open position.
+3. A full close consumes all remaining basis exactly rather than recalculating a quotient; quantity and remaining basis both become zero.
+4. Economic realized P&L for a sell is settled gross proceeds minus sell fees minus allocated basis. Tax/withholding remains separate under section 9.
+5. Reject an operation rather than silently clamp, truncate or overflow a value that cannot be represented by the authoritative `numeric(38,18)` storage contract.
 
 Future FIFO/specific-lot/jurisdictional pooling policies must be separate named/versioned policies. Tax reporting must record which tax policy/version produced its result and must not overwrite the economic-performance basis.
 

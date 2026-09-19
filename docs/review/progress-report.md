@@ -1,6 +1,6 @@
 # Backend transformation progress report
 
-Report date: 2026-09-18
+Report date: 2026-09-19
 
 Scope: Spring Boot backend, PostgreSQL dump, database migration strategy, modular-monolith design, offline/fake data approach, and implementation readiness. Frontend implementation state is tracked separately under `docs/implementation/web/`.
 
@@ -47,11 +47,12 @@ Current-state handoff: use [docs/implementation/STATE.md](../implementation/STAT
 | PR-026 — Cleanup C validation, error, and trivial-abstraction simplification | **Complete in accepted commit `030b2e2`** | Future-time errors, direct validation/error paths, and trivial abstractions were simplified while preserving behavior; Cleanup D was kept separate |
 | PR-027 — Cleanup D redundant model, mapping, and fingerprint readability | **Complete in accepted commit `4e3108d`** | Transfer/reference redundant surfaces and unused projections are removed; five workflow-specific fingerprints preserve canonical identity; focused PR-027 gate: 99 tests passed; full test suite: 371 tests passed; Maven verify: 371 tests passed; PostgreSQL 17 Testcontainers executed successfully through Docker Desktop; Spotless passed across 261 Java files (198 production, 63 test); git diff --check passed |
 | PR-028 — Identity authentication boundary consolidation | **Complete in accepted commit `ac4d7e7`** | Registration/login/refresh now share one controller and one non-transactional attempt-policy service; logout is colocated with device-session HTTP operations; duplicate credential result/response types and superseded controllers/wrappers are removed while core transaction and session boundaries remain separate |
-| PR-029 — Manual cash fees and interest credits | **Implemented in the working tree; awaiting user review** | Cross-stack R3 completion adds V5 checks, signed `FEE`/`INTEREST_CREDIT` postings, current/historical command and reversal behavior, generated OpenAPI/UI actions, V4 reconciliation-adjustment preservation proof, and PostgreSQL/Testcontainers coverage; focused gate passes 93 tests, full Maven `test` and `verify` each pass 382 tests, and Spotless passes |
+| PR-029 — Manual cash fees and interest credits | **Complete in accepted commit `c01d708`** | Cross-stack R3 completion adds V5 checks, signed `FEE`/`INTEREST_CREDIT` postings, current/historical command and reversal behavior, generated OpenAPI/UI actions, V4 reconciliation-adjustment preservation proof, and PostgreSQL/Testcontainers coverage; focused gate passed 93 tests, full Maven `test` and `verify` each passed 382 tests, and Spotless passed |
+| PR-030 — Manual funded brokerage trades and deterministic position projection | **Active backend-only specification; not implemented** | First R4 capability will combine selected brokerage cash, same-currency fee-aware buy/sell facts, immutable security postings, synchronous `WEIGHTED_AVERAGE_ECONOMIC_V1` replay, reversal, and owner-scoped trade/position reads; portfolio grouping, imports, holdings-only openings, tax, FX, pending settlement, valuation, and frontend work are excluded |
 | Backend standardization cleanup                    | **Complete in commit `cf895ac`; preserved through the current baseline** | Controller-only validation, standard JWT validators with lexical compatibility checks, Boot-managed Micrometer W3C tracing, centralized persistence error mapping, typed authenticated principals, application-owned search criteria, and current package/SQL conventions; no public route or response contract changed |
-| Automated backend coverage                         | Focused PR-028 gate: 108 tests passed; full test suite: 371 tests passed; Maven `verify`: 371 tests passed | The suite covers response/cookie delivery, exact session/token binding, credential failures and throttling, validation/parsing, rotation invalid states, rollback, reuse, registration/login/refresh/logout/session HTTP behavior, PostgreSQL V3-to-V4 migration preservation, reconciliation numeric shapes and lifecycle, transaction boundaries, route scope, reference and ledger reads, ownership, idempotency/concurrency, statelessness, centralized persistence handling, and W3C trace compatibility; PostgreSQL 17 Testcontainers executed successfully through Docker Desktop; Spotless passed across 255 Java files (192 production, 63 test); git diff --check passed |
+| Automated backend coverage                         | PR-029 focused gate: 93 tests passed; full test suite and Maven `verify`: 382 tests each | The accepted suite covers identity/session security, reference ownership, native-currency cash activities and transfers, fee/interest signs, opening coverage, exact current/as-of balances, reconciliation lifecycle, V4-to-V5 preservation, rollback, idempotency/concurrency, centralized errors, route security, OpenAPI, and tracing; PostgreSQL 17 Testcontainers and Spotless passed with no required skips |
 
-Overall status: **PR-029 is implemented in the working tree and awaiting user review; PR-028 remains the last accepted commit (`ac4d7e7`), and the user-owned `CURRENT.md` pointer remains unchanged.**
+Overall status: **PR-029 is accepted in `c01d708`; R3's implemented manual native-currency ledger boundary is complete, and `CURRENT.md` now activates the backend-only PR-030 funded-trade/position slice.**
 
 ## Current identity-boundary checkpoint
 
@@ -419,7 +420,7 @@ The 2026-08-07 document harmonization establishes these implementation rules:
 | ----: | ----------------------------------------------------------------- | ----------- |
 |     0 | Risk containment and contract lock                                | Complete |
 |     1 | Fresh Flyway baseline and Testcontainers harness                  | Complete |
-|     2 | Financial accounts, immutable ledger and current trade cutover    | In progress — PR-021 account/ledger slice implemented in `e08f2c2`; current trade cutover remains deferred |
+|     2 | Financial accounts, immutable ledger and current trade cutover    | In progress — the accepted V3-V5 account/cash/reconciliation boundary is complete through PR-029 in `c01d708`; PR-030 activates manual funded trade cutover |
 |     3 | Observation platform and deterministic synthetic dataset          | Not started |
 |     4 | Reconciled net worth and honest investment analytics              | Not started |
 |     5 | Decision Replay and localized comparison policies                 | Not started |
@@ -438,8 +439,8 @@ The 2026-08-07 document harmonization establishes these implementation rules:
 |        R0 | Preserve evidence and replace backend skeleton               | Complete                                                                                                        |
 |        R1 | Foundation, identity, auth, sessions and jobs                | Partially complete — PR-019 identity/session security is accepted in `0c6657e`; unused job storage remains only as a reservation, while execution infrastructure and persistent-key/OIDC/recovery work remain deferred |
 |        R2 | Canonical references and deterministic seeds                 | Complete for the accepted PR-020 boundary in `3f45a8c`; administration, imports, observations, and providers remain later capabilities |
-|        R3 | Accounts/ledger/funding/balances — FT-31                     | In progress — PR-021 financial-account onboarding, cash ledger, and balance slice implemented in `e08f2c2`; broader funding remains deferred |
-|        R4 | Investing parity, funded trades and imports                  | Not started                                                                                                      |
+|        R3 | Accounts/ledger/funding/balances — FT-31                     | Complete for the accepted native-currency manual ledger boundary through PR-029 in `c01d708`; later card/debt/FX and imported connectivity remain in their own roadmap capabilities |
+|        R4 | Investing parity, funded trades and imports                  | Started as specification only — PR-030 activates the backend-only manual funded buy/sell and deterministic position-projection slice; portfolio grouping, imports, holdings-only openings, tax, FX, income/actions, and settlement remain later R4 work |
 |        R5 | Observation platform and synthetic universe                  | Not started                                                                                                      |
 |        R6 | Timeline/net worth/investment truth — FT-01/02/11            | Not started                                                                                                      |
 |        R7 | Decision Replay and comparison — FT-06/07/08/09/12           | Not started                                                                                                      |
@@ -478,22 +479,13 @@ Root [AGENTS.md](../../AGENTS.md) is the automatic agent entry point. It tells c
 
 ## Immediate next-session checklist
 
-Start here and do not begin broader feature work first:
+Start with [CURRENT.md](../implementation/CURRENT.md) and implement only PR-030:
 
-1. Review/finalize [accounting-contract.md](accounting-contract.md), including opening-state/coverage and planned-payment semantics, before writing financial tables.
-2. Create the rewrite branch/tag and record its commit.
-3. Confirm connectivity to the user-created empty `extreme_accounting` database without applying the legacy dump.
-4. Execute R0 from the master plan: dependency/backend skeleton reset while leaving `src/main/web` unchanged.
-5. Remove/rotate tracked RSA signing material and make local keys environment/generated.
-6. Pin Spring Boot 4.1.0, enforce Java 25, keep Boot-managed dependency versions, disable preview features, and add Testcontainers PostgreSQL.
-7. Write an empty-database migration/context integration test that currently fails because replacement `V1` does not exist.
-8. Implement `V1__foundation.sql`, with every key/FK/index/check/default defined in SQL and only persistence mapping annotations in JPA.
-9. Implement `V2__reference.sql` and stable reference seeds.
-10. Begin R3 with `FinancialAccount`, cash pockets, immutable activity/postings and small hand-worked deposit/transfer/idempotency fixtures.
+1. Preserve the accepted `c01d708` V5 ledger/reconciliation behavior while adding the authorized V6 security facts and position projection.
+2. Prove the small hand-worked same-currency buy/partial-sell/full-close/reopen/reversal fixtures and deterministic backdated replay before broadening HTTP reads.
+3. Keep the unit backend-only. Do not start portfolio grouping, imports, holdings-only openings, tax, FX, pending settlement, valuation, asynchronous infrastructure, or frontend work.
 
-The first meaningful checkpoint is not “all tables created.” It is:
-
-> A clean checkout can start on an empty PostgreSQL database, then post and replay a deposit, transfer, broker funding and fee-aware trade exactly once.
+The next meaningful checkpoint is a funded brokerage trade whose cash, security quantity, commission, basis, realized P&L, retry, reversal, and replay all reconcile exactly from immutable facts.
 
 ## Risks to monitor
 

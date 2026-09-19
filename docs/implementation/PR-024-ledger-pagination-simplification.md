@@ -1,6 +1,6 @@
 # PR-024 - Cleanup B1 ledger pagination simplification
 
-Status: **ACTIVE**
+Status: **COMPLETE**
 
 ## Goal
 
