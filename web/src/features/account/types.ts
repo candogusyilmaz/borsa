@@ -5,6 +5,7 @@ export type BalanceResponse = components['schemas']['BalanceResponse'];
 export type AccountKind = FinancialAccount['kind'];
 export type TrackingMode = FinancialAccount['trackingMode'];
 export type NegativeBalancePolicy = NonNullable<FinancialAccount['policy']>;
+export type CashCoverageStatus = FinancialAccount['cashCoverageStatus'];
 export type CurrencyResponse = components['schemas']['CurrencyResponse'];
 
 export type AccountModeFilter = 'ALL' | 'FULL_LEDGER' | 'HOLDINGS_ONLY' | 'ASSET' | 'LIABILITY';

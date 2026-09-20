@@ -1,4 +1,4 @@
-import type { AccountKind, TrackingMode } from './types';
+import type { AccountKind, CashCoverageStatus, NegativeBalancePolicy, TrackingMode } from './types';
 
 export function getAccountKindLabel(kind: AccountKind) {
   switch (kind) {
@@ -83,7 +83,7 @@ export function getTrackingModeBadgeColor(mode: TrackingMode) {
   return mode === 'FULL_LEDGER' ? 'brand' : 'indigo';
 }
 
-export function getPolicyLabel(policy?: string) {
+export function getPolicyLabel(policy?: NegativeBalancePolicy | null) {
   if (!policy) return 'None (Liability / Untracked)';
   switch (policy) {
     case 'HARD_FLOOR':
@@ -99,26 +99,22 @@ export function getPolicyLabel(policy?: string) {
   }
 }
 
-export function getCoverageStatusPresentation(status?: string) {
+export function getCoverageStatusPresentation(status?: CashCoverageStatus | null) {
   switch (status) {
     case 'KNOWN_FROM_OPENING':
       return { label: 'Known from opening', badgeLabel: 'Verified', isVerified: true };
-    case 'ESTIMATED':
-      return { label: 'Estimated starting balance', badgeLabel: 'Estimated', isVerified: false };
-    case 'UNKNOWN':
-      return { label: 'Unverified starting history', badgeLabel: 'Unverified', isVerified: false };
-    case 'INCOMPLETE':
-      return { label: 'Incomplete cash coverage', badgeLabel: 'Incomplete', isVerified: false };
+    case 'UNTRACKED':
+      return { label: 'Untracked cash coverage', badgeLabel: 'Untracked', isVerified: false };
     default:
       return {
-        label: status ? status.replace(/_/g, ' ').toLowerCase() : 'Not established',
-        badgeLabel: status ? 'Active' : 'Unverified',
-        isVerified: status === 'KNOWN_FROM_OPENING'
+        label: 'Not established',
+        badgeLabel: 'Unverified',
+        isVerified: false
       };
   }
 }
 
-export function getPolicyDescription(policy?: string) {
+export function getPolicyDescription(policy?: NegativeBalancePolicy | null) {
   if (!policy) return 'No policy enforced on this account.';
   switch (policy) {
     case 'HARD_FLOOR':
