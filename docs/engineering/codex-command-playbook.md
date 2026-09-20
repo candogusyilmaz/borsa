@@ -44,7 +44,7 @@ git -c safe.directory=C:/Users/Vintage/Documents/stocks diff
 git -c safe.directory=C:/Users/Vintage/Documents/stocks diff --cached
 ```
 
-When the active implementation has already been committed but remains under review, derive its starting commit from the active specification, `STATE.md`, and Git history, then inspect the complete range as well as later working-tree state:
+When the active implementation has already been committed but remains under review, derive its starting commit from Git history, the active change surface, and the active task or specification (or backend `STATE.md` for backend work), then inspect the complete range as well as later working-tree state:
 
 ```powershell
 git -c safe.directory=C:/Users/Vintage/Documents/stocks diff STARTING_COMMIT..HEAD --stat
@@ -124,6 +124,6 @@ git -c safe.directory=C:/Users/Vintage/Documents/stocks diff --cached -- path/to
 
 **Problem / condition:** A successful implementation or review requires evidence across the relevant test layers without broad context loading.
 
-**Resolved procedure:** Follow the active specification's focused tests, full tests, formatter, and `verify` commands when the environment permits. Inspect the complete active-unit change surface, including relevant unstaged, staged, untracked, and already committed changes, before trusting a summary. Use the repository's role-routing documents for scope and documentation maintenance.
+**Resolved procedure:** Follow the active task or specification's focused tests, full tests, formatter, and `verify` commands when the environment permits. Inspect the complete active-unit change surface, including relevant unstaged, staged, untracked, and already committed changes, before trusting a summary. Use the repository's role-routing documents for scope and documentation maintenance.
 
 **Known restriction:** Documentation-only work does not authorize production-code, test, migration, dependency, configuration, frontend, or Git-history changes. Preserve unrelated user changes.

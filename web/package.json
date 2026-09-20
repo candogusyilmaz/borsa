@@ -24,7 +24,6 @@
     "prepare": "cd .. && husky"
   },
   "dependencies": {
-    "@biomejs/biome": "^2.5.12",
     "@mantine/carousel": "^9.6.0",
     "@mantine/charts": "^9.6.0",
     "@mantine/core": "^9.6.0",
@@ -46,7 +45,7 @@
     "react-is": "^19.0.0"
   },
   "devDependencies": {
-    "@tanstack/router-devtools": "^1.167.1",
+    "@biomejs/biome": "^2.5.12",
     "@tanstack/router-plugin": "^1.168.36",
     "@types/node": "^22.20.1",
     "@types/react": "^19.2.18",

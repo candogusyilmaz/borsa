@@ -13,13 +13,17 @@ Before substantial frontend work:
 
 Current frontend structure, capabilities, dependency versions, routes, and implementation details must be discovered from the repository itself rather than from manually maintained snapshot documentation. Do not duplicate durable guidance here. Inspect the current codebase for implementation details and existing patterns.
 
+Frontend progress is tracked externally; frontend work does not rely on `STATE.md`, `CURRENT.md`, or dedicated specification documents. Treat the active task description and the current repository code as the source of truth.
+
+Generated files (`src/api/schema.d.ts`, `src/routeTree.gen.ts`) are build artifacts, not architectural reference material or coding patterns. Do not inspect them by default when learning codebase conventions, and never edit them manually.
+
 ## Scope
 
 - Frontend implementation changes belong under `web/` unless explicitly requested otherwise.
 - Do not modify `server/` unless explicitly requested.
 - You may inspect relevant backend code when necessary to understand an API contract or domain behavior.
 - Backend/API contracts are authoritative. Do not invent endpoints, parameters, fields, or server behavior.
-- Generated files should not be edited manually unless the repository explicitly expects that workflow.
+- Generated files (`src/api/schema.d.ts`, `src/routeTree.gen.ts`) should never be edited manually. Regenerate them using the designated scripts when contracts or routes change.
 
 ## Working Style
 

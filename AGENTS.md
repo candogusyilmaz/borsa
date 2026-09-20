@@ -23,7 +23,7 @@ Agents should not inspect or modify the other application by default.
 Respect the requested task mode:
 
 - **Review tasks**: inspect the complete active change surface; review is read-only.
-- **Implementation tasks**: complete only the active specification within the requested application scope; keep changes in the working tree.
+- **Implementation tasks**: complete only the active task or specification within the requested application scope; keep changes in the working tree.
 - **Planning tasks**: define exactly one next bounded specification without implementing it.
 
 Do not spawn, delegate to, or coordinate coding agents, subagents, background jobs, or automatic planner/implementer/reviewer chains unless explicitly requested by the user.
