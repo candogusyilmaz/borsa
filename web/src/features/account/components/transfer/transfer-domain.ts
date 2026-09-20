@@ -1,7 +1,7 @@
 import { toDateTimeLocal } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
+import { isCashFundingCapable, isLiabilityKind } from '../../account-domain';
 import type { FinancialAccount } from '../../types';
-import { isCashFundingCapable, isLiabilityKind } from '../../utils/account-formatters';
 import type { TransferDefaultsOptions, TransferFormValues, TransferPolicyPresentation, TransferPreviewResponse } from './transfer-types';
 
 /**
@@ -15,7 +15,7 @@ export const CURRENT_ACTION_CLOCK_SAFETY_MS = 1_000;
  * Accounts must be active (non-archived), Full Ledger tracked, non-liability,
  * and funding-capable cash assets.
  */
-export function getEligibleTransferAccounts(accounts: FinancialAccount[]): FinancialAccount[] {
+export function getEligibleTransferAccounts(accounts: FinancialAccount[]) {
   return accounts.filter(
     (account) =>
       !account.archived && account.trackingMode === 'FULL_LEDGER' && !isLiabilityKind(account.kind) && isCashFundingCapable(account.kind)
@@ -26,7 +26,7 @@ export function getEligibleTransferAccounts(accounts: FinancialAccount[]): Finan
  * Derives eligible destination accounts for a selected source account.
  * Transfer rules require accounts to share the exact same currency and not be identical.
  */
-export function getDestinationAccounts(accounts: FinancialAccount[], sourceAccountId: string): FinancialAccount[] {
+export function getDestinationAccounts(accounts: FinancialAccount[], sourceAccountId: string) {
   const source = accounts.find((account) => account.id === sourceAccountId);
   if (!source) {
     return [];
@@ -39,10 +39,7 @@ export function getDestinationAccounts(accounts: FinancialAccount[], sourceAccou
  * Calculates deterministic initial source and destination accounts
  * based on provided defaults, page locking constraints, and available accounts.
  */
-export function resolveInitialTransferAccounts(options: TransferDefaultsOptions): {
-  sourceAccountId: string;
-  destinationAccountId: string;
-} {
+export function resolveInitialTransferAccounts(options: TransferDefaultsOptions) {
   const { accounts, defaultSourceAccountId, defaultDestinationAccountId, lockSourceAccount } = options;
   if (accounts.length === 0) {
     return { sourceAccountId: '', destinationAccountId: '' };
@@ -95,7 +92,7 @@ export function createTransferFormDefaults(options: { sourceAccountId: string; d
  * Computes an ISO 8601 effective timestamp from form values, applying
  * clock-skew protection for real-time mode or parsing selected historical datetime.
  */
-export function resolveEffectiveAt(values: TransferFormValues): string {
+export function resolveEffectiveAt(values: TransferFormValues) {
   if (values.recordingMode === 'HISTORICAL_FACT') {
     return new Date(values.effectiveAt).toISOString();
   }

@@ -1,4 +1,4 @@
-export function formatDate(value?: string | Date | null, locale: string = 'en-US'): string {
+export function formatDate(value?: string | Date | null, locale: string = 'en-US') {
   if (!value) return '—';
   try {
     const date = typeof value === 'string' ? new Date(value) : value;
@@ -15,7 +15,7 @@ export function formatDate(value?: string | Date | null, locale: string = 'en-US
   }
 }
 
-export function formatDateTime(value?: string | Date | null, locale: string = 'en-US'): string {
+export function formatDateTime(value?: string | Date | null, locale: string = 'en-US') {
   if (!value) return '—';
   try {
     const date = typeof value === 'string' ? new Date(value) : value;
@@ -35,7 +35,7 @@ export function formatDateTime(value?: string | Date | null, locale: string = 'e
   }
 }
 
-export function toDateTimeLocal(date: Date = new Date(), includeSeconds = false): string {
+export function toDateTimeLocal(date: Date = new Date(), includeSeconds = false) {
   if (Number.isNaN(date.getTime())) return '';
   const pad = (n: number) => n.toString().padStart(2, '0');
   const year = date.getFullYear();
@@ -50,7 +50,7 @@ export function toDateTimeLocal(date: Date = new Date(), includeSeconds = false)
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
-export function toRelativeTime(value?: string | Date | null): string {
+export function toRelativeTime(value?: string | Date | null) {
   if (!value) return '';
   try {
     const timestamp = typeof value === 'string' ? new Date(value).getTime() : value.getTime();

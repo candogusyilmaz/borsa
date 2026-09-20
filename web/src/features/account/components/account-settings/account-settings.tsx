@@ -6,8 +6,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import { $api } from '@/api/client';
 import { getApiErrorMessage, normalizeError, showApiError } from '@/api/errors';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { isAssetKind, isLiabilityKind } from '../../account-domain';
+import { COMMON_TIMEZONES } from '../../account-options';
+import { getPolicyDescription } from '../../account-presentation';
 import type { FinancialAccount, NegativeBalancePolicy } from '../../types';
-import { COMMON_TIMEZONES, getPolicyDescription, isAssetKind, isLiabilityKind } from '../../utils/account-formatters';
 import classes from './account-settings.module.css';
 
 interface AccountSettingsOverlayProps {

@@ -11,7 +11,7 @@ interface LoginSearch {
   redirect?: string;
 }
 
-function isInternalAppPath(value: string): boolean {
+function isInternalAppPath(value: string) {
   return value.startsWith('/') && !value.startsWith('//');
 }
 

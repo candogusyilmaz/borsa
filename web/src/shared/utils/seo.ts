@@ -53,7 +53,7 @@ export function createJsonLdGraph() {
   };
 }
 
-function inferImageType(imageUrl: string): string {
+function inferImageType(imageUrl: string) {
   const cleanUrl = (imageUrl.split(/[?#]/)[0] ?? imageUrl).toLowerCase();
   if (cleanUrl.endsWith('.jpg') || cleanUrl.endsWith('.jpeg')) return 'image/jpeg';
   if (cleanUrl.endsWith('.webp')) return 'image/webp';
@@ -63,7 +63,7 @@ function inferImageType(imageUrl: string): string {
   return 'image/png';
 }
 
-function resolveImageUrl(image?: string): string | undefined {
+function resolveImageUrl(image?: string) {
   const candidate = image !== undefined ? image.trim() : siteConfig.assets.ogImage?.trim() || '';
   if (!candidate || candidate.toLowerCase() === 'none') {
     return undefined;
@@ -74,7 +74,7 @@ function resolveImageUrl(image?: string): string | undefined {
   return siteConfig.getCanonicalUrl(candidate);
 }
 
-export function createSeoMeta(options: SeoMetaOptions = {}): SeoMetaResult {
+export function createSeoMeta(options: SeoMetaOptions = {}) {
   const {
     title,
     description = siteConfig.description,

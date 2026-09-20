@@ -1,7 +1,7 @@
 import { formatMoney } from '@/shared/format/money';
 import type { CalculationPolicy, ProjectionStatus, TradeSide } from '../types';
 
-export function formatQuantity(quantity: string | number | null | undefined): string {
+export function formatQuantity(quantity: string | number | null | undefined) {
   if (quantity === null || quantity === undefined || quantity === '') {
     return '0';
   }
@@ -22,7 +22,7 @@ export function formatUnitCost(
   totalBasis: string | number | null | undefined,
   quantity: string | number | null | undefined,
   currency: string = 'USD'
-): string {
+) {
   if (!totalBasis || !quantity) return '—';
   const basisNum = Number.parseFloat(String(totalBasis));
   const qtyNum = Number.parseFloat(String(quantity));
@@ -42,7 +42,7 @@ export interface RealizedPnlPresentation {
   prefix: string;
 }
 
-export function getRealizedPnlPresentation(pnl: string | number | null | undefined, currency: string = 'USD'): RealizedPnlPresentation {
+export function getRealizedPnlPresentation(pnl: string | number | null | undefined, currency: string = 'USD') {
   if (pnl === null || pnl === undefined || pnl === '') {
     return {
       text: formatMoney('0', currency),
@@ -87,15 +87,15 @@ export function getRealizedPnlPresentation(pnl: string | number | null | undefin
   };
 }
 
-export function getTradeSideBadgeColor(side: TradeSide): 'teal' | 'indigo' {
+export function getTradeSideBadgeColor(side: TradeSide) {
   return side === 'BUY' ? 'teal' : 'indigo';
 }
 
-export function getTradeSideLabel(side: TradeSide): string {
+export function getTradeSideLabel(side: TradeSide) {
   return side === 'BUY' ? 'Buy' : 'Sell';
 }
 
-export function getCalculationPolicyLabel(policy: CalculationPolicy): string {
+export function getCalculationPolicyLabel(policy: CalculationPolicy) {
   switch (policy) {
     case 'WEIGHTED_AVERAGE_ECONOMIC_V1':
       return 'Weighted Average Cost';
@@ -104,7 +104,7 @@ export function getCalculationPolicyLabel(policy: CalculationPolicy): string {
   }
 }
 
-export function getProjectionStatusLabel(status: ProjectionStatus): string {
+export function getProjectionStatusLabel(status: ProjectionStatus) {
   switch (status) {
     case 'CURRENT':
       return 'Up to date';
@@ -119,7 +119,7 @@ export function getProjectionStatusLabel(status: ProjectionStatus): string {
   }
 }
 
-export function getProjectionStatusBadgeColor(status: ProjectionStatus): 'teal' | 'yellow' | 'blue' | 'red' | 'gray' {
+export function getProjectionStatusBadgeColor(status: ProjectionStatus) {
   switch (status) {
     case 'CURRENT':
       return 'teal';

@@ -2,7 +2,7 @@ const STORAGE_KEY = 'stocks_access_token';
 
 let memoryAccessToken: string | null = null;
 
-export function getAccessToken(): string | null {
+export function getAccessToken() {
   if (memoryAccessToken) {
     return memoryAccessToken;
   }
@@ -21,7 +21,7 @@ export function getAccessToken(): string | null {
   return null;
 }
 
-export function setAccessToken(token: string | null): void {
+export function setAccessToken(token: string | null) {
   memoryAccessToken = token;
 
   try {
@@ -35,7 +35,7 @@ export function setAccessToken(token: string | null): void {
   }
 }
 
-export function clearAccessToken(): void {
+export function clearAccessToken() {
   setAccessToken(null);
 }
 
@@ -45,11 +45,11 @@ export function clearAccessToken(): void {
 // Login, logout and terminal session invalidation do.
 let sessionEpoch = 0;
 
-export function currentSessionEpoch(): number {
+export function currentSessionEpoch() {
   return sessionEpoch;
 }
 
-export function advanceSessionEpoch(): void {
+export function advanceSessionEpoch() {
   sessionEpoch++;
 }
 
@@ -57,7 +57,7 @@ type SessionLossHandler = () => void | Promise<void>;
 
 let sessionLossHandler: SessionLossHandler | null = null;
 
-export function registerSessionLossHandler(handler: SessionLossHandler): () => void {
+export function registerSessionLossHandler(handler: SessionLossHandler) {
   sessionLossHandler = handler;
 
   return () => {
@@ -80,7 +80,7 @@ interface InvalidateSessionOptions {
  * authentication result belongs to stale work and must not affect the
  * current session.
  */
-export function invalidateSession({ expectedEpoch, expectedToken, notify }: InvalidateSessionOptions): boolean {
+export function invalidateSession({ expectedEpoch, expectedToken, notify }: InvalidateSessionOptions) {
   if (currentSessionEpoch() !== expectedEpoch) {
     return false;
   }

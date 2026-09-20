@@ -25,7 +25,7 @@ const authMiddleware: Middleware = {
   }
 };
 
-export function serializeQuery(query: Record<string, unknown>): string {
+export function serializeQuery(query: Record<string, unknown>) {
   const searchParams = new URLSearchParams();
 
   for (const [key, value] of Object.entries(query)) {

@@ -16,7 +16,7 @@ export type SessionResolution =
 
 export const ME_QUERY_KEY = ['get', '/api/v1/me'] as const;
 
-export function isAbortError(error: unknown): boolean {
+export function isAbortError(error: unknown) {
   if (error instanceof Error && error.name === 'AbortError') {
     return true;
   }
@@ -43,12 +43,12 @@ export async function fetchCurrentUser(queryClient: QueryClient): Promise<User> 
   return user;
 }
 
-export function clearLocalSession(queryClient: QueryClient): void {
+export function clearLocalSession(queryClient: QueryClient) {
   clearAccessToken();
   queryClient.clear();
 }
 
-function isAuthenticationError(error: unknown): boolean {
+function isAuthenticationError(error: unknown) {
   return typeof error === 'object' && error !== null && (error as { status?: unknown }).status === 401;
 }
 
@@ -225,7 +225,7 @@ export async function resolveSession(queryClient: QueryClient): Promise<SessionR
   }
 }
 
-export async function logoutSession(queryClient: QueryClient): Promise<void> {
+export async function logoutSession(queryClient: QueryClient) {
   const epochAtStart = currentSessionEpoch();
   let logoutError: unknown;
 

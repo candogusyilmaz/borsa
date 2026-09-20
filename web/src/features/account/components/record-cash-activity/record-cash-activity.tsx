@@ -10,8 +10,9 @@ import { formatDateTime, toDateTimeLocal } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
 import { isNonNegativeDecimal, isPositiveDecimal } from '@/shared/validation/decimal';
+import { isCashFundingCapable } from '../../account-domain';
+import { getActivityTypeLabel } from '../../activity-presentation';
 import type { ManualCashActivityType } from '../../types';
-import { getActivityTypeLabel, isCashFundingCapable } from '../../utils/account-formatters';
 import classes from './record-cash-activity.module.css';
 
 export interface RecordCashActivityProps {

@@ -1,8 +1,8 @@
-function isIosDevice(): boolean {
+function isIosDevice() {
   return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 }
 
-export function preventIosOverscroll(): () => void {
+export function preventIosOverscroll() {
   if (!isIosDevice()) {
     return () => {};
   }

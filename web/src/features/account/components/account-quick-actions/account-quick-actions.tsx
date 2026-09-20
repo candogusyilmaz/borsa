@@ -1,7 +1,7 @@
 import { ArrowDownLeftIcon, ArrowsLeftRightIcon, ArrowUpRightIcon, DotsThreeIcon, ReceiptIcon, TrendUpIcon } from '@phosphor-icons/react';
 import { TradeOverlay } from '@/features/investing';
+import { isCashFundingCapable } from '../../account-domain';
 import type { FinancialAccount } from '../../types';
-import { isCashFundingCapable } from '../../utils/account-formatters';
 import { AccountActionsOverlay } from '../account-actions';
 import { CashActivityOverlay } from '../record-cash-activity';
 import { TransferOverlay } from '../transfer/transfer';

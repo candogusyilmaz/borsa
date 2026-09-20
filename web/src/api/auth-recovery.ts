@@ -5,7 +5,7 @@ export type RecoveryPolicy = 'bypass' | 'route-owned' | 'command-owned' | 'globa
 
 const BYPASS_PATHS = new Set(['/api/v1/auth/login', '/api/v1/auth/refresh', '/api/v1/auth/register']);
 
-export function getRecoveryPolicy(pathOrPathname: string): RecoveryPolicy {
+export function getRecoveryPolicy(pathOrPathname: string) {
   if (BYPASS_PATHS.has(pathOrPathname)) {
     return 'bypass';
   }
@@ -29,7 +29,7 @@ interface ActiveRefresh {
 
 let activeRefresh: ActiveRefresh | null = null;
 
-function refreshUrl(baseUrl: string): string {
+function refreshUrl(baseUrl: string) {
   return `${baseUrl.replace(/\/$/, '')}/api/v1/auth/refresh`;
 }
 
@@ -45,10 +45,7 @@ function refreshUrl(baseUrl: string): string {
  * - 5xx / unexpected HTTP failure
  * - malformed successful refresh response
  */
-export async function requestTokenRefresh(
-  expectedEpoch: number = currentSessionEpoch(),
-  baseUrl: string = API_BASE_URL
-): Promise<string | null> {
+export async function requestTokenRefresh(expectedEpoch: number = currentSessionEpoch(), baseUrl: string = API_BASE_URL) {
   if (expectedEpoch !== currentSessionEpoch()) {
     return null;
   }
@@ -74,7 +71,7 @@ export async function requestTokenRefresh(
   return promise;
 }
 
-async function performRefresh(baseUrl: string, refreshEpoch: number): Promise<string | null> {
+async function performRefresh(baseUrl: string, refreshEpoch: number) {
   let response: Response;
 
   try {
@@ -145,7 +142,7 @@ function supersededSessionResponse() {
   );
 }
 
-async function retryWithToken(request: Request, token: string): Promise<Response> {
+async function retryWithToken(request: Request, token: string) {
   const headers = new Headers(request.headers);
 
   headers.set('Authorization', `Bearer ${token}`);
@@ -158,7 +155,7 @@ async function retryWithToken(request: Request, token: string): Promise<Response
 }
 
 export function createRecoveringFetch(baseUrl: string = API_BASE_URL) {
-  return async function recoveringFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  return async function recoveringFetch(input: RequestInfo | URL, init?: RequestInit) {
     const request = input instanceof Request ? input : new Request(input, init);
 
     const pathname = new URL(request.url).pathname;

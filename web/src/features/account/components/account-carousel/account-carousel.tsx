@@ -17,7 +17,7 @@ interface CarouselSlideItem {
   account: FinancialAccount;
 }
 
-function buildSlideItems(accounts: FinancialAccount[]): CarouselSlideItem[] {
+function buildSlideItems(accounts: FinancialAccount[]) {
   const [first, second] = accounts;
   if (accounts.length === 2 && first && second) {
     return [
@@ -32,7 +32,7 @@ function buildSlideItems(accounts: FinancialAccount[]): CarouselSlideItem[] {
 
 // Returns the slide index whose account.id matches accountId and is closest
 // (circularly) to currentSnap, so scrolling always takes the shortest path.
-function findNearestSlideIndex(accountId: string, currentSnap: number, slideItems: CarouselSlideItem[]): number | null {
+function findNearestSlideIndex(accountId: string, currentSnap: number, slideItems: CarouselSlideItem[]) {
   const total = slideItems.length;
   let bestIndex: number | null = null;
   let minDistance = Number.POSITIVE_INFINITY;

@@ -13,7 +13,8 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { $api } from '@/api/client';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
-import { getAccountKindLabel, getTrackingModeLabel, isCashFundingCapable } from '../../utils/account-formatters';
+import { isCashFundingCapable } from '../../account-domain';
+import { getAccountKindLabel, getTrackingModeLabel } from '../../account-presentation';
 import { AccountInfoOverlay } from '../account-info';
 import { AccountSettingsOverlay } from '../account-settings/account-settings';
 import { ArchiveAccountOverlay } from '../archive-account/archive-account';

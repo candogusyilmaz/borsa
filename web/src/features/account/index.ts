@@ -1,3 +1,11 @@
+export {
+  getActivityTypeLabel,
+  getPolicyDecisionBadgeColor,
+  getPolicyDecisionLabel,
+  getPostingRoleLabel,
+  getRecordingModeLabel,
+  getSecurityPostingRoleLabel
+} from './activity-presentation';
 export { AccountActions, AccountActionsOverlay } from './components/account-actions';
 export { AccountActivities, AccountActivitiesOverlay } from './components/account-activities';
 export { AccountDetailContent } from './components/account-detail-content';
@@ -14,4 +22,3 @@ export { Reconciliation, ReconciliationOverlay } from './components/reconciliati
 export { CashActivityOverlay, RecordCashActivityForm, RecordCashActivityOverlay } from './components/record-cash-activity';
 export { ReverseActivity, ReverseActivityOverlay } from './components/reverse-activity/reverse-activity';
 export { Transfer, TransferOverlay } from './components/transfer/transfer';
-export { getActivityTypeLabel } from './utils/account-formatters';

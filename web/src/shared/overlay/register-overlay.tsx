@@ -1,20 +1,17 @@
 import type { ComponentType } from 'react';
 import { overlayStore } from './overlay-store';
-import type { OpenArgs, OverlayDefinition, OverlayHandle, OverlayMetadata } from './types';
+import type { OpenArgs, OverlayDefinition, OverlayMetadata } from './types';
 
-export function registerOverlay<TProps, TResult = void>(
-  component: ComponentType<TProps>,
-  metadata: OverlayMetadata<TProps>
-): OverlayDefinition<TProps, TResult> {
+export function registerOverlay<TProps, TResult = void>(component: ComponentType<TProps>, metadata: OverlayMetadata<TProps>) {
   const definition: OverlayDefinition<TProps, TResult> = {
     name: metadata.name,
     component,
     metadata,
-    open: (...args: OpenArgs<TProps>): OverlayHandle<TResult> => {
+    open: (...args: OpenArgs<TProps>) => {
       const props = (args[0] ?? {}) as TProps;
       return overlayStore.open(definition, props);
     },
-    replace: (...args: OpenArgs<TProps>): OverlayHandle<TResult> => {
+    replace: (...args: OpenArgs<TProps>) => {
       const props = (args[0] ?? {}) as TProps;
       return overlayStore.replace(definition, props);
     }
@@ -24,10 +21,7 @@ export function registerOverlay<TProps, TResult = void>(
 }
 
 export function registerOverlayWithResult<TResult>() {
-  return function register<TProps>(
-    component: ComponentType<TProps>,
-    metadata: OverlayMetadata<TProps>
-  ): OverlayDefinition<TProps, TResult> {
+  return function register<TProps>(component: ComponentType<TProps>, metadata: OverlayMetadata<TProps>) {
     return registerOverlay<TProps, TResult>(component, metadata);
   };
 }

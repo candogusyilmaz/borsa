@@ -9,8 +9,8 @@ import { showApiError } from '@/api/errors';
 import { formatDateTime } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { getActivityTypeLabel } from '../../activity-presentation';
 import type { ActivityResponse } from '../../types';
-import { getActivityTypeLabel } from '../../utils/account-formatters';
 import classes from './reverse-activity.module.css';
 
 export interface ReverseActivityProps {

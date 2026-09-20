@@ -44,12 +44,12 @@ export const ALIAS_TYPES: { value: AliasType; label: string }[] = [
   { value: 'USER', label: 'Custom User Label' }
 ];
 
-export function getInstrumentTypeLabel(type: InstrumentType): string {
+export function getInstrumentTypeLabel(type: InstrumentType) {
   const match = INSTRUMENT_TYPES.find((t) => t.value === type);
   return match ? match.label : type;
 }
 
-export function getInstrumentTypeBadgeColor(type: InstrumentType): string {
+export function getInstrumentTypeBadgeColor(type: InstrumentType) {
   switch (type) {
     case 'EQUITY':
       return 'blue';
@@ -70,12 +70,12 @@ export function getInstrumentTypeBadgeColor(type: InstrumentType): string {
   }
 }
 
-export function getValuationMethodLabel(method: ValuationMethod): string {
+export function getValuationMethodLabel(method: ValuationMethod) {
   const match = VALUATION_METHODS.find((m) => m.value === method);
   return match ? match.label : method;
 }
 
-export function getValuationMethodBadgeColor(method: ValuationMethod): string {
+export function getValuationMethodBadgeColor(method: ValuationMethod) {
   switch (method) {
     case 'MARKET_OBSERVATION':
       return 'teal';
@@ -88,7 +88,7 @@ export function getValuationMethodBadgeColor(method: ValuationMethod): string {
   }
 }
 
-export function getAliasTypeLabel(type: AliasType): string {
+export function getAliasTypeLabel(type: AliasType) {
   const match = ALIAS_TYPES.find((a) => a.value === type);
   return match ? match.label : type;
 }

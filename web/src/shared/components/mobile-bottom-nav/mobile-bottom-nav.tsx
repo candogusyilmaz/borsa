@@ -1,14 +1,14 @@
 import { ActionIcon, Box, Indicator, UnstyledButton } from '@mantine/core';
 import { clsx } from 'clsx';
-import type { MouseEvent, ReactNode } from 'react';
+import type { MouseEvent } from 'react';
 import classes from './mobile-bottom-nav.module.css';
 import type { BottomNavAnchorProps, BottomNavItem, MobileBottomNavProps } from './types';
 
-function renderIcon(icon: BottomNavItem['icon'], active: boolean): ReactNode {
+function renderIcon(icon: BottomNavItem['icon'], active: boolean) {
   return typeof icon === 'function' ? icon({ active }) : icon;
 }
 
-function getAccessibleLabel(item: BottomNavItem): string | undefined {
+function getAccessibleLabel(item: BottomNavItem) {
   /**
    * No custom aria-label when the visible label alone is
    * sufficient. This keeps the visible label as the source

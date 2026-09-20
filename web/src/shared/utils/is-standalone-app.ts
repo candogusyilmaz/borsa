@@ -1,4 +1,4 @@
-export function isStandaloneApp(): boolean {
+export function isStandaloneApp() {
   if (typeof window === 'undefined') {
     return false;
   }

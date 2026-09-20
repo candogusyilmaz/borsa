@@ -3,8 +3,8 @@ import { CaretDownIcon, CaretUpIcon, ShieldCheckIcon, SlidersIcon } from '@phosp
 import { $api } from '@/api/client';
 import { formatDate, formatDateTime } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
+import { getCoverageStatusPresentation } from '../../account-presentation';
 import type { FinancialAccount } from '../../types';
-import { getCoverageStatusPresentation } from '../../utils/account-formatters';
 import { ReconciliationOverlay } from '../reconciliation';
 import classes from './starting-balance-coverage-card.module.css';
 

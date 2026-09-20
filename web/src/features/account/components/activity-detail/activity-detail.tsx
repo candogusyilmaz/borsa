@@ -19,7 +19,7 @@ import {
   getPostingRoleLabel,
   getRecordingModeLabel,
   getSecurityPostingRoleLabel
-} from '../../utils/account-formatters';
+} from '../../activity-presentation';
 import { ReverseActivityOverlay } from '../reverse-activity/reverse-activity';
 import classes from './activity-detail.module.css';
 

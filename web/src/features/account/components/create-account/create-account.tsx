@@ -9,18 +9,16 @@ import { CurrencySelect } from '@/features/reference';
 import { toDateTimeLocal } from '@/shared/format/date-time';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
 import { isDecimal } from '@/shared/validation/decimal';
-import type { AccountKind, FinancialAccount, NegativeBalancePolicy, TrackingMode } from '../../types';
+import { isLiabilityKind, supportsHoldingsOnly, supportsNegativePolicy } from '../../account-domain';
+import { COMMON_TIMEZONES } from '../../account-options';
 import {
-  COMMON_TIMEZONES,
   getAccountKindDescription,
   getAccountKindLabel,
   getPolicyDescription,
   getTrackingModeDescription,
-  getTrackingModeLabel,
-  isLiabilityKind,
-  supportsHoldingsOnly,
-  supportsNegativePolicy
-} from '../../utils/account-formatters';
+  getTrackingModeLabel
+} from '../../account-presentation';
+import type { AccountKind, FinancialAccount, NegativeBalancePolicy, TrackingMode } from '../../types';
 import classes from './create-account.module.css';
 
 export function CreateAccount() {

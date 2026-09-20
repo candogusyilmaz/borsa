@@ -3,7 +3,7 @@ import type { CurrentOverlayContextValue } from './types';
 
 export const CurrentOverlayContext = createContext<CurrentOverlayContextValue<unknown> | null>(null);
 
-export function useCurrentOverlay<TResult = void>(): CurrentOverlayContextValue<TResult> {
+export function useCurrentOverlay<TResult = void>() {
   const context = useContext(CurrentOverlayContext);
   if (!context) {
     throw new Error('useCurrentOverlay must be used within an active overlay component rendered by OverlayHost');

@@ -12,7 +12,7 @@ import {
   getPolicyLabel,
   getTrackingModeDescription,
   getTrackingModeLabel
-} from '../../utils/account-formatters';
+} from '../../account-presentation';
 import classes from './account-info.module.css';
 
 export interface AccountInfoProps {

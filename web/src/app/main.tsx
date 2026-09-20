@@ -9,7 +9,7 @@ import { preventIosOverscroll } from '@/shared/utils/prevent-ios-overscroll';
 import '@mantine/notifications/styles.css';
 import '@/index.css';
 
-function requireRootElement(): HTMLElement {
+function requireRootElement() {
   const element = document.getElementById('root');
   if (!element) {
     throw new Error('Failed to find root element');

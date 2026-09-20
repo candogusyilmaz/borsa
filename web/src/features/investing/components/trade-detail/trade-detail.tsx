@@ -1,14 +1,14 @@
 import { Alert, Badge, Button, Group, Skeleton, Stack, Text } from '@mantine/core';
 import { ArrowCounterClockwiseIcon, CalendarCheckIcon, DatabaseIcon, TrendUpIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { $api } from '@/api/client';
-import { ReverseActivityOverlay } from '@/features/account/components/reverse-activity/reverse-activity';
 import {
   getPolicyDecisionBadgeColor,
   getPolicyDecisionLabel,
   getPostingRoleLabel,
   getRecordingModeLabel,
-  getSecurityPostingRoleLabel
-} from '@/features/account/utils/account-formatters';
+  getSecurityPostingRoleLabel,
+  ReverseActivityOverlay
+} from '@/features/account';
 import { formatDateTime } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';

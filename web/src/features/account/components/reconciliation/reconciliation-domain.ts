@@ -7,7 +7,7 @@ import type { ReconciliationLifecycleStatus, ReconciliationResolution } from './
  */
 export const RECONCILIATION_CLOCK_SAFETY_MS = 1_000;
 
-export function getResolutionBadgeColor(resolution: ReconciliationResolution): string {
+export function getResolutionBadgeColor(resolution: ReconciliationResolution) {
   switch (resolution) {
     case 'BALANCED':
       return 'teal';
@@ -18,7 +18,7 @@ export function getResolutionBadgeColor(resolution: ReconciliationResolution): s
   }
 }
 
-export function getResolutionLabel(resolution: ReconciliationResolution): string {
+export function getResolutionLabel(resolution: ReconciliationResolution) {
   switch (resolution) {
     case 'BALANCED':
       return 'Balanced';
@@ -29,7 +29,7 @@ export function getResolutionLabel(resolution: ReconciliationResolution): string
   }
 }
 
-export function getLifecycleStatusBadgeColor(status: ReconciliationLifecycleStatus): string {
+export function getLifecycleStatusBadgeColor(status: ReconciliationLifecycleStatus) {
   switch (status) {
     case 'CURRENT':
       return 'teal';
@@ -42,7 +42,7 @@ export function getLifecycleStatusBadgeColor(status: ReconciliationLifecycleStat
   }
 }
 
-export function getLifecycleStatusLabel(status: ReconciliationLifecycleStatus): string {
+export function getLifecycleStatusLabel(status: ReconciliationLifecycleStatus) {
   switch (status) {
     case 'CURRENT':
       return 'Current';
@@ -55,7 +55,7 @@ export function getLifecycleStatusLabel(status: ReconciliationLifecycleStatus): 
   }
 }
 
-export function getLifecycleStatusDescription(status: ReconciliationLifecycleStatus): string {
+export function getLifecycleStatusDescription(status: ReconciliationLifecycleStatus) {
   switch (status) {
     case 'CURRENT':
       return 'This reconciliation accurately represents the current ledger state for its period.';
@@ -68,17 +68,17 @@ export function getLifecycleStatusDescription(status: ReconciliationLifecycleSta
   }
 }
 
-export function isZeroAmount(amountStr?: string | null): boolean {
+export function isZeroAmount(amountStr?: string | null) {
   if (!amountStr) return true;
   const num = Number.parseFloat(amountStr);
   return Number.isNaN(num) || Math.abs(num) < 0.000001;
 }
 
-export function toDateTimeLocalString(date: Date): string {
+export function toDateTimeLocalString(date: Date) {
   return toDateTimeLocal(date);
 }
 
-export function getPreviousMonthPeriod(): { opening: string; closing: string } {
+export function getPreviousMonthPeriod() {
   const now = new Date();
   const startOfPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0);
   const endOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
@@ -88,7 +88,7 @@ export function getPreviousMonthPeriod(): { opening: string; closing: string } {
   };
 }
 
-export function getCurrentMonthPeriod(): { opening: string; closing: string } {
+export function getCurrentMonthPeriod() {
   const now = new Date(Date.now() - RECONCILIATION_CLOCK_SAFETY_MS);
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
   return {
@@ -97,7 +97,7 @@ export function getCurrentMonthPeriod(): { opening: string; closing: string } {
   };
 }
 
-export function getLast30DaysPeriod(): { opening: string; closing: string } {
+export function getLast30DaysPeriod() {
   const now = new Date(Date.now() - RECONCILIATION_CLOCK_SAFETY_MS);
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   return {

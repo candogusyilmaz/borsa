@@ -12,8 +12,8 @@ import {
 import { useState } from 'react';
 import { $api } from '@/api/client';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { getAccountKindBadgeColor, getAccountKindLabel, getTrackingModeLabel } from '../../account-presentation';
 import type { AccountKind } from '../../types';
-import { getAccountKindBadgeColor, getAccountKindLabel, getTrackingModeLabel } from '../../utils/account-formatters';
 import classes from './account-picker.module.css';
 
 export interface AccountPickerProps {

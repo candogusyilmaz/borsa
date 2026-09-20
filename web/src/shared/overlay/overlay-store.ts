@@ -31,18 +31,18 @@ class OverlayStore {
     }
   }
 
-  public subscribe = (listener: () => void): (() => void) => {
+  public subscribe = (listener: () => void) => {
     this.listeners.add(listener);
     return () => {
       this.listeners.delete(listener);
     };
   };
 
-  public getSnapshot = (): OverlayStoreState => {
+  public getSnapshot = () => {
     return this.snapshot;
   };
 
-  public open = <TProps, TResult>(definition: OverlayDefinition<TProps, TResult>, props: TProps): OverlayHandle<TResult> => {
+  public open = <TProps, TResult>(definition: OverlayDefinition<TProps, TResult>, props: TProps) => {
     const id = `overlay-${++this.idCounter}`;
     let resolveClosed!: (outcome: OverlayOutcome<TResult>) => void;
     const closed = new Promise<OverlayOutcome<TResult>>((resolve) => {
@@ -79,7 +79,7 @@ class OverlayStore {
     return handle;
   };
 
-  public replace = <TProps, TResult>(definition: OverlayDefinition<TProps, TResult>, props: TProps): OverlayHandle<TResult> => {
+  public replace = <TProps, TResult>(definition: OverlayDefinition<TProps, TResult>, props: TProps) => {
     const id = `overlay-${++this.idCounter}`;
     let resolveClosed!: (outcome: OverlayOutcome<TResult>) => void;
     const closed = new Promise<OverlayOutcome<TResult>>((resolve) => {
@@ -119,11 +119,11 @@ class OverlayStore {
     return handle;
   };
 
-  public back = (): void => {
+  public back = () => {
     this.dismissCurrent('back');
   };
 
-  public dismissCurrent = (reason = 'dismissed'): void => {
+  public dismissCurrent = (reason = 'dismissed') => {
     if (this.stack.length > 1) {
       const popped = this.stack[this.stack.length - 1];
       this.stack = this.stack.slice(0, -1);
@@ -135,7 +135,7 @@ class OverlayStore {
     }
   };
 
-  public complete = <TResult>(result: TResult): void => {
+  public complete = <TResult>(result: TResult) => {
     if (this.stack.length > 1) {
       const popped = this.stack[this.stack.length - 1];
       this.stack = this.stack.slice(0, -1);
@@ -152,7 +152,7 @@ class OverlayStore {
     }
   };
 
-  public setTitle = (id: string, title: ReactNode): void => {
+  public setTitle = (id: string, title: ReactNode) => {
     const index = this.stack.findIndex((item) => item.id === id);
     if (index < 0) return;
 
@@ -163,14 +163,14 @@ class OverlayStore {
     this.notify();
   };
 
-  public close = (reason = 'dismissed'): void => {
+  public close = (reason = 'dismissed') => {
     if (!this.isOpen) return;
     this.dismissReason = reason;
     this.isOpen = false;
     this.notify();
   };
 
-  public onExited = (): void => {
+  public onExited = () => {
     const items = this.stack;
     const reason = this.dismissReason ?? 'closed';
     this.stack = [];

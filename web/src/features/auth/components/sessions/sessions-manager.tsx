@@ -59,31 +59,33 @@ export function getDeviceIcon(label?: string) {
   return GlobeSimpleIcon;
 }
 
-export function formatDate(isoString?: string): string {
+export function formatDate(isoString?: string) {
   if (!isoString) return 'N/A';
 
   const date = new Date(isoString);
   if (Number.isNaN(date.getTime())) return 'N/A';
 
-  return formatDateTime(date);
+  const formatted = formatDateTime(date);
+  return formatted === '—' ? 'N/A' : formatted;
 }
 
-export function formatRelativeTime(isoString?: string): string {
+export function formatRelativeTime(isoString?: string) {
   if (!isoString) return 'Not yet used';
   try {
     const date = new Date(isoString);
-    if (Number.isNaN(date.getTime())) return isoString;
+    if (Number.isNaN(date.getTime())) return 'N/A';
     const diffSeconds = Math.floor((Date.now() - date.getTime()) / 1000);
     if (diffSeconds < 60) {
       return 'Active just now';
     }
     const diffDays = Math.floor(diffSeconds / (60 * 60 * 24));
     if (diffDays < 7) {
-      return toRelativeTime(isoString);
+      const rel = toRelativeTime(date);
+      if (rel) return rel;
     }
     return formatDate(isoString);
   } catch {
-    return isoString;
+    return 'N/A';
   }
 }
 

@@ -11,7 +11,7 @@ export interface AccountTrendData {
   chartData: { date: string; balance: number }[];
 }
 
-function formatDateShort(date: Date): string {
+function formatDateShort(date: Date) {
   return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(date);
 }
 
@@ -19,7 +19,7 @@ export function generateAccountTrendData(
   account: FinancialAccount,
   balance?: BalanceResponse | null,
   activities?: ActivityResponse[] | null
-): AccountTrendData {
+) {
   const isHoldings = account.trackingMode === 'HOLDINGS_ONLY';
   const now = new Date();
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);

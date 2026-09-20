@@ -11,7 +11,7 @@ export interface RegisterSearch {
   redirect?: string;
 }
 
-export function isInternalAppPath(value: string): boolean {
+export function isInternalAppPath(value: string) {
   return value.startsWith('/') && !value.startsWith('//');
 }
 

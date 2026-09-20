@@ -56,7 +56,7 @@ export const siteConfig: SiteConfig = {
     ogImage,
     manifest: '/manifest.webmanifest'
   },
-  formatTitle(pageTitle?: string): string {
+  formatTitle(pageTitle?: string) {
     const trimmed = pageTitle?.trim();
     if (!trimmed || trimmed === name || trimmed === `${name} - ${tagline}`) {
       return `${name} - ${tagline}`;
@@ -66,7 +66,7 @@ export const siteConfig: SiteConfig = {
     }
     return `${trimmed} | ${name}`;
   },
-  getCanonicalUrl(path = '/'): string {
+  getCanonicalUrl(path = '/') {
     if (path.startsWith('http://') || path.startsWith('https://')) {
       return path;
     }

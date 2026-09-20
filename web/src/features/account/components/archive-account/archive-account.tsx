@@ -5,13 +5,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { $api } from '@/api/client';
 import { getApiErrorMessage, normalizeError, showApiError } from '@/api/errors';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { getAccountKindBadgeColor, getAccountKindLabel, getTrackingModeBadgeColor, getTrackingModeLabel } from '../../account-presentation';
 import type { FinancialAccount } from '../../types';
-import {
-  getAccountKindBadgeColor,
-  getAccountKindLabel,
-  getTrackingModeBadgeColor,
-  getTrackingModeLabel
-} from '../../utils/account-formatters';
 import classes from './archive-account.module.css';
 
 interface ArchiveAccountOverlayProps {

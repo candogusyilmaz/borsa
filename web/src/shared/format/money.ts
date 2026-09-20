@@ -1,4 +1,4 @@
-export function formatMoney(amount: string | number | null | undefined, currency: string = 'USD', locale: string = 'en-US'): string {
+export function formatMoney(amount: string | number | null | undefined, currency: string = 'USD', locale: string = 'en-US') {
   if (amount === null || amount === undefined || amount === '') {
     return '—';
   }

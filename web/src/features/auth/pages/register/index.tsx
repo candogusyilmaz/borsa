@@ -29,7 +29,7 @@ const SHOWCASE_TICKERS = [
   { symbol: 'CASH (USD)', price: '$100,000.00', change: 'INITIAL', positive: true }
 ];
 
-export function validateEmail(value: string): string | undefined {
+export function validateEmail(value: string) {
   if (!value?.trim()) {
     return 'Email address is required';
   }
@@ -45,7 +45,7 @@ export function validateEmail(value: string): string | undefined {
   return undefined;
 }
 
-export function validatePassword(value: string): string | undefined {
+export function validatePassword(value: string) {
   if (!value?.trim()) {
     return 'Password is required';
   }

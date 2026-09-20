@@ -13,13 +13,8 @@ import {
 } from '@phosphor-icons/react';
 import { $api } from '@/api/client';
 import { formatMoney } from '@/shared/format/money';
+import { getAccountKindBadgeColor, getAccountKindLabel, getTrackingModeBadgeColor, getTrackingModeLabel } from '../../account-presentation';
 import type { AccountKind, FinancialAccount } from '../../types';
-import {
-  getAccountKindBadgeColor,
-  getAccountKindLabel,
-  getTrackingModeBadgeColor,
-  getTrackingModeLabel
-} from '../../utils/account-formatters';
 import { generateAccountTrendData } from '../../utils/account-trend';
 import classes from './account-hero-card.module.css';
 

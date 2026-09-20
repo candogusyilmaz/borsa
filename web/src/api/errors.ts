@@ -35,7 +35,7 @@ export function isApiError(error: unknown): error is ApiError {
   );
 }
 
-function markNormalized(apiError: ApiError): ApiError {
+function markNormalized(apiError: ApiError) {
   Object.defineProperty(apiError, IS_NORMALIZED_API_ERROR, {
     value: true,
     enumerable: false,
@@ -44,7 +44,7 @@ function markNormalized(apiError: ApiError): ApiError {
   return apiError;
 }
 
-function parseStructuredError(candidate: Record<string, unknown>, rawMessageFallback?: string): ApiError {
+function parseStructuredError(candidate: Record<string, unknown>, rawMessageFallback?: string) {
   const status =
     typeof candidate.status === 'number'
       ? candidate.status
@@ -121,7 +121,7 @@ function parseStructuredError(candidate: Record<string, unknown>, rawMessageFall
   });
 }
 
-export function normalizeError(error: unknown): ApiError {
+export function normalizeError(error: unknown) {
   if (isApiError(error)) {
     return error;
   }
@@ -140,7 +140,7 @@ export function normalizeError(error: unknown): ApiError {
   return parseStructuredError(error as Record<string, unknown>);
 }
 
-export function getApiErrorMessage(error: ApiError, fallbackMessage?: string): string {
+export function getApiErrorMessage(error: ApiError, fallbackMessage?: string) {
   if (error.fieldErrors && error.fieldErrors.length > 0) {
     return error.fieldErrors.map((f) => f.detail).join('; ');
   }
@@ -159,7 +159,7 @@ export function getApiErrorMessage(error: ApiError, fallbackMessage?: string): s
   return error.message;
 }
 
-export function showApiError(error: unknown, options?: ShowApiErrorOptions): ApiError {
+export function showApiError(error: unknown, options?: ShowApiErrorOptions) {
   const apiError = isApiError(error) ? error : normalizeError(error);
   const message = getApiErrorMessage(apiError, options?.fallbackMessage);
 

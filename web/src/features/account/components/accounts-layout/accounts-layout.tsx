@@ -12,7 +12,7 @@ import classes from './accounts-layout.module.css';
 
 const AccountsContext = createContext<AccountsLayoutContext | null>(null);
 
-export function useAccountsLayout(): AccountsLayoutContext {
+export function useAccountsLayout() {
   const context = useContext(AccountsContext);
   if (!context) {
     throw new Error('useAccountsLayout must be used within an AccountsLayout');
