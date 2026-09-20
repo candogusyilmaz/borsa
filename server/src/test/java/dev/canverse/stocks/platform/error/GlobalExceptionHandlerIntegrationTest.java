@@ -71,7 +71,7 @@ class GlobalExceptionHandlerIntegrationTest {
     @Test
     void beanValidationUsesTheCommonValidationShape() throws Exception {
         mockMvc.perform(post("/test/errors/validation").contentType(MediaType.APPLICATION_JSON).content("{\"email\":\"\"}"))
-                .andExpect(status().isUnprocessableEntity()).andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(status().isUnprocessableContent()).andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.code").value("VALIDATION_FAILED")).andExpect(jsonPath("$.params.errors[0].field").value("email"))
                 .andExpect(jsonPath("$.params.errors[0].key").value("error.fields.common.not_blank"))
                 .andExpect(jsonPath("$.params.errors[0].detail").value("must not be blank"));
@@ -79,7 +79,7 @@ class GlobalExceptionHandlerIntegrationTest {
 
     @Test
     void methodParameterValidationUsesTheCommonValidationShape() throws Exception {
-        mockMvc.perform(get("/test/errors/parameter-validation").queryParam("value", "1")).andExpect(status().isUnprocessableEntity())
+        mockMvc.perform(get("/test/errors/parameter-validation").queryParam("value", "1")).andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.code").value("VALIDATION_FAILED")).andExpect(jsonPath("$.params.errors[0].field").value("value"))
                 .andExpect(jsonPath("$.params.errors[0].key").value("error.fields.common.min"));
     }

@@ -282,16 +282,16 @@ class ManualInstrumentHttpTest {
 
         new TransactionTemplate(transactionManager)
                 .executeWithoutResult(status -> jdbcTemplate.update("UPDATE reference.market SET active = false WHERE id = ?", MANUAL));
-        assertProblem(
-                mockMvc.perform(post("/api/v1/reference/instruments").with(identity.asBearer()).contentType(MediaType.APPLICATION_JSON)
-                        .content(createJson("INACTIVE", "Inactive market", "GBP", "USER", "inactive"))).andExpect(status().isUnprocessableEntity()).andReturn(),
-                "INACTIVE_REFERENCE");
+        assertProblem(mockMvc
+                .perform(post("/api/v1/reference/instruments").with(identity.asBearer()).contentType(MediaType.APPLICATION_JSON)
+                        .content(createJson("INACTIVE", "Inactive market", "GBP", "USER", "inactive")))
+                .andExpect(status().isUnprocessableContent()).andReturn(), "INACTIVE_REFERENCE");
         new TransactionTemplate(transactionManager)
                 .executeWithoutResult(status -> jdbcTemplate.update("UPDATE reference.market SET active = true WHERE id = ?", MANUAL));
 
         assertProblem(
                 mockMvc.perform(post("/api/v1/reference/instruments").with(identity.asBearer()).contentType(MediaType.APPLICATION_JSON)
-                        .content(createJsonForMarket(XIST, "UNSUPPORTED", "Unsupported", "USD"))).andExpect(status().isUnprocessableEntity()).andReturn(),
+                        .content(createJsonForMarket(XIST, "UNSUPPORTED", "Unsupported", "USD"))).andExpect(status().isUnprocessableContent()).andReturn(),
                 "UNSUPPORTED_MARKET_CURRENCY");
 
         var versioned = idFrom(create(identity, "VERSIONED", "Versioned", "GBP", "USER", "versioned"));
@@ -303,11 +303,11 @@ class ManualInstrumentHttpTest {
                 "INSTRUMENT_VERSION_CONFLICT");
 
         assertProblem(mockMvc.perform(get("/api/v1/reference/instruments").param("sort", "createdAt,asc").with(identity.asBearer()))
-                .andExpect(status().isUnprocessableEntity()).andReturn(), "VALIDATION_FAILED");
+                .andExpect(status().isUnprocessableContent()).andReturn(), "VALIDATION_FAILED");
         assertProblem(mockMvc.perform(get("/api/v1/reference/instruments").param("sort", "name,asc").param("sort", "symbol,asc").with(identity.asBearer()))
-                .andExpect(status().isUnprocessableEntity()).andReturn(), "VALIDATION_FAILED");
+                .andExpect(status().isUnprocessableContent()).andReturn(), "VALIDATION_FAILED");
         assertProblem(mockMvc.perform(post("/api/v1/reference/instruments").with(identity.asBearer()).contentType(MediaType.APPLICATION_JSON).content("{}"))
-                .andExpect(status().isUnprocessableEntity()).andReturn(), "VALIDATION_FAILED");
+                .andExpect(status().isUnprocessableContent()).andReturn(), "VALIDATION_FAILED");
         assertProblem(mockMvc.perform(get("/api/v1/reference/instruments").header(HttpHeaders.AUTHORIZATION, "Bearer invalid-token"))
                 .andExpect(status().isUnauthorized()).andReturn(), "INVALID_CREDENTIALS");
     }
@@ -330,7 +330,7 @@ class ManualInstrumentHttpTest {
         assertProblem(mockMvc
                 .perform(post("/api/v1/reference/instruments").with(identity.asBearer()).contentType(MediaType.APPLICATION_JSON)
                         .content(createJson("INACTIVE-CURRENCY", "Inactive currency", "GBP", "USER", "alias")))
-                .andExpect(status().isUnprocessableEntity()).andReturn(), "INACTIVE_REFERENCE");
+                .andExpect(status().isUnprocessableContent()).andReturn(), "INACTIVE_REFERENCE");
         new TransactionTemplate(transactionManager)
                 .executeWithoutResult(status -> jdbcTemplate.update("UPDATE reference.currency SET active = true WHERE code = 'GBP'"));
 
@@ -345,21 +345,21 @@ class ManualInstrumentHttpTest {
         assertProblem(mockMvc
                 .perform(post("/api/v1/reference/instruments").with(identity.asBearer()).contentType(MediaType.APPLICATION_JSON)
                         .content(createJson("EXPANDING-NAME", "ß".repeat(81), "GBP", "USER", "safe alias")))
-                .andExpect(status().isUnprocessableEntity()).andReturn(), "VALIDATION_FAILED");
+                .andExpect(status().isUnprocessableContent()).andReturn(), "VALIDATION_FAILED");
         assertProblem(mockMvc
                 .perform(post("/api/v1/reference/instruments").with(identity.asBearer()).contentType(MediaType.APPLICATION_JSON)
                         .content(createJson("EXPANDING-ALIAS", "Safe name", "GBP", "USER", "ß".repeat(65))))
-                .andExpect(status().isUnprocessableEntity()).andReturn(), "VALIDATION_FAILED");
+                .andExpect(status().isUnprocessableContent()).andReturn(), "VALIDATION_FAILED");
 
         var stable = idFrom(create(identity, "EXPANSION-UPDATE", "Stable name", "GBP", "USER", "stable"));
         assertProblem(mockMvc
                 .perform(put("/api/v1/reference/instruments/{instrumentId}", stable).with(identity.asBearer()).contentType(MediaType.APPLICATION_JSON)
                         .content(updateJson(0, "ß".repeat(81), "MANUAL_VALUE", true, "USER", "stable")))
-                .andExpect(status().isUnprocessableEntity()).andReturn(), "VALIDATION_FAILED");
+                .andExpect(status().isUnprocessableContent()).andReturn(), "VALIDATION_FAILED");
         assertProblem(mockMvc
                 .perform(put("/api/v1/reference/instruments/{instrumentId}", stable).with(identity.asBearer()).contentType(MediaType.APPLICATION_JSON)
                         .content(updateJson(0, "Stable name", "MANUAL_VALUE", true, "USER", "ß".repeat(65))))
-                .andExpect(status().isUnprocessableEntity()).andReturn(), "VALIDATION_FAILED");
+                .andExpect(status().isUnprocessableContent()).andReturn(), "VALIDATION_FAILED");
         mockMvc.perform(get("/api/v1/reference/instruments/{instrumentId}", stable).with(identity.asBearer())).andExpect(status().isOk())
                 .andExpect(jsonPath("$.version", equalTo(0))).andExpect(jsonPath("$.name", equalTo("Stable name")));
         assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM reference.instrument WHERE owner_user_account_id = ?", Integer.class, identity.userId()))

@@ -353,7 +353,7 @@ class LocalLoginHttpTest {
             String... sensitiveValues) throws Exception {
         idGenerator.setNextIds(traceId);
         var result = mockMvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content(requestBody))
-                .andExpect(status().isUnprocessableEntity()).andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(status().isUnprocessableContent()).andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(header().string(RequestTraceFilter.TRACE_ID_HEADER, traceId.toString())).andReturn();
 
         var body = result.getResponse().getContentAsString();

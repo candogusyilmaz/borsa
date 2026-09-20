@@ -205,7 +205,7 @@ class LocalRefreshHttpTest {
         idGenerator.setNextIds(uuid("c2000000-0000-4000-8000-000000000001"));
         mockMvc.perform(
                 post("/api/v1/auth/refresh").contentType(MediaType.APPLICATION_JSON).content("{\"refreshToken\":\"%s\"}".formatted(login.refreshToken())))
-                .andExpect(status().isUnprocessableEntity());
+                .andExpect(status().isUnprocessableContent());
         assertThat(persistedState()).isEqualTo(before);
 
         idGenerator.setNextIds(uuid("c2000000-0000-4000-8000-000000000002"));

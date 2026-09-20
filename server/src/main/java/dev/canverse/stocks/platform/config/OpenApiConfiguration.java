@@ -3,7 +3,6 @@ package dev.canverse.stocks.platform.config;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
 import org.springdoc.core.customizers.GlobalOpenApiCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -24,7 +23,7 @@ public class OpenApiConfiguration {
     }
 
     private static void markRequiredPaginationProperties(String name, Schema<?> schema) {
-        Map<String, Schema> properties = schema.getProperties();
+        var properties = schema.getProperties();
         if (properties == null) {
             return;
         }

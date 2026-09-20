@@ -884,10 +884,6 @@ public class TradeImportService {
         return normalized.toPlainString();
     }
 
-    private static String duplicateKey(UUID ownerUserAccountId, UUID accountId, String format, String contentSha256) {
-        return "%s:%s:%s:%s".formatted(ownerUserAccountId, accountId, format, contentSha256);
-    }
-
     private record NormalizationIssue(TradeImportIssueCode code, String fieldName) {}
 
     private record NormalizedRows(List<TradeImportRow> rows, List<TradeImportIssue> issues) {}

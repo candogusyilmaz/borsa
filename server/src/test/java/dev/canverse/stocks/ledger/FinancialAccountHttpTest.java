@@ -96,9 +96,8 @@ class FinancialAccountHttpTest {
         mockMvc.perform(get("/api/v1/accounts/{accountId}/balance", accountId).with(owner.asBearer())).andExpect(status().isOk())
                 .andExpect(jsonPath("$.ledgerBalance", equalTo("110")));
 
-        var updated = mockMvc
-                .perform(put("/api/v1/accounts/{accountId}", accountId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON)
-                        .content(metadataJson(uuid("10000000-0000-4000-8000-000000000003"), correctedVersion(corrected), " Operating cash ", "Europe/London")))
+        mockMvc.perform(put("/api/v1/accounts/{accountId}", accountId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON)
+                .content(metadataJson(uuid("10000000-0000-4000-8000-000000000003"), correctedVersion(corrected), " Operating cash ", "Europe/London")))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.name", equalTo("Operating cash"))).andExpect(jsonPath("$.timeZone", equalTo("Europe/London")))
                 .andExpect(jsonPath("$.version", equalTo(3))).andReturn();
 

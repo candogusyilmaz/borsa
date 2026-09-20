@@ -205,7 +205,7 @@ class LocalAccountRegistrationHttpTest {
         var result = mockMvc
                 .perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)
                         .content(requestJson(email, password)))
-                .andExpect(status().isUnprocessableEntity()).andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(status().isUnprocessableContent()).andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(header().string(RequestTraceFilter.TRACE_ID_HEADER, traceId.toString())).andReturn();
 
         var response = result.getResponse().getContentAsString();

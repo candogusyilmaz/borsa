@@ -28,6 +28,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.json.JsonCompareMode;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -74,7 +75,7 @@ class ReferenceCatalogHttpTest {
                           {"code":"TR","name":"Türkiye","active":true},
                           {"code":"US","name":"United States","active":true}
                         ]
-                        """, true)).andReturn();
+                        """, JsonCompareMode.STRICT)).andReturn();
         assertNoSession(countries);
 
         var currencies = mockMvc.perform(get("/api/v1/reference/currencies").with(identity.asBearer())).andExpect(status().isOk())
@@ -86,7 +87,7 @@ class ReferenceCatalogHttpTest {
                           {"code":"TRY","name":"Turkish lira","symbol":"₺","minorUnit":2,"active":true},
                           {"code":"USD","name":"United States dollar","symbol":"$","minorUnit":2,"active":true}
                         ]
-                        """, true)).andReturn();
+                        """, JsonCompareMode.STRICT)).andReturn();
         assertNoSession(currencies);
 
         var markets = mockMvc.perform(get("/api/v1/reference/markets").with(identity.asBearer())).andExpect(status().isOk())
@@ -118,7 +119,7 @@ class ReferenceCatalogHttpTest {
                             "sourceKind":"REFERENCE_SEED"
                           }
                         ]
-                        """, true)).andReturn();
+                        """, JsonCompareMode.STRICT)).andReturn();
         assertNoSession(markets);
     }
 
@@ -141,7 +142,7 @@ class ReferenceCatalogHttpTest {
                           "sessions":[],
                           "missingDates":["2026-08-01","2026-08-02","2026-08-03"]
                         }
-                        """, true)).andReturn();
+                        """, JsonCompareMode.STRICT)).andReturn();
         assertNoSession(result);
     }
 

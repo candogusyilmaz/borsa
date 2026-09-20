@@ -215,7 +215,7 @@ class TradeImportHttpTest {
                 .andExpect(status().isUnprocessableContent()).andExpect(jsonPath("$.code", equalTo("IMPORT_ROW_LIMIT_EXCEEDED")));
         mockMvc.perform(multipart("/api/v1/imports").file(new MockMultipartFile("file", "oversized.csv", "text/csv", new byte[1_048_577]))
                 .param("clientRequestId", UUID.randomUUID().toString()).param("accountId", accountId.toString()).with(owner.asBearer()))
-                .andExpect(status().isPayloadTooLarge()).andExpect(jsonPath("$.code", equalTo("PAYLOAD_TOO_LARGE")));
+                .andExpect(status().isContentTooLarge()).andExpect(jsonPath("$.code", equalTo("PAYLOAD_TOO_LARGE")));
         mockMvc.perform(post("/api/v1/imports").contentType(MediaType.APPLICATION_JSON).content("{}").with(owner.asBearer()))
                 .andExpect(status().isUnsupportedMediaType());
 

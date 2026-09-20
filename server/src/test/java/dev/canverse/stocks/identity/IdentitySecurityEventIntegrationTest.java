@@ -181,7 +181,7 @@ class IdentitySecurityEventIntegrationTest {
     void logoutAndRevocationRecordSafeEvents() {
         var userId = registrationService.register("logout-events@example.com", "correct horse battery staple");
         var session1 = issuanceService.issue(userId, "d1");
-        var session2 = issuanceService.issue(userId, "d2");
+        issuanceService.issue(userId, "d2");
 
         // Revoke selected session1
         revocationService.revokeSelectedFamily(userId, session1.sessionId(), session1.sessionId());

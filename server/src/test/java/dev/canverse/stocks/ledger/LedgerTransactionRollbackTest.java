@@ -84,7 +84,11 @@ class LedgerTransactionRollbackTest {
     @BeforeEach
     void cleanDatabase() {
         databaseCleaner.resetApplicationState();
-        reset(activityRepository, moneyPostingRepository, projectionRepository, idempotencyRecordRepository, reconciliationRepository);
+        reset(activityRepository);
+        reset(moneyPostingRepository);
+        reset(projectionRepository);
+        reset(idempotencyRecordRepository);
+        reset(reconciliationRepository);
     }
 
     @Test

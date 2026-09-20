@@ -144,10 +144,9 @@ class InvestingTradeHttpTest {
                 .andExpect(status().isOk()).andExpect(jsonPath("$.cashDelta", equalTo("59"))).andExpect(jsonPath("$.allocatedBasis", equalTo("40.8")))
                 .andExpect(jsonPath("$.realizedEconomicPnl", equalTo("18.2"))).andReturn();
         var partialRequestId = uuid("61000000-0000-4000-8000-000000000002");
-        var partialResult = mockMvc
-                .perform(post("/api/v1/trades").with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON)
-                        .content(commitJson(partialRequestId, accounts.brokerageId(), ownerInstrument, "SELL", "4", "15", "1", "CURRENT_ACTION",
-                                PARTIAL_SELL_AT, 1, false, longJson(partialPreview, "$.cashBalanceVersion"), longJson(partialPreview, "$.positionVersion"))))
+        mockMvc.perform(post("/api/v1/trades").with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON)
+                .content(commitJson(partialRequestId, accounts.brokerageId(), ownerInstrument, "SELL", "4", "15", "1", "CURRENT_ACTION", PARTIAL_SELL_AT, 1,
+                        false, longJson(partialPreview, "$.cashBalanceVersion"), longJson(partialPreview, "$.positionVersion"))))
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.side", equalTo("SELL"))).andExpect(jsonPath("$.cashDelta", equalTo("59")))
                 .andExpect(jsonPath("$.cashPostings[0].role", equalTo("TRADE_PROCEEDS"))).andExpect(jsonPath("$.cashPostings[0].amount", equalTo("60")))
                 .andReturn();

@@ -154,7 +154,7 @@ class DeviceSessionQueryServiceTest {
         var userId = registrationService.register("bounded@example.com", "correct horse battery staple");
         var session1 = issuanceService.issue(userId, "device1");
         var session2 = issuanceService.issue(userId, "device2");
-        var session3 = issuanceService.issue(userId, "device3");
+        issuanceService.issue(userId, "device3");
 
         // Rotate several times to build multi-generation families
         rotationService.rotate(session1.refreshToken());
