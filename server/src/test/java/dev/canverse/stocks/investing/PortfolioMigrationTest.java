@@ -32,6 +32,9 @@ class PortfolioMigrationTest {
 
     private static final UUID MANUAL_MARKET_ID = UUID.fromString("10000000-0000-0000-0000-000000000002");
     private static final Set<String> LEDGER_TABLES = Set.of("account_balance_projection", "account_cash_pocket", "activity", "financial_account",
+            "idempotency_record", "money_posting", "position_projection", "portfolio", "portfolio_account_membership", "reconciliation", "security_posting",
+            "trade_import_batch", "trade_import_issue", "trade_import_row");
+    private static final Set<String> V7_LEDGER_TABLES = Set.of("account_balance_projection", "account_cash_pocket", "activity", "financial_account",
             "idempotency_record", "money_posting", "position_projection", "portfolio", "portfolio_account_membership", "reconciliation", "security_posting");
     private static final Set<String> V6_LEDGER_TABLES = Set.of("account_balance_projection", "account_cash_pocket", "activity", "financial_account",
             "idempotency_record", "money_posting", "position_projection", "reconciliation", "security_posting");
@@ -50,8 +53,8 @@ class PortfolioMigrationTest {
     PlatformTransactionManager transactionManager;
 
     @Test
-    void freshDatabaseMigratesThroughV7AndContainsOnlyTheAuthorizedPortfolioTables() {
-        assertThat(flyway.info().applied()).extracting(migration -> migration.getVersion().toString()).containsExactly("1", "2", "3", "4", "5", "6", "7");
+    void freshDatabaseMigratesThroughV8AndContainsOnlyTheAuthorizedInvestingTables() {
+        assertThat(flyway.info().applied()).extracting(migration -> migration.getVersion().toString()).containsExactly("1", "2", "3", "4", "5", "6", "7", "8");
         assertThat(Set.copyOf(jdbcTemplate.queryForList("SELECT table_name FROM information_schema.tables WHERE table_schema = 'ledger'", String.class)))
                 .isEqualTo(LEDGER_TABLES);
 
@@ -106,7 +109,7 @@ class PortfolioMigrationTest {
             assertThat(v7.info().applied()).extracting(migration -> migration.getVersion().toString()).containsExactly("1", "2", "3", "4", "5", "6", "7");
             assertThat(snapshotV6Rows(v6Jdbc)).isEqualTo(before);
             assertThat(Set.copyOf(v6Jdbc.queryForList("SELECT table_name FROM information_schema.tables WHERE table_schema = 'ledger'", String.class)))
-                    .isEqualTo(LEDGER_TABLES);
+                    .isEqualTo(V7_LEDGER_TABLES);
         } finally {
             try (var admin = DriverManager.getConnection(adminUrl, postgres.getUsername(), postgres.getPassword())) {
                 admin.createStatement().execute("DROP DATABASE IF EXISTS " + databaseName + " WITH (FORCE)");
@@ -150,7 +153,7 @@ class PortfolioMigrationTest {
                 .isZero();
     }
 
-    private static Map<String, String> snapshotV6Rows(JdbcTemplate jdbcTemplate) {
+    static Map<String, String> snapshotV6Rows(JdbcTemplate jdbcTemplate) {
         var snapshots = new LinkedHashMap<String, String>();
         for (var table : V6_LEDGER_TABLES) {
             snapshots.put("ledger." + table, snapshot(jdbcTemplate, "ledger", table));
@@ -165,7 +168,7 @@ class PortfolioMigrationTest {
                 " FROM (SELECT * FROM " + schema + "." + table + ") snapshot_rows", String.class);
     }
 
-    private static V6Fixture seedV6Fixture(JdbcTemplate jdbcTemplate, TransactionTemplate transaction) {
+    static V6Fixture seedV6Fixture(JdbcTemplate jdbcTemplate, TransactionTemplate transaction) {
         var ownerId = UUID.randomUUID();
         var accountId = UUID.randomUUID();
         var pocketId = UUID.randomUUID();
@@ -322,5 +325,5 @@ class PortfolioMigrationTest {
         new TransactionTemplate(transactionManager).executeWithoutResult(status -> jdbcTemplate.update(sql, arguments));
     }
 
-    private record V6Fixture(UUID ownerId, UUID accountId, UUID ownerInstrumentId, UUID globalInstrumentId) {}
+    record V6Fixture(UUID ownerId, UUID accountId, UUID ownerInstrumentId, UUID globalInstrumentId) {}
 }

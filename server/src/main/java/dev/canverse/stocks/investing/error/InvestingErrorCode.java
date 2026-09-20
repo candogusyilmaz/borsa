@@ -15,8 +15,15 @@ public enum InvestingErrorCode implements ErrorCode {
     PORTFOLIO_NAME_CONFLICT(HttpStatus.CONFLICT, "An active portfolio already uses this name."),
     PORTFOLIO_VERSION_CONFLICT(HttpStatus.CONFLICT, "The portfolio was changed by another request."),
     PORTFOLIO_ARCHIVED(HttpStatus.CONFLICT, "The portfolio is archived and cannot be changed."),
-    PORTFOLIO_NOT_FOUND(HttpStatus.NOT_FOUND, "The portfolio was not found."), TRADE_NOT_FOUND(HttpStatus.NOT_FOUND, "The trade was not found."),
-    POSITION_NOT_FOUND(HttpStatus.NOT_FOUND, "The position was not found.");
+    IMPORT_NOT_COMMITTABLE(HttpStatus.CONFLICT, "The complete import batch cannot be committed in its current state."),
+    IMPORT_PREVIEW_STALE(HttpStatus.CONFLICT, "The current import preview no longer matches the confirmed snapshot."),
+    IMPORT_ALREADY_COMMITTED(HttpStatus.CONFLICT, "The import batch has already been committed."),
+    IMPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "The import batch was not found."), PORTFOLIO_NOT_FOUND(HttpStatus.NOT_FOUND, "The portfolio was not found."),
+    TRADE_NOT_FOUND(HttpStatus.NOT_FOUND, "The trade was not found."), POSITION_NOT_FOUND(HttpStatus.NOT_FOUND, "The position was not found."),
+    IMPORT_FILE_EMPTY(HttpStatus.UNPROCESSABLE_CONTENT, "The uploaded CSV must contain at least one data row."),
+    IMPORT_FILE_ENCODING_INVALID(HttpStatus.UNPROCESSABLE_CONTENT, "The uploaded file must be valid UTF-8."),
+    IMPORT_FILE_FORMAT_INVALID(HttpStatus.UNPROCESSABLE_CONTENT, "The uploaded file does not match the supported CSV format."),
+    IMPORT_ROW_LIMIT_EXCEEDED(HttpStatus.UNPROCESSABLE_CONTENT, "The CSV contains more rows than the supported limit.");
 
     private final HttpStatus status;
     private final String description;

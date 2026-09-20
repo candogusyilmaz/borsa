@@ -32,7 +32,24 @@ class FinancialAccountMigrationTest {
     private static final UUID MANUAL_MARKET_ID = UUID.fromString("10000000-0000-0000-0000-000000000002");
 
     private static final Set<String> LEDGER_TABLES = Set.of("account_balance_projection", "account_cash_pocket", "activity", "financial_account",
-            "idempotency_record", "money_posting", "position_projection", "portfolio", "portfolio_account_membership", "reconciliation", "security_posting");
+            "idempotency_record", "money_posting", "position_projection", "portfolio", "portfolio_account_membership", "reconciliation", "security_posting",
+            "trade_import_batch", "trade_import_issue", "trade_import_row");
+
+    private static final Set<String> V8_IMPORT_CONSTRAINTS = Set.of("ck_ledger_activity_source_shape", "fk_ledger_activity_source_import_row",
+            "pk_ledger_trade_import_batch", "fk_ledger_trade_import_batch_owner", "fk_ledger_trade_import_batch_account",
+            "uq_ledger_trade_import_batch_owner_id", "uq_ledger_trade_import_batch_content", "ck_ledger_trade_import_batch_format",
+            "ck_ledger_trade_import_batch_status", "ck_ledger_trade_import_batch_file_name", "ck_ledger_trade_import_batch_media_type",
+            "ck_ledger_trade_import_batch_byte_size", "ck_ledger_trade_import_batch_sha256", "ck_ledger_trade_import_batch_row_count",
+            "ck_ledger_trade_import_batch_status_shape", "ck_ledger_trade_import_batch_version_non_negative", "pk_ledger_trade_import_row",
+            "fk_ledger_trade_import_row_owner", "fk_ledger_trade_import_row_batch", "fk_ledger_trade_import_row_instrument",
+            "fk_ledger_trade_import_row_currency", "uq_ledger_trade_import_row_owner_id", "uq_ledger_trade_import_row_owner_batch_id",
+            "uq_ledger_trade_import_row_record", "ck_ledger_trade_import_row_record_number", "ck_ledger_trade_import_row_source_values",
+            "ck_ledger_trade_import_row_normalization_status", "ck_ledger_trade_import_row_external_id", "ck_ledger_trade_import_row_fingerprint",
+            "ck_ledger_trade_import_row_normalized_shape", "pk_ledger_trade_import_issue", "fk_ledger_trade_import_issue_owner",
+            "fk_ledger_trade_import_issue_row", "uq_ledger_trade_import_issue_code_field", "ck_ledger_trade_import_issue_field",
+            "ck_ledger_trade_import_issue_code");
+
+    private static final Set<String> V8_IMPORT_INDEXES = Set.of("ix_ledger_trade_import_row_owner_fingerprint", "uq_ledger_activity_source_import_row");
 
     private static final Set<String> LEDGER_CONSTRAINTS = Set.of("ck_ledger_account_balance_projection_version_non_negative",
             "ck_ledger_account_cash_pocket_coverage_status", "ck_ledger_account_cash_pocket_version_non_negative", "ck_ledger_activity_command_sequence",
@@ -102,8 +119,8 @@ class FinancialAccountMigrationTest {
     PlatformTransactionManager transactionManager;
 
     @Test
-    void v7AddsReportingGroupsToTheExistingLedger() {
-        assertThat(flyway.info().applied()).extracting(migration -> migration.getVersion().toString()).containsExactly("1", "2", "3", "4", "5", "6", "7");
+    void v8AddsImportTablesAndPreservesReportingGroups() {
+        assertThat(flyway.info().applied()).extracting(migration -> migration.getVersion().toString()).containsExactly("1", "2", "3", "4", "5", "6", "7", "8");
 
         var tables = Set.copyOf(jdbcTemplate.queryForList("SELECT table_name FROM information_schema.tables WHERE table_schema = 'ledger'", String.class));
         assertThat(tables).isEqualTo(LEDGER_TABLES);
@@ -124,11 +141,16 @@ class FinancialAccountMigrationTest {
 
         var constraints = Set.copyOf(jdbcTemplate.queryForList(
                 "SELECT conname FROM pg_constraint c JOIN pg_namespace n ON n.oid = c.connamespace" + " WHERE n.nspname = 'ledger'", String.class));
-        assertThat(constraints).isEqualTo(LEDGER_CONSTRAINTS);
+        var expectedConstraints = new java.util.HashSet<>(LEDGER_CONSTRAINTS);
+        expectedConstraints.addAll(V8_IMPORT_CONSTRAINTS);
+        assertThat(constraints).isEqualTo(expectedConstraints);
 
-        var indexes = Set.copyOf(jdbcTemplate.queryForList(
-                "SELECT indexname FROM pg_indexes" + " WHERE schemaname = 'ledger' AND (indexname LIKE 'ix_%' OR indexname LIKE 'uix_%')", String.class));
-        assertThat(indexes).isEqualTo(LEDGER_INDEXES);
+        var indexes = Set.copyOf(jdbcTemplate.queryForList("SELECT indexname FROM pg_indexes" +
+                " WHERE schemaname = 'ledger' AND (indexname LIKE 'ix_%' OR indexname LIKE 'uix_%'" + " OR indexname = 'uq_ledger_activity_source_import_row')",
+                String.class));
+        var expectedIndexes = new java.util.HashSet<>(LEDGER_INDEXES);
+        expectedIndexes.addAll(V8_IMPORT_INDEXES);
+        assertThat(indexes).isEqualTo(expectedIndexes);
     }
 
     @Test
@@ -349,7 +371,7 @@ class FinancialAccountMigrationTest {
     }
 
     @Test
-    void v3DatabaseUpgradesToV4WithoutSkippingMigrationsOrLosingRepresentativeRows() throws Exception {
+    void v3DatabaseUpgradesThroughV8WithoutSkippingMigrationsOrLosingRepresentativeRows() throws Exception {
         var databaseName = "upgrade_" + UUID.randomUUID().toString().replace("-", "");
         var adminUrl = postgres.getJdbcUrl();
         var targetUrl = adminUrl.substring(0, adminUrl.lastIndexOf('/') + 1) + databaseName;
@@ -479,7 +501,8 @@ class FinancialAccountMigrationTest {
 
             var latest = Flyway.configure().dataSource(targetUrl, postgres.getUsername(), postgres.getPassword()).locations("classpath:db/migration").load();
             latest.migrate();
-            assertThat(latest.info().applied()).extracting(migration -> migration.getVersion().toString()).containsExactly("1", "2", "3", "4", "5", "6", "7");
+            assertThat(latest.info().applied()).extracting(migration -> migration.getVersion().toString()).containsExactly("1", "2", "3", "4", "5", "6", "7",
+                    "8");
             assertThat(v3Jdbc.queryForObject("SELECT COUNT(*) FROM ledger.financial_account WHERE id = ?", Integer.class, accountId)).isEqualTo(1);
             assertThat(v3Jdbc.queryForObject("SELECT COUNT(*) FROM ledger.activity WHERE id = ?", Integer.class, activityId)).isEqualTo(1);
             assertThat(v3Jdbc.queryForObject("SELECT COUNT(*) FROM ledger.reconciliation WHERE id IN (?, ?)", Integer.class, balancedReconciliationId,

@@ -8,6 +8,7 @@ import dev.canverse.stocks.ledger.domain.PolicyDecision;
 import dev.canverse.stocks.ledger.domain.RecordingMode;
 import dev.canverse.stocks.ledger.web.response.PostingResponse;
 import dev.canverse.stocks.reference.domain.InstrumentType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.List;
@@ -20,7 +21,9 @@ public record TradeResponse(@NotNull UUID id, @NotNull UUID accountId, @NotNull 
         @NotNull String cashDelta, @NotNull String quantityDelta, @NotNull Instant effectiveAt, @NotNull Instant recordedAt, @NotNull Long economicSequence,
         @NotNull RecordingMode recordingMode, @NotNull PolicyDecision policyDecision, @NotNull String sourceKind, @NotNull CalculationPolicy calculationPolicy,
         @NotNull List<PostingResponse> cashPostings, @NotNull SecurityPostingResponse securityPosting, UUID reversalActivityId, String reversalReason,
-        Instant reversedAt) {
+        Instant reversedAt, @JsonInclude(JsonInclude.Include.ALWAYS) @Schema(nullable = true) UUID sourceImportBatchId,
+        @JsonInclude(JsonInclude.Include.ALWAYS) @Schema(nullable = true) UUID sourceImportRowId,
+        @JsonInclude(JsonInclude.Include.ALWAYS) @Schema(nullable = true) String sourceExternalId) {
 
     public TradeResponse {
         cashPostings = List.copyOf(cashPostings);
@@ -32,6 +35,6 @@ public record TradeResponse(@NotNull UUID id, @NotNull UUID accountId, @NotNull 
                 model.grossAmount().canonical(), model.commissionAmount().canonical(), model.cashDelta().canonical(), model.quantityDelta().canonical(),
                 model.effectiveAt(), model.recordedAt(), model.economicSequence(), model.recordingMode(), model.policyDecision(), model.sourceKind(),
                 model.calculationPolicy(), model.cashPostings(), model.securityPosting(), model.reversalActivityId(), model.reversalReason(),
-                model.reversedAt());
+                model.reversedAt(), model.sourceImportBatchId(), model.sourceImportRowId(), model.sourceExternalId());
     }
 }

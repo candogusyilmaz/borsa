@@ -1,6 +1,6 @@
 # Backend transformation progress report
 
-Report date: 2026-09-19
+Report date: 2026-09-20
 
 Scope: Spring Boot backend, PostgreSQL dump, database migration strategy, modular-monolith design, offline/fake data approach, and implementation readiness. Frontend implementation state is tracked separately under `docs/implementation/web/`.
 
@@ -49,13 +49,25 @@ Current-state handoff: use [docs/implementation/STATE.md](../implementation/STAT
 | PR-028 — Identity authentication boundary consolidation | **Complete in accepted commit `ac4d7e7`** | Registration/login/refresh now share one controller and one non-transactional attempt-policy service; logout is colocated with device-session HTTP operations; duplicate credential result/response types and superseded controllers/wrappers are removed while core transaction and session boundaries remain separate |
 | PR-029 — Manual cash fees and interest credits | **Complete in accepted commit `c01d708`** | Cross-stack R3 completion adds V5 checks, signed `FEE`/`INTEREST_CREDIT` postings, current/historical command and reversal behavior, generated OpenAPI/UI actions, V4 reconciliation-adjustment preservation proof, and PostgreSQL/Testcontainers coverage; focused gate passed 93 tests, full Maven `test` and `verify` each passed 382 tests, and Spotless passed |
 | PR-030 — Manual funded brokerage trades and deterministic position projection | **Complete; user accepted** | V6 security facts and position projection, same-currency funded preview/commit, deterministic weighted-average replay, reversal, and owner-scoped reads are implemented in `5a8bc48`. Imports, holdings-only openings, tax, FX, pending settlement, valuation, and frontend work remain excluded |
-| PR-031 - Portfolio reporting groups and account-scoped investment views | **Implemented and verified** | V7 owner-scoped portfolios, atomic account membership, optimistic lifecycle, safe errors, and portfolio-filtered trade/position reads; CSV import and broader R4 work remain deferred |
+| PR-031 - Portfolio reporting groups and account-scoped investment views | **Complete; user accepted** | V7 owner-scoped portfolios, atomic account membership, optimistic lifecycle, safe errors, and portfolio-filtered trade/position reads |
+| PR-032 - Reviewed funded-trade CSV import and atomic commit | **Implemented and verified; user acceptance pending** | V8 adds reviewed `FUNDED_TRADE_CSV_V1` upload, current-state preview, atomic idempotent commit, compact exact-replay snapshots within the existing limit, and `FILE_IMPORTED` row provenance; focused and full verification pass |
 | Backend standardization cleanup                    | **Complete in commit `cf895ac`; preserved through the current baseline** | Controller-only validation, standard JWT validators with lexical compatibility checks, Boot-managed Micrometer W3C tracing, centralized persistence error mapping, typed authenticated principals, application-owned search criteria, and current package/SQL conventions; no public route or response contract changed |
-| Automated backend coverage                         | PR-031 focused gate: 15 tests passed; final Maven `verify`: 422 tests passed | V7 fresh and V6-upgrade migrations, raw PostgreSQL constraints, lifecycle and concurrency, HTTP/security, trade/position filters, existing ledger/reconciliation regressions, OpenAPI, and tracing; Spotless passed across 309 Java files with no skipped tests |
+| Automated backend coverage                         | PR-032 focused gate: 30 tests passed; final Maven `verify`: 451 tests passed | V8 migration/constraints, CSV parser and domain, upload-preview-commit lifecycle, 500-row/500-instrument commit and exact replay under the 32,768-byte snapshot limit, rollback/reversal/provenance, HTTP/OpenAPI, and regression coverage; 0 failures, 0 errors, 0 skipped; Spotless passed |
 
-Overall status: **PR-031's backend portfolio reporting groups and account-scoped investment views are implemented and verified. CSV import and broader R4 work remain deferred; no subsequent PR was activated.**
+Overall status: **PR-032's backend reviewed funded-trade CSV workflow is implemented and verified, pending user acceptance. Broader R4 work remains deferred, and no subsequent PR was activated.**
 
-## Latest implementation checkpoint — PR-031
+## Latest implementation checkpoint — PR-032
+
+Date: 2026-09-20. The backend-only reviewed funded-trade CSV import implementation and verification are complete; user acceptance is pending.
+
+- V8 adds owner-aligned import batch, row, and issue tables plus nullable activity provenance constrained to one imported security-trade activity per source row. Existing V7 manual-trade, reversal, projection, reconciliation, portfolio, and instrument data remain unchanged on upgrade.
+- The fixed `FUNDED_TRADE_CSV_V1` format uses a strict UTF-8 RFC 4180 parser, exact nine-column header, optional single BOM, surrounding-space handling around quoted data fields, 1 MiB file limit, and 500-row limit. Raw bytes are discarded after SHA-256 identity and safe row evidence are persisted.
+- Authenticated upload is idempotent by request key and exact account/content; repeatable-read preview evaluates static evidence, current duplicate/order state, cash policy, and weighted-average positions. Commit recomputes under deterministic locks and writes every cash/security fact, one position rebuild per instrument, and provenance in one transaction.
+- Trade detail/history includes source batch, row, and external ID fields; manual trades retain `USER_ENTERED` and null provenance. Reversals keep the original import row available for duplicate detection.
+- Commit idempotency stores packed activity IDs and commit-time position versions in a compact import-specific snapshot; the PostgreSQL test proves a maximum 500-row/500-instrument commit stays within the unchanged 32,768-byte constraint and replays the exact response.
+- Spotless apply passed. The specified focused gate passed 30 tests; final `verify` passed 451 tests with 0 failures, 0 errors, and 0 skipped; the Spotless check passed. The gates also verify a late database failure rolls back posted facts, reversal restores cash and positions while retaining source provenance, history shows imported and null manual provenance, and V8 accepts/rejects the required normalized-row SQL shapes. Full test and decision details are in the PR-032 Completion Record.
+
+## Implementation checkpoint — PR-031 (historical)
 
 Date: 2026-09-19. The backend-only portfolio reporting group capability is implemented and verified.
 
@@ -63,7 +75,7 @@ Date: 2026-09-19. The backend-only portfolio reporting group capability is imple
 - Authenticated portfolio create/list/detail/update/archive is owner-scoped, supports empty or populated memberships, uses atomic full replacement and optimistic versions, preserves membership on archive, and allows archived accounts to remain members.
 - Existing trade-history and open-position reads accept `portfolioId` through membership `EXISTS` predicates, preserving account intersection, pagination, sort contracts, and row uniqueness without changing financial facts or projections.
 - Focused domain/migration/service/concurrency/HTTP/OpenAPI gate: 15 tests passed. Final Maven `verify`: 422 tests, 0 failures, errors, or skips; Spotless check and executable repackaging passed. Surefire logged a post-exit fork shutdown warning, while Maven reported `BUILD SUCCESS`.
-- [PR-031 Completion Record](../implementation/PR-031-portfolio-reporting-groups.md#completion-record) contains implementation evidence and exact verification. CSV import, valuation, allocation, and frontend work remain deferred.
+- [PR-031 Completion Record](../implementation/PR-031-portfolio-reporting-groups.md#completion-record) contains implementation evidence and exact verification. At that checkpoint, CSV import, valuation, allocation, and frontend work remained deferred.
 
 ## Implementation checkpoint — PR-030 (historical)
 
@@ -461,7 +473,7 @@ The 2026-08-07 document harmonization establishes these implementation rules:
 |        R1 | Foundation, identity, auth, sessions and jobs                | Partially complete — PR-019 identity/session security is accepted in `0c6657e`; unused job storage remains only as a reservation, while execution infrastructure and persistent-key/OIDC/recovery work remain deferred |
 |        R2 | Canonical references and deterministic seeds                 | Complete for the accepted PR-020 boundary in `3f45a8c`; administration, imports, observations, and providers remain later capabilities |
 |        R3 | Accounts/ledger/funding/balances — FT-31                     | Complete for the accepted native-currency manual ledger boundary through PR-029 in `c01d708`; later card/debt/FX and imported connectivity remain in their own roadmap capabilities |
-|        R4 | Investing parity, funded trades and imports                  | PR-030 completes manual funded trades and deterministic position projection; PR-031 completes backend portfolio reporting groups, account membership, and portfolio-filtered trade/position reads; CSV imports, holdings-only openings, tax, FX, income/actions, and settlement remain deferred |
+|        R4 | Investing parity, funded trades and imports                  | PR-030 completes manual funded trades and deterministic position projection; PR-031 completes backend portfolio reporting groups, account membership, and portfolio-filtered trade/position reads; PR-032 completes reviewed funded-trade CSV import; holdings-only openings, tax, FX, income/actions, provider imports, and settlement remain deferred |
 |        R5 | Observation platform and synthetic universe                  | Not started                                                                                                      |
 |        R6 | Timeline/net worth/investment truth — FT-01/02/11            | Not started                                                                                                      |
 |        R7 | Decision Replay and comparison — FT-06/07/08/09/12           | Not started                                                                                                      |
@@ -500,7 +512,7 @@ Root [AGENTS.md](../../AGENTS.md) is the automatic agent entry point. It tells c
 
 ## PR-030 to PR-031 handoff (historical)
 
-PR-030's implementation, decisions, and exact verification are recorded in [its Completion Record](../implementation/PR-030-manual-funded-brokerage-trades.md#completion-record). PR-030 is user-accepted in implementation commit `5a8bc48`. [PR-031](../implementation/PR-031-portfolio-reporting-groups.md) has since been implemented and verified as the backend portfolio-reporting capability. The current pointer remains unchanged, no subsequent PR was activated, and CSV import and the other deferred R4 capabilities remain outside this unit.
+At the PR-031 handoff, [PR-030](../implementation/PR-030-manual-funded-brokerage-trades.md)'s implementation and verification were recorded in its Completion Record, PR-030 was user-accepted in implementation commit `5a8bc48`, and PR-031 was the next backend portfolio-reporting capability. CSV import was outside that historical unit. PR-032 has since implemented and verified reviewed funded-trade CSV import; the current pointer remains PR-032 pending user acceptance.
 
 ## Risks to monitor
 

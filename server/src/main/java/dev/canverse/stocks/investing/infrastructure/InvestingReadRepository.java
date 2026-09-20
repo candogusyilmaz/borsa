@@ -156,10 +156,14 @@ public class InvestingReadRepository {
                        a.economic_sequence, a.recording_mode, a.policy_decision, a.source_kind,
                        s.posting_role AS security_posting_role, s.reverses_security_posting_id,
                        reversal.id AS reversal_activity_id, reversal.correction_reason AS reversal_reason,
-                       reversal.recorded_at AS reversed_at
+                       reversal.recorded_at AS reversed_at, import_row.import_batch_id AS source_import_batch_id,
+                       import_row.id AS source_import_row_id, import_row.source_external_id
                 FROM ledger.activity a
                 JOIN ledger.security_posting s ON s.owner_user_account_id = a.owner_user_account_id
                     AND s.activity_id = a.id
+                LEFT JOIN ledger.trade_import_row import_row
+                    ON import_row.owner_user_account_id = a.owner_user_account_id
+                   AND import_row.id = a.source_import_row_id
                 JOIN ledger.financial_account account ON account.owner_user_account_id = a.owner_user_account_id
                     AND account.id = s.financial_account_id
                 JOIN reference.instrument instrument ON instrument.id = s.instrument_id
@@ -183,11 +187,14 @@ public class InvestingReadRepository {
             return List.of();
         }
         var postingsByActivity = findTradeCashPostings(ownerUserAccountId, rows.stream().map(TradeRow::id).toList());
-        return rows.stream().map(row -> new TradeReadModel(row.id(), row.accountId(), row.accountName(), row.instrumentId(), row.instrumentSymbol(),
-                row.instrumentName(), row.instrumentType(), row.currency(), row.side(), row.quantity(), row.unitPrice(), row.grossAmount(),
-                row.commissionAmount(), row.cashDelta(), row.quantityDelta(), row.effectiveAt(), row.recordedAt(), row.economicSequence(), row.recordingMode(),
-                row.policyDecision(), row.sourceKind(), CalculationPolicy.WEIGHTED_AVERAGE_ECONOMIC_V1, postingsByActivity.getOrDefault(row.id(), List.of()),
-                row.securityPosting(), row.reversalActivityId(), row.reversalReason(), row.reversedAt())).toList();
+        return rows.stream()
+                .map(row -> new TradeReadModel(row.id(), row.accountId(), row.accountName(), row.instrumentId(), row.instrumentSymbol(), row.instrumentName(),
+                        row.instrumentType(), row.currency(), row.side(), row.quantity(), row.unitPrice(), row.grossAmount(), row.commissionAmount(),
+                        row.cashDelta(), row.quantityDelta(), row.effectiveAt(), row.recordedAt(), row.economicSequence(), row.recordingMode(),
+                        row.policyDecision(), row.sourceKind(), CalculationPolicy.WEIGHTED_AVERAGE_ECONOMIC_V1,
+                        postingsByActivity.getOrDefault(row.id(), List.of()), row.securityPosting(), row.reversalActivityId(), row.reversalReason(),
+                        row.reversedAt(), row.sourceImportBatchId(), row.sourceImportRowId(), row.sourceExternalId()))
+                .toList();
     }
 
     private Map<UUID, List<PostingResponse>> findTradeCashPostings(UUID ownerUserAccountId, List<UUID> activityIds) {
@@ -231,7 +238,9 @@ public class InvestingReadRepository {
                 FinancialAmount.of(resultSet.getBigDecimal("cash_delta")), quantityDelta, instant(resultSet, "effective_at"), instant(resultSet, "recorded_at"),
                 resultSet.getLong("economic_sequence"), RecordingMode.valueOf(resultSet.getString("recording_mode")),
                 PolicyDecision.valueOf(resultSet.getString("policy_decision")), resultSet.getString("source_kind"), securityPosting,
-                resultSet.getObject("reversal_activity_id", UUID.class), resultSet.getString("reversal_reason"), instant(resultSet, "reversed_at"));
+                resultSet.getObject("reversal_activity_id", UUID.class), resultSet.getString("reversal_reason"), instant(resultSet, "reversed_at"),
+                resultSet.getObject("source_import_batch_id", UUID.class), resultSet.getObject("source_import_row_id", UUID.class),
+                resultSet.getString("source_external_id"));
     }
 
     private static TradeEvent mapTradeEvent(ResultSet resultSet) throws SQLException {
@@ -335,7 +344,7 @@ public class InvestingReadRepository {
             InstrumentType instrumentType, String currency, TradeSide side, FinancialAmount quantity, FinancialAmount unitPrice, FinancialAmount grossAmount,
             FinancialAmount commissionAmount, FinancialAmount cashDelta, FinancialAmount quantityDelta, Instant effectiveAt, Instant recordedAt,
             long economicSequence, RecordingMode recordingMode, PolicyDecision policyDecision, String sourceKind, SecurityPostingResponse securityPosting,
-            UUID reversalActivityId, String reversalReason, Instant reversedAt) {}
+            UUID reversalActivityId, String reversalReason, Instant reversedAt, UUID sourceImportBatchId, UUID sourceImportRowId, String sourceExternalId) {}
 
     private record PostingRow(UUID activityId, PostingResponse posting) {}
 }

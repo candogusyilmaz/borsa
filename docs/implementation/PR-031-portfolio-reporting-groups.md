@@ -1,6 +1,6 @@
 # PR-031 - Portfolio reporting groups and account-scoped investment views
 
-Status: **ACTIVE**
+Status: **COMPLETE**
 
 ## Goal
 

@@ -24,14 +24,10 @@ import dev.canverse.stocks.ledger.domain.AccountKind;
 import dev.canverse.stocks.ledger.domain.Activity;
 import dev.canverse.stocks.ledger.domain.FinancialAccount;
 import dev.canverse.stocks.ledger.domain.FinancialAmount;
-import dev.canverse.stocks.ledger.domain.MoneyPosting;
-import dev.canverse.stocks.ledger.domain.PolicyDecision;
 import dev.canverse.stocks.ledger.domain.RecordingMode;
 import dev.canverse.stocks.ledger.domain.TrackingMode;
 import dev.canverse.stocks.ledger.error.LedgerErrorCode;
-import dev.canverse.stocks.ledger.infrastructure.ActivityRepository;
 import dev.canverse.stocks.ledger.infrastructure.LedgerCommandLockRepository;
-import dev.canverse.stocks.ledger.infrastructure.MoneyPostingRepository;
 import dev.canverse.stocks.platform.application.CanonicalFingerprint;
 import dev.canverse.stocks.platform.error.AppException;
 import dev.canverse.stocks.platform.error.ValidationErrors;
@@ -61,8 +57,6 @@ public class InvestingTradeCommandService {
 
     private final EntityManager entityManager;
     private final LedgerAccountAccess accountAccess;
-    private final ActivityRepository activityRepository;
-    private final MoneyPostingRepository moneyPostingRepository;
     private final SecurityPostingRepository securityPostingRepository;
     private final PositionProjectionRepository positionProjectionRepository;
     private final InstrumentRepository instrumentRepository;
@@ -74,6 +68,7 @@ public class InvestingTradeCommandService {
     private final Clock clock;
     private final CanonicalFingerprint fingerprint;
     private final IdGenerator idGenerator;
+    private final FundedTradePostingService fundedTradePostingService;
 
     @Transactional(readOnly = true)
     public TradePreviewResponse preview(UUID ownerUserAccountId, TradePreviewRequest request) {
@@ -151,25 +146,9 @@ public class InvestingTradeCommandService {
             throw new AppException(evaluation.errorCode());
         }
 
-        var activity = createTradeActivity(ownerUserAccountId, request, input, evaluation.decision(), activityId, observedAt);
-        activityRepository.save(activity);
-        var cashPocketId = cashProjection.getCashPocket().getId();
-        var grossPosting = input.side() == TradeSide.BUY
-                ? MoneyPosting.tradePurchase(idGenerator.next(), ownerUserAccountId, activityId, account.getId(), cashPocketId, account.getCurrencyCode(),
-                        settlement.grossAmount(), observedAt)
-                : MoneyPosting.tradeProceeds(idGenerator.next(), ownerUserAccountId, activityId, account.getId(), cashPocketId, account.getCurrencyCode(),
-                        settlement.grossAmount(), observedAt);
-        moneyPostingRepository.save(grossPosting);
-        if (!settlement.commissionAmount().isZero()) {
-            moneyPostingRepository.save(MoneyPosting.fee(idGenerator.next(), ownerUserAccountId, activityId, account.getId(), cashPocketId,
-                    account.getCurrencyCode(), settlement.commissionAmount(), observedAt));
-        }
-        var securityPosting = input.side() == TradeSide.BUY
-                ? SecurityPosting.buy(idGenerator.next(), ownerUserAccountId, activityId, account.getId(), instrument.getId(), account.getCurrencyCode(),
-                        settlement, input.effectiveAt(), input.economicSequence(), observedAt)
-                : SecurityPosting.sell(idGenerator.next(), ownerUserAccountId, activityId, account.getId(), instrument.getId(), account.getCurrencyCode(),
-                        settlement, input.effectiveAt(), input.economicSequence(), observedAt);
-        securityPostingRepository.save(securityPosting);
+        fundedTradePostingService.post(activityId, ownerUserAccountId, request.clientRequestId(), OPERATION_SCOPE, 0, input.recordingMode(),
+                input.effectiveAt(), observedAt, input.economicSequence(), evaluation.decision(), null, account, cashProjection.getCashPocket().getId(),
+                instrument.getId(), settlement);
         cashProjection.apply(settlement.cashDelta(), observedAt, activityId, observedAt);
         rebuildPosition(ownerUserAccountId, account, instrument, position, after, observedAt);
 
@@ -204,15 +183,6 @@ public class InvestingTradeCommandService {
         } else {
             plan.existingProjection().completeRebuild(plan.replay(), observedAt);
         }
-    }
-
-    private Activity createTradeActivity(UUID ownerUserAccountId, TradeCommitRequest request, TradeInputs input, PolicyDecision decision, UUID activityId,
-            Instant observedAt) {
-        return input.side() == TradeSide.BUY
-                ? Activity.securityBuy(activityId, ownerUserAccountId, request.clientRequestId(), OPERATION_SCOPE, 0, input.recordingMode(),
-                        input.effectiveAt(), observedAt, input.economicSequence(), decision)
-                : Activity.securitySell(activityId, ownerUserAccountId, request.clientRequestId(), OPERATION_SCOPE, 0, input.recordingMode(),
-                        input.effectiveAt(), observedAt, input.economicSequence(), decision);
     }
 
     private void rebuildPosition(UUID ownerUserAccountId, FinancialAccount account, Instrument instrument, PositionProjection position,

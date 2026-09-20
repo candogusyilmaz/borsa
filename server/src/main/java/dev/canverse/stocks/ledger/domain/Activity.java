@@ -45,6 +45,7 @@ public class Activity {
     private String correctionReason;
     private UUID reversesActivityId;
     private UUID supersedesActivityId;
+    private UUID sourceImportRowId;
 
     public static Activity openingBalance(UUID id, UUID ownerUserAccountId, UUID clientEventId, String operationScope, long commandSequence,
             Instant effectiveAt, Instant recordedAt, PolicyDecision policyDecision) {
@@ -125,6 +126,27 @@ public class Activity {
             RecordingMode recordingMode, Instant effectiveAt, Instant recordedAt, long economicSequence, PolicyDecision policyDecision) {
         return trade(id, ownerUserAccountId, clientEventId, operationScope, commandSequence, ActivityType.SECURITY_SELL, recordingMode, effectiveAt, recordedAt,
                 economicSequence, policyDecision);
+    }
+
+    public static Activity importedSecurityBuy(UUID id, UUID ownerUserAccountId, UUID clientEventId, String operationScope, long commandSequence,
+            Instant effectiveAt, Instant recordedAt, long economicSequence, PolicyDecision policyDecision, UUID sourceImportRowId) {
+        return importedTrade(id, ownerUserAccountId, clientEventId, operationScope, commandSequence, ActivityType.SECURITY_BUY, effectiveAt, recordedAt,
+                economicSequence, policyDecision, sourceImportRowId);
+    }
+
+    public static Activity importedSecuritySell(UUID id, UUID ownerUserAccountId, UUID clientEventId, String operationScope, long commandSequence,
+            Instant effectiveAt, Instant recordedAt, long economicSequence, PolicyDecision policyDecision, UUID sourceImportRowId) {
+        return importedTrade(id, ownerUserAccountId, clientEventId, operationScope, commandSequence, ActivityType.SECURITY_SELL, effectiveAt, recordedAt,
+                economicSequence, policyDecision, sourceImportRowId);
+    }
+
+    private static Activity importedTrade(UUID id, UUID ownerUserAccountId, UUID clientEventId, String operationScope, long commandSequence,
+            ActivityType activityType, Instant effectiveAt, Instant recordedAt, long economicSequence, PolicyDecision policyDecision, UUID sourceImportRowId) {
+        var activity = trade(id, ownerUserAccountId, clientEventId, operationScope, commandSequence, activityType, RecordingMode.HISTORICAL_FACT, effectiveAt,
+                recordedAt, economicSequence, policyDecision);
+        activity.sourceKind = SourceKind.FILE_IMPORTED;
+        activity.sourceImportRowId = Objects.requireNonNull(sourceImportRowId, "sourceImportRowId");
+        return activity;
     }
 
     private static Activity trade(UUID id, UUID ownerUserAccountId, UUID clientEventId, String operationScope, long commandSequence, ActivityType activityType,
