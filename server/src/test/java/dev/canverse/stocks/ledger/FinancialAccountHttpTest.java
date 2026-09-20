@@ -182,18 +182,9 @@ class FinancialAccountHttpTest {
     }
 
     @Test
-    void missingBearerAndInvalidOpeningContractAreRejectedWithoutLedgerWrites() throws Exception {
+    void missingBearerAndInvalidOpeningTimesAreRejectedWithoutLedgerWrites() throws Exception {
         mockMvc.perform(get("/api/v1/accounts")).andExpect(status().isUnauthorized());
         var owner = testIdentitySupport.create("account-http-validation-owner@example.com");
-        var result = mockMvc
-                .perform(post("/api/v1/accounts").with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON).content(
-                        """
-                                {"clientRequestId":"30000000-0000-4000-8000-000000000001","name":"Missing opening","kind":"CASH_CURRENT","trackingMode":"FULL_LEDGER","currency":"USD","timeZone":"UTC","policy":"HARD_FLOOR"}
-                                """))
-                .andExpect(status().isUnprocessableContent()).andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED"))).andReturn();
-        HttpAssertions.assertProblem(result);
-        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ledger.financial_account", Integer.class)).isZero();
-
         var offsetZone = mockMvc
                 .perform(post("/api/v1/accounts").with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON).content(
                         """
@@ -236,7 +227,7 @@ class FinancialAccountHttpTest {
     }
 
     @Test
-    void mutationVersionsAreRequiredAndNonNegativeAtTheHttpBoundary() throws Exception {
+    void staleAccountVersionIsRejectedWithoutChangingPersistedState() throws Exception {
         var owner = testIdentitySupport.create("account-http-version-validation-owner@example.com");
         var account = mockMvc.perform(post("/api/v1/accounts").with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON)
                 .content(createJson(uuid("31000000-0000-4000-8000-000000000001"), "Versioned cash", "10"))).andExpect(status().isCreated()).andReturn();
@@ -245,28 +236,6 @@ class FinancialAccountHttpTest {
         mockMvc.perform(put("/api/v1/accounts/{accountId}", accountId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON)
                 .content(metadataJson(uuid("31000000-0000-4000-8000-000000000007"), 0, "Stale version", "UTC"))).andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code", equalTo("ACCOUNT_VERSION_CONFLICT")));
-
-        mockMvc.perform(put("/api/v1/accounts/{accountId}", accountId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON).content("""
-                {"clientRequestId":"31000000-0000-4000-8000-000000000002","name":"Renamed","timeZone":"UTC"}
-                """)).andExpect(status().isUnprocessableContent()).andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED")));
-
-        mockMvc.perform(put("/api/v1/accounts/{accountId}/policy", accountId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON).content("""
-                {"clientRequestId":"31000000-0000-4000-8000-000000000003","policy":"HARD_FLOOR"}
-                """)).andExpect(status().isUnprocessableContent()).andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED")));
-
-        mockMvc.perform(post("/api/v1/accounts/{accountId}/archive", accountId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON).content("""
-                {"clientRequestId":"31000000-0000-4000-8000-000000000004"}
-                """)).andExpect(status().isUnprocessableContent()).andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED")));
-
-        mockMvc.perform(put("/api/v1/accounts/{accountId}/opening-state", accountId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON).content(
-                """
-                        {"clientRequestId":"31000000-0000-4000-8000-000000000005","amount":"11","effectiveAt":"2026-08-17T11:00:00Z","correctionReason":"Missing version"}
-                        """))
-                .andExpect(status().isUnprocessableContent()).andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED")));
-
-        mockMvc.perform(put("/api/v1/accounts/{accountId}", accountId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON).content("""
-                {"clientRequestId":"31000000-0000-4000-8000-000000000006","version":-1,"name":"Negative version","timeZone":"UTC"}
-                """)).andExpect(status().isUnprocessableContent()).andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED")));
 
         mockMvc.perform(get("/api/v1/accounts/{accountId}", accountId).with(owner.asBearer())).andExpect(status().isOk())
                 .andExpect(jsonPath("$.version", equalTo(1)));

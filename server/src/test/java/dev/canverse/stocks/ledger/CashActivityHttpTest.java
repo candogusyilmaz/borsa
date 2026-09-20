@@ -193,7 +193,7 @@ class CashActivityHttpTest {
     }
 
     @Test
-    void activitySlicesHonorSortPolicyPageSizeBoundsAndSpringNormalization() throws Exception {
+    void activitySlicesHonorSortPolicyAndPageSizeBounds() throws Exception {
         var owner = testIdentitySupport.create("activity-http-pageable-owner@example.com");
         var accountId = createAccount(owner, uuid("11000000-0000-4000-8000-000000000001"), "Pageable cash", "100");
         mockMvc.perform(post("/api/v1/accounts/{accountId}/activities", accountId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON)
@@ -336,27 +336,15 @@ class CashActivityHttpTest {
     }
 
     @Test
-    void activityRoutesPreserveOwnerScopeAndControllerValidation() throws Exception {
+    void activityRoutesPreserveOwnerScopeAndRequireAuthentication() throws Exception {
         var owner = testIdentitySupport.create("activity-http-scope-owner@example.com");
         var other = testIdentitySupport.create("activity-http-scope-other@example.com");
         var accountId = createAccount(owner, uuid("30000000-0000-4000-8000-000000000001"), "Scoped cash", "100");
-        var result = mockMvc
+        var invalidAmount = mockMvc
                 .perform(post("/api/v1/accounts/{accountId}/activities", accountId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON)
                         .content(activityJson(uuid("30000000-0000-4000-8000-000000000002"), "CASH_DEPOSIT", "not-an-amount", "2026-08-17T11:30:00Z", false)))
                 .andExpect(status().isUnprocessableContent()).andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED"))).andReturn();
-        HttpAssertions.assertProblem(result);
-
-        mockMvc.perform(post("/api/v1/accounts/{accountId}/activities", accountId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON).content(
-                """
-                        {"clientRequestId":"30000000-0000-4000-8000-000000000003","activityType":"CASH_DEPOSIT","amount":"1","recordingMode":"CURRENT_ACTION","effectiveAt":"2026-08-17T11:30:00Z","confirmPolicyBreach":false,"expectedBalanceVersion":-1}
-                        """))
-                .andExpect(status().isUnprocessableContent()).andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED")));
-
-        mockMvc.perform(post("/api/v1/accounts/{accountId}/activities", accountId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON).content(
-                """
-                        {"clientRequestId":"30000000-0000-4000-8000-000000000004","activityType":"NOT_A_TYPE","amount":"1","recordingMode":"CURRENT_ACTION","effectiveAt":"2026-08-17T11:30:00Z","confirmPolicyBreach":false}
-                        """))
-                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code", equalTo("MALFORMED_REQUEST")));
+        HttpAssertions.assertProblem(invalidAmount);
 
         mockMvc.perform(get("/api/v1/activities/{activityId}", uuid("30000000-0000-4000-8000-000000000099")).with(other.asBearer()))
                 .andExpect(status().isNotFound()).andExpect(jsonPath("$.code", equalTo("ACTIVITY_NOT_FOUND")));

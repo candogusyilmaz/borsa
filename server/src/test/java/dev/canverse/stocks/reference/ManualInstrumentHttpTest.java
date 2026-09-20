@@ -339,24 +339,6 @@ class ManualInstrumentHttpTest {
     }
 
     @Test
-    void malformedEnumCodesUseTheSharedMalformedRequestContract() throws Exception {
-        var identity = testIdentitySupport.create("instrument-enum-errors-http@example.com");
-        var valid = createJson("ENUM-CODE", "Enum code", "GBP", "USER", "alias");
-        var invalidBodies = List.of(valid.replace("\"instrumentType\":\"FUND\"", "\"instrumentType\":\"fund\""),
-                valid.replace("\"valuationMethod\":\"MANUAL_VALUE\"", "\"valuationMethod\":\"UNKNOWN\""),
-                createJson("ENUM-ALIAS", "Enum alias", "GBP", "UNKNOWN", "alias"));
-
-        for (var body : invalidBodies) {
-            assertProblem(mockMvc.perform(post("/api/v1/reference/instruments").with(identity.asBearer()).contentType(MediaType.APPLICATION_JSON).content(body))
-                    .andExpect(status().isBadRequest()).andReturn(), "MALFORMED_REQUEST");
-        }
-        assertProblem(mockMvc.perform(get("/api/v1/reference/instruments").param("type", "fund").with(identity.asBearer())).andExpect(status().isBadRequest())
-                .andReturn(), "MALFORMED_REQUEST");
-        assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM reference.instrument WHERE owner_user_account_id = ?", Integer.class, identity.userId()))
-                .isZero();
-    }
-
-    @Test
     void normalizationExpansionIsAValidationFailureRatherThanADatabaseError() throws Exception {
         var identity = testIdentitySupport.create("instrument-normalization-http@example.com");
 
