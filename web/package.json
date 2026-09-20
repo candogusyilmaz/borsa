@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:agent": "vite build --logLevel warn",
     "typecheck": "tsc -b",
     "preview": "vite preview",
     "lint": "biome lint ./src",
@@ -13,8 +14,11 @@
     "format": "biome format --write ./src",
     "check": "biome check ./src",
     "check:fix": "biome check --write ./src",
+    "check:agent": "biome check ./src --reporter=concise",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:agent": "vitest run --reporter=minimal",
+    "verify:agent": "npm run --silent typecheck && npm run --silent check:ci && npm run --silent test:ci && npm run --silent build:ci",
     "generate:openapi": "openapi-typescript http://localhost:8080/v3/api-docs --output ./src/api/schema.d.ts",
     "check:openapi": "openapi-typescript http://localhost:8080/v3/api-docs --output ./src/api/schema.d.ts --check",
     "prepare": "cd .. && husky"

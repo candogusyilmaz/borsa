@@ -60,13 +60,15 @@ Leave changes in the working tree for review.
 
 Use the current scripts defined by `web/package.json`.
 
-For normal frontend implementation work, verify at least:
+For normal coding-agent verification, prefer:
 
 ```powershell
-npm run typecheck
-npx biome check ./src
-npm run build
+npm run verify:agent
 ```
+
+It runs typecheck, Biome, tests, and a production build with reduced success noise while retaining actionable failure diagnostics.
+
+Use the individual standard scripts (`npm run typecheck`, `npm run check`, `npm run test`, `npm run build`) when full output or targeted diagnostics are needed.
 
 If a command or script changes, follow the repository's current configuration rather than this document.
 
