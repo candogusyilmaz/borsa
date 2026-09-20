@@ -9,15 +9,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jayway.jsonpath.JsonPath;
-import dev.canverse.stocks.identity.application.AccessTokenIssuanceService;
-import dev.canverse.stocks.identity.application.LocalAccountRegistrationService;
-import dev.canverse.stocks.identity.application.RefreshSessionIssuanceService;
 import dev.canverse.stocks.platform.web.trace.RequestTraceFilter;
 import dev.canverse.stocks.testing.DatabaseCleaner;
+import dev.canverse.stocks.testing.HttpAssertions;
 import dev.canverse.stocks.testing.IdentityTestPropertiesConfiguration;
 import dev.canverse.stocks.testing.IntegrationTest;
 import dev.canverse.stocks.testing.TestClock;
 import dev.canverse.stocks.testing.TestClockConfiguration;
+import dev.canverse.stocks.testing.TestIdentitySupport;
+import dev.canverse.stocks.testing.TestIdentitySupport.Identity;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -43,21 +43,14 @@ class CashActivityHttpTest {
 
     @Autowired
     DatabaseCleaner databaseCleaner;
+
+    @Autowired
+    TestIdentitySupport testIdentitySupport;
     @Autowired
     TestClock testClock;
-    private static final String PASSWORD = "correct horse battery staple";
     private static final Instant OBSERVED_AT = Instant.parse("2026-08-17T12:00:00Z");
     @Autowired
     MockMvc mockMvc;
-
-    @Autowired
-    LocalAccountRegistrationService registrationService;
-
-    @Autowired
-    RefreshSessionIssuanceService sessionIssuanceService;
-
-    @Autowired
-    AccessTokenIssuanceService tokenIssuanceService;
 
     @Autowired
     JdbcTemplate jdbcTemplate;
@@ -74,13 +67,13 @@ class CashActivityHttpTest {
 
     @Test
     void activityRoutesRecordReplayListReverseAndReadTheProjection() throws Exception {
-        var owner = authenticated("activity-http-owner@example.com");
+        var owner = testIdentitySupport.create("activity-http-owner@example.com");
         var accountId = createAccount(owner, uuid("10000000-0000-4000-8000-000000000001"), "Activity cash", "100");
         var activityRequestId = uuid("10000000-0000-4000-8000-000000000002");
         var effectiveAt = "2026-08-17T11:30:00Z";
         var recorded = mockMvc
-                .perform(post("/api/v1/accounts/{accountId}/activities", accountId).header(HttpHeaders.AUTHORIZATION, owner.bearer())
-                        .contentType(MediaType.APPLICATION_JSON).content(activityJson(activityRequestId, "CASH_DEPOSIT", "25.00", effectiveAt, false)))
+                .perform(post("/api/v1/accounts/{accountId}/activities", accountId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON)
+                        .content(activityJson(activityRequestId, "CASH_DEPOSIT", "25.00", effectiveAt, false)))
                 .andExpect(status().isCreated()).andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-store"))
                 .andExpect(header().string(HttpHeaders.PRAGMA, "no-cache")).andExpect(jsonPath("$.activityType", equalTo("CASH_DEPOSIT")))
                 .andExpect(jsonPath("$.postings.length()", equalTo(1))).andExpect(jsonPath("$.postings[0].amount", equalTo("25")))
@@ -90,131 +83,123 @@ class CashActivityHttpTest {
         assertTraceAndSession(recorded);
 
         var replay = mockMvc
-                .perform(post("/api/v1/accounts/{accountId}/activities", accountId).header(HttpHeaders.AUTHORIZATION, owner.bearer())
-                        .contentType(MediaType.APPLICATION_JSON).content(activityJson(activityRequestId, "CASH_DEPOSIT", "25.0", effectiveAt, false)))
+                .perform(post("/api/v1/accounts/{accountId}/activities", accountId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON)
+                        .content(activityJson(activityRequestId, "CASH_DEPOSIT", "25.0", effectiveAt, false)))
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.id", equalTo(activityId.toString()))).andReturn();
         assertTraceAndSession(replay);
 
-        mockMvc.perform(post("/api/v1/accounts/{accountId}/activities", accountId).header(HttpHeaders.AUTHORIZATION, owner.bearer())
-                .contentType(MediaType.APPLICATION_JSON).content(activityJson(activityRequestId, "CASH_DEPOSIT", "26", effectiveAt, false)))
-                .andExpect(status().isConflict()).andExpect(jsonPath("$.code", equalTo("IDEMPOTENCY_CONFLICT")));
+        mockMvc.perform(post("/api/v1/accounts/{accountId}/activities", accountId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON)
+                .content(activityJson(activityRequestId, "CASH_DEPOSIT", "26", effectiveAt, false))).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code", equalTo("IDEMPOTENCY_CONFLICT")));
 
-        mockMvc.perform(get("/api/v1/activities/{activityId}", activityId).header(HttpHeaders.AUTHORIZATION, owner.bearer())).andExpect(status().isOk())
+        mockMvc.perform(get("/api/v1/activities/{activityId}", activityId).with(owner.asBearer())).andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", equalTo(activityId.toString()))).andExpect(jsonPath("$.postings[0].currency", equalTo("USD")));
 
-        var list = mockMvc.perform(get("/api/v1/activities").param("accountId", accountId.toString()).header(HttpHeaders.AUTHORIZATION, owner.bearer()))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.items.length()", equalTo(2))).andExpect(jsonPath("$.page", equalTo(0)))
-                .andExpect(jsonPath("$.size", equalTo(50))).andExpect(jsonPath("$.hasNext", equalTo(false))).andReturn();
-        assertSliceShape(list);
+        var list = mockMvc.perform(get("/api/v1/activities").param("accountId", accountId.toString()).with(owner.asBearer())).andExpect(status().isOk())
+                .andExpect(jsonPath("$.items.length()", equalTo(2))).andExpect(jsonPath("$.page", equalTo(0))).andExpect(jsonPath("$.size", equalTo(50)))
+                .andExpect(jsonPath("$.hasNext", equalTo(false))).andReturn();
+        HttpAssertions.assertSlice(list);
         var activities = JsonPath.<List<Map<String, Object>>>read(list.getResponse().getContentAsString(), "$.items");
         assertThat(activities).anyMatch(activity -> activityId.toString().equals(activity.get("id")));
 
         var firstPage = mockMvc
-                .perform(get("/api/v1/activities").param("accountId", accountId.toString()).param("page", "0").param("size", "1")
-                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+                .perform(get("/api/v1/activities").param("accountId", accountId.toString()).param("page", "0").param("size", "1").with(owner.asBearer()))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.items.length()", equalTo(1))).andExpect(jsonPath("$.page", equalTo(0)))
                 .andExpect(jsonPath("$.size", equalTo(1))).andExpect(jsonPath("$.hasNext", equalTo(true))).andReturn();
-        assertSliceShape(firstPage);
+        HttpAssertions.assertSlice(firstPage);
         var firstPageId = JsonPath.<String>read(firstPage.getResponse().getContentAsString(), "$.items[0].id");
         var secondPage = mockMvc
-                .perform(get("/api/v1/activities").param("accountId", accountId.toString()).param("page", "1").param("size", "1")
-                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+                .perform(get("/api/v1/activities").param("accountId", accountId.toString()).param("page", "1").param("size", "1").with(owner.asBearer()))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.items.length()", equalTo(1))).andExpect(jsonPath("$.page", equalTo(1)))
                 .andExpect(jsonPath("$.size", equalTo(1))).andExpect(jsonPath("$.hasNext", equalTo(false))).andReturn();
-        assertSliceShape(secondPage);
+        HttpAssertions.assertSlice(secondPage);
         var secondPageId = JsonPath.<String>read(secondPage.getResponse().getContentAsString(), "$.items[0].id");
         assertThat(secondPageId).isNotEqualTo(firstPageId);
         var emptyPage = mockMvc
-                .perform(get("/api/v1/activities").param("accountId", accountId.toString()).param("page", "2").param("size", "1")
-                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+                .perform(get("/api/v1/activities").param("accountId", accountId.toString()).param("page", "2").param("size", "1").with(owner.asBearer()))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.items.length()", equalTo(0))).andExpect(jsonPath("$.page", equalTo(2)))
                 .andExpect(jsonPath("$.size", equalTo(1))).andExpect(jsonPath("$.hasNext", equalTo(false))).andReturn();
-        assertSliceShape(emptyPage);
+        HttpAssertions.assertSlice(emptyPage);
 
-        mockMvc.perform(get("/api/v1/accounts/{accountId}/balance", accountId).header(HttpHeaders.AUTHORIZATION, owner.bearer())).andExpect(status().isOk())
+        mockMvc.perform(get("/api/v1/accounts/{accountId}/balance", accountId).with(owner.asBearer())).andExpect(status().isOk())
                 .andExpect(jsonPath("$.ledgerBalance", equalTo("125"))).andExpect(jsonPath("$.cashHeld", equalTo("125")));
 
         var reversal = mockMvc
-                .perform(post("/api/v1/activities/{activityId}/reversals", activityId).header(HttpHeaders.AUTHORIZATION, owner.bearer())
-                        .contentType(MediaType.APPLICATION_JSON).content(reversalJson(uuid("10000000-0000-4000-8000-000000000003"), "Duplicate deposit")))
+                .perform(post("/api/v1/activities/{activityId}/reversals", activityId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON)
+                        .content(reversalJson(uuid("10000000-0000-4000-8000-000000000003"), "Duplicate deposit")))
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.activityType", equalTo("REVERSAL")))
                 .andExpect(jsonPath("$.reversesActivityId", equalTo(activityId.toString()))).andExpect(jsonPath("$.postings[0].amount", equalTo("-25")))
                 .andReturn();
         assertThat(reversal.getResponse().getHeader(HttpHeaders.LOCATION)).isEqualTo("/api/v1/activities/" + idFrom(reversal));
 
-        mockMvc.perform(get("/api/v1/accounts/{accountId}/balance", accountId).header(HttpHeaders.AUTHORIZATION, owner.bearer())).andExpect(status().isOk())
+        mockMvc.perform(get("/api/v1/accounts/{accountId}/balance", accountId).with(owner.asBearer())).andExpect(status().isOk())
                 .andExpect(jsonPath("$.ledgerBalance", equalTo("100")));
 
-        mockMvc.perform(post("/api/v1/activities/{activityId}/reversals", activityId).header(HttpHeaders.AUTHORIZATION, owner.bearer())
-                .contentType(MediaType.APPLICATION_JSON).content(reversalJson(uuid("10000000-0000-4000-8000-000000000004"), "Second reversal")))
-                .andExpect(status().isConflict()).andExpect(jsonPath("$.code", equalTo("ACTIVITY_ALREADY_REVERSED")));
+        mockMvc.perform(post("/api/v1/activities/{activityId}/reversals", activityId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON)
+                .content(reversalJson(uuid("10000000-0000-4000-8000-000000000004"), "Second reversal"))).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code", equalTo("ACTIVITY_ALREADY_REVERSED")));
 
-        mockMvc.perform(post("/api/v1/accounts/{accountId}/archive", accountId).header(HttpHeaders.AUTHORIZATION, owner.bearer())
-                .contentType(MediaType.APPLICATION_JSON).content("""
-                        {"clientRequestId":"10000000-0000-4000-8000-000000000006","version":1}
-                        """)).andExpect(status().isOk()).andExpect(jsonPath("$.archived", equalTo(true)));
+        mockMvc.perform(post("/api/v1/accounts/{accountId}/archive", accountId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON).content("""
+                {"clientRequestId":"10000000-0000-4000-8000-000000000006","version":1}
+                """)).andExpect(status().isOk()).andExpect(jsonPath("$.archived", equalTo(true)));
 
-        mockMvc.perform(post("/api/v1/accounts/{accountId}/activities", accountId).header(HttpHeaders.AUTHORIZATION, owner.bearer())
-                .contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/api/v1/accounts/{accountId}/activities", accountId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON)
                 .content(activityJson(uuid("10000000-0000-4000-8000-000000000005"), "CASH_DEPOSIT", "1", effectiveAt, false))).andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code", equalTo("ACCOUNT_ARCHIVED")));
     }
 
     @Test
     void feeAndInterestRoutesExposeSignedFactsAndUseGenericReversal() throws Exception {
-        var owner = authenticated("manual-fee-interest-http-owner@example.com");
+        var owner = testIdentitySupport.create("manual-fee-interest-http-owner@example.com");
         var accountId = createAccount(owner, uuid("10500000-0000-4000-8000-000000000001"), "Manual fee cash", "100");
         var feeRequestId = uuid("10500000-0000-4000-8000-000000000002");
         var interestRequestId = uuid("10500000-0000-4000-8000-000000000003");
         var effectiveAt = "2026-08-17T11:30:00Z";
 
         var fee = mockMvc
-                .perform(post("/api/v1/accounts/{accountId}/activities", accountId).header(HttpHeaders.AUTHORIZATION, owner.bearer())
-                        .contentType(MediaType.APPLICATION_JSON).content(activityJson(feeRequestId, "CASH_FEE", "5.00", effectiveAt, false)))
+                .perform(post("/api/v1/accounts/{accountId}/activities", accountId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON)
+                        .content(activityJson(feeRequestId, "CASH_FEE", "5.00", effectiveAt, false)))
                 .andExpect(status().isCreated()).andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-store"))
                 .andExpect(jsonPath("$.activityType", equalTo("CASH_FEE"))).andExpect(jsonPath("$.postings[0].amount", equalTo("-5")))
                 .andExpect(jsonPath("$.postings[0].role", equalTo("FEE"))).andReturn();
         var feeId = idFrom(fee);
 
         var interest = mockMvc
-                .perform(post("/api/v1/accounts/{accountId}/activities", accountId).header(HttpHeaders.AUTHORIZATION, owner.bearer())
-                        .contentType(MediaType.APPLICATION_JSON).content(activityJson(interestRequestId, "CASH_INTEREST_CREDIT", "2.50", effectiveAt, false)))
+                .perform(post("/api/v1/accounts/{accountId}/activities", accountId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON)
+                        .content(activityJson(interestRequestId, "CASH_INTEREST_CREDIT", "2.50", effectiveAt, false)))
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.activityType", equalTo("CASH_INTEREST_CREDIT")))
                 .andExpect(jsonPath("$.postings[0].amount", equalTo("2.5"))).andExpect(jsonPath("$.postings[0].role", equalTo("INTEREST_CREDIT"))).andReturn();
         var interestId = idFrom(interest);
 
-        mockMvc.perform(get("/api/v1/accounts/{accountId}/balance", accountId).header(HttpHeaders.AUTHORIZATION, owner.bearer())).andExpect(status().isOk())
+        mockMvc.perform(get("/api/v1/accounts/{accountId}/balance", accountId).with(owner.asBearer())).andExpect(status().isOk())
                 .andExpect(jsonPath("$.ledgerBalance", equalTo("97.5")));
-        mockMvc.perform(get("/api/v1/activities/{activityId}", interestId).header(HttpHeaders.AUTHORIZATION, owner.bearer())).andExpect(status().isOk())
+        mockMvc.perform(get("/api/v1/activities/{activityId}", interestId).with(owner.asBearer())).andExpect(status().isOk())
                 .andExpect(jsonPath("$.activityType", equalTo("CASH_INTEREST_CREDIT"))).andExpect(jsonPath("$.postings[0].role", equalTo("INTEREST_CREDIT")));
 
-        mockMvc.perform(get("/api/v1/activities").param("accountId", accountId.toString()).header(HttpHeaders.AUTHORIZATION, owner.bearer()))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.items.length()", equalTo(3)));
+        mockMvc.perform(get("/api/v1/activities").param("accountId", accountId.toString()).with(owner.asBearer())).andExpect(status().isOk())
+                .andExpect(jsonPath("$.items.length()", equalTo(3)));
 
-        mockMvc.perform(post("/api/v1/activities/{activityId}/reversals", feeId).header(HttpHeaders.AUTHORIZATION, owner.bearer())
-                .contentType(MediaType.APPLICATION_JSON).content(reversalJson(uuid("10500000-0000-4000-8000-000000000004"), "Incorrect fee")))
-                .andExpect(status().isCreated()).andExpect(jsonPath("$.activityType", equalTo("REVERSAL")))
-                .andExpect(jsonPath("$.reversesActivityId", equalTo(feeId.toString()))).andExpect(jsonPath("$.postings[0].amount", equalTo("5")));
+        mockMvc.perform(post("/api/v1/activities/{activityId}/reversals", feeId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON)
+                .content(reversalJson(uuid("10500000-0000-4000-8000-000000000004"), "Incorrect fee"))).andExpect(status().isCreated())
+                .andExpect(jsonPath("$.activityType", equalTo("REVERSAL"))).andExpect(jsonPath("$.reversesActivityId", equalTo(feeId.toString())))
+                .andExpect(jsonPath("$.postings[0].amount", equalTo("5")));
 
-        mockMvc.perform(get("/api/v1/accounts/{accountId}/balance", accountId).header(HttpHeaders.AUTHORIZATION, owner.bearer())).andExpect(status().isOk())
+        mockMvc.perform(get("/api/v1/accounts/{accountId}/balance", accountId).with(owner.asBearer())).andExpect(status().isOk())
                 .andExpect(jsonPath("$.ledgerBalance", equalTo("102.5")));
 
-        mockMvc.perform(post("/api/v1/accounts/{accountId}/activities", accountId).header(HttpHeaders.AUTHORIZATION, owner.bearer())
-                .contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/api/v1/accounts/{accountId}/activities", accountId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON)
                 .content(activityJson(uuid("10500000-0000-4000-8000-000000000005"), "OPENING_BALANCE", "1", effectiveAt, false)))
                 .andExpect(status().isUnprocessableContent()).andExpect(jsonPath("$.code", equalTo("ACCOUNT_ACTION_NOT_SUPPORTED")));
     }
 
     @Test
     void activitySlicesHonorSortPolicyPageSizeBoundsAndSpringNormalization() throws Exception {
-        var owner = authenticated("activity-http-pageable-owner@example.com");
+        var owner = testIdentitySupport.create("activity-http-pageable-owner@example.com");
         var accountId = createAccount(owner, uuid("11000000-0000-4000-8000-000000000001"), "Pageable cash", "100");
-        mockMvc.perform(post("/api/v1/accounts/{accountId}/activities", accountId).header(HttpHeaders.AUTHORIZATION, owner.bearer())
-                .contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/api/v1/accounts/{accountId}/activities", accountId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON)
                 .content(activityJson(uuid("11000000-0000-4000-8000-000000000002"), "CASH_DEPOSIT", "5", "2026-08-17T11:30:00Z", false)))
                 .andExpect(status().isCreated());
-        mockMvc.perform(post("/api/v1/accounts/{accountId}/activities", accountId).header(HttpHeaders.AUTHORIZATION, owner.bearer())
-                .contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/api/v1/accounts/{accountId}/activities", accountId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON)
                 .content(activityJson(uuid("11000000-0000-4000-8000-000000000003"), "CASH_DEPOSIT", "7", "2026-08-17T11:45:00Z", false)))
                 .andExpect(status().isCreated());
 
@@ -231,7 +216,7 @@ class CashActivityHttpTest {
 
         var ascending = mockMvc
                 .perform(get("/api/v1/activities").param("accountId", accountId.toString()).param("size", "2").param("sort", "effectiveAt,asc")
-                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+                        .with(owner.asBearer()))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.page", equalTo(0))).andExpect(jsonPath("$.size", equalTo(2)))
                 .andExpect(jsonPath("$.items.length()", equalTo(2))).andExpect(jsonPath("$.hasNext", equalTo(true))).andReturn();
         assertThat(JsonPath.<List<String>>read(ascending.getResponse().getContentAsString(), "$.items[*].id"))
@@ -239,44 +224,43 @@ class CashActivityHttpTest {
 
         var descending = mockMvc
                 .perform(get("/api/v1/activities").param("accountId", accountId.toString()).param("size", "2").param("sort", "effectiveAt,desc")
-                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+                        .with(owner.asBearer()))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.size", equalTo(2))).andExpect(jsonPath("$.items.length()", equalTo(2))).andReturn();
         assertThat(JsonPath.<List<String>>read(descending.getResponse().getContentAsString(), "$.items[*].id"))
                 .containsExactlyElementsOf(expectedEffectiveDescending.subList(0, 2).stream().map(UUID::toString).toList());
 
         var recorded = mockMvc
                 .perform(get("/api/v1/activities").param("accountId", accountId.toString()).param("size", "101").param("sort", "recordedAt,desc")
-                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+                        .with(owner.asBearer()))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.size", equalTo(100))).andExpect(jsonPath("$.items.length()", equalTo(3)))
                 .andExpect(jsonPath("$.hasNext", equalTo(false))).andReturn();
         assertThat(JsonPath.<List<String>>read(recorded.getResponse().getContentAsString(), "$.items[*].id"))
                 .containsExactlyElementsOf(expectedRecordedDescending.stream().map(UUID::toString).toList());
 
-        mockMvc.perform(get("/api/v1/activities").param("page", "-2").param("size", "0").header(HttpHeaders.AUTHORIZATION, owner.bearer()))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.page", equalTo(0))).andExpect(jsonPath("$.size", equalTo(50)));
+        mockMvc.perform(get("/api/v1/activities").param("page", "-2").param("size", "0").with(owner.asBearer())).andExpect(status().isOk())
+                .andExpect(jsonPath("$.page", equalTo(0))).andExpect(jsonPath("$.size", equalTo(50)));
 
-        mockMvc.perform(get("/api/v1/activities").param("page", "not-a-page").param("size", "not-a-size").header(HttpHeaders.AUTHORIZATION, owner.bearer()))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.page", equalTo(0))).andExpect(jsonPath("$.size", equalTo(50)));
+        mockMvc.perform(get("/api/v1/activities").param("page", "not-a-page").param("size", "not-a-size").with(owner.asBearer())).andExpect(status().isOk())
+                .andExpect(jsonPath("$.page", equalTo(0))).andExpect(jsonPath("$.size", equalTo(50)));
 
-        var unsupported = mockMvc.perform(get("/api/v1/activities").param("sort", "activityType,desc").header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+        var unsupported = mockMvc.perform(get("/api/v1/activities").param("sort", "activityType,desc").with(owner.asBearer()))
                 .andExpect(status().isUnprocessableContent()).andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED")))
                 .andExpect(jsonPath("$.params.errors[0].field", equalTo("sort"))).andReturn();
-        assertProblemShape(unsupported);
+        HttpAssertions.assertProblem(unsupported);
 
-        mockMvc.perform(
-                get("/api/v1/activities").param("sort", "recordedAt,desc").param("sort", "effectiveAt,asc").header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+        mockMvc.perform(get("/api/v1/activities").param("sort", "recordedAt,desc").param("sort", "effectiveAt,asc").with(owner.asBearer()))
                 .andExpect(status().isUnprocessableContent()).andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED")))
                 .andExpect(jsonPath("$.params.errors[0].field", equalTo("sort")));
 
-        mockMvc.perform(get("/api/v1/activities").param("sort", "recordedAt,desc,ignorecase").header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+        mockMvc.perform(get("/api/v1/activities").param("sort", "recordedAt,desc,ignorecase").with(owner.asBearer()))
                 .andExpect(status().isUnprocessableContent()).andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED")))
                 .andExpect(jsonPath("$.params.errors[0].field", equalTo("sort")));
     }
 
     @Test
     void activityListPreservesOwnerAccountPostingAndTieOrdering() throws Exception {
-        var owner = authenticated("activity-http-list-owner@example.com");
-        var otherOwner = authenticated("activity-http-list-other@example.com");
+        var owner = testIdentitySupport.create("activity-http-list-owner@example.com");
+        var otherOwner = testIdentitySupport.create("activity-http-list-other@example.com");
         var firstAccount = createAccount(owner, uuid("12000000-0000-4000-8000-000000000001"), "First activity account", "100");
         var secondAccount = createAccount(owner, uuid("12000000-0000-4000-8000-000000000002"), "Second activity account", "200");
         var otherAccount = createAccount(otherOwner, uuid("12000000-0000-4000-8000-000000000003"), "Other activity account", "300");
@@ -286,8 +270,8 @@ class CashActivityHttpTest {
         var thirdActivity = recordActivity(owner, firstAccount, uuid("12000000-0000-4000-8000-000000000007"), "9", tiedEffectiveAt);
         var otherActivity = recordActivity(otherOwner, otherAccount, uuid("12000000-0000-4000-8000-000000000006"), "11", tiedEffectiveAt);
 
-        var ownerList = mockMvc.perform(get("/api/v1/activities").param("sort", "recordedAt,asc").header(HttpHeaders.AUTHORIZATION, owner.bearer()))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.items.length()", equalTo(5))).andReturn();
+        var ownerList = mockMvc.perform(get("/api/v1/activities").param("sort", "recordedAt,asc").with(owner.asBearer())).andExpect(status().isOk())
+                .andExpect(jsonPath("$.items.length()", equalTo(5))).andReturn();
         var ownerIds = JsonPath.<List<String>>read(ownerList.getResponse().getContentAsString(), "$.items[*].id");
         assertThat(ownerIds).contains(firstActivity.toString(), secondActivity.toString());
         assertThat(ownerIds).doesNotContain(otherActivity.toString());
@@ -296,10 +280,9 @@ class CashActivityHttpTest {
         assertThat(ownerIds).containsExactlyElementsOf(expectedRecordedAscending.stream().map(UUID::toString).toList());
 
         var firstAccountList = mockMvc
-                .perform(get("/api/v1/activities").param("accountId", firstAccount.toString()).param("sort", "effectiveAt,asc")
-                        .header(HttpHeaders.AUTHORIZATION, owner.bearer()))
+                .perform(get("/api/v1/activities").param("accountId", firstAccount.toString()).param("sort", "effectiveAt,asc").with(owner.asBearer()))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.items.length()", equalTo(3))).andReturn();
-        assertSliceShape(firstAccountList);
+        HttpAssertions.assertSlice(firstAccountList);
 
         var tiedExpected = jdbcTemplate.queryForList(
                 "SELECT a.id FROM ledger.activity a" + " WHERE a.owner_user_account_id = ?" + " AND EXISTS (SELECT 1 FROM ledger.money_posting p" +
@@ -315,87 +298,77 @@ class CashActivityHttpTest {
     }
 
     private UUID recordActivity(Identity owner, UUID accountId, UUID requestId, String amount, String effectiveAt) throws Exception {
-        return idFrom(mockMvc
-                .perform(post("/api/v1/accounts/{accountId}/activities", accountId).header(HttpHeaders.AUTHORIZATION, owner.bearer())
-                        .contentType(MediaType.APPLICATION_JSON).content(activityJson(requestId, "CASH_DEPOSIT", amount, effectiveAt, false)))
-                .andExpect(status().isCreated()).andReturn());
+        return idFrom(mockMvc.perform(post("/api/v1/accounts/{accountId}/activities", accountId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON)
+                .content(activityJson(requestId, "CASH_DEPOSIT", amount, effectiveAt, false))).andExpect(status().isCreated()).andReturn());
     }
 
     @Test
     void transferPreviewAndCommitExposeEqualOppositePostings() throws Exception {
-        var owner = authenticated("transfer-http-owner@example.com");
+        var owner = testIdentitySupport.create("transfer-http-owner@example.com");
         var sourceId = createAccount(owner, uuid("20000000-0000-4000-8000-000000000001"), "Transfer source", "100");
         var destinationId = createAccount(owner, uuid("20000000-0000-4000-8000-000000000002"), "Transfer destination", "10");
         var effectiveAt = "2026-08-17T11:45:00Z";
 
-        mockMvc.perform(post("/api/v1/transfers/previews").header(HttpHeaders.AUTHORIZATION, owner.bearer()).contentType(MediaType.APPLICATION_JSON)
+        mockMvc.perform(post("/api/v1/transfers/previews").with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON)
                 .content(transferPreviewJson(sourceId, destinationId, "25", effectiveAt))).andExpect(status().isOk())
                 .andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-store")).andExpect(jsonPath("$.sourceBefore", equalTo("100")))
                 .andExpect(jsonPath("$.sourceAfter", equalTo("75"))).andExpect(jsonPath("$.destinationBefore", equalTo("10")))
                 .andExpect(jsonPath("$.destinationAfter", equalTo("35"))).andExpect(jsonPath("$.allowed", equalTo(true)));
 
         var transfer = mockMvc
-                .perform(post("/api/v1/transfers").header(HttpHeaders.AUTHORIZATION, owner.bearer()).contentType(MediaType.APPLICATION_JSON)
+                .perform(post("/api/v1/transfers").with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON)
                         .content(transferJson(uuid("20000000-0000-4000-8000-000000000003"), sourceId, destinationId, "25", effectiveAt)))
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.postings.length()", equalTo(2)))
                 .andExpect(jsonPath("$.postings[0].amount", equalTo("-25"))).andExpect(jsonPath("$.postings[1].amount", equalTo("25"))).andReturn();
         assertThat(transfer.getResponse().getHeader(HttpHeaders.LOCATION)).isEqualTo("/api/v1/activities/" + idFrom(transfer));
 
-        mockMvc.perform(post("/api/v1/transfers").header(HttpHeaders.AUTHORIZATION, owner.bearer()).contentType(MediaType.APPLICATION_JSON).content(
+        mockMvc.perform(post("/api/v1/transfers").with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON).content(
                 """
                         {"clientRequestId":"20000000-0000-4000-8000-000000000004","sourceAccountId":"%s","destinationAccountId":"%s","amount":"1","recordingMode":"CURRENT_ACTION","effectiveAt":"2026-08-17T11:45:00Z","confirmPolicyBreach":false,"expectedSourceBalanceVersion":-1}
                         """
                         .formatted(sourceId, destinationId)))
                 .andExpect(status().isUnprocessableContent()).andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED")));
 
-        mockMvc.perform(get("/api/v1/accounts/{accountId}/balance", sourceId).header(HttpHeaders.AUTHORIZATION, owner.bearer())).andExpect(status().isOk())
+        mockMvc.perform(get("/api/v1/accounts/{accountId}/balance", sourceId).with(owner.asBearer())).andExpect(status().isOk())
                 .andExpect(jsonPath("$.ledgerBalance", equalTo("75")));
-        mockMvc.perform(get("/api/v1/accounts/{accountId}/balance", destinationId).header(HttpHeaders.AUTHORIZATION, owner.bearer())).andExpect(status().isOk())
+        mockMvc.perform(get("/api/v1/accounts/{accountId}/balance", destinationId).with(owner.asBearer())).andExpect(status().isOk())
                 .andExpect(jsonPath("$.ledgerBalance", equalTo("35")));
     }
 
     @Test
     void activityRoutesPreserveOwnerScopeAndControllerValidation() throws Exception {
-        var owner = authenticated("activity-http-scope-owner@example.com");
-        var other = authenticated("activity-http-scope-other@example.com");
+        var owner = testIdentitySupport.create("activity-http-scope-owner@example.com");
+        var other = testIdentitySupport.create("activity-http-scope-other@example.com");
         var accountId = createAccount(owner, uuid("30000000-0000-4000-8000-000000000001"), "Scoped cash", "100");
         var result = mockMvc
-                .perform(post("/api/v1/accounts/{accountId}/activities", accountId).header(HttpHeaders.AUTHORIZATION, owner.bearer())
-                        .contentType(MediaType.APPLICATION_JSON)
+                .perform(post("/api/v1/accounts/{accountId}/activities", accountId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON)
                         .content(activityJson(uuid("30000000-0000-4000-8000-000000000002"), "CASH_DEPOSIT", "not-an-amount", "2026-08-17T11:30:00Z", false)))
                 .andExpect(status().isUnprocessableContent()).andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED"))).andReturn();
-        assertProblemShape(result);
+        HttpAssertions.assertProblem(result);
 
-        mockMvc.perform(post("/api/v1/accounts/{accountId}/activities", accountId).header(HttpHeaders.AUTHORIZATION, owner.bearer())
-                .contentType(MediaType.APPLICATION_JSON).content(
-                        """
-                                {"clientRequestId":"30000000-0000-4000-8000-000000000003","activityType":"CASH_DEPOSIT","amount":"1","recordingMode":"CURRENT_ACTION","effectiveAt":"2026-08-17T11:30:00Z","confirmPolicyBreach":false,"expectedBalanceVersion":-1}
-                                """))
+        mockMvc.perform(post("/api/v1/accounts/{accountId}/activities", accountId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON).content(
+                """
+                        {"clientRequestId":"30000000-0000-4000-8000-000000000003","activityType":"CASH_DEPOSIT","amount":"1","recordingMode":"CURRENT_ACTION","effectiveAt":"2026-08-17T11:30:00Z","confirmPolicyBreach":false,"expectedBalanceVersion":-1}
+                        """))
                 .andExpect(status().isUnprocessableContent()).andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED")));
 
-        mockMvc.perform(post("/api/v1/accounts/{accountId}/activities", accountId).header(HttpHeaders.AUTHORIZATION, owner.bearer())
-                .contentType(MediaType.APPLICATION_JSON).content(
-                        """
-                                {"clientRequestId":"30000000-0000-4000-8000-000000000004","activityType":"NOT_A_TYPE","amount":"1","recordingMode":"CURRENT_ACTION","effectiveAt":"2026-08-17T11:30:00Z","confirmPolicyBreach":false}
-                                """))
+        mockMvc.perform(post("/api/v1/accounts/{accountId}/activities", accountId).with(owner.asBearer()).contentType(MediaType.APPLICATION_JSON).content(
+                """
+                        {"clientRequestId":"30000000-0000-4000-8000-000000000004","activityType":"NOT_A_TYPE","amount":"1","recordingMode":"CURRENT_ACTION","effectiveAt":"2026-08-17T11:30:00Z","confirmPolicyBreach":false}
+                        """))
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code", equalTo("MALFORMED_REQUEST")));
 
-        mockMvc.perform(get("/api/v1/activities/{activityId}", uuid("30000000-0000-4000-8000-000000000099")).header(HttpHeaders.AUTHORIZATION, other.bearer()))
+        mockMvc.perform(get("/api/v1/activities/{activityId}", uuid("30000000-0000-4000-8000-000000000099")).with(other.asBearer()))
                 .andExpect(status().isNotFound()).andExpect(jsonPath("$.code", equalTo("ACTIVITY_NOT_FOUND")));
         mockMvc.perform(get("/api/v1/activities")).andExpect(status().isUnauthorized());
         mockMvc.perform(post("/api/v1/transfers/previews").contentType(MediaType.APPLICATION_JSON).content("{}")).andExpect(status().isUnauthorized());
     }
 
     private UUID createAccount(Identity identity, UUID requestId, String name, String amount) throws Exception {
-        var result = mockMvc.perform(post("/api/v1/accounts").header(HttpHeaders.AUTHORIZATION, identity.bearer()).contentType(MediaType.APPLICATION_JSON)
-                .content(accountJson(requestId, name, amount))).andExpect(status().isCreated()).andReturn();
+        var result = mockMvc.perform(
+                post("/api/v1/accounts").with(identity.asBearer()).contentType(MediaType.APPLICATION_JSON).content(accountJson(requestId, name, amount)))
+                .andExpect(status().isCreated()).andReturn();
         return idFrom(result);
-    }
-
-    private Identity authenticated(String email) {
-        var userId = registrationService.register(email, PASSWORD);
-        var session = sessionIssuanceService.issue(userId, "ledger-activity-http-test");
-        return new Identity(userId, tokenIssuanceService.issue(session.sessionId()).accessToken());
     }
 
     private static String accountJson(UUID requestId, String name, String amount) {
@@ -435,16 +408,6 @@ class CashActivityHttpTest {
         return UUID.fromString(JsonPath.<String>read(result.getResponse().getContentAsString(), "$.id"));
     }
 
-    private static void assertProblemShape(MvcResult result) throws Exception {
-        var body = JsonPath.<Map<String, Object>>read(result.getResponse().getContentAsString(), "$");
-        assertThat(body).containsKeys("type", "title", "status", "instance", "code", "key", "traceId", "timestamp");
-    }
-
-    private static void assertSliceShape(MvcResult result) throws Exception {
-        var body = JsonPath.<Map<String, Object>>read(result.getResponse().getContentAsString(), "$");
-        assertThat(body).containsOnlyKeys("items", "page", "size", "hasNext");
-    }
-
     private static void assertTraceAndSession(MvcResult result) {
         assertThat(result.getResponse().getHeader(RequestTraceFilter.TRACE_ID_HEADER)).isNotBlank();
         assertThat(result.getRequest().getSession(false)).isNull();
@@ -452,12 +415,6 @@ class CashActivityHttpTest {
 
     private static UUID uuid(String value) {
         return UUID.fromString(value);
-    }
-
-    private record Identity(UUID userId, String token) {
-        String bearer() {
-            return "Bearer " + token;
-        }
     }
 
 }

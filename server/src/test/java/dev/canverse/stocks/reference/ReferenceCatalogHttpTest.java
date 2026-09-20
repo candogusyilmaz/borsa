@@ -8,15 +8,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import dev.canverse.stocks.identity.application.AccessTokenIssuanceService;
-import dev.canverse.stocks.identity.application.LocalAccountRegistrationService;
-import dev.canverse.stocks.identity.application.RefreshSessionIssuanceService;
 import dev.canverse.stocks.platform.web.trace.RequestTraceFilter;
 import dev.canverse.stocks.testing.DatabaseCleaner;
 import dev.canverse.stocks.testing.IdentityTestPropertiesConfiguration;
 import dev.canverse.stocks.testing.IntegrationTest;
 import dev.canverse.stocks.testing.TestClock;
 import dev.canverse.stocks.testing.TestClockConfiguration;
+import dev.canverse.stocks.testing.TestIdentitySupport;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -41,21 +39,15 @@ class ReferenceCatalogHttpTest {
 
     @Autowired
     DatabaseCleaner databaseCleaner;
+
+    @Autowired
+    TestIdentitySupport testIdentitySupport;
     @Autowired
     TestClock testClock;
     private static final UUID XIST = UUID.fromString("10000000-0000-0000-0000-000000000001");
     private static final Instant T0 = Instant.parse("2026-08-15T12:00:00Z");
     @Autowired
     MockMvc mockMvc;
-
-    @Autowired
-    LocalAccountRegistrationService registrationService;
-
-    @Autowired
-    RefreshSessionIssuanceService sessionIssuanceService;
-
-    @Autowired
-    AccessTokenIssuanceService tokenIssuanceService;
 
     @Autowired
     JdbcTemplate jdbcTemplate;
@@ -72,9 +64,9 @@ class ReferenceCatalogHttpTest {
 
     @Test
     void returnsExactOfflineSeedsWithStableOrderingAndNoFinancialClaims() throws Exception {
-        var identity = authenticated("catalog-seeds@example.com");
+        var identity = testIdentitySupport.create("catalog-seeds@example.com");
 
-        var countries = mockMvc.perform(get("/api/v1/reference/countries").header(HttpHeaders.AUTHORIZATION, identity.bearer())).andExpect(status().isOk())
+        var countries = mockMvc.perform(get("/api/v1/reference/countries").with(identity.asBearer())).andExpect(status().isOk())
                 .andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-store")).andExpect(header().string(HttpHeaders.PRAGMA, "no-cache"))
                 .andExpect(content().json("""
                         [
@@ -85,7 +77,7 @@ class ReferenceCatalogHttpTest {
                         """, true)).andReturn();
         assertNoSession(countries);
 
-        var currencies = mockMvc.perform(get("/api/v1/reference/currencies").header(HttpHeaders.AUTHORIZATION, identity.bearer())).andExpect(status().isOk())
+        var currencies = mockMvc.perform(get("/api/v1/reference/currencies").with(identity.asBearer())).andExpect(status().isOk())
                 .andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-store")).andExpect(header().string(HttpHeaders.PRAGMA, "no-cache"))
                 .andExpect(content().json("""
                         [
@@ -97,7 +89,7 @@ class ReferenceCatalogHttpTest {
                         """, true)).andReturn();
         assertNoSession(currencies);
 
-        var markets = mockMvc.perform(get("/api/v1/reference/markets").header(HttpHeaders.AUTHORIZATION, identity.bearer())).andExpect(status().isOk())
+        var markets = mockMvc.perform(get("/api/v1/reference/markets").with(identity.asBearer())).andExpect(status().isOk())
                 .andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-store")).andExpect(header().string(HttpHeaders.PRAGMA, "no-cache"))
                 .andExpect(content().json("""
                         [
@@ -132,11 +124,11 @@ class ReferenceCatalogHttpTest {
 
     @Test
     void calendarReturnsNoneAndExactMissingDatesWithoutInferringSessions() throws Exception {
-        var identity = authenticated("catalog-calendar-none@example.com");
+        var identity = testIdentitySupport.create("catalog-calendar-none@example.com");
 
         var result = mockMvc
                 .perform(get("/api/v1/reference/markets/{marketId}/calendar", XIST).param("from", "2026-08-01").param("to", "2026-08-03")
-                        .header(HttpHeaders.AUTHORIZATION, identity.bearer()))
+                        .with(identity.asBearer()))
                 .andExpect(status().isOk()).andExpect(header().string(HttpHeaders.CACHE_CONTROL, "no-store"))
                 .andExpect(header().string(HttpHeaders.PRAGMA, "no-cache")).andExpect(content().json("""
                         {
@@ -157,19 +149,20 @@ class ReferenceCatalogHttpTest {
     void calendarReturnsExplicitPartialAndCompleteRows() throws Exception {
         insertCalendar(LocalDate.of(2026, 8, 1), "OPEN", LocalTime.of(9, 30), LocalTime.of(17, 0));
         insertCalendar(LocalDate.of(2026, 8, 3), "CLOSED", null, null);
-        var identity = authenticated("catalog-calendar-explicit@example.com");
+        var identity = testIdentitySupport.create("catalog-calendar-explicit@example.com");
 
-        mockMvc.perform(get("/api/v1/reference/markets/{marketId}/calendar", XIST).param("from", "2026-08-01").param("to", "2026-08-03")
-                .header(HttpHeaders.AUTHORIZATION, identity.bearer())).andExpect(status().isOk()).andExpect(jsonPath("$.coverageStatus", equalTo("PARTIAL")))
-                .andExpect(jsonPath("$.sessions.length()", equalTo(2))).andExpect(jsonPath("$.sessions[0].date", equalTo("2026-08-01")))
-                .andExpect(jsonPath("$.sessions[0].sessionStatus", equalTo("OPEN"))).andExpect(jsonPath("$.sessions[0].opensAt", equalTo("09:30:00")))
-                .andExpect(jsonPath("$.sessions[0].closesAt", equalTo("17:00:00"))).andExpect(jsonPath("$.sessions[1].sessionStatus", equalTo("CLOSED")))
-                .andExpect(jsonPath("$.sessions[1].opensAt").doesNotExist()).andExpect(jsonPath("$.missingDates", equalTo(List.of("2026-08-02"))));
+        mockMvc.perform(
+                get("/api/v1/reference/markets/{marketId}/calendar", XIST).param("from", "2026-08-01").param("to", "2026-08-03").with(identity.asBearer()))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.coverageStatus", equalTo("PARTIAL"))).andExpect(jsonPath("$.sessions.length()", equalTo(2)))
+                .andExpect(jsonPath("$.sessions[0].date", equalTo("2026-08-01"))).andExpect(jsonPath("$.sessions[0].sessionStatus", equalTo("OPEN")))
+                .andExpect(jsonPath("$.sessions[0].opensAt", equalTo("09:30:00"))).andExpect(jsonPath("$.sessions[0].closesAt", equalTo("17:00:00")))
+                .andExpect(jsonPath("$.sessions[1].sessionStatus", equalTo("CLOSED"))).andExpect(jsonPath("$.sessions[1].opensAt").doesNotExist())
+                .andExpect(jsonPath("$.missingDates", equalTo(List.of("2026-08-02"))));
 
         insertCalendar(LocalDate.of(2026, 8, 2), "CLOSED", null, null);
-        mockMvc.perform(get("/api/v1/reference/markets/{marketId}/calendar", XIST).param("from", "2026-08-01").param("to", "2026-08-03")
-                .header(HttpHeaders.AUTHORIZATION, identity.bearer())).andExpect(status().isOk()).andExpect(jsonPath("$.coverageStatus", equalTo("COMPLETE")))
-                .andExpect(jsonPath("$.missingDates").isEmpty());
+        mockMvc.perform(
+                get("/api/v1/reference/markets/{marketId}/calendar", XIST).param("from", "2026-08-01").param("to", "2026-08-03").with(identity.asBearer()))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.coverageStatus", equalTo("COMPLETE"))).andExpect(jsonPath("$.missingDates").isEmpty());
     }
 
     @Test
@@ -177,24 +170,19 @@ class ReferenceCatalogHttpTest {
         mockMvc.perform(get("/api/v1/reference/countries")).andExpect(status().isUnauthorized())
                 .andExpect(header().string(HttpHeaders.WWW_AUTHENTICATE, "Bearer")).andExpect(jsonPath("$.code", equalTo("INVALID_CREDENTIALS")));
 
-        var identity = authenticated("catalog-calendar-errors@example.com");
-        mockMvc.perform(get("/api/v1/reference/markets/{marketId}/calendar", XIST).param("from", "2026-08-03").param("to", "2026-08-01")
-                .header(HttpHeaders.AUTHORIZATION, identity.bearer())).andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED"))).andExpect(jsonPath("$.traceId").exists());
+        var identity = testIdentitySupport.create("catalog-calendar-errors@example.com");
+        mockMvc.perform(
+                get("/api/v1/reference/markets/{marketId}/calendar", XIST).param("from", "2026-08-03").param("to", "2026-08-01").with(identity.asBearer()))
+                .andExpect(status().isUnprocessableContent()).andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED")))
+                .andExpect(jsonPath("$.traceId").exists());
 
-        mockMvc.perform(get("/api/v1/reference/markets/{marketId}/calendar", XIST).param("from", "2026-01-01").param("to", "2027-01-02")
-                .header(HttpHeaders.AUTHORIZATION, identity.bearer())).andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED")));
+        mockMvc.perform(
+                get("/api/v1/reference/markets/{marketId}/calendar", XIST).param("from", "2026-01-01").param("to", "2027-01-02").with(identity.asBearer()))
+                .andExpect(status().isUnprocessableContent()).andExpect(jsonPath("$.code", equalTo("VALIDATION_FAILED")));
 
         mockMvc.perform(get("/api/v1/reference/markets/{marketId}/calendar", UUID.randomUUID()).param("from", "2026-08-01").param("to", "2026-08-01")
-                .header(HttpHeaders.AUTHORIZATION, identity.bearer())).andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code", equalTo("MARKET_NOT_FOUND"))).andExpect(jsonPath("$.traceId").exists());
-    }
-
-    private Identity authenticated(String email) {
-        var userId = registrationService.register(email, "correct horse battery staple");
-        var session = sessionIssuanceService.issue(userId, "reference-http-test");
-        return new Identity(userId, tokenIssuanceService.issue(session.sessionId()).accessToken());
+                .with(identity.asBearer())).andExpect(status().isNotFound()).andExpect(jsonPath("$.code", equalTo("MARKET_NOT_FOUND")))
+                .andExpect(jsonPath("$.traceId").exists());
     }
 
     private void insertCalendar(LocalDate date, String status, LocalTime opensAt, LocalTime closesAt) {
@@ -206,13 +194,6 @@ class ReferenceCatalogHttpTest {
     private static void assertNoSession(MvcResult result) {
         assertThat(result.getRequest().getSession(false)).isNull();
         assertThat(result.getResponse().getHeader(RequestTraceFilter.TRACE_ID_HEADER)).isNotBlank();
-    }
-
-    private record Identity(UUID userId, String bearer) {
-
-        private Identity {
-            bearer = "Bearer " + bearer;
-        }
     }
 
 }

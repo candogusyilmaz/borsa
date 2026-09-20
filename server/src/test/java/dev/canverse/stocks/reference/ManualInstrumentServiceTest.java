@@ -3,7 +3,6 @@ package dev.canverse.stocks.reference;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import dev.canverse.stocks.identity.application.LocalAccountRegistrationService;
 import dev.canverse.stocks.platform.error.AppException;
 import dev.canverse.stocks.platform.error.ErrorCode;
 import dev.canverse.stocks.platform.id.IdGenerator;
@@ -18,6 +17,7 @@ import dev.canverse.stocks.reference.web.request.ManualInstrumentUpdateRequest;
 import dev.canverse.stocks.testing.DatabaseCleaner;
 import dev.canverse.stocks.testing.IntegrationTest;
 import dev.canverse.stocks.testing.TestClock;
+import dev.canverse.stocks.testing.TestIdentitySupport;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.validation.Validator;
 import java.time.Instant;
@@ -50,7 +50,7 @@ class ManualInstrumentServiceTest {
     private static final UUID MANUAL_MARKET = UUID.fromString("10000000-0000-0000-0000-000000000002");
     private static final Instant T0 = Instant.parse("2026-08-16T12:00:00Z");
     @Autowired
-    LocalAccountRegistrationService registrationService;
+    TestIdentitySupport testIdentitySupport;
 
     @Autowired
     ManualInstrumentService instrumentService;
@@ -85,7 +85,7 @@ class ManualInstrumentServiceTest {
 
     @Test
     void createsOwnerInstrumentWithNormalizedIdentityAndAliases() {
-        var ownerId = register("manual-create@example.com");
+        var ownerId = createOwner("manual-create@example.com");
         var response = instrumentService.create(ownerId,
                 createRequest(" my-fund ", " My manually valued fund ", List.of(new InstrumentAliasInput(AliasType.USER, " Pension Fund "))));
 
@@ -107,7 +107,7 @@ class ManualInstrumentServiceTest {
 
     @Test
     void aliasesAreBoundedSortedAndImmutableAtTheResponseBoundary() {
-        var ownerId = register("manual-alias-contract@example.com");
+        var ownerId = createOwner("manual-alias-contract@example.com");
         var maximumAliases = IntStream.range(0, ManualInstrumentConstraints.MAX_ALIASES_PER_INSTRUMENT)
                 .mapToObj(index -> new InstrumentAliasInput(AliasType.USER, "alias-%02d".formatted(index))).toList();
 
@@ -130,8 +130,8 @@ class ManualInstrumentServiceTest {
 
     @Test
     void updateIsOwnerOnlyVersionedAndCanReactivateAnInactiveInstrument() {
-        var ownerId = register("manual-update@example.com");
-        var otherOwnerId = register("manual-other@example.com");
+        var ownerId = createOwner("manual-update@example.com");
+        var otherOwnerId = createOwner("manual-other@example.com");
         var created = instrumentService.create(ownerId, createRequest("UPDATE-ME", "Before", List.of()));
 
         var updated = instrumentService.update(ownerId, created.id(), new ManualInstrumentUpdateRequest(created.version(), " After ",
@@ -152,7 +152,7 @@ class ManualInstrumentServiceTest {
 
     @Test
     void aliasOnlyReplacementForcesParentVersionEvenWhenMetadataAndClockAreUnchanged() {
-        var ownerId = register("manual-alias-only@example.com");
+        var ownerId = createOwner("manual-alias-only@example.com");
         var created = instrumentService.create(ownerId,
                 createRequest("ALIAS-ONLY", "Unchanged metadata", List.of(new InstrumentAliasInput(AliasType.USER, "before"))));
 
@@ -167,7 +167,7 @@ class ManualInstrumentServiceTest {
 
     @Test
     void aliasOnlyReplacementUsesOrdinaryVersionCheckWhenClockMoves() {
-        var ownerId = register("manual-alias-clock-moved@example.com");
+        var ownerId = createOwner("manual-alias-clock-moved@example.com");
         var created = instrumentService.create(ownerId,
                 createRequest("ALIAS-CLOCK", "Unchanged metadata", List.of(new InstrumentAliasInput(AliasType.USER, "before"))));
         var nextInstant = T0.plusSeconds(1);
@@ -183,7 +183,7 @@ class ManualInstrumentServiceTest {
 
     @Test
     void normalizationExpansionIsRejectedBeforeAnyInstrumentWrite() {
-        var ownerId = register("manual-normalization@example.com");
+        var ownerId = createOwner("manual-normalization@example.com");
         var expandingName = "ß".repeat(81);
         var expandingAlias = "ß".repeat(65);
 
@@ -208,7 +208,7 @@ class ManualInstrumentServiceTest {
 
     @Test
     void paddedMaximumDisplayValuesAreTrimmedBeforeBothCreateAndUpdateBounds() {
-        var ownerId = register("manual-padded-boundary@example.com");
+        var ownerId = createOwner("manual-padded-boundary@example.com");
         var symbol = " " + "S".repeat(ManualInstrumentConstraints.MAX_SYMBOL_LENGTH) + " ";
         var name = " " + "N".repeat(ManualInstrumentConstraints.MAX_NAME_LENGTH) + " ";
         var alias = " " + "A".repeat(ManualInstrumentConstraints.MAX_ALIAS_VALUE_LENGTH) + " ";
@@ -229,7 +229,7 @@ class ManualInstrumentServiceTest {
 
     @Test
     void duplicateAndUnsupportedWritesReturnStableErrorsWithoutPartialRows() {
-        var ownerId = register("manual-errors@example.com");
+        var ownerId = createOwner("manual-errors@example.com");
         instrumentService.create(ownerId, createRequest("SAME", "Same one", List.of()));
 
         assertThatThrownBy(() -> instrumentService.create(ownerId, createRequest("same", "Same two", List.of())))
@@ -245,7 +245,7 @@ class ManualInstrumentServiceTest {
 
     @Test
     void unknownAndInactiveReferencesRejectBeforeAnyWrite() {
-        var ownerId = register("manual-reference-errors@example.com");
+        var ownerId = createOwner("manual-reference-errors@example.com");
 
         assertReferenceError(
                 () -> instrumentService.create(ownerId,
@@ -273,7 +273,7 @@ class ManualInstrumentServiceTest {
 
     @Test
     void aliasReplacementFailureRollsBackPreviousVersionAndAliasSet() {
-        var ownerId = register("manual-atomic@example.com");
+        var ownerId = createOwner("manual-atomic@example.com");
         var created = instrumentService.create(ownerId, createRequest("ATOMIC", "Original", List.of(new InstrumentAliasInput(AliasType.USER, "original"))));
         idGenerator.fail.set(true);
 
@@ -290,7 +290,7 @@ class ManualInstrumentServiceTest {
 
     @Test
     void staleVersionIsRejectedWithoutChangingMetadata() {
-        var ownerId = register("manual-version@example.com");
+        var ownerId = createOwner("manual-version@example.com");
         var created = instrumentService.create(ownerId, createRequest("VERSION", "Version one", List.of()));
         instrumentService.update(ownerId, created.id(), new ManualInstrumentUpdateRequest(0, "Version two", ValuationMethod.NOT_VALUED, true, List.of()));
 
@@ -302,7 +302,7 @@ class ManualInstrumentServiceTest {
 
     @Test
     void concurrentUpdatesAllowOnlyOneVersionedCommit() throws Exception {
-        var ownerId = register("manual-concurrent@example.com");
+        var ownerId = createOwner("manual-concurrent@example.com");
         var created = instrumentService.create(ownerId, createRequest("CONCURRENT", "Before", List.of()));
         var ready = new CountDownLatch(2);
         var start = new CountDownLatch(1);
@@ -327,7 +327,7 @@ class ManualInstrumentServiceTest {
 
     @Test
     void concurrentAliasOnlyUpdatesThatLoadedVersionZeroHaveOneOptimisticWinner() throws Exception {
-        var ownerId = register("manual-alias-concurrent@example.com");
+        var ownerId = createOwner("manual-alias-concurrent@example.com");
         var created = instrumentService.create(ownerId,
                 createRequest("ALIAS-CONCURRENT", "Stable metadata", List.of(new InstrumentAliasInput(AliasType.USER, "initial"))));
         clock.coordinateNextTwoCalls();
@@ -378,8 +378,8 @@ class ManualInstrumentServiceTest {
         }
     }
 
-    private UUID register(String email) {
-        return registrationService.register(email, "correct horse battery staple");
+    private UUID createOwner(String email) {
+        return testIdentitySupport.createUserAccount(email);
     }
 
     private static void assertReferenceError(Runnable action, ReferenceErrorCode expected) {
