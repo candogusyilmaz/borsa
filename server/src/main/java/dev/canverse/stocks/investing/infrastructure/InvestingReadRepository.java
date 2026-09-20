@@ -49,7 +49,7 @@ public class InvestingReadRepository {
         return row.map(value -> toTradeReadModels(ownerUserAccountId, List.of(value)).getFirst());
     }
 
-    public SliceResponse<TradeSummaryResponse> findTrades(UUID ownerUserAccountId, UUID accountId, UUID instrumentId, Pageable pageable) {
+    public SliceResponse<TradeSummaryResponse> findTrades(UUID ownerUserAccountId, UUID accountId, UUID instrumentId, UUID portfolioId, Pageable pageable) {
         var pageSize = Objects.requireNonNull(pageable, "pageable").getPageSize();
         var predicate = new StringBuilder("a.owner_user_account_id = :ownerUserAccountId");
         if (accountId != null) {
@@ -57,6 +57,11 @@ public class InvestingReadRepository {
         }
         if (instrumentId != null) {
             predicate.append(" AND s.instrument_id = :instrumentId");
+        }
+        if (portfolioId != null) {
+            predicate.append(" AND EXISTS (SELECT 1 FROM ledger.portfolio_account_membership membership" +
+                    " WHERE membership.owner_user_account_id = a.owner_user_account_id AND membership.portfolio_id = :portfolioId" +
+                    " AND membership.financial_account_id = s.financial_account_id)");
         }
         var statement = tradeSql(predicate.toString() + tradeOrderBy(pageable) + " LIMIT :fetchLimit OFFSET :offset")
                 .param("ownerUserAccountId", Objects.requireNonNull(ownerUserAccountId, "ownerUserAccountId")).param("fetchLimit", pageSize + 1)
@@ -66,6 +71,9 @@ public class InvestingReadRepository {
         }
         if (instrumentId != null) {
             statement = statement.param("instrumentId", instrumentId);
+        }
+        if (portfolioId != null) {
+            statement = statement.param("portfolioId", portfolioId);
         }
         var rows = statement.query(this::mapTradeRow).list();
         var hasNext = rows.size() > pageSize;
@@ -104,17 +112,25 @@ public class InvestingReadRepository {
                 .query((resultSet, rowNumber) -> mapTradeEvent(resultSet)).list();
     }
 
-    public SliceResponse<PositionResponse> findOpenPositions(UUID ownerUserAccountId, UUID accountId, Pageable pageable) {
+    public SliceResponse<PositionResponse> findOpenPositions(UUID ownerUserAccountId, UUID accountId, UUID portfolioId, Pageable pageable) {
         var pageSize = Objects.requireNonNull(pageable, "pageable").getPageSize();
         var predicate = new StringBuilder("p.owner_user_account_id = :ownerUserAccountId AND p.current_quantity > 0");
         if (accountId != null) {
             predicate.append(" AND p.financial_account_id = :accountId");
+        }
+        if (portfolioId != null) {
+            predicate.append(" AND EXISTS (SELECT 1 FROM ledger.portfolio_account_membership membership" +
+                    " WHERE membership.owner_user_account_id = p.owner_user_account_id AND membership.portfolio_id = :portfolioId" +
+                    " AND membership.financial_account_id = p.financial_account_id)");
         }
         var statement = jdbcClient.sql(positionSql(predicate.toString() + positionOrderBy(pageable) + " LIMIT :fetchLimit OFFSET :offset"))
                 .param("ownerUserAccountId", Objects.requireNonNull(ownerUserAccountId, "ownerUserAccountId")).param("fetchLimit", pageSize + 1)
                 .param("offset", pageable.getOffset());
         if (accountId != null) {
             statement = statement.param("accountId", accountId);
+        }
+        if (portfolioId != null) {
+            statement = statement.param("portfolioId", portfolioId);
         }
         var rows = statement.query(this::mapPositionReadModel).list();
         var hasNext = rows.size() > pageSize;

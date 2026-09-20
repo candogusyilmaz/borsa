@@ -56,6 +56,8 @@ function ReverseActivityForm({ activity }: ReverseActivityFormProps) {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/activities'] }),
         queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/activities/{activityId}'] }),
+        queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/trades'] }),
+        queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/investing/positions'] }),
         queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/accounts'] }),
         queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/accounts/{accountId}'] }),
         queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/accounts/{accountId}/balance'] }),
@@ -97,8 +99,8 @@ function ReverseActivityForm({ activity }: ReverseActivityFormProps) {
         {
           onSuccess: () => {
             notifications.show({
-              title: 'Transaction Reversed',
-              message: 'An offsetting reversal entry has been recorded in the ledger.',
+              title: 'Transaction Undone',
+              message: 'An offsetting entry has been recorded to undo this transaction.',
               color: 'teal',
               icon: <CheckCircleIcon size={18} weight="bold" />
             });
@@ -127,13 +129,12 @@ function ReverseActivityForm({ activity }: ReverseActivityFormProps) {
       }}
       className={classes.form}>
       <Alert icon={<WarningCircleIcon size={18} />} color="violet" variant="light">
-        Reversing this transaction will post an equal and opposite entry to your cash ledger. The original entry remains in audit history
-        and will be marked as reversed.
+        Undoing this transaction will cancel its impact on your balance. The original entry remains in your history marked as undone.
       </Alert>
 
       <div className={classes.activitySummary}>
         <div className={classes.summaryRow}>
-          <span className={classes.summaryLabel}>Activity Type:</span>
+          <span className={classes.summaryLabel}>Transaction Type:</span>
           <Badge color="violet" variant="light" size="sm">
             {getActivityTypeLabel(activity.activityType)}
           </Badge>
@@ -152,12 +153,12 @@ function ReverseActivityForm({ activity }: ReverseActivityFormProps) {
         )}
 
         <div className={classes.summaryRow}>
-          <span className={classes.summaryLabel}>Effective Date:</span>
+          <span className={classes.summaryLabel}>Transaction Date:</span>
           <span className={classes.summaryValue}>{formatDateTime(activity.effectiveAt)}</span>
         </div>
 
         <div className={classes.summaryRow}>
-          <span className={classes.summaryLabel}>Activity ID:</span>
+          <span className={classes.summaryLabel}>Reference ID:</span>
           <span className={classes.summaryValue} style={{ fontSize: 11 }}>
             {activity.id.slice(0, 8)}...
           </span>
@@ -169,24 +170,24 @@ function ReverseActivityForm({ activity }: ReverseActivityFormProps) {
         validators={{
           onChange: ({ value }) => {
             const trimmed = value.trim();
-            if (!trimmed) return 'A reason for this reversal is required.';
+            if (!trimmed) return 'A reason for undoing this transaction is required.';
             if (trimmed.length < 3) return 'Reason must be at least 3 characters.';
             return undefined;
           }
         }}>
         {(field) => (
           <Textarea
-            label="Reversal Reason / Correction Note"
-            placeholder="e.g. Duplicate entry, incorrect amount recorded, or customer cancellation."
+            label="Reason for Undoing"
+            placeholder="e.g. Duplicate entry, wrong amount recorded, or mistake."
             minRows={3}
             value={field.state.value}
             onChange={(e) => field.handleChange(e.target.value)}
             onBlur={field.handleBlur}
             error={field.state.meta.errors.join(', ')}
-            description="This explanation will be permanently recorded alongside the reversal."
+            description="This reason will be saved alongside the transaction."
             inputWrapperOrder={['label', 'input', 'description', 'error']}
             required
-            aria-label="Reversal Reason"
+            aria-label="Reason for Undoing"
           />
         )}
       </form.Field>
@@ -203,7 +204,7 @@ function ReverseActivityForm({ activity }: ReverseActivityFormProps) {
           className={classes.actionBtn}
           loading={reversalMutation.isPending}
           leftSection={<ArrowCounterClockwiseIcon size={16} weight="bold" />}>
-          Confirm Reversal
+          Confirm &amp; Undo
         </Button>
       </div>
     </form>
@@ -216,7 +217,7 @@ export const ReverseActivityOverlay = registerOverlay(ReverseActivity, {
     <Group gap="xs">
       <ArrowCounterClockwiseIcon size={18} weight="bold" color="var(--mantine-color-violet-6)" />
       <Text fw={700} size="md">
-        Reverse Transaction
+        Undo Transaction
       </Text>
     </Group>
   ),

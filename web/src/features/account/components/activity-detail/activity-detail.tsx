@@ -17,7 +17,8 @@ import {
   getPolicyDecisionBadgeColor,
   getPolicyDecisionLabel,
   getPostingRoleLabel,
-  getRecordingModeLabel
+  getRecordingModeLabel,
+  getSecurityPostingRoleLabel
 } from '../../utils/account-formatters';
 import { ReverseActivityOverlay } from '../reverse-activity/reverse-activity';
 import classes from './activity-detail.module.css';
@@ -51,7 +52,9 @@ export function ActivityDetail({ activityId, isAccountArchived = false, isAlread
       activity.activityType === 'CASH_WITHDRAWAL' ||
       activity.activityType === 'CASH_FEE' ||
       activity.activityType === 'CASH_INTEREST_CREDIT' ||
-      activity.activityType === 'OWNED_TRANSFER') &&
+      activity.activityType === 'OWNED_TRANSFER' ||
+      activity.activityType === 'SECURITY_BUY' ||
+      activity.activityType === 'SECURITY_SELL') &&
     !activity.reversesActivityId;
 
   const isReversalEntry = activity?.activityType === 'REVERSAL';
@@ -97,7 +100,7 @@ export function ActivityDetail({ activityId, isAccountArchived = false, isAlread
           {/* 2. Reversal Alerts */}
           {isReversalEntry && activity.reversesActivityId && (
             <Alert icon={<ArrowCounterClockwiseIcon size={18} weight="bold" />} color="violet" variant="light">
-              This transaction is a ledger reversal that negated original transaction{' '}
+              This is an undo transaction that canceled original transaction{' '}
               <Text component="span" fw={700} style={{ fontVariantNumeric: 'tabular-nums' }}>
                 {activity.reversesActivityId.slice(0, 8)}...
               </Text>
@@ -106,7 +109,7 @@ export function ActivityDetail({ activityId, isAccountArchived = false, isAlread
 
           {isAlreadyReversed && (
             <Alert icon={<ArrowCounterClockwiseIcon size={18} weight="bold" />} color="violet" variant="light">
-              This transaction has already been reversed by an offsetting correction entry in the ledger.
+              This transaction has already been undone by a correction entry.
             </Alert>
           )}
 
@@ -115,34 +118,59 @@ export function ActivityDetail({ activityId, isAccountArchived = false, isAlread
             <div className={classes.timeCard}>
               <div className={classes.timeHeader}>
                 <CalendarCheckIcon size={16} weight="bold" color="var(--mantine-primary-color-filled)" />
-                <span>Effective Date &amp; Time</span>
+                <span>Transaction Date</span>
               </div>
               <div className={classes.timeValue}>{formatDateTime(activity.effectiveAt)}</div>
-              <div className={classes.timeHelp}>The economic value date when funds cleared and changed your balance.</div>
+              <div className={classes.timeHelp}>When this money movement actually took effect on your balance.</div>
             </div>
 
             <div className={classes.timeCard}>
               <div className={classes.timeHeader}>
                 <DatabaseIcon size={16} weight="bold" color="var(--mantine-color-gray-6)" />
-                <span>Recorded Date &amp; Time</span>
+                <span>Recorded In System</span>
               </div>
               <div className={classes.timeValue}>{formatDateTime(activity.recordedAt)}</div>
-              <div className={classes.timeHelp}>The system audit timestamp when this entry was written into the ledger.</div>
+              <div className={classes.timeHelp}>When this entry was saved in the app.</div>
             </div>
           </div>
 
           {/* Time disparity indicator */}
           {activity.recordingMode === 'HISTORICAL_FACT' && (
             <Alert icon={<ClockCounterClockwiseIcon size={18} />} color="blue" variant="light">
-              This transaction was recorded as a historical fact. The effective date is earlier than the system recording timestamp.
+              This transaction was entered with a past date.
             </Alert>
           )}
 
           {/* 4. Ledger Postings Breakdown */}
           <div className={classes.postingsSection}>
-            <span className={classes.sectionTitle}>Double-Entry Postings ({activity.postings.length})</span>
+            <span className={classes.sectionTitle}>Transaction Breakdown ({activity.postings.length})</span>
 
             <div className={classes.postingsList}>
+              {activity.securityPostings?.map((sec) => {
+                const isPositive = !sec.quantityDelta.startsWith('-');
+                return (
+                  <div key={`${sec.instrumentId}-${sec.role}-${sec.quantityDelta}`} className={classes.postingRow}>
+                    <div className={classes.postingInfo}>
+                      <Group gap={6}>
+                        <Badge size="xs" variant="light" color={isPositive ? 'teal' : 'indigo'}>
+                          {getSecurityPostingRoleLabel(sec.role)}
+                        </Badge>
+                        <span className={classes.postingRole}>{sec.currency} Security Ledger</span>
+                      </Group>
+                      <span className={classes.postingMeta}>
+                        Instrument: {sec.instrumentId.slice(0, 8)}... &bull; Account: {sec.accountId.slice(0, 8)}...
+                      </span>
+                    </div>
+
+                    <div
+                      className={`${classes.postingAmount} ${isPositive ? classes.postingAmountPositive : classes.postingAmountNegative}`}>
+                      {isPositive ? '+' : ''}
+                      {sec.quantityDelta} units
+                    </div>
+                  </div>
+                );
+              })}
+
               {activity.postings.map((posting) => {
                 const num = Number.parseFloat(posting.amount);
                 const isPositive = !Number.isNaN(num) && num > 0;
@@ -194,7 +222,7 @@ export function ActivityDetail({ activityId, isAccountArchived = false, isAlread
                 className={classes.actionBtn}
                 leftSection={<ArrowCounterClockwiseIcon size={16} weight="bold" />}
                 onClick={() => ReverseActivityOverlay.open({ activityId: activity.id })}>
-                Reverse Transaction
+                Undo Transaction
               </Button>
             )}
           </div>

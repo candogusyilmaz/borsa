@@ -13,7 +13,7 @@ Last updated: 2026-09-19
 
 ## Accepted implementation baseline
 
-- The accepted baseline through PR-029 includes the identity/session security lifecycle, canonical offline reference catalogue, owner-scoped immutable native-currency cash ledger, cash-statement reconciliation, manual cash fees and interest credits, the governing simplicity standards, Cleanup B pagination simplification, Cleanup C validation/error/trivial-abstraction simplification, Cleanup D redundant model/mapping and fingerprint readability simplification, and the identity authentication-boundary consolidation.
+- The implemented baseline through PR-031 includes the identity/session security lifecycle, canonical offline reference catalogue, owner-scoped immutable native-currency cash ledger, cash-statement reconciliation, manual cash fees and interest credits, same-currency manually funded brokerage trades with deterministic weighted-average positions, portfolio reporting groups with account membership and filtered investment reads, the governing simplicity standards, Cleanup B pagination simplification, Cleanup C validation/error/trivial-abstraction simplification, Cleanup D redundant model/mapping and fingerprint readability simplification, and the identity authentication-boundary consolidation.
 - PR-023 is accepted and committed. Its directness, bounded-list, Spring `Pageable`, `Slice`/`Page`, and evidence-based abstraction rules are authoritative; it changed documentation only and did not change runtime behavior.
 - PR-024 is accepted and committed. Financial accounts are a complete owner-scoped list; ledger activities and reconciliations use Spring `Pageable` with compact project-owned `SliceResponse<T>` results and no ledger cursor infrastructure.
 - PR-025 is accepted and committed. Cleanup B is complete.
@@ -21,6 +21,8 @@ Last updated: 2026-09-19
 - PR-027 is accepted and committed in `4e3108d`. Cleanup D redundant model, mapping, and fingerprint readability simplification is complete.
 - PR-028 is accepted and committed in `ac4d7e7`. Identity authentication-boundary consolidation is complete.
 - PR-029 is accepted and committed in `c01d708`. Manual cash fees and interest credits complete the implemented R3 manual cash-activity set.
+- PR-030 is complete and user-accepted in implementation commit `5a8bc48`. Same-currency manually funded brokerage trades, immutable security facts, deterministic weighted-average position projection, reversal, and owner-scoped trade/position reads are implemented.
+- PR-031 is implemented and verified as a backend-only capability: owners can manage portfolios with atomic account membership and use portfolio membership to filter existing trade and open-position reads.
 
 ## Implemented capabilities
 
@@ -57,9 +59,15 @@ Last updated: 2026-09-19
 - `WEIGHTED_AVERAGE_ECONOMIC_V1` synchronously rebuilds one versioned projection per owner/account/instrument from immutable postings. Buy commission increases basis; sell commission reduces net proceeds and realized economic P&L; allocations retain the documented scale-18 `HALF_EVEN` remainder, and full close resets remaining basis to zero.
 - Backdated trades and generic reasoned activity reversals replay the complete affected position in the same transaction. Owner-scoped trade/activity reads expose cash and security facts; pageable open-position reads omit closed positions while exact detail retains them.
 
+### Portfolio reporting groups
+
+- V7 adds owner-scoped `ledger.portfolio` and `ledger.portfolio_account_membership` tables with active normalized-name uniqueness, composite owner-alignment constraints, membership uniqueness, and cleanup cascades.
+- Portfolio create/list/detail/update/archive uses complete owner-scoped account membership, deterministic response ordering, optimistic versions, stable conflict errors, and atomic replacement. Archived portfolios retain members, and archived accounts remain valid members.
+- Existing trade-history and open-position queries accept `portfolioId` and use membership `EXISTS` predicates, preserving account intersection, pagination, sorting, and single-row results without changing financial facts or projections.
+
 ## Current database
 
-Migration: `V6` (`V1__foundation.sql`, `V2__reference_catalog.sql`, `V3__financial_account_cash_ledger.sql`, `V4__cash_statement_reconciliation.sql`, `V5__manual_cash_fees_and_interest.sql`, `V6__manual_funded_brokerage_trades.sql`).
+Migration: `V7` (`V1__foundation.sql`, `V2__reference_catalog.sql`, `V3__financial_account_cash_ledger.sql`, `V4__cash_statement_reconciliation.sql`, `V5__manual_cash_fees_and_interest.sql`, `V6__manual_funded_brokerage_trades.sql`, `V7__portfolio_reporting_groups.sql`).
 
 Schemas: `identity`, `reference`, `ledger`, `data`, `money`, `analysis`, `asset`, `platform`.
 
@@ -68,7 +76,7 @@ Tables:
 - `identity`: `user_account`, `auth_identity`, `device_session`
 - `platform`: `security_event`, `job`
 - `reference`: `country`, `currency`, `market`, `market_currency`, `instrument`, `instrument_alias`, `market_calendar`
-- `ledger`: `financial_account`, `account_cash_pocket`, `activity`, `money_posting`, `idempotency_record`, `account_balance_projection`, `reconciliation`, `security_posting`, `position_projection`
+- `ledger`: `financial_account`, `account_cash_pocket`, `activity`, `money_posting`, `idempotency_record`, `account_balance_projection`, `reconciliation`, `security_posting`, `position_projection`, `portfolio`, `portfolio_account_membership`
 - Currently empty schemas: `data`, `money`, `analysis`, `asset`
 
 ## Current cross-cutting repository state
@@ -84,12 +92,13 @@ Tables:
 
 - PR-025 through PR-028 are accepted and committed; the governing pagination, validation/error, redundant-model/mapping, fingerprint-readability, and identity authentication-boundary cleanup is complete.
 - PR-029 is accepted and committed in `c01d708`; the implemented R3 manual cash activity, reconciliation, and native-balance boundary is complete.
-- PR-030 completes the backend-only R4 slice for same-currency manually funded brokerage buys/sells, deterministic weighted-average position projection, reversal, and owner-scoped trade/position reads. It is user-accepted, and `CURRENT.md` intentionally remains on PR-030 until a separate next-PR planning action. Portfolio grouping, imports, holdings-only opening positions, tax, income/corporate actions, FX/multi-currency, pending settlement, valuation, and frontend work remain deferred.
+- PR-030 completes the accepted backend-only R4 slice for same-currency manually funded brokerage buys/sells, deterministic weighted-average position projection, reversal, and owner-scoped trade/position reads.
+- PR-031 implements owner-scoped portfolio lifecycle, atomic account membership, and portfolio-filtered trade/position reads. CSV imports, holdings-only opening positions, tax, income/corporate actions, FX/multi-currency, pending settlement, valuation, and frontend work remain deferred.
 
 ## Deferred capabilities
 
 - Statement-line/file import, matching and duplicate detection, pending or settlement states, and provider synchronization.
-- Portfolio grouping and broader investment analytics, imported/provider trades, holdings-only opening positions, lots/tax, multi-currency, FX, rates, prices, observations, and valuation/performance features. The manual funded same-currency trade and weighted-average position slice is implemented in PR-030.
+- Broader investment analytics, imported/provider trades, holdings-only opening positions, lots/tax, multi-currency, FX, rates, prices, observations, and valuation/performance features. Portfolio reporting groups are implemented in PR-031; CSV import and the other broader R4 capabilities remain deferred.
 - Spending, income classification, bills, card and debt workflows, planning/scenarios, households, shared expenses, claims, and settlements.
 - Global reference administration, persistent signing keys, OIDC/recovery/MFA, roles/permissions, cross-site deployment hardening, and account export/deletion.
 - Background execution and commodity async infrastructure until a concrete workload establishes its requirements.
@@ -97,7 +106,7 @@ Tables:
 
 ## Verification state
 
-PR-030 is complete and user-accepted; `CURRENT.md` intentionally remains on PR-030 until a separate next-PR planning action. The final focused PostgreSQL/Testcontainers gate passed 169 tests; the isolated V6 reference schema contract test passed 8 tests. Full Maven `test` and `verify` each passed 408 tests with 0 failures, errors, or skips; Spotless passed across 290 Java files, OpenAPI HTTP/configuration tests passed, and the executable archive was repackaged. Surefire logged a 30-second fork shutdown warning after the suites completed, but both Maven commands returned `BUILD SUCCESS` with no skipped tests. Detailed PR-030 evidence is in its Completion Record; prior accepted verification detail remains in the progress report and earlier Completion Records.
+PR-031 focused domain/migration/service/concurrency/HTTP/OpenAPI gate passed 15 tests with 0 failures, errors, or skips. `spotless:apply` completed, and the final Maven `verify` log reports `BUILD SUCCESS` with 422 tests and 0 failures, errors, or skips; Spotless check and executable repackaging also passed. Surefire logged its 30-second fork shutdown warning after the tests had completed. The V7 fresh-migration and V6-to-V7 preservation tests passed. Detailed PR-031 implementation and verification evidence is in its Completion Record; prior accepted evidence remains in earlier Completion Records and progress checkpoints.
 
 Last updated: 2026-09-19
 
@@ -105,7 +114,7 @@ Last updated: 2026-09-19
 
 - Operating contract and context router: [server/AGENTS.md](../../server/AGENTS.md) (repository router: [AGENTS.md](../../AGENTS.md))
 - Active pointer: [CURRENT.md](CURRENT.md)
-- Current completed scope: [PR-030 - Manual funded brokerage trades and deterministic position projection](PR-030-manual-funded-brokerage-trades.md), complete and user-accepted; retained by the active pointer until a separate next-PR planning action.
-- Last completed scope: [PR-030 - Manual funded brokerage trades and deterministic position projection](PR-030-manual-funded-brokerage-trades.md), completed and user-accepted in this implementation commit.
+- Active pointer remains [PR-031 - Portfolio reporting groups and account-scoped investment views](PR-031-portfolio-reporting-groups.md); its backend implementation and verification are complete.
+- Last completed scope: [PR-031 - Portfolio reporting groups and account-scoped investment views](PR-031-portfolio-reporting-groups.md). The preceding PR-030 slice remains complete and user-accepted in implementation commit `5a8bc48`.
 
 Load only the standards, contracts, design sections, and repository code relevant to the current role and affected behavior.

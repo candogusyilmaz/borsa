@@ -1,4 +1,5 @@
 import { ArrowDownLeftIcon, ArrowsLeftRightIcon, ArrowUpRightIcon, DotsThreeIcon, ReceiptIcon, TrendUpIcon } from '@phosphor-icons/react';
+import { TradeOverlay } from '@/features/investing';
 import type { FinancialAccount } from '../../types';
 import { isCashFundingCapable } from '../../utils/account-formatters';
 import { AccountActionsOverlay } from '../account-actions';
@@ -13,6 +14,7 @@ interface AccountQuickActionsProps {
 
 export function AccountQuickActions({ account, onAccountArchived }: AccountQuickActionsProps) {
   const isHoldings = account.trackingMode === 'HOLDINGS_ONLY';
+  const isBrokerage = account.kind === 'BROKERAGE' && !isHoldings;
   const canCashTransact = !isHoldings && isCashFundingCapable(account.kind) && !account.archived;
 
   return (
@@ -39,27 +41,51 @@ export function AccountQuickActions({ account, onAccountArchived }: AccountQuick
         <span className={classes.btnLabel}>Withdraw</span>
       </button>
 
-      {/* 3. Fee */}
-      <button
-        type="button"
-        className={`${classes.actionBtn} ${classes.feeBtn}`}
-        onClick={() => CashActivityOverlay.open({ accountId: account.id, defaultType: 'CASH_FEE' })}
-        disabled={!canCashTransact}
-        aria-label={canCashTransact ? `Record a fee for ${account.name}` : 'Fees not available for this account'}>
-        <ReceiptIcon size={20} weight="bold" />
-        <span className={classes.btnLabel}>Fee</span>
-      </button>
+      {/* 3. Trade (for Brokerage) or Fee (for Cash) */}
+      {isBrokerage ? (
+        <button
+          type="button"
+          className={`${classes.actionBtn} ${classes.tradeBtn}`}
+          onClick={() => TradeOverlay.open({ defaultAccountId: account.id })}
+          disabled={!canCashTransact}
+          aria-label={canCashTransact ? `Record trade for ${account.name}` : 'Trading not available for this account'}>
+          <TrendUpIcon size={20} weight="bold" />
+          <span className={classes.btnLabel}>Trade</span>
+        </button>
+      ) : (
+        <button
+          type="button"
+          className={`${classes.actionBtn} ${classes.feeBtn}`}
+          onClick={() => CashActivityOverlay.open({ accountId: account.id, defaultType: 'CASH_FEE' })}
+          disabled={!canCashTransact}
+          aria-label={canCashTransact ? `Record a fee for ${account.name}` : 'Fees not available for this account'}>
+          <ReceiptIcon size={20} weight="bold" />
+          <span className={classes.btnLabel}>Fee</span>
+        </button>
+      )}
 
-      {/* 4. Interest */}
-      <button
-        type="button"
-        className={`${classes.actionBtn} ${classes.interestBtn}`}
-        onClick={() => CashActivityOverlay.open({ accountId: account.id, defaultType: 'CASH_INTEREST_CREDIT' })}
-        disabled={!canCashTransact}
-        aria-label={canCashTransact ? `Record interest for ${account.name}` : 'Interest is not available for this account'}>
-        <TrendUpIcon size={20} weight="bold" />
-        <span className={classes.btnLabel}>Interest</span>
-      </button>
+      {/* 4. Interest (for non-brokerage) or Fee (for brokerage) */}
+      {isBrokerage ? (
+        <button
+          type="button"
+          className={`${classes.actionBtn} ${classes.feeBtn}`}
+          onClick={() => CashActivityOverlay.open({ accountId: account.id, defaultType: 'CASH_FEE' })}
+          disabled={!canCashTransact}
+          aria-label={canCashTransact ? `Record a fee for ${account.name}` : 'Fees not available for this account'}>
+          <ReceiptIcon size={20} weight="bold" />
+          <span className={classes.btnLabel}>Fee</span>
+        </button>
+      ) : (
+        <button
+          type="button"
+          className={`${classes.actionBtn} ${classes.interestBtn}`}
+          onClick={() => CashActivityOverlay.open({ accountId: account.id, defaultType: 'CASH_INTEREST_CREDIT' })}
+          disabled={!canCashTransact}
+          aria-label={canCashTransact ? `Record interest for ${account.name}` : 'Interest is not available for this account'}>
+          <TrendUpIcon size={20} weight="bold" />
+          <span className={classes.btnLabel}>Interest</span>
+        </button>
+      )}
 
       {/* 5. Transfer */}
       <button

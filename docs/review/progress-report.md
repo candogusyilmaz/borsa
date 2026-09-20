@@ -48,21 +48,32 @@ Current-state handoff: use [docs/implementation/STATE.md](../implementation/STAT
 | PR-027 — Cleanup D redundant model, mapping, and fingerprint readability | **Complete in accepted commit `4e3108d`** | Transfer/reference redundant surfaces and unused projections are removed; five workflow-specific fingerprints preserve canonical identity; focused PR-027 gate: 99 tests passed; full test suite: 371 tests passed; Maven verify: 371 tests passed; PostgreSQL 17 Testcontainers executed successfully through Docker Desktop; Spotless passed across 261 Java files (198 production, 63 test); git diff --check passed |
 | PR-028 — Identity authentication boundary consolidation | **Complete in accepted commit `ac4d7e7`** | Registration/login/refresh now share one controller and one non-transactional attempt-policy service; logout is colocated with device-session HTTP operations; duplicate credential result/response types and superseded controllers/wrappers are removed while core transaction and session boundaries remain separate |
 | PR-029 — Manual cash fees and interest credits | **Complete in accepted commit `c01d708`** | Cross-stack R3 completion adds V5 checks, signed `FEE`/`INTEREST_CREDIT` postings, current/historical command and reversal behavior, generated OpenAPI/UI actions, V4 reconciliation-adjustment preservation proof, and PostgreSQL/Testcontainers coverage; focused gate passed 93 tests, full Maven `test` and `verify` each passed 382 tests, and Spotless passed |
-| PR-030 — Manual funded brokerage trades and deterministic position projection | **Complete; user accepted** | V6 security facts and position projection, same-currency funded preview/commit, deterministic weighted-average replay, reversal, and owner-scoped reads are implemented; `CURRENT.md` remains on PR-030 until a separate next-PR planning action. Portfolio grouping, imports, holdings-only openings, tax, FX, pending settlement, valuation, and frontend work remain excluded |
+| PR-030 — Manual funded brokerage trades and deterministic position projection | **Complete; user accepted** | V6 security facts and position projection, same-currency funded preview/commit, deterministic weighted-average replay, reversal, and owner-scoped reads are implemented in `5a8bc48`. Imports, holdings-only openings, tax, FX, pending settlement, valuation, and frontend work remain excluded |
+| PR-031 - Portfolio reporting groups and account-scoped investment views | **Implemented and verified** | V7 owner-scoped portfolios, atomic account membership, optimistic lifecycle, safe errors, and portfolio-filtered trade/position reads; CSV import and broader R4 work remain deferred |
 | Backend standardization cleanup                    | **Complete in commit `cf895ac`; preserved through the current baseline** | Controller-only validation, standard JWT validators with lexical compatibility checks, Boot-managed Micrometer W3C tracing, centralized persistence error mapping, typed authenticated principals, application-owned search criteria, and current package/SQL conventions; no public route or response contract changed |
-| Automated backend coverage                         | PR-030 focused gate: 169 tests passed; full Maven `test` and `verify`: 408 tests each | Coverage includes V5-to-V6 preservation, raw PostgreSQL constraints/append-only facts, settlement and replay fixtures, reversal, HTTP/security, cash/position concurrency, existing ledger/reconciliation regressions, OpenAPI, and tracing; PostgreSQL 17 Testcontainers, Spotless (290 Java files), and executable packaging passed with no skipped tests |
+| Automated backend coverage                         | PR-031 focused gate: 15 tests passed; final Maven `verify`: 422 tests passed | V7 fresh and V6-upgrade migrations, raw PostgreSQL constraints, lifecycle and concurrency, HTTP/security, trade/position filters, existing ledger/reconciliation regressions, OpenAPI, and tracing; Spotless passed across 309 Java files with no skipped tests |
 
-Overall status: **PR-030 is complete and user-accepted; `CURRENT.md` remains on this backend-only unit until a separate next-PR planning action. R3's accepted native-currency ledger boundary remains complete, and broader R4 work remains deferred.**
+Overall status: **PR-031's backend portfolio reporting groups and account-scoped investment views are implemented and verified. CSV import and broader R4 work remain deferred; no subsequent PR was activated.**
 
-## Latest implementation checkpoint — PR-030
+## Latest implementation checkpoint — PR-031
 
-Date: 2026-09-19. PR-030 is complete and user-accepted; `CURRENT.md` remains on PR-030 until a separate next-PR planning action.
+Date: 2026-09-19. The backend-only portfolio reporting group capability is implemented and verified.
+
+- V7 adds owner-scoped `ledger.portfolio` and `ledger.portfolio_account_membership`, including active normalized-name uniqueness, composite owner-alignment constraints, duplicate prevention, and cleanup cascades.
+- Authenticated portfolio create/list/detail/update/archive is owner-scoped, supports empty or populated memberships, uses atomic full replacement and optimistic versions, preserves membership on archive, and allows archived accounts to remain members.
+- Existing trade-history and open-position reads accept `portfolioId` through membership `EXISTS` predicates, preserving account intersection, pagination, sort contracts, and row uniqueness without changing financial facts or projections.
+- Focused domain/migration/service/concurrency/HTTP/OpenAPI gate: 15 tests passed. Final Maven `verify`: 422 tests, 0 failures, errors, or skips; Spotless check and executable repackaging passed. Surefire logged a post-exit fork shutdown warning, while Maven reported `BUILD SUCCESS`.
+- [PR-031 Completion Record](../implementation/PR-031-portfolio-reporting-groups.md#completion-record) contains implementation evidence and exact verification. CSV import, valuation, allocation, and frontend work remain deferred.
+
+## Implementation checkpoint — PR-030 (historical)
+
+Date: 2026-09-19. PR-030 is complete and user-accepted in implementation commit `5a8bc48`; PR-031 was the active unimplemented specification at this checkpoint.
 
 - V6 adds append-only, same-currency security postings and one mutable position projection per owner/account/instrument. Synchronous replay implements `WEIGHTED_AVERAGE_ECONOMIC_V1`; trade commits and reasoned reversals reuse the existing cash, policy, idempotency, lock, and transaction flows.
 - The authenticated backend exposes preview/commit, owner-scoped trade/activity details and history, plus pageable open positions and exact position details. No frontend, import, portfolio, valuation, tax, FX, holdings-only, or asynchronous capability entered the change.
 - Request timestamps are normalized to PostgreSQL microsecond precision before hashing/replay. Java settlement and the deferred PostgreSQL gross check both use currency-minor-unit `HALF_EVEN`; arithmetic overflow returns the stable settled-precision problem.
 - Final focused PostgreSQL/Testcontainers gate: 169 tests passed. Full Maven `test` and `verify`: 408 tests each, 0 failures/errors/skips. Spotless passed across 290 Java files. Surefire logged a 30-second fork shutdown warning after each full suite, but the Maven commands returned `BUILD SUCCESS`.
-- The active specification Completion Record holds detailed implementation evidence. No later PR was drafted or activated.
+- PR-030's completed specification holds detailed implementation evidence. PR-031's current implementation is recorded in its Completion Record.
 
 ## Current identity-boundary checkpoint
 
@@ -450,7 +461,7 @@ The 2026-08-07 document harmonization establishes these implementation rules:
 |        R1 | Foundation, identity, auth, sessions and jobs                | Partially complete — PR-019 identity/session security is accepted in `0c6657e`; unused job storage remains only as a reservation, while execution infrastructure and persistent-key/OIDC/recovery work remain deferred |
 |        R2 | Canonical references and deterministic seeds                 | Complete for the accepted PR-020 boundary in `3f45a8c`; administration, imports, observations, and providers remain later capabilities |
 |        R3 | Accounts/ledger/funding/balances — FT-31                     | Complete for the accepted native-currency manual ledger boundary through PR-029 in `c01d708`; later card/debt/FX and imported connectivity remain in their own roadmap capabilities |
-|        R4 | Investing parity, funded trades and imports                  | PR-030 completes the backend-only manual funded buy/sell and deterministic position-projection slice; portfolio grouping, imports, holdings-only openings, tax, FX, income/actions, and settlement remain deferred |
+|        R4 | Investing parity, funded trades and imports                  | PR-030 completes manual funded trades and deterministic position projection; PR-031 completes backend portfolio reporting groups, account membership, and portfolio-filtered trade/position reads; CSV imports, holdings-only openings, tax, FX, income/actions, and settlement remain deferred |
 |        R5 | Observation platform and synthetic universe                  | Not started                                                                                                      |
 |        R6 | Timeline/net worth/investment truth — FT-01/02/11            | Not started                                                                                                      |
 |        R7 | Decision Replay and comparison — FT-06/07/08/09/12           | Not started                                                                                                      |
@@ -487,9 +498,9 @@ These documents are complementary. The master plan is the order of execution; `a
 
 Root [AGENTS.md](../../AGENTS.md) is the automatic agent entry point. It tells compatible coding agents to load the repository coding standard and `docs/implementation/CURRENT.md` before implementation, so normal prompts do not need to repeat those instructions.
 
-## PR-030 handoff
+## PR-030 to PR-031 handoff (historical)
 
-PR-030's implementation, decisions, and exact verification are recorded in [the active specification's Completion Record](../implementation/PR-030-manual-funded-brokerage-trades.md#completion-record). PR-030 is user-accepted, and `CURRENT.md` intentionally remains on it until a separate next-PR planning action; no later PR has been drafted or activated. The deferred R4 capabilities listed above remain outside this implementation unit.
+PR-030's implementation, decisions, and exact verification are recorded in [its Completion Record](../implementation/PR-030-manual-funded-brokerage-trades.md#completion-record). PR-030 is user-accepted in implementation commit `5a8bc48`. [PR-031](../implementation/PR-031-portfolio-reporting-groups.md) has since been implemented and verified as the backend portfolio-reporting capability. The current pointer remains unchanged, no subsequent PR was activated, and CSV import and the other deferred R4 capabilities remain outside this unit.
 
 ## Risks to monitor
 

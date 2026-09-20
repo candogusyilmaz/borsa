@@ -40,11 +40,13 @@ export interface OpeningCorrectionFormValues {
 
 export type ActivityResponse = components['schemas']['ActivityResponse'];
 export type PostingResponse = components['schemas']['PostingResponse'];
+export type SecurityPostingResponse = components['schemas']['SecurityPostingResponse'];
 export type CashActivityRequest = components['schemas']['CashActivityRequest'];
 export type ReversalRequest = components['schemas']['ReversalRequest'];
 export type SliceResponseActivityResponse = components['schemas']['SliceResponseActivityResponse'];
 export type ActivityType = ActivityResponse['activityType'];
 export type PostingRole = PostingResponse['role'];
+export type SecurityPostingRole = SecurityPostingResponse['role'];
 export type RecordingMode = ActivityResponse['recordingMode'];
 export type PolicyDecision = ActivityResponse['policyDecision'];
 export type ManualCashActivityType = Extract<ActivityType, 'CASH_DEPOSIT' | 'CASH_WITHDRAWAL' | 'CASH_FEE' | 'CASH_INTEREST_CREDIT'>;

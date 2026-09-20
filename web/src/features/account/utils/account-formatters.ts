@@ -1,4 +1,13 @@
-import type { AccountKind, ActivityType, NegativeBalancePolicy, PolicyDecision, PostingRole, RecordingMode, TrackingMode } from '../types';
+import type {
+  AccountKind,
+  ActivityType,
+  NegativeBalancePolicy,
+  PolicyDecision,
+  PostingRole,
+  RecordingMode,
+  SecurityPostingRole,
+  TrackingMode
+} from '../types';
 
 export function isLiabilityKind(kind: AccountKind) {
   return kind === 'CREDIT_CARD' || kind === 'LOAN';
@@ -289,21 +298,25 @@ export const POSITIVE_DECIMAL_REGEX = /^(?:0|[1-9]\d*)(?:\.\d+)?$/;
 export function getActivityTypeLabel(type: ActivityType): string {
   switch (type) {
     case 'CASH_DEPOSIT':
-      return 'Cash Deposit';
+      return 'Deposit';
     case 'CASH_WITHDRAWAL':
-      return 'Cash Withdrawal';
+      return 'Withdrawal';
     case 'CASH_FEE':
-      return 'Cash Fee';
+      return 'Fee';
     case 'CASH_INTEREST_CREDIT':
-      return 'Interest Credit';
+      return 'Interest';
     case 'OWNED_TRANSFER':
-      return 'Account Transfer';
+      return 'Transfer';
     case 'OPENING_BALANCE':
-      return 'Opening Balance';
+      return 'Starting Balance';
     case 'REVERSAL':
-      return 'Activity Reversal';
+      return 'Undone Transaction';
     case 'RECONCILIATION_ADJUSTMENT':
-      return 'Statement Adjustment';
+      return 'Balance Adjustment';
+    case 'SECURITY_BUY':
+      return 'Stock Purchase';
+    case 'SECURITY_SELL':
+      return 'Stock Sale';
     default:
       return type;
   }
@@ -312,21 +325,25 @@ export function getActivityTypeLabel(type: ActivityType): string {
 export function getActivityTypeDescription(type: ActivityType): string {
   switch (type) {
     case 'CASH_DEPOSIT':
-      return 'Funds deposited into this financial account.';
+      return 'Money deposited into this account.';
     case 'CASH_WITHDRAWAL':
-      return 'Funds withdrawn from this financial account.';
+      return 'Money withdrawn from this account.';
     case 'CASH_FEE':
-      return 'A fee charged against this financial account.';
+      return 'A fee charged to this account.';
     case 'CASH_INTEREST_CREDIT':
-      return 'Interest credited to this financial account.';
+      return 'Interest earned on this account.';
     case 'OWNED_TRANSFER':
-      return 'Money transferred between your own accounts.';
+      return 'Money moved between your accounts.';
     case 'OPENING_BALANCE':
-      return 'Initial balance recorded at account opening.';
+      return 'Starting balance when account was created.';
     case 'REVERSAL':
-      return 'Offsetting transaction reversing a previous activity.';
+      return 'Cancellation undoing a previous transaction.';
     case 'RECONCILIATION_ADJUSTMENT':
-      return 'Correction adjusting ledger to match external bank statement.';
+      return 'Correction adjusting your balance to match your statement.';
+    case 'SECURITY_BUY':
+      return 'Purchase of shares or fund units.';
+    case 'SECURITY_SELL':
+      return 'Sale of shares or fund units.';
     default:
       return '';
   }
@@ -350,6 +367,10 @@ export function getActivityTypeBadgeColor(type: ActivityType): string {
       return 'violet';
     case 'RECONCILIATION_ADJUSTMENT':
       return 'cyan';
+    case 'SECURITY_BUY':
+      return 'teal';
+    case 'SECURITY_SELL':
+      return 'indigo';
     default:
       return 'gray';
   }
@@ -364,17 +385,34 @@ export function getPostingRoleLabel(role: PostingRole): string {
     case 'FEE':
       return 'Fee';
     case 'INTEREST_CREDIT':
-      return 'Interest Credit';
+      return 'Interest';
     case 'TRANSFER_SOURCE':
-      return 'Outgoing Transfer Leg';
+      return 'Transfer Out';
     case 'TRANSFER_DESTINATION':
-      return 'Incoming Transfer Leg';
+      return 'Transfer In';
     case 'OPENING':
-      return 'Opening Balance';
+      return 'Starting Balance';
     case 'REVERSAL':
-      return 'Reversal Offset';
+      return 'Undone Transaction';
     case 'ADJUSTMENT':
-      return 'Reconciliation Adjustment';
+      return 'Balance Adjustment';
+    case 'TRADE_PURCHASE':
+      return 'Stock Purchase';
+    case 'TRADE_PROCEEDS':
+      return 'Sale Proceeds';
+    default:
+      return role;
+  }
+}
+
+export function getSecurityPostingRoleLabel(role: SecurityPostingRole): string {
+  switch (role) {
+    case 'BUY':
+      return 'Shares Bought';
+    case 'SELL':
+      return 'Shares Sold';
+    case 'REVERSAL':
+      return 'Shares Undone';
     default:
       return role;
   }
@@ -383,11 +421,11 @@ export function getPostingRoleLabel(role: PostingRole): string {
 export function getPolicyDecisionLabel(decision: PolicyDecision): string {
   switch (decision) {
     case 'ALLOWED':
-      return 'Approved within Limit';
+      return 'Approved';
     case 'CONFIRMED_BREACH':
-      return 'Overdraft Confirmed';
+      return 'Negative Balance Allowed';
     case 'HISTORICAL_BREACH_RECORDED':
-      return 'Historical Overdraft';
+      return 'Past Negative Balance';
     case 'NOT_APPLICABLE':
       return 'Standard';
     default:
@@ -410,9 +448,9 @@ export function getPolicyDecisionBadgeColor(decision: PolicyDecision): string {
 export function getRecordingModeLabel(mode: RecordingMode): string {
   switch (mode) {
     case 'CURRENT_ACTION':
-      return 'Live Real-time Entry';
+      return 'Right Now (Live)';
     case 'HISTORICAL_FACT':
-      return 'Past / Historical Fact';
+      return 'Past Date';
     default:
       return mode;
   }

@@ -1,5 +1,5 @@
 import { Avatar, Badge, Button, UnstyledButton } from '@mantine/core';
-import { BankIcon, DevicesIcon, HouseIcon, StackIcon, UserIcon } from '@phosphor-icons/react';
+import { BankIcon, HouseIcon, StackIcon, TrendUpIcon, UserIcon } from '@phosphor-icons/react';
 import { Link, useLocation } from '@tanstack/react-router';
 import { type MouseEvent, type ReactNode, useMemo, useRef, useState } from 'react';
 import { $api } from '@/api/client';
@@ -31,6 +31,9 @@ export function AppShell({ children, user }: AppShellProps) {
     if (pathname === '/app/accounts' || pathname.startsWith('/app/accounts/')) {
       return 'accounts';
     }
+    if (pathname === '/app/investing' || pathname.startsWith('/app/investing/')) {
+      return 'investing';
+    }
     if (pathname === '/app/instruments' || pathname.startsWith('/app/instruments/')) {
       return 'instruments';
     }
@@ -58,19 +61,10 @@ export function AppShell({ children, user }: AppShellProps) {
         icon: ({ active }) => <BankIcon size={22} weight={active ? 'fill' : 'bold'} />
       },
       {
-        id: 'sessions',
-        label: 'Sessions',
-        to: '/app/sessions',
-        icon: ({ active }) => <DevicesIcon size={22} weight={active ? 'fill' : 'bold'} />,
-        badge:
-          activeSessionsCount !== undefined && activeSessionsCount > 0
-            ? {
-                content: activeSessionsCount,
-                ariaLabel: `${activeSessionsCount} active session${activeSessionsCount === 1 ? '' : 's'}`,
-                color: 'teal',
-                maxValue: 99
-              }
-            : undefined
+        id: 'investing',
+        label: 'Investing',
+        to: '/app/investing',
+        icon: ({ active }) => <TrendUpIcon size={22} weight={active ? 'fill' : 'bold'} />
       },
       {
         id: 'menu',
@@ -80,7 +74,7 @@ export function AppShell({ children, user }: AppShellProps) {
         ariaLabel: 'Open account and settings menu'
       }
     ],
-    [activeSessionsCount]
+    []
   );
 
   function toggleAccountMenu() {
@@ -142,6 +136,15 @@ export function AppShell({ children, user }: AppShellProps) {
               size="sm"
               leftSection={<BankIcon size={16} weight="bold" />}>
               Accounts
+            </Button>
+            <Button
+              component={Link}
+              to="/app/investing"
+              activeOptions={{ exact: true }}
+              variant="subtle"
+              size="sm"
+              leftSection={<TrendUpIcon size={16} weight="bold" />}>
+              Investing
             </Button>
             <Button
               component={Link}

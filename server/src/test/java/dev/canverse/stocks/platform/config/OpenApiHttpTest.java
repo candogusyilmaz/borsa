@@ -41,13 +41,27 @@ class OpenApiHttpTest {
         assertThat(paths.containsKey("/api/v1/reference/instruments")).isTrue();
         var pathNames = paths.keySet().stream().map(Object::toString).toList();
         assertThat(pathNames).contains("/api/v1/trades", "/api/v1/trades/previews", "/api/v1/trades/{activityId}", "/api/v1/investing/positions",
-                "/api/v1/investing/positions/{accountId}/{instrumentId}");
+                "/api/v1/investing/positions/{accountId}/{instrumentId}", "/api/v1/portfolios", "/api/v1/portfolios/{portfolioId}",
+                "/api/v1/portfolios/{portfolioId}/archive");
         assertThat(paths.keySet().stream().allMatch(path -> path.toString().startsWith("/api/v1/"))).isTrue();
 
         var schemas = document.<Map<?, ?>>read("$.components.schemas");
         var schemaNames = schemas.keySet().stream().map(Object::toString).toList();
         assertThat(schemaNames).contains("TradeCommitRequest", "TradePreviewRequest", "TradePreviewResponse", "TradeResponse", "TradeSummaryResponse",
-                "SecurityPostingResponse", "PositionResponse", "PostingResponse", "ActivityResponse");
+                "SecurityPostingResponse", "PositionResponse", "PostingResponse", "ActivityResponse", "CreatePortfolioRequest", "UpdatePortfolioRequest",
+                "ArchivePortfolioRequest", "PortfolioSummaryResponse", "PortfolioResponse", "PortfolioAccountResponse");
+        assertRequiredProperties(schemas, "CreatePortfolioRequest", "name", "accountIds");
+        assertRequiredProperties(schemas, "UpdatePortfolioRequest", "name", "accountIds", "version");
+        assertRequiredProperties(schemas, "ArchivePortfolioRequest", "version");
+        assertRequiredProperties(schemas, "PortfolioSummaryResponse", "id", "name", "accountCount", "archived", "version", "createdAt", "updatedAt");
+        assertRequiredProperties(schemas, "PortfolioResponse", "id", "name", "accountCount", "archived", "version", "createdAt", "updatedAt", "accounts");
+        assertRequiredProperties(schemas, "PortfolioAccountResponse", "id", "name", "kind", "trackingMode", "currency", "archived");
+        assertThat(((Map<?, ?>) properties(schemas, "PortfolioSummaryResponse").get("archivedAt")).get("nullable")).isEqualTo(true);
+        assertThat(((Map<?, ?>) properties(schemas, "PortfolioResponse").get("archivedAt")).get("nullable")).isEqualTo(true);
+        assertThat(((Map<?, ?>) properties(schemas, "PortfolioAccountResponse").get("archivedAt")).get("nullable")).isEqualTo(true);
+        assertThat(requiredProperties(schemas, "PortfolioSummaryResponse")).doesNotContain("archivedAt");
+        assertThat(requiredProperties(schemas, "PortfolioResponse")).doesNotContain("archivedAt");
+        assertThat(requiredProperties(schemas, "PortfolioAccountResponse")).doesNotContain("archivedAt");
         assertThat(requiredProperties(schemas, "TradeCommitRequest"))
                 .containsAll(List.of("clientRequestId", "accountId", "instrumentId", "side", "quantity", "unitPrice", "commissionAmount", "recordingMode",
                         "effectiveAt", "economicSequence", "confirmPolicyBreach", "expectedCashBalanceVersion", "expectedPositionVersion"));
@@ -83,6 +97,9 @@ class OpenApiHttpTest {
             assertThat(required).isInstanceOf(List.class);
             assertThat(((List<?>) required).containsAll(List.of("items", "page", "size", "hasNext"))).isTrue();
         }
+
+        assertThat(parameterNames(paths, "/api/v1/trades", "get")).contains("portfolioId");
+        assertThat(parameterNames(paths, "/api/v1/investing/positions", "get")).contains("portfolioId");
     }
 
     private static List<String> requiredProperties(Map<?, ?> schemas, String schemaName) {
@@ -95,5 +112,11 @@ class OpenApiHttpTest {
 
     private static Map<?, ?> properties(Map<?, ?> schemas, String schemaName) {
         return (Map<?, ?>) ((Map<?, ?>) schemas.get(schemaName)).get("properties");
+    }
+
+    private static List<String> parameterNames(Map<?, ?> paths, String path, String method) {
+        var pathItem = (Map<?, ?>) paths.get(path);
+        var operation = (Map<?, ?>) pathItem.get(method);
+        return ((List<?>) operation.get("parameters")).stream().map(parameter -> ((Map<?, ?>) parameter).get("name").toString()).toList();
     }
 }

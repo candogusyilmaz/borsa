@@ -30,9 +30,10 @@ public class PositionController {
 
     @GetMapping
     public ResponseEntity<SliceResponse<PositionResponse>> list(@AuthenticationPrincipal AuthenticatedIdentity identity,
-            @RequestParam(required = false) UUID accountId,
+            @RequestParam(required = false) UUID accountId, @RequestParam(required = false) UUID portfolioId,
             @PageableDefault(size = DEFAULT_LIMIT, sort = "accountName", direction = Sort.Direction.ASC) Pageable pageable) {
-        return new ResponseEntity<>(queryService.listOpenPositions(identity.userAccountId(), accountId, pageable), CacheHeaders.noStore(), HttpStatus.OK);
+        return new ResponseEntity<>(queryService.listOpenPositions(identity.userAccountId(), accountId, portfolioId, pageable), CacheHeaders.noStore(),
+                HttpStatus.OK);
     }
 
     @GetMapping("/{accountId}/{instrumentId}")

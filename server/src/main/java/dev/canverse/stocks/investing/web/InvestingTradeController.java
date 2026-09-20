@@ -59,9 +59,9 @@ public class InvestingTradeController {
 
     @GetMapping
     public ResponseEntity<SliceResponse<TradeSummaryResponse>> list(@AuthenticationPrincipal AuthenticatedIdentity identity,
-            @RequestParam(required = false) UUID accountId, @RequestParam(required = false) UUID instrumentId,
+            @RequestParam(required = false) UUID accountId, @RequestParam(required = false) UUID instrumentId, @RequestParam(required = false) UUID portfolioId,
             @PageableDefault(size = DEFAULT_LIMIT, sort = "effectiveAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return new ResponseEntity<>(queryService.listTrades(identity.userAccountId(), accountId, instrumentId, pageable), CacheHeaders.noStore(),
+        return new ResponseEntity<>(queryService.listTrades(identity.userAccountId(), accountId, instrumentId, portfolioId, pageable), CacheHeaders.noStore(),
                 HttpStatus.OK);
     }
 }

@@ -1,5 +1,5 @@
 import { Avatar, Badge, Button, Divider, Group, Stack, Text } from '@mantine/core';
-import { BankIcon, BookOpenIcon, DevicesIcon, SignOutIcon, StackIcon } from '@phosphor-icons/react';
+import { BankIcon, BookOpenIcon, DevicesIcon, SignOutIcon, StackIcon, TrendUpIcon } from '@phosphor-icons/react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { $api } from '@/api/client';
@@ -82,6 +82,17 @@ function AccountMenu({ activeSessionsCount }: AccountMenuOverlayProps) {
         leftSection={<BankIcon size={18} weight="bold" />}
         onClick={() => current.close('navigation')}>
         Financial Accounts
+      </Button>
+
+      <Button
+        component={Link}
+        to="/app/investing"
+        variant="default"
+        size="md"
+        fullWidth
+        leftSection={<TrendUpIcon size={18} weight="bold" />}
+        onClick={() => current.close('navigation')}>
+        Investing &amp; Positions
       </Button>
 
       <Button

@@ -1,6 +1,6 @@
 # PR-030 - Manual funded brokerage trades and deterministic position projection
 
-Status: **ACTIVE**
+Status: **COMPLETE**
 
 ## Goal
 

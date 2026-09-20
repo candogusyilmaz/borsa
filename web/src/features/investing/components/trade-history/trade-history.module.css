@@ -1,0 +1,88 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.filterBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.tradesList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tradeCard {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--app-surface-secondary);
+  border: 1px solid var(--app-border-subtle);
+  border-radius: var(--mantine-radius-md);
+  cursor: pointer;
+  text-align: left;
+  gap: 0.75rem;
+  touch-action: manipulation;
+  transition:
+    background-color var(--app-motion-fast) var(--app-ease),
+    border-color var(--app-motion-normal) var(--app-ease),
+    box-shadow var(--app-motion-normal) var(--app-ease);
+}
+
+.tradeCard:hover {
+  background-color: var(--mantine-color-default-hover);
+  border-color: var(--app-border-strong);
+}
+
+.tradeCard:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: -2px;
+}
+
+.leftCol {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.rightCol {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.125rem;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2.5rem 1rem;
+  gap: 1rem;
+  background-color: var(--app-surface-secondary);
+  border: 1px dashed var(--app-border-subtle);
+  border-radius: var(--mantine-radius-md);
+}
+
+.emptyIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: rgb(22 133 91 / 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mantine-color-teal-6);
+}
+

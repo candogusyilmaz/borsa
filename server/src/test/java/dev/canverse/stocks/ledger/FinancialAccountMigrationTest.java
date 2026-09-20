@@ -32,7 +32,7 @@ class FinancialAccountMigrationTest {
     private static final UUID MANUAL_MARKET_ID = UUID.fromString("10000000-0000-0000-0000-000000000002");
 
     private static final Set<String> LEDGER_TABLES = Set.of("account_balance_projection", "account_cash_pocket", "activity", "financial_account",
-            "idempotency_record", "money_posting", "position_projection", "reconciliation", "security_posting");
+            "idempotency_record", "money_posting", "position_projection", "portfolio", "portfolio_account_membership", "reconciliation", "security_posting");
 
     private static final Set<String> LEDGER_CONSTRAINTS = Set.of("ck_ledger_account_balance_projection_version_non_negative",
             "ck_ledger_account_cash_pocket_coverage_status", "ck_ledger_account_cash_pocket_version_non_negative", "ck_ledger_activity_command_sequence",
@@ -49,7 +49,8 @@ class FinancialAccountMigrationTest {
             "ck_ledger_reconciliation_resolution_shape", "ck_ledger_reconciliation_source_kind", "ck_ledger_reconciliation_statement_reference",
             "ck_ledger_reconciliation_time_order", "ck_ledger_position_projection_basis_non_negative", "ck_ledger_position_projection_calculation_policy",
             "ck_ledger_position_projection_close_basis", "ck_ledger_position_projection_quantity_non_negative", "ck_ledger_position_projection_stale_shape",
-            "ck_ledger_position_projection_status", "ck_ledger_position_projection_version_non_negative", "ck_ledger_security_posting_economic_sequence",
+            "ck_ledger_position_projection_status", "ck_ledger_position_projection_version_non_negative", "ck_ledger_portfolio_name",
+            "ck_ledger_portfolio_name_normalized", "ck_ledger_portfolio_version_non_negative", "ck_ledger_security_posting_economic_sequence",
             "ck_ledger_security_posting_role", "ck_ledger_security_posting_shape", "fk_ledger_account_balance_projection_account",
             "fk_ledger_account_balance_projection_account_currency", "fk_ledger_account_balance_projection_owner",
             "fk_ledger_account_balance_projection_pocket", "fk_ledger_account_balance_projection_pocket_identity",
@@ -61,28 +62,31 @@ class FinancialAccountMigrationTest {
             "fk_ledger_money_posting_pocket", "fk_ledger_money_posting_pocket_identity", "fk_ledger_reconciliation_account_currency",
             "fk_ledger_reconciliation_account_owner", "fk_ledger_reconciliation_adjustment_activity", "fk_ledger_reconciliation_owner",
             "fk_ledger_reconciliation_pocket_identity", "fk_ledger_reconciliation_supersedes", "fk_ledger_money_posting_reverses",
-            "fk_ledger_position_projection_account", "fk_ledger_position_projection_account_currency", "fk_ledger_position_projection_currency",
-            "fk_ledger_position_projection_instrument", "fk_ledger_position_projection_instrument_currency", "fk_ledger_position_projection_owner",
-            "fk_ledger_position_projection_watermark_activity", "fk_ledger_security_posting_account", "fk_ledger_security_posting_account_currency",
-            "fk_ledger_security_posting_activity", "fk_ledger_security_posting_currency", "fk_ledger_security_posting_instrument",
-            "fk_ledger_security_posting_instrument_currency", "fk_ledger_security_posting_owner", "fk_ledger_security_posting_reverses",
-            "pk_ledger_account_balance_projection", "pk_ledger_account_cash_pocket", "pk_ledger_activity", "pk_ledger_financial_account",
-            "pk_ledger_idempotency_record", "pk_ledger_money_posting", "pk_ledger_reconciliation", "pk_ledger_position_projection",
-            "pk_ledger_security_posting", "uq_ledger_account_balance_projection_pocket", "uq_ledger_account_cash_pocket_account_currency",
-            "uq_ledger_account_cash_pocket_identity", "uq_ledger_account_cash_pocket_owner_id", "uq_ledger_activity_operation", "uq_ledger_activity_owner_id",
-            "uq_ledger_activity_owner_id_type", "uq_ledger_activity_reversal", "uq_ledger_financial_account_id_currency",
-            "uq_ledger_financial_account_owner_id", "uq_ledger_idempotency_owner_scope_request", "uq_ledger_reconciliation_adjustment_activity",
-            "uq_ledger_reconciliation_owner_account_id", "uq_ledger_reconciliation_owner_id", "uq_ledger_reconciliation_supersedes",
-            "uq_ledger_money_posting_owner_id", "uq_ledger_position_projection_owner_account_instrument", "uq_ledger_security_posting_owner_id",
-            "uq_ledger_security_posting_owner_activity", "uq_ledger_security_posting_reversal", "trg_ledger_trade_activity_shape",
-            "trg_ledger_trade_money_posting_shape", "trg_ledger_trade_security_posting_shape");
+            "fk_ledger_portfolio_account_membership_account", "fk_ledger_portfolio_account_membership_owner",
+            "fk_ledger_portfolio_account_membership_portfolio", "fk_ledger_portfolio_owner", "fk_ledger_position_projection_account",
+            "fk_ledger_position_projection_account_currency", "fk_ledger_position_projection_currency", "fk_ledger_position_projection_instrument",
+            "fk_ledger_position_projection_instrument_currency", "fk_ledger_position_projection_owner", "fk_ledger_position_projection_watermark_activity",
+            "fk_ledger_security_posting_account", "fk_ledger_security_posting_account_currency", "fk_ledger_security_posting_activity",
+            "fk_ledger_security_posting_currency", "fk_ledger_security_posting_instrument", "fk_ledger_security_posting_instrument_currency",
+            "fk_ledger_security_posting_owner", "fk_ledger_security_posting_reverses", "pk_ledger_account_balance_projection", "pk_ledger_account_cash_pocket",
+            "pk_ledger_activity", "pk_ledger_financial_account", "pk_ledger_idempotency_record", "pk_ledger_money_posting", "pk_ledger_reconciliation",
+            "pk_ledger_position_projection", "pk_ledger_portfolio", "pk_ledger_portfolio_account_membership", "pk_ledger_security_posting",
+            "uq_ledger_account_balance_projection_pocket", "uq_ledger_account_cash_pocket_account_currency", "uq_ledger_account_cash_pocket_identity",
+            "uq_ledger_account_cash_pocket_owner_id", "uq_ledger_activity_operation", "uq_ledger_activity_owner_id", "uq_ledger_activity_owner_id_type",
+            "uq_ledger_activity_reversal", "uq_ledger_financial_account_id_currency", "uq_ledger_financial_account_owner_id",
+            "uq_ledger_idempotency_owner_scope_request", "uq_ledger_reconciliation_adjustment_activity", "uq_ledger_portfolio_owner_id",
+            "uq_ledger_portfolio_account_membership", "uq_ledger_reconciliation_owner_account_id", "uq_ledger_reconciliation_owner_id",
+            "uq_ledger_reconciliation_supersedes", "uq_ledger_money_posting_owner_id", "uq_ledger_position_projection_owner_account_instrument",
+            "uq_ledger_security_posting_owner_id", "uq_ledger_security_posting_owner_activity", "uq_ledger_security_posting_reversal",
+            "trg_ledger_trade_activity_shape", "trg_ledger_trade_money_posting_shape", "trg_ledger_trade_security_posting_shape");
 
     private static final Set<String> LEDGER_INDEXES = Set.of("ix_ledger_account_balance_projection_owner_account",
             "ix_ledger_account_cash_pocket_owner_account", "ix_ledger_activity_owner_effective", "ix_ledger_activity_owner_recorded",
             "ix_ledger_financial_account_owner_name", "ix_ledger_money_posting_account", "ix_ledger_money_posting_activity",
             "uix_ledger_financial_account_active_name", "ix_ledger_reconciliation_owner_account_closing", "uix_ledger_money_posting_activity_trade_role",
             "uix_ledger_security_posting_economic_key", "ix_ledger_security_posting_owner_account_instrument_order",
-            "ix_ledger_position_projection_owner_account_open");
+            "ix_ledger_position_projection_owner_account_open", "uix_ledger_portfolio_active_name", "ix_ledger_portfolio_owner_name",
+            "ix_ledger_portfolio_account_membership_account");
 
     @Container
     @ServiceConnection
@@ -98,8 +102,8 @@ class FinancialAccountMigrationTest {
     PlatformTransactionManager transactionManager;
 
     @Test
-    void v6AddsFundedTradesAndPositionProjectionToTheExistingLedger() {
-        assertThat(flyway.info().applied()).extracting(migration -> migration.getVersion().toString()).containsExactly("1", "2", "3", "4", "5", "6");
+    void v7AddsReportingGroupsToTheExistingLedger() {
+        assertThat(flyway.info().applied()).extracting(migration -> migration.getVersion().toString()).containsExactly("1", "2", "3", "4", "5", "6", "7");
 
         var tables = Set.copyOf(jdbcTemplate.queryForList("SELECT table_name FROM information_schema.tables WHERE table_schema = 'ledger'", String.class));
         assertThat(tables).isEqualTo(LEDGER_TABLES);
@@ -128,7 +132,7 @@ class FinancialAccountMigrationTest {
     }
 
     @Test
-    void noExcludedLaterLedgerStructuresWereAddedToV6() {
+    void noExcludedLaterLedgerStructuresWereAddedAlongsidePortfolioTables() {
         var forbidden = jdbcTemplate.queryForList("SELECT table_name FROM information_schema.tables WHERE table_schema = 'ledger'" +
                 " AND table_name IN ('activity_split', 'import_batch'," + " 'spending_entry', 'investment_position', 'household_member', 'observation', 'job')",
                 String.class);
@@ -475,7 +479,7 @@ class FinancialAccountMigrationTest {
 
             var latest = Flyway.configure().dataSource(targetUrl, postgres.getUsername(), postgres.getPassword()).locations("classpath:db/migration").load();
             latest.migrate();
-            assertThat(latest.info().applied()).extracting(migration -> migration.getVersion().toString()).containsExactly("1", "2", "3", "4", "5", "6");
+            assertThat(latest.info().applied()).extracting(migration -> migration.getVersion().toString()).containsExactly("1", "2", "3", "4", "5", "6", "7");
             assertThat(v3Jdbc.queryForObject("SELECT COUNT(*) FROM ledger.financial_account WHERE id = ?", Integer.class, accountId)).isEqualTo(1);
             assertThat(v3Jdbc.queryForObject("SELECT COUNT(*) FROM ledger.activity WHERE id = ?", Integer.class, activityId)).isEqualTo(1);
             assertThat(v3Jdbc.queryForObject("SELECT COUNT(*) FROM ledger.reconciliation WHERE id IN (?, ?)", Integer.class, balancedReconciliationId,

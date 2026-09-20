@@ -1,6 +1,7 @@
 import { Alert, Badge, Button, Divider, Group, Loader, Stack, Text } from '@mantine/core';
-import { GlobeHemisphereWestIcon, PencilSimpleIcon, StackIcon, UserIcon, WarningCircleIcon } from '@phosphor-icons/react';
+import { GlobeHemisphereWestIcon, PencilSimpleIcon, StackIcon, TrendUpIcon, UserIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { $api } from '@/api/client';
+import { TradeOverlay } from '@/features/investing';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
 import { formatDateTime } from '../../account/utils/account-formatters';
 import {
@@ -222,6 +223,20 @@ export function InstrumentDetailView({ instrumentId, onBack, onEdit }: Instrumen
           <Button variant="default" size="md" className={classes.actionBtn} onClick={handleBack}>
             Back
           </Button>
+
+          {(instrument.instrumentType === 'EQUITY' || instrument.instrumentType === 'ETF') && (
+            <Button
+              color="teal"
+              size="md"
+              className={classes.actionBtn}
+              leftSection={<TrendUpIcon size={16} weight="bold" />}
+              onClick={() => {
+                handleBack();
+                TradeOverlay.open({ defaultInstrumentId: instrument.id });
+              }}>
+              Trade
+            </Button>
+          )}
 
           {isManual && (
             <Button

@@ -100,6 +100,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/trades": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list"];
+        put?: never;
+        post: operations["commit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/trades/previews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["preview_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reference/instruments": {
         parameters: {
             query?: never;
@@ -219,7 +251,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list"];
+        get: operations["list_1"];
         put?: never;
         post: operations["create_1"];
         delete?: never;
@@ -235,9 +267,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_1"];
+        get: operations["list_2"];
         put?: never;
-        post: operations["commit"];
+        post: operations["commit_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -253,7 +285,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["preview_1"];
+        post: operations["preview_2"];
         delete?: never;
         options?: never;
         head?: never;
@@ -286,6 +318,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["record"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/trades/{activityId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_2"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -388,6 +436,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/investing/positions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_3"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/investing/positions/{accountId}/{instrumentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_3"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/sessions": {
         parameters: {
             query?: never;
@@ -427,7 +507,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_2"];
+        get: operations["list_4"];
         put?: never;
         post?: never;
         delete?: never;
@@ -443,7 +523,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["get_2"];
+        get: operations["get_4"];
         put?: never;
         post?: never;
         delete?: never;
@@ -596,7 +676,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            activityType: "OPENING_BALANCE" | "CASH_DEPOSIT" | "CASH_WITHDRAWAL" | "CASH_FEE" | "CASH_INTEREST_CREDIT" | "OWNED_TRANSFER" | "REVERSAL" | "RECONCILIATION_ADJUSTMENT";
+            activityType: "OPENING_BALANCE" | "CASH_DEPOSIT" | "CASH_WITHDRAWAL" | "CASH_FEE" | "CASH_INTEREST_CREDIT" | "OWNED_TRANSFER" | "SECURITY_BUY" | "SECURITY_SELL" | "REVERSAL" | "RECONCILIATION_ADJUSTMENT";
             /** @enum {string} */
             recordingMode: "CURRENT_ACTION" | "HISTORICAL_FACT";
             /** Format: date-time */
@@ -611,6 +691,7 @@ export interface components {
             /** Format: uuid */
             supersedesActivityId?: string;
             postings: components["schemas"]["PostingResponse"][];
+            securityPostings: components["schemas"]["SecurityPostingResponse"][];
         };
         PostingResponse: {
             /** Format: uuid */
@@ -620,7 +701,25 @@ export interface components {
             currency: string;
             amount: string;
             /** @enum {string} */
-            role: "OPENING" | "DEPOSIT" | "WITHDRAWAL" | "FEE" | "INTEREST_CREDIT" | "TRANSFER_SOURCE" | "TRANSFER_DESTINATION" | "REVERSAL" | "ADJUSTMENT";
+            role: "OPENING" | "DEPOSIT" | "WITHDRAWAL" | "FEE" | "INTEREST_CREDIT" | "TRANSFER_SOURCE" | "TRANSFER_DESTINATION" | "TRADE_PURCHASE" | "TRADE_PROCEEDS" | "REVERSAL" | "ADJUSTMENT";
+        };
+        SecurityPostingResponse: {
+            /** Format: uuid */
+            accountId: string;
+            /** Format: uuid */
+            instrumentId: string;
+            currency: string;
+            quantityDelta: string;
+            unitPrice?: string;
+            grossAmount?: string;
+            /** @enum {string} */
+            role: "BUY" | "SELL" | "REVERSAL";
+            /** Format: date-time */
+            effectiveAt: string;
+            /** Format: int64 */
+            economicSequence: number;
+            /** Format: uuid */
+            reversesSecurityPostingId?: string;
         };
         TransferPreviewRequest: {
             /** Format: uuid */
@@ -654,6 +753,130 @@ export interface components {
             /** Format: int64 */
             destinationVersion?: number;
             allowed?: boolean;
+        };
+        TradeCommitRequest: {
+            /** Format: uuid */
+            clientRequestId: string;
+            /** Format: uuid */
+            accountId: string;
+            /** Format: uuid */
+            instrumentId: string;
+            /** @enum {string} */
+            side: "BUY" | "SELL";
+            quantity: string;
+            unitPrice: string;
+            commissionAmount: string;
+            /** @enum {string} */
+            recordingMode: "CURRENT_ACTION" | "HISTORICAL_FACT";
+            /** Format: date-time */
+            effectiveAt: string;
+            /** Format: int64 */
+            economicSequence: number;
+            confirmPolicyBreach: boolean;
+            /** Format: int64 */
+            expectedCashBalanceVersion: number;
+            /** Format: int64 */
+            expectedPositionVersion: number;
+        };
+        TradeResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            accountId: string;
+            accountName: string;
+            /** Format: uuid */
+            instrumentId: string;
+            instrumentSymbol: string;
+            instrumentName: string;
+            /** @enum {string} */
+            instrumentType: "EQUITY" | "ETF" | "FUND" | "INDEX" | "BOND" | "CRYPTO" | "COMMODITY" | "CURRENCY" | "CASH_EQUIVALENT" | "OTHER";
+            currency: string;
+            /** @enum {string} */
+            side: "BUY" | "SELL";
+            quantity: string;
+            unitPrice: string;
+            grossAmount: string;
+            commissionAmount: string;
+            cashDelta: string;
+            quantityDelta: string;
+            /** Format: date-time */
+            effectiveAt: string;
+            /** Format: date-time */
+            recordedAt: string;
+            /** Format: int64 */
+            economicSequence: number;
+            /** @enum {string} */
+            recordingMode: "CURRENT_ACTION" | "HISTORICAL_FACT";
+            /** @enum {string} */
+            policyDecision: "NOT_APPLICABLE" | "ALLOWED" | "CONFIRMED_BREACH" | "HISTORICAL_BREACH_RECORDED";
+            sourceKind: string;
+            /** @enum {string} */
+            calculationPolicy: "WEIGHTED_AVERAGE_ECONOMIC_V1";
+            cashPostings: components["schemas"]["PostingResponse"][];
+            securityPosting: components["schemas"]["SecurityPostingResponse"];
+            /** Format: uuid */
+            reversalActivityId?: string;
+            reversalReason?: string;
+            /** Format: date-time */
+            reversedAt?: string;
+        };
+        TradePreviewRequest: {
+            /** Format: uuid */
+            accountId: string;
+            /** Format: uuid */
+            instrumentId: string;
+            /** @enum {string} */
+            side: "BUY" | "SELL";
+            quantity: string;
+            unitPrice: string;
+            commissionAmount: string;
+            /** @enum {string} */
+            recordingMode: "CURRENT_ACTION" | "HISTORICAL_FACT";
+            /** Format: date-time */
+            effectiveAt: string;
+            /** Format: int64 */
+            economicSequence: number;
+            confirmPolicyBreach: boolean;
+        };
+        TradePreviewResponse: {
+            /** Format: uuid */
+            accountId: string;
+            /** Format: uuid */
+            instrumentId: string;
+            instrumentSymbol: string;
+            /** @enum {string} */
+            side: "BUY" | "SELL";
+            quantity: string;
+            unitPrice: string;
+            commissionAmount: string;
+            grossAmount: string;
+            currency: string;
+            /** @enum {string} */
+            recordingMode: "CURRENT_ACTION" | "HISTORICAL_FACT";
+            /** Format: date-time */
+            effectiveAt: string;
+            /** Format: int64 */
+            economicSequence: number;
+            cashDelta: string;
+            cashBalanceBefore: string;
+            cashBalanceAfter: string;
+            /** @enum {string} */
+            policyDecision: "NOT_APPLICABLE" | "ALLOWED" | "CONFIRMED_BREACH" | "HISTORICAL_BREACH_RECORDED";
+            allowed: boolean;
+            quantityBefore: string;
+            quantityAfter: string;
+            remainingBasisBefore: string;
+            remainingBasisAfter: string;
+            realizedEconomicPnlBefore: string;
+            realizedEconomicPnlAfter: string;
+            allocatedBasis?: string;
+            realizedEconomicPnl?: string;
+            /** @enum {string} */
+            calculationPolicy: "WEIGHTED_AVERAGE_ECONOMIC_V1";
+            /** Format: int64 */
+            cashBalanceVersion: number;
+            /** Format: int64 */
+            positionVersion: number;
         };
         ManualInstrumentCreateRequest: {
             /** Format: uuid */
@@ -861,6 +1084,63 @@ export interface components {
             /** Format: int64 */
             expectedBalanceVersion?: number;
         };
+        Pageable: {
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            size?: number;
+            sort?: string[];
+        };
+        SliceResponseTradeSummaryResponse: {
+            items: components["schemas"]["TradeSummaryResponse"][];
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            size: number;
+            hasNext: boolean;
+        };
+        TradeSummaryResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            accountId: string;
+            accountName: string;
+            /** Format: uuid */
+            instrumentId: string;
+            instrumentSymbol: string;
+            instrumentName: string;
+            /** @enum {string} */
+            instrumentType: "EQUITY" | "ETF" | "FUND" | "INDEX" | "BOND" | "CRYPTO" | "COMMODITY" | "CURRENCY" | "CASH_EQUIVALENT" | "OTHER";
+            currency: string;
+            /** @enum {string} */
+            side: "BUY" | "SELL";
+            quantity: string;
+            unitPrice: string;
+            grossAmount: string;
+            commissionAmount: string;
+            cashDelta: string;
+            quantityDelta: string;
+            /** Format: date-time */
+            effectiveAt: string;
+            /** Format: date-time */
+            recordedAt: string;
+            /** Format: int64 */
+            economicSequence: number;
+            /** @enum {string} */
+            recordingMode: "CURRENT_ACTION" | "HISTORICAL_FACT";
+            /** @enum {string} */
+            policyDecision: "NOT_APPLICABLE" | "ALLOWED" | "CONFIRMED_BREACH" | "HISTORICAL_BREACH_RECORDED";
+            sourceKind: string;
+            /** @enum {string} */
+            calculationPolicy: "WEIGHTED_AVERAGE_ECONOMIC_V1";
+            cashPostings: components["schemas"]["PostingResponse"][];
+            securityPosting: components["schemas"]["SecurityPostingResponse"];
+            /** Format: uuid */
+            reversalActivityId?: string;
+            reversalReason?: string;
+            /** Format: date-time */
+            reversedAt?: string;
+        };
         MarketResponse: {
             /** Format: uuid */
             id: string;
@@ -896,13 +1176,6 @@ export interface components {
             opensAt?: string;
             closesAt?: string;
             sourceKind: string;
-        };
-        Pageable: {
-            /** Format: int32 */
-            page?: number;
-            /** Format: int32 */
-            size?: number;
-            sort?: string[];
         };
         InstrumentSummaryResponse: {
             /** Format: uuid */
@@ -949,6 +1222,43 @@ export interface components {
             email: string;
             /** Format: date-time */
             createdAt: string;
+        };
+        PositionResponse: {
+            /** Format: uuid */
+            accountId: string;
+            accountName: string;
+            /** Format: uuid */
+            instrumentId: string;
+            instrumentSymbol: string;
+            instrumentName: string;
+            /** @enum {string} */
+            instrumentType: "EQUITY" | "ETF" | "FUND" | "INDEX" | "BOND" | "CRYPTO" | "COMMODITY" | "CURRENCY" | "CASH_EQUIVALENT" | "OTHER";
+            currency: string;
+            quantity: string;
+            remainingEconomicBasis: string;
+            cumulativeRealizedEconomicPnl: string;
+            /** @enum {string} */
+            calculationPolicy: "WEIGHTED_AVERAGE_ECONOMIC_V1";
+            /** @enum {string} */
+            projectionStatus: "NOT_APPLICABLE" | "CURRENT" | "STALE" | "REBUILDING" | "FAILED";
+            /** Format: date-time */
+            asOf: string;
+            /** Format: uuid */
+            inputWatermarkActivityId: string;
+            /** Format: date-time */
+            lastSuccessfulBuildAt: string;
+            /** Format: date-time */
+            staleFrom?: string;
+            /** Format: int64 */
+            version: number;
+        };
+        SliceResponsePositionResponse: {
+            items: components["schemas"]["PositionResponse"][];
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            size: number;
+            hasNext: boolean;
         };
         DeviceSessionResponse: {
             /** Format: uuid */
@@ -1230,6 +1540,78 @@ export interface operations {
             };
         };
     };
+    list: {
+        parameters: {
+            query: {
+                accountId?: string;
+                instrumentId?: string;
+                pageable: components["schemas"]["Pageable"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SliceResponseTradeSummaryResponse"];
+                };
+            };
+        };
+    };
+    commit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TradeCommitRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TradeResponse"];
+                };
+            };
+        };
+    };
+    preview_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TradePreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TradePreviewResponse"];
+                };
+            };
+        };
+    };
     search: {
         parameters: {
             query: {
@@ -1426,7 +1808,7 @@ export interface operations {
             };
         };
     };
-    list: {
+    list_1: {
         parameters: {
             query?: {
                 includeArchived?: boolean;
@@ -1472,7 +1854,7 @@ export interface operations {
             };
         };
     };
-    list_1: {
+    list_2: {
         parameters: {
             query: {
                 pageable: components["schemas"]["Pageable"];
@@ -1496,7 +1878,7 @@ export interface operations {
             };
         };
     };
-    commit: {
+    commit_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -1522,7 +1904,7 @@ export interface operations {
             };
         };
     };
-    preview_1: {
+    preview_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -1596,6 +1978,28 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ActivityResponse"];
+                };
+            };
+        };
+    };
+    get_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                activityId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TradeResponse"];
                 };
             };
         };
@@ -1727,6 +2131,52 @@ export interface operations {
             };
         };
     };
+    list_3: {
+        parameters: {
+            query: {
+                accountId?: string;
+                pageable: components["schemas"]["Pageable"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SliceResponsePositionResponse"];
+                };
+            };
+        };
+    };
+    get_3: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+                instrumentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PositionResponse"];
+                };
+            };
+        };
+    };
     listSessions: {
         parameters: {
             query?: never;
@@ -1789,7 +2239,7 @@ export interface operations {
             };
         };
     };
-    list_2: {
+    list_4: {
         parameters: {
             query: {
                 accountId?: string;
@@ -1812,7 +2262,7 @@ export interface operations {
             };
         };
     };
-    get_2: {
+    get_4: {
         parameters: {
             query?: never;
             header?: never;

@@ -2,6 +2,8 @@ package dev.canverse.stocks.ledger.infrastructure;
 
 import dev.canverse.stocks.ledger.domain.FinancialAccount;
 import jakarta.persistence.LockModeType;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,6 +14,9 @@ public interface FinancialAccountRepository extends JpaRepository<FinancialAccou
 
     @Query("select a from FinancialAccount a where a.id = :accountId and a.ownerUserAccount.id = :ownerUserAccountId")
     Optional<FinancialAccount> findOwned(UUID accountId, UUID ownerUserAccountId);
+
+    @Query("select a.id from FinancialAccount a where a.ownerUserAccount.id = :ownerUserAccountId and a.id in :accountIds")
+    List<UUID> findOwnedIds(UUID ownerUserAccountId, Collection<UUID> accountIds);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select a from FinancialAccount a where a.id = :accountId and a.ownerUserAccount.id = :ownerUserAccountId")

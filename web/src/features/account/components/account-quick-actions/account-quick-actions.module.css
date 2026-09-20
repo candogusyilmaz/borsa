@@ -65,6 +65,17 @@
   border-color: rgb(240 100 40 / 0.45);
 }
 
+.tradeBtn {
+  background: rgb(20 184 166 / 0.12);
+  border-color: rgb(20 184 166 / 0.3);
+  color: var(--mantine-color-teal-6);
+}
+
+.tradeBtn:hover:not(:disabled) {
+  background: rgb(20 184 166 / 0.2);
+  border-color: rgb(20 184 166 / 0.5);
+}
+
 .transferBtn {
   background: rgb(59 130 246 / 0.12);
   border-color: rgb(59 130 246 / 0.28);

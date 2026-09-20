@@ -1,0 +1,155 @@
+.card {
+  background: var(--mantine-color-default);
+  border: 1px solid var(--app-border-subtle);
+  border-radius: 1rem;
+  box-shadow: var(--mantine-shadow-sm);
+  overflow: hidden;
+  transition:
+    border-color var(--app-motion-normal) var(--app-ease),
+    box-shadow var(--app-motion-normal) var(--app-ease);
+}
+
+.card:hover {
+  border-color: var(--app-border-strong);
+}
+
+.cardExpanded {
+  border-color: color-mix(in srgb, var(--mantine-primary-color-filled) 45%, transparent);
+  box-shadow: 0 4px 20px rgb(98 91 246 / 0.1);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 1rem 1.125rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  min-height: 52px;
+  touch-action: manipulation;
+  gap: var(--mantine-spacing-sm);
+  text-align: left;
+}
+
+.cardHeader:focus-visible {
+  outline: 2px solid var(--app-focus-ring);
+  outline-offset: -2px;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.iconSquircle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  min-width: 2.5rem;
+  border-radius: 0.625rem;
+  background: rgb(22 133 91 / 0.14);
+  color: var(--mantine-color-teal-6);
+  flex-shrink: 0;
+}
+
+.titleCol {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cardTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--mantine-color-bright);
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+}
+
+.cardSubtitle {
+  font-size: 0.75rem;
+  color: var(--mantine-color-dimmed);
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.balanceBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.125rem;
+  text-align: right;
+}
+
+.balanceLabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--mantine-color-dimmed);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.balanceAmount {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--mantine-color-bright);
+  font-variant-numeric: tabular-nums;
+}
+
+.chevronIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--mantine-color-dimmed);
+  transition: transform var(--app-motion-fast) var(--app-ease);
+}
+
+.cardBody {
+  padding: 0 1.125rem 1.125rem 1.125rem;
+  overflow: hidden;
+}
+
+.expandedContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--app-border-subtle);
+}
+
+.footerActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--app-border-subtle);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .chevronIcon {
+    transition: none !important;
+  }
+}

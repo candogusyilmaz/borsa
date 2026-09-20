@@ -1,7 +1,7 @@
 import { useDisclosure } from '@mantine/hooks';
 import type { FinancialAccount } from '../../types';
 import { AccountActivitiesOverlay } from '../account-activities/account-activities';
-import { BalanceLiquidityCard, RecentActivityCard, StartingBalanceCoverageCard } from '../account-detail-stack';
+import { AccountPositionsCard, BalanceLiquidityCard, RecentActivityCard, StartingBalanceCoverageCard } from '../account-detail-stack';
 import { AccountQuickActions } from '../account-quick-actions';
 import { AccountsListSection } from '../accounts-list-section';
 import { OpeningCorrectionOverlay } from '../opening-correction/opening-correction';
@@ -16,12 +16,14 @@ export interface AccountDetailContentProps {
 
 function AccountDetailStack({ account }: { account: FinancialAccount }) {
   const [balanceExpanded, { toggle: toggleBalance }] = useDisclosure(false);
+  const [positionsExpanded, { toggle: togglePositions }] = useDisclosure(true);
   const [startingExpanded, { toggle: toggleStarting }] = useDisclosure(false);
   const [activityExpanded, { toggle: toggleActivity }] = useDisclosure(false);
 
   return (
     <div className={classes.stackSection}>
       <BalanceLiquidityCard account={account} expanded={balanceExpanded} onToggle={toggleBalance} />
+      {account.kind === 'BROKERAGE' && <AccountPositionsCard account={account} expanded={positionsExpanded} onToggle={togglePositions} />}
       <StartingBalanceCoverageCard
         account={account}
         expanded={startingExpanded}

@@ -6,9 +6,11 @@ import dev.canverse.stocks.ledger.error.LedgerErrorCode;
 import dev.canverse.stocks.ledger.infrastructure.AccountBalanceProjectionRepository;
 import dev.canverse.stocks.ledger.infrastructure.FinancialAccountRepository;
 import dev.canverse.stocks.platform.error.AppException;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -29,6 +31,16 @@ public final class LedgerAccountAccess {
 
     public FinancialAccount ownedForUpdate(UUID ownerUserAccountId, UUID accountId) {
         return accountRepository.findOwnedForUpdate(accountId, ownerUserAccountId).orElseThrow(() -> new AppException(LedgerErrorCode.ACCOUNT_NOT_FOUND));
+    }
+
+    public void requireOwnedAccounts(UUID ownerUserAccountId, Collection<UUID> accountIds) {
+        if (accountIds.isEmpty()) {
+            return;
+        }
+        var ownedAccountIds = Set.copyOf(accountRepository.findOwnedIds(ownerUserAccountId, accountIds));
+        if (ownedAccountIds.size() != accountIds.size() || !ownedAccountIds.containsAll(accountIds)) {
+            throw new AppException(LedgerErrorCode.ACCOUNT_NOT_FOUND);
+        }
     }
 
     public AccountBalanceProjection projection(UUID ownerUserAccountId, UUID accountId) {
