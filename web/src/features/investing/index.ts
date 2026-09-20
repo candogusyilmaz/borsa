@@ -5,4 +5,3 @@ export { TradeDetail, TradeDetailOverlay } from './components/trade-detail/trade
 export { TradeHistoryList } from './components/trade-history/trade-history-list';
 export { InvestingPage } from './pages/investing-page';
 export * from './types';
-export * from './utils/investing-formatters';

@@ -4,6 +4,7 @@ import { getApiErrorMessage } from '@/api/errors';
 import { toDateTimeLocal } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
 import { isNonNegativeDecimal, isPositiveDecimal } from '@/shared/validation/decimal';
+import { getRecordingModeLabel } from '../../activity-presentation';
 import type { RecordingMode } from '../../types';
 import classes from './transfer.module.css';
 import { getDestinationAccounts } from './transfer-domain';
@@ -243,8 +244,8 @@ export function TransferForm({ session, lockSourceAccount = false, onCancel }: T
                 }
               }}
               data={[
-                { value: 'CURRENT_ACTION', label: 'Real-time (Now)' },
-                { value: 'HISTORICAL_FACT', label: 'Historical (Past Date)' }
+                { value: 'CURRENT_ACTION', label: getRecordingModeLabel('CURRENT_ACTION') },
+                { value: 'HISTORICAL_FACT', label: getRecordingModeLabel('HISTORICAL_FACT') }
               ]}
             />
           </div>

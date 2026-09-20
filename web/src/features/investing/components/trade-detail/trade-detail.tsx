@@ -12,7 +12,8 @@ import {
 import { formatDateTime } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
-import { formatQuantity, getCalculationPolicyLabel, getTradeSideBadgeColor, getTradeSideLabel } from '../../utils/investing-formatters';
+import { getCalculationPolicyLabel, getTradeSideBadgeColor, getTradeSideLabel } from '../../investing-presentation';
+import { formatQuantity } from '../../utils/investing-formatters';
 import classes from './trade-detail.module.css';
 
 export interface TradeDetailProps {

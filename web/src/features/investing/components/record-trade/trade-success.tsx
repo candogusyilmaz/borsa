@@ -1,7 +1,8 @@
 import { Button, Stack, Text } from '@mantine/core';
 import { CheckCircleIcon } from '@phosphor-icons/react';
 import { formatMoney } from '@/shared/format/money';
-import { formatQuantity, getTradeSideLabel } from '../../utils/investing-formatters';
+import { getTradeSideLabel } from '../../investing-presentation';
+import { formatQuantity } from '../../utils/investing-formatters';
 import classes from './record-trade.module.css';
 import type { useTradeSession } from './use-trade-session';
 

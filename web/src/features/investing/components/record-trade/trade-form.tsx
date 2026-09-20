@@ -2,6 +2,7 @@ import { Alert, Button, Group, NumberInput, SegmentedControl, Select, Skeleton, 
 import { ArrowDownLeftIcon, ArrowUpRightIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { useMemo } from 'react';
 import { $api } from '@/api/client';
+import { getRecordingModeLabel } from '@/features/account';
 import { isNonNegativeDecimal, isPositiveDecimal } from '@/shared/validation/decimal';
 import type { TradeSide } from '../../types';
 import { formatQuantity } from '../../utils/investing-formatters';
@@ -320,8 +321,8 @@ export function TradeForm({ session, options, onCancel }: TradeFormProps) {
                 value={field.state.value}
                 onChange={(val) => field.handleChange(val as 'CURRENT_ACTION' | 'HISTORICAL_FACT')}
                 data={[
-                  { label: 'Right Now (Live)', value: 'CURRENT_ACTION' },
-                  { label: 'Past Date (Backdated)', value: 'HISTORICAL_FACT' }
+                  { label: getRecordingModeLabel('CURRENT_ACTION'), value: 'CURRENT_ACTION' },
+                  { label: getRecordingModeLabel('HISTORICAL_FACT'), value: 'HISTORICAL_FACT' }
                 ]}
               />
             </div>

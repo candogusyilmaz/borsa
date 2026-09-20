@@ -1,6 +1,7 @@
 import { Alert, Badge, Button, Checkbox, Stack, Text } from '@mantine/core';
 import { ArrowClockwiseIcon, ArrowRightIcon, InfoIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { formatMoney } from '@/shared/format/money';
+import { getRecordingModeLabel } from '../../activity-presentation';
 import classes from './transfer.module.css';
 import { getTransferPolicyPresentation } from './transfer-domain';
 import type { TransferSessionResult } from './use-transfer-session';
@@ -33,7 +34,7 @@ export function TransferPreview({ session }: TransferPreviewProps) {
         </div>
 
         <Text size="xs" c="dimmed">
-          Recording Mode: {formValues.recordingMode === 'CURRENT_ACTION' ? 'Real-time (Now)' : 'Historical Fact'}
+          Recording Mode: {getRecordingModeLabel(formValues.recordingMode)}
         </Text>
       </div>
 

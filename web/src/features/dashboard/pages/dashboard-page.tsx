@@ -15,10 +15,7 @@ import {
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import {
-  ArrowCounterClockwiseIcon,
-  ArrowDownLeftIcon,
   ArrowsLeftRightIcon,
-  ArrowUpRightIcon,
   BankIcon,
   CaretRightIcon,
   CheckCircleIcon,
@@ -31,7 +28,7 @@ import {
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { $api } from '@/api/client';
-import { ActivityDetailOverlay, getActivityTypeLabel, TransferOverlay } from '@/features/account';
+import { ActivityDetailOverlay, ActivityTypeIcon, getActivityTypeLabel, TransferOverlay } from '@/features/account';
 import { siteConfig } from '@/shared/config/site';
 import { formatDateTime, toRelativeTime } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
@@ -427,10 +424,8 @@ export function DashboardPage({ user }: DashboardPageProps) {
               </Stack>
             ) : activitiesQuery.data?.items && activitiesQuery.data.items.length > 0 ? (
               activitiesQuery.data.items.map((act) => {
-                const isTransfer = act.activityType === 'OWNED_TRANSFER';
                 const isDeposit = act.activityType === 'CASH_DEPOSIT';
                 const isWithdrawal = act.activityType === 'CASH_WITHDRAWAL';
-                const isReversal = act.activityType === 'REVERSAL';
 
                 const primaryPosting = act.postings[0];
                 const rawAmount = primaryPosting?.amount || '0.00';
@@ -446,17 +441,7 @@ export function DashboardPage({ user }: DashboardPageProps) {
                     }}
                     aria-label={`View details for ${getActivityTypeLabel(act.activityType)}`}>
                     <div className={classes.activityIcon}>
-                      {isTransfer ? (
-                        <ArrowsLeftRightIcon size={18} weight="bold" />
-                      ) : isDeposit ? (
-                        <ArrowDownLeftIcon size={18} weight="bold" />
-                      ) : isWithdrawal ? (
-                        <ArrowUpRightIcon size={18} weight="bold" />
-                      ) : isReversal ? (
-                        <ArrowCounterClockwiseIcon size={18} weight="bold" />
-                      ) : (
-                        <ReceiptIcon size={18} weight="bold" />
-                      )}
+                      <ActivityTypeIcon type={act.activityType} size={18} />
                     </div>
 
                     <div className={classes.activityDetails}>

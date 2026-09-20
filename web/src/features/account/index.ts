@@ -1,3 +1,4 @@
+export { ActivityTypeIcon } from './activity-icon';
 export {
   getActivityTypeLabel,
   getPolicyDecisionBadgeColor,

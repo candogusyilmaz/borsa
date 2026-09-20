@@ -3,15 +3,14 @@ import { useDisclosure } from '@mantine/hooks';
 import { CaretDownIcon, CaretUpIcon, MinusIcon, PlusIcon } from '@phosphor-icons/react';
 import { formatDateTime } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
-import type { PositionResponse } from '../../types';
 import {
-  formatQuantity,
-  formatUnitCost,
   getCalculationPolicyLabel,
   getProjectionStatusBadgeColor,
   getProjectionStatusLabel,
   getRealizedPnlPresentation
-} from '../../utils/investing-formatters';
+} from '../../investing-presentation';
+import type { PositionResponse } from '../../types';
+import { formatQuantity, formatUnitCost } from '../../utils/investing-formatters';
 import { TradeOverlay } from '../record-trade/record-trade';
 import classes from './position-list.module.css';
 

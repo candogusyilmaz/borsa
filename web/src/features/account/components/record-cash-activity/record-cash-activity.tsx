@@ -11,7 +11,7 @@ import { formatMoney } from '@/shared/format/money';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
 import { isNonNegativeDecimal, isPositiveDecimal } from '@/shared/validation/decimal';
 import { isCashFundingCapable } from '../../account-domain';
-import { getActivityTypeLabel } from '../../activity-presentation';
+import { getActivityTypeLabel, getRecordingModeLabel } from '../../activity-presentation';
 import type { ManualCashActivityType } from '../../types';
 import classes from './record-cash-activity.module.css';
 
@@ -284,8 +284,8 @@ export function RecordCashActivityForm({ accountId, defaultType = 'CASH_DEPOSIT'
               }
             }}
             data={[
-              { value: 'CURRENT_ACTION', label: 'Real-time (Now)' },
-              { value: 'HISTORICAL_FACT', label: 'Historical (Past Date)' }
+              { value: 'CURRENT_ACTION', label: getRecordingModeLabel('CURRENT_ACTION') },
+              { value: 'HISTORICAL_FACT', label: getRecordingModeLabel('HISTORICAL_FACT') }
             ]}
           />
         )}

@@ -3,12 +3,12 @@ import { ArrowRightIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { formatMoney } from '@/shared/format/money';
 import {
-  formatQuantity,
   getCalculationPolicyLabel,
   getRealizedPnlPresentation,
   getTradeSideBadgeColor,
   getTradeSideLabel
-} from '../../utils/investing-formatters';
+} from '../../investing-presentation';
+import { formatQuantity } from '../../utils/investing-formatters';
 import classes from './record-trade.module.css';
 import type { TradeSessionData } from './trade-types';
 import type { useTradeSession } from './use-trade-session';

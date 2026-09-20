@@ -1,24 +1,13 @@
 import { Alert, Badge, Button, Group, Select, Skeleton, Stack, Text } from '@mantine/core';
-import {
-  ArrowClockwiseIcon,
-  ArrowCounterClockwiseIcon,
-  ArrowDownLeftIcon,
-  ArrowsLeftRightIcon,
-  ArrowUpRightIcon,
-  BankIcon,
-  ClockCounterClockwiseIcon,
-  ReceiptIcon,
-  SlidersIcon,
-  TrendUpIcon,
-  WarningCircleIcon
-} from '@phosphor-icons/react';
+import { ArrowClockwiseIcon, ClockCounterClockwiseIcon, ReceiptIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { $api } from '@/api/client';
 import { formatDateTime } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
 import { isCashFundingCapable } from '../../account-domain';
-import { getActivityTypeBadgeColor, getActivityTypeLabel } from '../../activity-presentation';
-import type { ActivityType, FinancialAccount } from '../../types';
+import { ActivityTypeIcon } from '../../activity-icon';
+import { getActivityTypeLabel, getRecordingModeLabel } from '../../activity-presentation';
+import type { FinancialAccount } from '../../types';
 import { ActivityDetailOverlay } from '../activity-detail/activity-detail';
 import { CashActivityOverlay } from '../record-cash-activity';
 import { TransferOverlay } from '../transfer/transfer';
@@ -26,29 +15,6 @@ import classes from './activity-history-card.module.css';
 
 interface ActivityHistoryCardProps {
   account: FinancialAccount;
-}
-
-function getActivityIcon(type: ActivityType) {
-  switch (type) {
-    case 'CASH_DEPOSIT':
-      return <ArrowDownLeftIcon size={20} weight="bold" color="var(--mantine-color-teal-6)" />;
-    case 'CASH_WITHDRAWAL':
-      return <ArrowUpRightIcon size={20} weight="bold" color="var(--mantine-color-orange-6)" />;
-    case 'CASH_FEE':
-      return <ReceiptIcon size={20} weight="bold" color="var(--mantine-color-red-6)" />;
-    case 'CASH_INTEREST_CREDIT':
-      return <TrendUpIcon size={20} weight="bold" color="var(--mantine-color-cyan-6)" />;
-    case 'OWNED_TRANSFER':
-      return <ArrowsLeftRightIcon size={20} weight="bold" color="var(--mantine-color-blue-6)" />;
-    case 'OPENING_BALANCE':
-      return <BankIcon size={20} weight="duotone" color="var(--mantine-color-indigo-6)" />;
-    case 'REVERSAL':
-      return <ArrowCounterClockwiseIcon size={20} weight="bold" color="var(--mantine-color-violet-6)" />;
-    case 'RECONCILIATION_ADJUSTMENT':
-      return <SlidersIcon size={20} weight="bold" color="var(--mantine-color-cyan-6)" />;
-    default:
-      return <ReceiptIcon size={20} weight="duotone" />;
-  }
 }
 
 export function ActivityHistoryCard({ account }: ActivityHistoryCardProps) {
@@ -298,15 +264,12 @@ export function ActivityHistoryCard({ account }: ActivityHistoryCardProps) {
                 aria-label={`View details for ${getActivityTypeLabel(act.activityType)} of ${formatMoney(postingAmount, account.currency)}`}>
                 <div className={classes.activityMain}>
                   <div className={classes.iconWrap} aria-hidden="true">
-                    {getActivityIcon(act.activityType)}
+                    <ActivityTypeIcon type={act.activityType} size={20} />
                   </div>
 
                   <div className={classes.activityMeta}>
                     <div className={classes.activityTitleRow}>
                       <span className={classes.activityTitle}>{getActivityTypeLabel(act.activityType)}</span>
-                      <Badge color={getActivityTypeBadgeColor(act.activityType)} variant="light" size="xs">
-                        {act.activityType}
-                      </Badge>
                       {isReversedByOther && (
                         <Badge color="violet" variant="outline" size="xs">
                           Reversed
@@ -314,7 +277,7 @@ export function ActivityHistoryCard({ account }: ActivityHistoryCardProps) {
                       )}
                       {isTimeDiscrepancy && (
                         <Badge color="blue" variant="outline" size="xs">
-                          Historical Fact
+                          {getRecordingModeLabel('HISTORICAL_FACT')}
                         </Badge>
                       )}
                       {act.policyDecision === 'CONFIRMED_BREACH' && (

@@ -1,22 +1,11 @@
 import { Badge, Collapse, Skeleton } from '@mantine/core';
-import {
-  ArrowCounterClockwiseIcon,
-  ArrowDownLeftIcon,
-  ArrowsLeftRightIcon,
-  ArrowUpRightIcon,
-  BankIcon,
-  CaretDownIcon,
-  CaretUpIcon,
-  ClockCounterClockwiseIcon,
-  ReceiptIcon,
-  SlidersIcon,
-  TrendUpIcon
-} from '@phosphor-icons/react';
+import { CaretDownIcon, CaretUpIcon, ClockCounterClockwiseIcon } from '@phosphor-icons/react';
 import { $api } from '@/api/client';
 import { formatDateTime } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
+import { ActivityTypeIcon } from '../../activity-icon';
 import { getActivityTypeLabel } from '../../activity-presentation';
-import type { ActivityResponse, ActivityType, FinancialAccount } from '../../types';
+import type { ActivityResponse, FinancialAccount } from '../../types';
 import { ActivityDetailOverlay } from '../activity-detail/activity-detail';
 import classes from './recent-activity-card.module.css';
 
@@ -25,29 +14,6 @@ interface RecentActivityCardProps {
   expanded: boolean;
   onToggle: () => void;
   onViewAll: () => void;
-}
-
-function getActivityIcon(type: ActivityType) {
-  switch (type) {
-    case 'CASH_DEPOSIT':
-      return <ArrowDownLeftIcon size={18} weight="bold" color="var(--mantine-color-teal-6)" />;
-    case 'CASH_WITHDRAWAL':
-      return <ArrowUpRightIcon size={18} weight="bold" color="var(--mantine-color-orange-6)" />;
-    case 'CASH_FEE':
-      return <ReceiptIcon size={18} weight="bold" color="var(--mantine-color-red-6)" />;
-    case 'CASH_INTEREST_CREDIT':
-      return <TrendUpIcon size={18} weight="bold" color="var(--mantine-color-cyan-6)" />;
-    case 'OWNED_TRANSFER':
-      return <ArrowsLeftRightIcon size={18} weight="bold" color="var(--mantine-color-blue-6)" />;
-    case 'OPENING_BALANCE':
-      return <BankIcon size={18} weight="duotone" color="var(--mantine-color-indigo-6)" />;
-    case 'REVERSAL':
-      return <ArrowCounterClockwiseIcon size={18} weight="bold" color="var(--mantine-color-violet-6)" />;
-    case 'RECONCILIATION_ADJUSTMENT':
-      return <SlidersIcon size={18} weight="bold" color="var(--mantine-color-cyan-6)" />;
-    default:
-      return <ReceiptIcon size={18} weight="duotone" />;
-  }
 }
 
 export function RecentActivityCard({ account, expanded, onToggle, onViewAll }: RecentActivityCardProps) {
@@ -82,7 +48,7 @@ export function RecentActivityCard({ account, expanded, onToggle, onViewAll }: R
         aria-label={`View details for ${getActivityTypeLabel(act.activityType)}: ${formatMoney(postingAmount, account.currency)}`}>
         <div className={classes.activityItemLeft}>
           <div className={classes.activityIconWrap} aria-hidden="true">
-            {getActivityIcon(act.activityType)}
+            <ActivityTypeIcon type={act.activityType} size={18} />
           </div>
           <div className={classes.activityMeta}>
             <div className={classes.activityTitleRow}>

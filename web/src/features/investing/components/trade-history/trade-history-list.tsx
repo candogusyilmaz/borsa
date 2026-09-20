@@ -4,7 +4,8 @@ import { useMemo, useState } from 'react';
 import { $api } from '@/api/client';
 import { formatDateTime } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
-import { formatQuantity, getTradeSideBadgeColor, getTradeSideLabel } from '../../utils/investing-formatters';
+import { getTradeSideBadgeColor, getTradeSideLabel } from '../../investing-presentation';
+import { formatQuantity } from '../../utils/investing-formatters';
 import { TradeDetailOverlay } from '../trade-detail/trade-detail';
 import classes from './trade-history.module.css';
 
