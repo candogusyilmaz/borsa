@@ -61,8 +61,11 @@ export function getDeviceIcon(label?: string) {
 
 export function formatDate(isoString?: string): string {
   if (!isoString) return 'N/A';
-  const formatted = formatDateTime(isoString);
-  return formatted === '—' ? 'N/A' : formatted;
+
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return 'N/A';
+
+  return formatDateTime(date);
 }
 
 export function formatRelativeTime(isoString?: string): string {
