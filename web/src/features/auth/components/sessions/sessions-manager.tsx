@@ -37,6 +37,7 @@ import { useMemo, useState } from 'react';
 import { $api, client } from '@/api/client';
 import { showApiError } from '@/api/errors';
 import type { components } from '@/api/schema';
+import { formatDateTime, toRelativeTime } from '@/shared/format/date-time';
 import { useAuth } from '@/shared/hooks/use-auth';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
 import classes from './sessions.module.css';
@@ -60,43 +61,22 @@ export function getDeviceIcon(label?: string) {
 
 export function formatDate(isoString?: string): string {
   if (!isoString) return 'N/A';
-  try {
-    const date = new Date(isoString);
-    if (Number.isNaN(date.getTime())) return 'N/A';
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: true
-    }).format(date);
-  } catch {
-    return isoString;
-  }
+  const formatted = formatDateTime(isoString);
+  return formatted === '—' ? 'N/A' : formatted;
 }
 
 export function formatRelativeTime(isoString?: string): string {
   if (!isoString) return 'Not yet used';
   try {
     const date = new Date(isoString);
-    const now = new Date();
-    const diffSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
+    if (Number.isNaN(date.getTime())) return isoString;
+    const diffSeconds = Math.floor((Date.now() - date.getTime()) / 1000);
     if (diffSeconds < 60) {
       return 'Active just now';
     }
-    const diffMinutes = Math.floor(diffSeconds / 60);
-    if (diffMinutes < 60) {
-      return `${diffMinutes}m ago`;
-    }
-    const diffHours = Math.floor(diffMinutes / 60);
-    if (diffHours < 24) {
-      return `${diffHours}h ago`;
-    }
-    const diffDays = Math.floor(diffHours / 24);
+    const diffDays = Math.floor(diffSeconds / (60 * 60 * 24));
     if (diffDays < 7) {
-      return `${diffDays}d ago`;
+      return toRelativeTime(isoString);
     }
     return formatDate(isoString);
   } catch {

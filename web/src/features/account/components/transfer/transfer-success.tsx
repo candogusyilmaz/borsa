@@ -1,6 +1,7 @@
 import { Button, Divider, Stack, Text } from '@mantine/core';
 import { CheckCircleIcon, ReceiptIcon } from '@phosphor-icons/react';
-import { formatCurrency, formatDateTime } from '../../utils/account-formatters';
+import { formatDateTime } from '@/shared/format/date-time';
+import { formatMoney } from '@/shared/format/money';
 import { ActivityDetailOverlay } from '../activity-detail/activity-detail';
 import classes from './transfer.module.css';
 import type { TransferSessionResult } from './use-transfer-session';
@@ -44,7 +45,7 @@ export function TransferSuccess({ session, onDone, onStartAnother }: TransferSuc
         <div className={classes.detailRow}>
           <span className={classes.detailLabel}>Transferred Amount:</span>
           <span className={classes.detailValue} style={{ color: 'var(--mantine-primary-color-filled)' }}>
-            {formatCurrency(preview.amount, preview.currency)}
+            {formatMoney(preview.amount, preview.currency)}
           </span>
         </div>
 

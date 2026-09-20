@@ -7,13 +7,11 @@ This file is the operating contract and context router for work under `web/`.
 Before substantial frontend work:
 
 1. Read the root [AGENTS.md](../AGENTS.md).
-2. Inspect current technical and architectural reality when needed:
-   - [STATE.md](../docs/implementation/web/STATE.md)
-3. Follow:
+2. Follow:
    - [frontend-standards.md](../docs/engineering/frontend-standards.md) for frontend engineering decisions.
    - [ui-design-guidelines.md](../docs/engineering/ui-design-guidelines.md) for UI and interaction decisions.
 
-Do not duplicate those documents here. Inspect the current codebase for implementation details and existing patterns.
+Current frontend structure, capabilities, dependency versions, routes, and implementation details must be discovered from the repository itself rather than from manually maintained snapshot documentation. Do not duplicate durable guidance here. Inspect the current codebase for implementation details and existing patterns.
 
 ## Scope
 

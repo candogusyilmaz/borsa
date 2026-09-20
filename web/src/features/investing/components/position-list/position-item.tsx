@@ -1,7 +1,8 @@
 import { Badge, Button, Collapse, Group, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { CaretDownIcon, CaretUpIcon, MinusIcon, PlusIcon } from '@phosphor-icons/react';
-import { formatCurrency, formatDateTime } from '@/features/account/utils/account-formatters';
+import { formatDateTime } from '@/shared/format/date-time';
+import { formatMoney } from '@/shared/format/money';
 import type { PositionResponse } from '../../types';
 import {
   formatQuantity,
@@ -76,7 +77,7 @@ export function PositionItem({ position }: PositionItemProps) {
               {formatQuantity(position.quantity)} units
             </Text>
             <Text size="xs" c="dimmed" style={{ fontVariantNumeric: 'tabular-nums' }}>
-              {formatCurrency(position.remainingEconomicBasis, position.currency)} invested
+              {formatMoney(position.remainingEconomicBasis, position.currency)} invested
             </Text>
           </div>
 
@@ -102,7 +103,7 @@ export function PositionItem({ position }: PositionItemProps) {
                 Total Invested
               </Text>
               <Text size="sm" fw={700} style={{ fontVariantNumeric: 'tabular-nums' }}>
-                {formatCurrency(position.remainingEconomicBasis, position.currency)}
+                {formatMoney(position.remainingEconomicBasis, position.currency)}
               </Text>
             </div>
 

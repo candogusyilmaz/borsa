@@ -1,8 +1,9 @@
 import { Alert, Badge, Button, Stack, Text, TextInput } from '@mantine/core';
 import { CalendarBlankIcon, CurrencyCircleDollarIcon, InfoIcon } from '@phosphor-icons/react';
 import { useForm } from '@tanstack/react-form';
+import { formatDateTime } from '@/shared/format/date-time';
+import { isDecimal } from '@/shared/validation/decimal';
 import type { FinancialAccount } from '../../types';
-import { formatDateTime, PLAIN_DECIMAL_REGEX } from '../../utils/account-formatters';
 import classes from './reconciliation.module.css';
 import { getCurrentMonthPeriod, getLast30DaysPeriod, getPreviousMonthPeriod } from './reconciliation-domain';
 import type { ReconciliationPreviewRequest } from './reconciliation-types';
@@ -206,7 +207,7 @@ export function ReconciliationForm({ account, initialValues, isLoading, onPrevie
               onChange: ({ value }) => {
                 const trimmed = value.trim();
                 if (!trimmed) return 'Opening balance is required.';
-                if (!PLAIN_DECIMAL_REGEX.test(trimmed)) return 'Must be a valid decimal amount (e.g. 1000.00).';
+                if (!isDecimal(trimmed)) return 'Must be a valid decimal amount (e.g. 1000.00).';
                 return undefined;
               }
             }}>
@@ -235,7 +236,7 @@ export function ReconciliationForm({ account, initialValues, isLoading, onPrevie
               onChange: ({ value }) => {
                 const trimmed = value.trim();
                 if (!trimmed) return 'Closing balance is required.';
-                if (!PLAIN_DECIMAL_REGEX.test(trimmed)) return 'Must be a valid decimal amount (e.g. 1500.00).';
+                if (!isDecimal(trimmed)) return 'Must be a valid decimal amount (e.g. 1500.00).';
                 return undefined;
               }
             }}>

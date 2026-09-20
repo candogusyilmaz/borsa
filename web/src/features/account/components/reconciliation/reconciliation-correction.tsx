@@ -4,8 +4,9 @@ import { useForm } from '@tanstack/react-form';
 import { useState } from 'react';
 import { $api } from '@/api/client';
 import { showApiError } from '@/api/errors';
+import { toDateTimeLocal } from '@/shared/format/date-time';
+import { isDecimal } from '@/shared/validation/decimal';
 import type { FinancialAccount } from '../../types';
-import { PLAIN_DECIMAL_REGEX, toDatetimeLocal } from '../../utils/account-formatters';
 import classes from './reconciliation.module.css';
 import { ReconciliationPreview } from './reconciliation-preview';
 import type { ReconciliationAction, ReconciliationPreviewResponse, ReconciliationResponse } from './reconciliation-types';
@@ -20,8 +21,8 @@ interface ReconciliationCorrectionProps {
 export function ReconciliationCorrection({ account, targetReconciliation, onSuccess, onCancel }: ReconciliationCorrectionProps) {
   const [step, setStep] = useState<'edit' | 'preview'>('edit');
   const [previewData, setPreviewData] = useState<ReconciliationPreviewResponse | null>(null);
-  const openingLocal = toDatetimeLocal(new Date(targetReconciliation.statementOpeningAt), true);
-  const closingLocal = toDatetimeLocal(new Date(targetReconciliation.statementClosingAt), true);
+  const openingLocal = toDateTimeLocal(new Date(targetReconciliation.statementOpeningAt), true);
+  const closingLocal = toDateTimeLocal(new Date(targetReconciliation.statementClosingAt), true);
 
   const previewMutation = $api.useMutation('post', '/api/v1/accounts/{accountId}/reconciliation-previews', {
     onError: (err) => {
@@ -264,7 +265,7 @@ export function ReconciliationCorrection({ account, targetReconciliation, onSucc
               onChange: ({ value }) => {
                 const trimmed = value.trim();
                 if (!trimmed) return 'Opening balance is required.';
-                if (!PLAIN_DECIMAL_REGEX.test(trimmed)) return 'Must be a valid decimal amount.';
+                if (!isDecimal(trimmed)) return 'Must be a valid decimal amount.';
                 return undefined;
               }
             }}>
@@ -292,7 +293,7 @@ export function ReconciliationCorrection({ account, targetReconciliation, onSucc
               onChange: ({ value }) => {
                 const trimmed = value.trim();
                 if (!trimmed) return 'Closing balance is required.';
-                if (!PLAIN_DECIMAL_REGEX.test(trimmed)) return 'Must be a valid decimal amount.';
+                if (!isDecimal(trimmed)) return 'Must be a valid decimal amount.';
                 return undefined;
               }
             }}>

@@ -2,7 +2,8 @@ import { Alert, Badge, Button, Group, Select, Skeleton, Stack, Text } from '@man
 import { ClockCounterClockwiseIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { useMemo, useState } from 'react';
 import { $api } from '@/api/client';
-import { formatCurrency, formatDateTime } from '@/features/account/utils/account-formatters';
+import { formatDateTime } from '@/shared/format/date-time';
+import { formatMoney } from '@/shared/format/money';
 import { formatQuantity, getTradeSideBadgeColor, getTradeSideLabel } from '../../utils/investing-formatters';
 import { TradeDetailOverlay } from '../trade-detail/trade-detail';
 import classes from './trade-history.module.css';
@@ -129,10 +130,10 @@ export function TradeHistoryList({ initialAccountId, hideFilter = false }: Trade
                 <div className={classes.rightCol}>
                   <Text size="sm" fw={700} c={isBuy ? 'red.6' : 'teal.6'} style={{ fontVariantNumeric: 'tabular-nums' }}>
                     {trade.cashDelta.startsWith('-') ? '' : '+'}
-                    {formatCurrency(trade.cashDelta, trade.currency)}
+                    {formatMoney(trade.cashDelta, trade.currency)}
                   </Text>
                   <Text size="xs" c="dimmed" style={{ fontVariantNumeric: 'tabular-nums' }}>
-                    {formatQuantity(trade.quantity)} @ {formatCurrency(trade.unitPrice, trade.currency)}
+                    {formatQuantity(trade.quantity)} @ {formatMoney(trade.unitPrice, trade.currency)}
                   </Text>
                 </div>
               </button>

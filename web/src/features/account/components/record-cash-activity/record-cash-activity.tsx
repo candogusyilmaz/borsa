@@ -6,16 +6,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRef } from 'react';
 import { $api } from '@/api/client';
 import { showApiError } from '@/api/errors';
+import { formatDateTime, toDateTimeLocal } from '@/shared/format/date-time';
+import { formatMoney } from '@/shared/format/money';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { isNonNegativeDecimal, isPositiveDecimal } from '@/shared/validation/decimal';
 import type { ManualCashActivityType } from '../../types';
-import {
-  formatCurrency,
-  formatDateTime,
-  getActivityTypeLabel,
-  isCashFundingCapable,
-  POSITIVE_DECIMAL_REGEX,
-  toDatetimeLocal
-} from '../../utils/account-formatters';
+import { getActivityTypeLabel, isCashFundingCapable } from '../../utils/account-formatters';
 import classes from './record-cash-activity.module.css';
 
 export interface RecordCashActivityProps {
@@ -96,7 +92,7 @@ export function RecordCashActivityForm({ accountId, defaultType = 'CASH_DEPOSIT'
       activityType: defaultType,
       amount: '',
       recordingMode: 'CURRENT_ACTION' as 'CURRENT_ACTION' | 'HISTORICAL_FACT',
-      effectiveAt: toDatetimeLocal(new Date()),
+      effectiveAt: toDateTimeLocal(new Date()),
       confirmPolicyBreach: false
     },
     onSubmit: async ({ value }) => {
@@ -147,7 +143,7 @@ export function RecordCashActivityForm({ accountId, defaultType = 'CASH_DEPOSIT'
                     : 'Credited';
             notifications.show({
               title: `${getActivityTypeLabel(value.activityType)} Recorded`,
-              message: `${action} ${formatCurrency(value.amount.trim(), account.currency)} ${isCredit ? 'to' : 'against'} ${account.name}.`,
+              message: `${action} ${formatMoney(value.amount.trim(), account.currency)} ${isCredit ? 'to' : 'against'} ${account.name}.`,
               color: value.activityType === 'CASH_FEE' ? 'red' : isCredit ? 'teal' : 'orange',
               icon: <CheckCircleIcon size={18} weight="bold" />
             });
@@ -223,7 +219,7 @@ export function RecordCashActivityForm({ accountId, defaultType = 'CASH_DEPOSIT'
       {balance && (
         <div className={classes.balanceBox}>
           <span className={classes.balanceLabel}>Current Real Balance</span>
-          <span className={classes.balanceValue}>{formatCurrency(balance.clearedBalance ?? balance.ledgerBalance, account.currency)}</span>
+          <span className={classes.balanceValue}>{formatMoney(balance.clearedBalance ?? balance.ledgerBalance, account.currency)}</span>
         </div>
       )}
 
@@ -234,11 +230,10 @@ export function RecordCashActivityForm({ accountId, defaultType = 'CASH_DEPOSIT'
           onChange: ({ value }) => {
             const trimmed = value.trim();
             if (!trimmed) return 'Amount is required.';
-            if (!POSITIVE_DECIMAL_REGEX.test(trimmed)) {
+            if (!isNonNegativeDecimal(trimmed)) {
               return 'Enter a valid positive number with decimal cents (e.g. 150.00).';
             }
-            const num = Number.parseFloat(trimmed);
-            if (Number.isNaN(num) || num <= 0) {
+            if (!isPositiveDecimal(trimmed)) {
               return 'Amount must be greater than zero.';
             }
             return undefined;
@@ -284,7 +279,7 @@ export function RecordCashActivityForm({ accountId, defaultType = 'CASH_DEPOSIT'
             onChange={(val) => {
               field.handleChange(val as 'CURRENT_ACTION' | 'HISTORICAL_FACT');
               if (val === 'CURRENT_ACTION') {
-                form.setFieldValue('effectiveAt', toDatetimeLocal(new Date()));
+                form.setFieldValue('effectiveAt', toDateTimeLocal(new Date()));
               }
             }}
             data={[

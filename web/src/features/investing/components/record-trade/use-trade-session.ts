@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { $api } from '@/api/client';
 import { showApiError } from '@/api/errors';
-import { toDatetimeLocal } from '@/features/account/utils/account-formatters';
+import { toDateTimeLocal } from '@/shared/format/date-time';
 import type { TradeFormValues, TradeSide } from '../../types';
 import type { RecordTradeProps, TradeState } from './trade-types';
 
@@ -21,7 +21,7 @@ export function useTradeSession(options: RecordTradeProps) {
       unitPrice: '',
       commissionAmount: '0',
       recordingMode: 'CURRENT_ACTION' as 'CURRENT_ACTION' | 'HISTORICAL_FACT',
-      effectiveAt: toDatetimeLocal(new Date()),
+      effectiveAt: toDateTimeLocal(new Date()),
       economicSequence: 0,
       confirmPolicyBreach: false
     },

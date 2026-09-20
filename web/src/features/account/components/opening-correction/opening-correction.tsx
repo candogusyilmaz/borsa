@@ -12,9 +12,11 @@ import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { $api } from '@/api/client';
 import { getApiErrorMessage, normalizeError, showApiError } from '@/api/errors';
+import { formatDateTime } from '@/shared/format/date-time';
+import { formatMoney } from '@/shared/format/money';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { isDecimal } from '@/shared/validation/decimal';
 import type { FinancialAccount } from '../../types';
-import { formatCurrency, formatDateTime, PLAIN_DECIMAL_REGEX } from '../../utils/account-formatters';
 import classes from './opening-correction.module.css';
 
 interface OpeningCorrectionOverlayProps {
@@ -117,7 +119,7 @@ function OpeningCorrectionForm({ account, currentOpeningBalance, onRefetchAccoun
             });
             notifications.show({
               title: 'Opening State Corrected',
-              message: `Account "${data.name}" opening balance corrected to ${formatCurrency(value.amount.trim(), account.currency)}.`,
+              message: `Account "${data.name}" opening balance corrected to ${formatMoney(value.amount.trim(), account.currency)}.`,
               color: 'teal',
               icon: <CheckCircleIcon size={18} weight="bold" />
             });
@@ -222,7 +224,7 @@ function OpeningCorrectionForm({ account, currentOpeningBalance, onRefetchAccoun
                 Current Opening Balance:
               </Text>
               <Text size="xs" fw={600}>
-                {formatCurrency(currentOpeningBalance, account.currency)}
+                {formatMoney(currentOpeningBalance, account.currency)}
               </Text>
             </Group>
           )}
@@ -234,7 +236,7 @@ function OpeningCorrectionForm({ account, currentOpeningBalance, onRefetchAccoun
               onChange: ({ value }) => {
                 const trimmed = value.trim();
                 if (!trimmed) return 'Corrected opening balance amount is required.';
-                if (!PLAIN_DECIMAL_REGEX.test(trimmed)) {
+                if (!isDecimal(trimmed)) {
                   return 'Must be an exact decimal amount (e.g. 0.00, 1000.00).';
                 }
                 return undefined;

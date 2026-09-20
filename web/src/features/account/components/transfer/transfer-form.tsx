@@ -1,8 +1,10 @@
 import { ActionIcon, Alert, Button, Checkbox, SegmentedControl, Select, Skeleton, Text, TextInput } from '@mantine/core';
 import { ArrowsDownUpIcon, ClockIcon, InfoIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { getApiErrorMessage } from '@/api/errors';
+import { toDateTimeLocal } from '@/shared/format/date-time';
+import { formatMoney } from '@/shared/format/money';
+import { isNonNegativeDecimal, isPositiveDecimal } from '@/shared/validation/decimal';
 import type { RecordingMode } from '../../types';
-import { formatCurrency, POSITIVE_DECIMAL_REGEX, toDatetimeLocal } from '../../utils/account-formatters';
 import classes from './transfer.module.css';
 import { getDestinationAccounts } from './transfer-domain';
 import type { TransferSessionResult } from './use-transfer-session';
@@ -176,7 +178,7 @@ export function TransferForm({ session, lockSourceAccount = false, onCancel }: T
             {sourceBalanceQuery.isLoading ? (
               <Skeleton height={18} width={80} />
             ) : sourceBalanceQuery.data ? (
-              formatCurrency(sourceBalanceQuery.data.clearedBalance ?? sourceBalanceQuery.data.ledgerBalance, sourceAccount.currency)
+              formatMoney(sourceBalanceQuery.data.clearedBalance ?? sourceBalanceQuery.data.ledgerBalance, sourceAccount.currency)
             ) : (
               '—'
             )}
@@ -191,11 +193,10 @@ export function TransferForm({ session, lockSourceAccount = false, onCancel }: T
           onChange: ({ value }) => {
             const trimmed = value.trim();
             if (!trimmed) return 'Transfer amount is required.';
-            if (!POSITIVE_DECIMAL_REGEX.test(trimmed)) {
+            if (!isNonNegativeDecimal(trimmed)) {
               return 'Enter a valid positive number with decimal cents (e.g. 250.00).';
             }
-            const num = Number.parseFloat(trimmed);
-            if (Number.isNaN(num) || num <= 0) {
+            if (!isPositiveDecimal(trimmed)) {
               return 'Amount must be greater than zero.';
             }
             return undefined;
@@ -238,7 +239,7 @@ export function TransferForm({ session, lockSourceAccount = false, onCancel }: T
               onChange={(val) => {
                 field.handleChange(val as RecordingMode);
                 if (val === 'CURRENT_ACTION') {
-                  form.setFieldValue('effectiveAt', toDatetimeLocal(new Date()));
+                  form.setFieldValue('effectiveAt', toDateTimeLocal(new Date()));
                 }
               }}
               data={[
@@ -270,7 +271,7 @@ export function TransferForm({ session, lockSourceAccount = false, onCancel }: T
               type="datetime-local"
               label="Effective Date & Time"
               size="md"
-              max={toDatetimeLocal(new Date())}
+              max={toDateTimeLocal(new Date())}
               leftSection={<ClockIcon size={16} />}
               value={field.state.value}
               onChange={(e) => field.handleChange(e.target.value)}

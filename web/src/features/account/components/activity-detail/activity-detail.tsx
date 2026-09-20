@@ -7,10 +7,10 @@ import {
   WarningCircleIcon
 } from '@phosphor-icons/react';
 import { $api } from '@/api/client';
+import { formatDateTime } from '@/shared/format/date-time';
+import { formatMoney } from '@/shared/format/money';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
 import {
-  formatCurrency,
-  formatDateTime,
   getActivityTypeBadgeColor,
   getActivityTypeDescription,
   getActivityTypeLabel,
@@ -195,7 +195,7 @@ export function ActivityDetail({ activityId, isAccountArchived = false, isAlread
                         isPositive ? classes.postingAmountPositive : isNegative ? classes.postingAmountNegative : ''
                       }`}>
                       {isPositive ? '+' : ''}
-                      {formatCurrency(posting.amount, posting.currency)}
+                      {formatMoney(posting.amount, posting.currency)}
                     </div>
                   </div>
                 );

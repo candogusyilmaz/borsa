@@ -1,6 +1,6 @@
 import { Alert, Badge, Button, Checkbox, Stack, Text } from '@mantine/core';
 import { ArrowClockwiseIcon, ArrowRightIcon, InfoIcon, WarningCircleIcon } from '@phosphor-icons/react';
-import { formatCurrency } from '../../utils/account-formatters';
+import { formatMoney } from '@/shared/format/money';
 import classes from './transfer.module.css';
 import { getTransferPolicyPresentation } from './transfer-domain';
 import type { TransferSessionResult } from './use-transfer-session';
@@ -24,7 +24,7 @@ export function TransferPreview({ session }: TransferPreviewProps) {
     <Stack gap="md">
       {/* 1. Transfer Summary Card */}
       <div className={classes.transferSummaryCard}>
-        <span className={classes.summaryAmount}>{formatCurrency(preview.amount, preview.currency)}</span>
+        <span className={classes.summaryAmount}>{formatMoney(preview.amount, preview.currency)}</span>
 
         <div className={classes.summaryRoute}>
           <span>{sourceAccount?.name || 'Source'}</span>
@@ -46,20 +46,20 @@ export function TransferPreview({ session }: TransferPreviewProps) {
               {sourceAccount?.name || 'Source Account'}
             </Text>
             <Badge color="orange" variant="light" size="xs" style={{ flexShrink: 0 }}>
-              Debit (-{formatCurrency(preview.amount, preview.currency)})
+              Debit (-{formatMoney(preview.amount, preview.currency)})
             </Badge>
           </div>
 
           <div className={classes.balanceComparison}>
             <div className={classes.balanceComparisonRow}>
               <span className={classes.balanceComparisonLabel}>Balance Before:</span>
-              <span className={classes.balanceComparisonValue}>{formatCurrency(preview.sourceBefore, preview.currency)}</span>
+              <span className={classes.balanceComparisonValue}>{formatMoney(preview.sourceBefore, preview.currency)}</span>
             </div>
 
             <div className={classes.balanceComparisonRow}>
               <span className={classes.balanceComparisonLabel}>Projected Balance:</span>
               <span className={`${classes.balanceComparisonValue} ${classes.balanceDeltaNegative}`}>
-                {formatCurrency(preview.sourceAfter, preview.currency)}
+                {formatMoney(preview.sourceAfter, preview.currency)}
               </span>
             </div>
           </div>
@@ -88,20 +88,20 @@ export function TransferPreview({ session }: TransferPreviewProps) {
               {destinationAccount?.name || 'Destination Account'}
             </Text>
             <Badge color="teal" variant="light" size="xs" style={{ flexShrink: 0 }}>
-              Credit (+{formatCurrency(preview.amount, preview.currency)})
+              Credit (+{formatMoney(preview.amount, preview.currency)})
             </Badge>
           </div>
 
           <div className={classes.balanceComparison}>
             <div className={classes.balanceComparisonRow}>
               <span className={classes.balanceComparisonLabel}>Balance Before:</span>
-              <span className={classes.balanceComparisonValue}>{formatCurrency(preview.destinationBefore, preview.currency)}</span>
+              <span className={classes.balanceComparisonValue}>{formatMoney(preview.destinationBefore, preview.currency)}</span>
             </div>
 
             <div className={classes.balanceComparisonRow}>
               <span className={classes.balanceComparisonLabel}>Projected Balance:</span>
               <span className={`${classes.balanceComparisonValue} ${classes.balanceDeltaPositive}`}>
-                {formatCurrency(preview.destinationAfter, preview.currency)}
+                {formatMoney(preview.destinationAfter, preview.currency)}
               </span>
             </div>
           </div>

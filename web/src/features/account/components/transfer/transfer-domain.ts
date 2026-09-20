@@ -1,5 +1,7 @@
+import { toDateTimeLocal } from '@/shared/format/date-time';
+import { formatMoney } from '@/shared/format/money';
 import type { FinancialAccount } from '../../types';
-import { formatCurrency, isCashFundingCapable, isLiabilityKind, toDatetimeLocal } from '../../utils/account-formatters';
+import { isCashFundingCapable, isLiabilityKind } from '../../utils/account-formatters';
 import type { TransferDefaultsOptions, TransferFormValues, TransferPolicyPresentation, TransferPreviewResponse } from './transfer-types';
 
 /**
@@ -84,7 +86,7 @@ export function createTransferFormDefaults(options: { sourceAccountId: string; d
     destinationAccountId: options.destinationAccountId,
     amount: '',
     recordingMode: 'CURRENT_ACTION',
-    effectiveAt: toDatetimeLocal(new Date()),
+    effectiveAt: toDateTimeLocal(new Date()),
     confirmPolicyBreach: false
   };
 }
@@ -133,7 +135,7 @@ export function getTransferPolicyPresentation(
       return {
         severity: 'warning',
         title: 'Overdraft Confirmation Required',
-        description: `This transfer will overdraw ${source?.name || 'the source account'} by ${formatCurrency(overdraftDeficit, preview.currency)}. Your account policy permits overdrafts when explicitly confirmed.`,
+        description: `This transfer will overdraw ${source?.name || 'the source account'} by ${formatMoney(overdraftDeficit, preview.currency)}. Your account policy permits overdrafts when explicitly confirmed.`,
         requiresConfirmation: true
       };
     }

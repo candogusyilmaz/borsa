@@ -14,14 +14,10 @@ import {
 } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { $api } from '@/api/client';
+import { formatDateTime } from '@/shared/format/date-time';
+import { formatMoney } from '@/shared/format/money';
 import type { ActivityType, FinancialAccount } from '../../types';
-import {
-  formatCurrency,
-  formatDateTime,
-  getActivityTypeBadgeColor,
-  getActivityTypeLabel,
-  isCashFundingCapable
-} from '../../utils/account-formatters';
+import { getActivityTypeBadgeColor, getActivityTypeLabel, isCashFundingCapable } from '../../utils/account-formatters';
 import { ActivityDetailOverlay } from '../activity-detail/activity-detail';
 import { CashActivityOverlay } from '../record-cash-activity';
 import { TransferOverlay } from '../transfer/transfer';
@@ -298,7 +294,7 @@ export function ActivityHistoryCard({ account }: ActivityHistoryCardProps) {
                 key={act.id}
                 className={`${classes.activityRow} ${isReversal ? classes.activityRowReversed : ''} ${isReversedByOther ? classes.activityRowIsReversed : ''}`}
                 onClick={() => handleOpenDetail(act.id)}
-                aria-label={`View details for ${getActivityTypeLabel(act.activityType)} of ${formatCurrency(postingAmount, account.currency)}`}>
+                aria-label={`View details for ${getActivityTypeLabel(act.activityType)} of ${formatMoney(postingAmount, account.currency)}`}>
                 <div className={classes.activityMain}>
                   <div className={classes.iconWrap} aria-hidden="true">
                     {getActivityIcon(act.activityType)}
@@ -342,7 +338,7 @@ export function ActivityHistoryCard({ account }: ActivityHistoryCardProps) {
                     <div
                       className={`${classes.amountText} ${isPositive ? classes.amountPositive : isNegative ? classes.amountNegative : ''}`}>
                       {isPositive ? '+' : ''}
-                      {formatCurrency(postingAmount, account.currency)}
+                      {formatMoney(postingAmount, account.currency)}
                     </div>
                     <Text size="xs" c="dimmed">
                       {act.postings.length} {act.postings.length === 1 ? 'posting' : 'postings'}

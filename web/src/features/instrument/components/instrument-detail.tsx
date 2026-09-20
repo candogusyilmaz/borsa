@@ -2,8 +2,8 @@ import { Alert, Badge, Button, Divider, Group, Loader, Stack, Text } from '@mant
 import { GlobeHemisphereWestIcon, PencilSimpleIcon, StackIcon, TrendUpIcon, UserIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { $api } from '@/api/client';
 import { TradeOverlay } from '@/features/investing';
+import { formatDateTime } from '@/shared/format/date-time';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
-import { formatDateTime } from '../../account/utils/account-formatters';
 import {
   getAliasTypeLabel,
   getInstrumentTypeBadgeColor,

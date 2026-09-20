@@ -1,6 +1,6 @@
 import { Button, Stack, Text } from '@mantine/core';
 import { CheckCircleIcon } from '@phosphor-icons/react';
-import { formatCurrency } from '@/features/account/utils/account-formatters';
+import { formatMoney } from '@/shared/format/money';
 import { formatQuantity, getTradeSideLabel } from '../../utils/investing-formatters';
 import classes from './record-trade.module.css';
 import type { useTradeSession } from './use-trade-session';
@@ -29,11 +29,11 @@ export function TradeSuccess({ session, onClose, onViewDetails }: TradeSuccessPr
         </Text>
         <Text size="sm" c="dimmed">
           {getTradeSideLabel(trade.side)} {formatQuantity(trade.quantity)} {trade.instrumentSymbol} @{' '}
-          {formatCurrency(trade.unitPrice, trade.currency)}
+          {formatMoney(trade.unitPrice, trade.currency)}
         </Text>
         <Text size="xs" c="dimmed">
           Total Cash Impact: {trade.cashDelta.startsWith('-') ? '' : '+'}
-          {formatCurrency(trade.cashDelta, trade.currency)}
+          {formatMoney(trade.cashDelta, trade.currency)}
         </Text>
       </Stack>
 

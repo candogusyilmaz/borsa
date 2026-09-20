@@ -10,8 +10,9 @@ import {
 } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { $api } from '@/api/client';
+import { formatDateTime } from '@/shared/format/date-time';
+import { formatMoney } from '@/shared/format/money';
 import type { FinancialAccount } from '../../types';
-import { formatCurrency, formatDateTime } from '../../utils/account-formatters';
 import { generateAccountTrendData } from '../../utils/account-trend';
 import { AsOfDateOverlay } from './as-of-date';
 import classes from './balance-liquidity-card.module.css';
@@ -131,7 +132,7 @@ export function BalanceLiquidityCard({ account, expanded, onToggle }: BalanceLiq
               ) : (
                 <>
                   <div className={classes.collapsedAmount}>
-                    {formatCurrency(balance?.clearedBalance ?? balance?.ledgerBalance, account.currency)}
+                    {formatMoney(balance?.clearedBalance ?? balance?.ledgerBalance, account.currency)}
                   </div>
                   <div className={classes.collapsedLabel}>Cleared / Ledger Balance</div>
                 </>
@@ -163,14 +164,14 @@ export function BalanceLiquidityCard({ account, expanded, onToggle }: BalanceLiq
               <div className={classes.collapsedMetricItem}>
                 <span className={classes.collapsedMetricLabel}>Cash Held</span>
                 <span className={classes.collapsedMetricValue}>
-                  {balanceQuery.isLoading ? <Skeleton height={18} width={70} /> : formatCurrency(balance?.cashHeld, account.currency)}
+                  {balanceQuery.isLoading ? <Skeleton height={18} width={70} /> : formatMoney(balance?.cashHeld, account.currency)}
                 </span>
               </div>
 
               <div className={classes.collapsedMetricItem}>
                 <span className={classes.collapsedMetricLabel}>Overdraft Used</span>
                 <span className={classes.collapsedMetricValue}>
-                  {balanceQuery.isLoading ? <Skeleton height={18} width={70} /> : formatCurrency(balance?.overdraftUsed, account.currency)}
+                  {balanceQuery.isLoading ? <Skeleton height={18} width={70} /> : formatMoney(balance?.overdraftUsed, account.currency)}
                 </span>
               </div>
             </div>
@@ -209,7 +210,7 @@ export function BalanceLiquidityCard({ account, expanded, onToggle }: BalanceLiq
                   <div className={classes.metricCell}>
                     <span className={classes.metricLabel}>Settled / Cleared</span>
                     <span className={classes.metricValue}>
-                      {balanceQuery.isLoading ? <Skeleton height={22} /> : formatCurrency(balance?.clearedBalance, account.currency)}
+                      {balanceQuery.isLoading ? <Skeleton height={22} /> : formatMoney(balance?.clearedBalance, account.currency)}
                     </span>
                   </div>
 
@@ -219,7 +220,7 @@ export function BalanceLiquidityCard({ account, expanded, onToggle }: BalanceLiq
                       {balanceQuery.isLoading ? (
                         <Skeleton height={22} />
                       ) : balance?.creditAvailable ? (
-                        formatCurrency(balance.creditAvailable, account.currency)
+                        formatMoney(balance.creditAvailable, account.currency)
                       ) : (
                         '—'
                       )}
@@ -266,7 +267,7 @@ export function BalanceLiquidityCard({ account, expanded, onToggle }: BalanceLiq
                           gridAxis="none"
                           fillOpacity={0.25}
                           strokeWidth={2.5}
-                          valueFormatter={(value) => formatCurrency(value, account.currency)}
+                          valueFormatter={(value) => formatMoney(value, account.currency)}
                           xAxisProps={{ interval: 'preserveStartEnd', minTickGap: 24 }}
                         />
                       )

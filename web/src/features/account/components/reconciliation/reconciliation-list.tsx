@@ -2,8 +2,9 @@ import { Alert, Badge, Button, Group, Loader, Stack, Text } from '@mantine/core'
 import { CheckCircleIcon, PlusIcon, SlidersIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { $api } from '@/api/client';
+import { formatDateTime } from '@/shared/format/date-time';
+import { formatMoney } from '@/shared/format/money';
 import type { FinancialAccount } from '../../types';
-import { formatCurrency, formatDateTime } from '../../utils/account-formatters';
 import classes from './reconciliation.module.css';
 import {
   getLifecycleStatusBadgeColor,
@@ -131,12 +132,12 @@ export function ReconciliationList({ account, onStartNew, onSelectReconciliation
                 <div className={classes.cardBody}>
                   <div className={classes.dataCell}>
                     <span className={classes.dataLabel}>Statement Closing</span>
-                    <span className={classes.dataValue}>{formatCurrency(rec.statementClosingBalance, rec.currency)}</span>
+                    <span className={classes.dataValue}>{formatMoney(rec.statementClosingBalance, rec.currency)}</span>
                   </div>
 
                   <div className={classes.dataCell}>
                     <span className={classes.dataLabel}>Ledger Closing</span>
-                    <span className={classes.dataValue}>{formatCurrency(rec.ledgerClosingBalanceBeforeAdjustment, rec.currency)}</span>
+                    <span className={classes.dataValue}>{formatMoney(rec.ledgerClosingBalanceBeforeAdjustment, rec.currency)}</span>
                   </div>
 
                   <div className={classes.dataCell}>
@@ -144,13 +145,13 @@ export function ReconciliationList({ account, onStartNew, onSelectReconciliation
                     <span
                       className={`${classes.dataValue} ${hasDiff ? (diffNum > 0 ? classes.deltaPositive : classes.deltaNegative) : ''}`}>
                       {hasDiff && diffNum > 0 ? '+' : ''}
-                      {formatCurrency(rec.closingDifference, rec.currency)}
+                      {formatMoney(rec.closingDifference, rec.currency)}
                     </span>
                   </div>
 
                   <div className={classes.dataCell}>
                     <span className={classes.dataLabel}>Period Net Posted</span>
-                    <span className={classes.dataValue}>{formatCurrency(rec.periodNetPostedAmount, rec.currency)}</span>
+                    <span className={classes.dataValue}>{formatMoney(rec.periodNetPostedAmount, rec.currency)}</span>
                   </div>
                 </div>
               </button>

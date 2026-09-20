@@ -1,7 +1,8 @@
 import { Alert, Badge, Button, Divider, Group, Loader, Stack, Text } from '@mantine/core';
 import { ArrowCounterClockwiseIcon, InfoIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { $api } from '@/api/client';
-import { formatCurrency, formatDateTime } from '../../utils/account-formatters';
+import { formatDateTime } from '@/shared/format/date-time';
+import { formatMoney } from '@/shared/format/money';
 import { ActivityDetailOverlay } from '../activity-detail/activity-detail';
 import classes from './reconciliation.module.css';
 import {
@@ -117,27 +118,27 @@ export function ReconciliationDetail({
 
           <div className={classes.comparisonRow}>
             <span className={classes.comparisonLabel}>Statement Closing Balance</span>
-            <span className={classes.comparisonValue}>{formatCurrency(rec.statementClosingBalance, rec.currency)}</span>
+            <span className={classes.comparisonValue}>{formatMoney(rec.statementClosingBalance, rec.currency)}</span>
           </div>
 
           <div className={classes.comparisonRow}>
             <span className={classes.comparisonLabel}>Ledger Closing Balance (Prior to Adj.)</span>
-            <span className={classes.comparisonValue}>{formatCurrency(rec.ledgerClosingBalanceBeforeAdjustment, rec.currency)}</span>
+            <span className={classes.comparisonValue}>{formatMoney(rec.ledgerClosingBalanceBeforeAdjustment, rec.currency)}</span>
           </div>
 
           <div className={classes.comparisonRow}>
             <span className={classes.comparisonLabel}>Statement Opening Balance</span>
-            <span className={classes.comparisonValue}>{formatCurrency(rec.statementOpeningBalance, rec.currency)}</span>
+            <span className={classes.comparisonValue}>{formatMoney(rec.statementOpeningBalance, rec.currency)}</span>
           </div>
 
           <div className={classes.comparisonRow}>
             <span className={classes.comparisonLabel}>Ledger Opening Balance</span>
-            <span className={classes.comparisonValue}>{formatCurrency(rec.ledgerOpeningBalance, rec.currency)}</span>
+            <span className={classes.comparisonValue}>{formatMoney(rec.ledgerOpeningBalance, rec.currency)}</span>
           </div>
 
           <div className={classes.comparisonRow}>
             <span className={classes.comparisonLabel}>Net Period Movement</span>
-            <span className={classes.comparisonValue}>{formatCurrency(rec.periodNetPostedAmount, rec.currency)}</span>
+            <span className={classes.comparisonValue}>{formatMoney(rec.periodNetPostedAmount, rec.currency)}</span>
           </div>
 
           <div className={classes.comparisonRow}>
@@ -158,7 +159,7 @@ export function ReconciliationDetail({
             <div className={classes.comparisonRow}>
               <span className={classes.comparisonLabel}>Adjustment Posted</span>
               <span className={classes.comparisonValue} style={{ color: 'var(--mantine-color-orange-6)' }}>
-                {formatCurrency(rec.adjustmentAmount || rec.closingDifference, rec.currency)}
+                {formatMoney(rec.adjustmentAmount || rec.closingDifference, rec.currency)}
               </span>
             </div>
 

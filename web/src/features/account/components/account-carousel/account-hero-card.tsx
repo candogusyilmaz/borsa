@@ -12,9 +12,9 @@ import {
   WarningCircleIcon
 } from '@phosphor-icons/react';
 import { $api } from '@/api/client';
+import { formatMoney } from '@/shared/format/money';
 import type { AccountKind, FinancialAccount } from '../../types';
 import {
-  formatCurrency,
   getAccountKindBadgeColor,
   getAccountKindLabel,
   getTrackingModeBadgeColor,
@@ -174,7 +174,7 @@ export function AccountHeroCard({ account, isSelected, onSelect }: AccountHeroCa
           </Text>
         ) : (
           <div className={classes.balanceAmount}>
-            {formatCurrency(balanceQuery.data?.clearedBalance ?? balanceQuery.data?.ledgerBalance, account.currency)}
+            {formatMoney(balanceQuery.data?.clearedBalance ?? balanceQuery.data?.ledgerBalance, account.currency)}
           </div>
         )}
       </div>

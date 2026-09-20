@@ -6,7 +6,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { $api } from '@/api/client';
 import { getApiErrorMessage, normalizeError, showApiError } from '@/api/errors';
 import { CurrencySelect } from '@/features/reference';
+import { toDateTimeLocal } from '@/shared/format/date-time';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { isDecimal } from '@/shared/validation/decimal';
 import type { AccountKind, FinancialAccount, NegativeBalancePolicy, TrackingMode } from '../../types';
 import {
   COMMON_TIMEZONES,
@@ -16,10 +18,8 @@ import {
   getTrackingModeDescription,
   getTrackingModeLabel,
   isLiabilityKind,
-  PLAIN_DECIMAL_REGEX,
   supportsHoldingsOnly,
-  supportsNegativePolicy,
-  toDatetimeLocal
+  supportsNegativePolicy
 } from '../../utils/account-formatters';
 import classes from './create-account.module.css';
 
@@ -56,7 +56,7 @@ export function CreateAccount() {
     typeof Intl !== 'undefined' && Intl.DateTimeFormat ? Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC' : 'UTC';
 
   // Offset default time slightly into the past to prevent clock skew validation errors
-  const defaultEffectiveAt = toDatetimeLocal(new Date(Date.now() - 60000));
+  const defaultEffectiveAt = toDateTimeLocal(new Date(Date.now() - 60000));
 
   const form = useForm({
     defaultValues: {
@@ -362,7 +362,7 @@ export function CreateAccount() {
                   onChange: ({ value }) => {
                     const trimmed = value.trim();
                     if (!trimmed) return 'Opening balance amount is required.';
-                    if (!PLAIN_DECIMAL_REGEX.test(trimmed)) {
+                    if (!isDecimal(trimmed)) {
                       return 'Must be an exact decimal amount (e.g. 0.00, 1000.00).';
                     }
                     return undefined;
@@ -420,7 +420,7 @@ export function CreateAccount() {
                             type="button"
                             variant="default"
                             className={classes.presetBtn}
-                            onClick={() => field.handleChange(toDatetimeLocal(new Date()))}>
+                            onClick={() => field.handleChange(toDateTimeLocal(new Date()))}>
                             Now
                           </Button>
                           <Button
@@ -430,7 +430,7 @@ export function CreateAccount() {
                             onClick={() => {
                               const d = new Date();
                               d.setHours(0, 0, 0, 0);
-                              field.handleChange(toDatetimeLocal(d));
+                              field.handleChange(toDateTimeLocal(d));
                             }}>
                             Today
                           </Button>
@@ -442,7 +442,7 @@ export function CreateAccount() {
                               const d = new Date();
                               d.setDate(1);
                               d.setHours(0, 0, 0, 0);
-                              field.handleChange(toDatetimeLocal(d));
+                              field.handleChange(toDateTimeLocal(d));
                             }}>
                             This Month
                           </Button>
@@ -452,7 +452,7 @@ export function CreateAccount() {
                             className={classes.presetBtn}
                             onClick={() => {
                               const d = new Date(new Date().getFullYear(), 0, 1, 0, 0, 0);
-                              field.handleChange(toDatetimeLocal(d));
+                              field.handleChange(toDateTimeLocal(d));
                             }}>
                             This Year
                           </Button>

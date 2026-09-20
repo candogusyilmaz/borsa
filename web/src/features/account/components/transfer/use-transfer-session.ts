@@ -4,8 +4,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { $api } from '@/api/client';
 import { normalizeError } from '@/api/errors';
+import { isPositiveDecimal } from '@/shared/validation/decimal';
 import type { FinancialAccount } from '../../types';
-import { POSITIVE_DECIMAL_REGEX } from '../../utils/account-formatters';
 import { createTransferFormDefaults, getDestinationAccounts, resolveEffectiveAt, resolveInitialTransferAccounts } from './transfer-domain';
 import { invalidateTransferRelatedQueries, notifyCommitError, notifyPreviewError } from './transfer-errors';
 import type { TransferFormValues, TransferState } from './transfer-types';
@@ -174,10 +174,7 @@ export function useTransferSession(options: UseTransferSessionOptions) {
     }
   );
 
-  const isAmountValid =
-    Boolean(formValues.amount?.trim()) &&
-    POSITIVE_DECIMAL_REGEX.test(formValues.amount.trim()) &&
-    Number.parseFloat(formValues.amount.trim()) > 0;
+  const isAmountValid = isPositiveDecimal(formValues.amount);
 
   const canPreview =
     Boolean(formValues.sourceAccountId) &&

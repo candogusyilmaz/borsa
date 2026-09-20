@@ -1,7 +1,7 @@
 import { Alert, Badge, Button, Checkbox, Collapse, Group, Text } from '@mantine/core';
 import { ArrowRightIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
-import { formatCurrency } from '@/features/account/utils/account-formatters';
+import { formatMoney } from '@/shared/format/money';
 import {
   formatQuantity,
   getCalculationPolicyLabel,
@@ -58,7 +58,7 @@ function TradePreviewContent({ session, previewSession }: TradePreviewContentPro
             {formatQuantity(preview.quantity)} {preview.instrumentSymbol}
           </Text>
           <Text size="sm" c="dimmed">
-            @ {formatCurrency(preview.unitPrice, preview.currency)}
+            @ {formatMoney(preview.unitPrice, preview.currency)}
           </Text>
         </Group>
       </div>
@@ -72,10 +72,10 @@ function TradePreviewContent({ session, previewSession }: TradePreviewContentPro
 
           <div className={classes.summaryRow}>
             <Text size="sm" c="dimmed">
-              Shares Value ({formatQuantity(preview.quantity)} &times; {formatCurrency(preview.unitPrice, preview.currency)})
+              Shares Value ({formatQuantity(preview.quantity)} &times; {formatMoney(preview.unitPrice, preview.currency)})
             </Text>
             <Text size="sm" fw={600} style={{ fontVariantNumeric: 'tabular-nums' }}>
-              {formatCurrency(preview.grossAmount, preview.currency)}
+              {formatMoney(preview.grossAmount, preview.currency)}
             </Text>
           </div>
 
@@ -84,7 +84,7 @@ function TradePreviewContent({ session, previewSession }: TradePreviewContentPro
               Trading Fee
             </Text>
             <Text size="sm" fw={600} style={{ fontVariantNumeric: 'tabular-nums' }}>
-              {Number.parseFloat(preview.commissionAmount) > 0 ? formatCurrency(preview.commissionAmount, preview.currency) : 'Free (0.00)'}
+              {Number.parseFloat(preview.commissionAmount) > 0 ? formatMoney(preview.commissionAmount, preview.currency) : 'Free (0.00)'}
             </Text>
           </div>
 
@@ -92,7 +92,7 @@ function TradePreviewContent({ session, previewSession }: TradePreviewContentPro
             <span>{isBuy ? 'Total Cash Deducted' : 'Total Cash Received'}</span>
             <Text size="md" fw={700} c={isBuy ? 'red.6' : 'teal.6'} style={{ fontVariantNumeric: 'tabular-nums' }}>
               {preview.cashDelta.startsWith('-') ? '' : '+'}
-              {formatCurrency(preview.cashDelta, preview.currency)}
+              {formatMoney(preview.cashDelta, preview.currency)}
             </Text>
           </div>
 
@@ -100,7 +100,7 @@ function TradePreviewContent({ session, previewSession }: TradePreviewContentPro
           <div className={classes.comparisonGrid} style={{ marginTop: '0.5rem' }}>
             <div className={classes.comparisonBox}>
               <span className={classes.comparisonLabel}>Cash Before</span>
-              <span className={classes.comparisonValue}>{formatCurrency(preview.cashBalanceBefore, preview.currency)}</span>
+              <span className={classes.comparisonValue}>{formatMoney(preview.cashBalanceBefore, preview.currency)}</span>
             </div>
             <div className={classes.comparisonBox}>
               <span className={classes.comparisonLabel}>Cash After</span>
@@ -109,7 +109,7 @@ function TradePreviewContent({ session, previewSession }: TradePreviewContentPro
                 style={{
                   color: Number.parseFloat(preview.cashBalanceAfter) < 0 ? 'var(--mantine-color-red-filled)' : undefined
                 }}>
-                {formatCurrency(preview.cashBalanceAfter, preview.currency)}
+                {formatMoney(preview.cashBalanceAfter, preview.currency)}
               </span>
             </div>
           </div>
@@ -132,8 +132,8 @@ function TradePreviewContent({ session, previewSession }: TradePreviewContentPro
             <div className={classes.comparisonBox}>
               <span className={classes.comparisonLabel}>Total Invested</span>
               <span className={classes.comparisonValue}>
-                {formatCurrency(preview.remainingBasisBefore, preview.currency)} <ArrowRightIcon size={12} />{' '}
-                {formatCurrency(preview.remainingBasisAfter, preview.currency)}
+                {formatMoney(preview.remainingBasisBefore, preview.currency)} <ArrowRightIcon size={12} />{' '}
+                {formatMoney(preview.remainingBasisAfter, preview.currency)}
               </span>
             </div>
           </div>
@@ -146,7 +146,7 @@ function TradePreviewContent({ session, previewSession }: TradePreviewContentPro
                   Original Cost of Sold Shares
                 </Text>
                 <Text size="sm" fw={600} style={{ fontVariantNumeric: 'tabular-nums' }}>
-                  {formatCurrency(preview.allocatedBasis, preview.currency)}
+                  {formatMoney(preview.allocatedBasis, preview.currency)}
                 </Text>
               </div>
 

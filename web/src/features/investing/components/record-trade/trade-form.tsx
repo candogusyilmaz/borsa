@@ -2,7 +2,7 @@ import { Alert, Button, Group, NumberInput, SegmentedControl, Select, Skeleton, 
 import { ArrowDownLeftIcon, ArrowUpRightIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { useMemo } from 'react';
 import { $api } from '@/api/client';
-import { POSITIVE_DECIMAL_REGEX } from '@/features/account/utils/account-formatters';
+import { isNonNegativeDecimal, isPositiveDecimal } from '@/shared/validation/decimal';
 import type { TradeSide } from '../../types';
 import { formatQuantity } from '../../utils/investing-formatters';
 import classes from './record-trade.module.css';
@@ -227,7 +227,7 @@ export function TradeForm({ session, options, onCancel }: TradeFormProps) {
             validators={{
               onChange: ({ value }: { value: string }) => {
                 if (!value?.trim()) return 'Quantity required';
-                if (!POSITIVE_DECIMAL_REGEX.test(value.trim()) || Number.parseFloat(value) <= 0) {
+                if (!isPositiveDecimal(value)) {
                   return 'Must be positive number';
                 }
                 return undefined;
@@ -265,7 +265,7 @@ export function TradeForm({ session, options, onCancel }: TradeFormProps) {
             validators={{
               onChange: ({ value }: { value: string }) => {
                 if (!value?.trim()) return 'Price required';
-                if (!POSITIVE_DECIMAL_REGEX.test(value.trim()) || Number.parseFloat(value) <= 0) {
+                if (!isPositiveDecimal(value)) {
                   return 'Must be positive price';
                 }
                 return undefined;
@@ -289,7 +289,7 @@ export function TradeForm({ session, options, onCancel }: TradeFormProps) {
           name="commissionAmount"
           validators={{
             onChange: ({ value }: { value: string }) => {
-              if (value && (!POSITIVE_DECIMAL_REGEX.test(value.trim()) || Number.parseFloat(value) < 0)) {
+              if (value && !isNonNegativeDecimal(value)) {
                 return 'Fee must be non-negative';
               }
               return undefined;

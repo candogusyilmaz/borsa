@@ -1,4 +1,4 @@
-import { toDatetimeLocal } from '../../utils/account-formatters';
+import { toDateTimeLocal } from '@/shared/format/date-time';
 import type { ReconciliationLifecycleStatus, ReconciliationResolution } from './reconciliation-types';
 
 /**
@@ -74,8 +74,8 @@ export function isZeroAmount(amountStr?: string | null): boolean {
   return Number.isNaN(num) || Math.abs(num) < 0.000001;
 }
 
-export function toDatetimeLocalString(date: Date): string {
-  return toDatetimeLocal(date);
+export function toDateTimeLocalString(date: Date): string {
+  return toDateTimeLocal(date);
 }
 
 export function getPreviousMonthPeriod(): { opening: string; closing: string } {
@@ -83,8 +83,8 @@ export function getPreviousMonthPeriod(): { opening: string; closing: string } {
   const startOfPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0);
   const endOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
   return {
-    opening: toDatetimeLocal(startOfPrevMonth),
-    closing: toDatetimeLocal(endOfPrevMonth)
+    opening: toDateTimeLocal(startOfPrevMonth),
+    closing: toDateTimeLocal(endOfPrevMonth)
   };
 }
 
@@ -92,8 +92,8 @@ export function getCurrentMonthPeriod(): { opening: string; closing: string } {
   const now = new Date(Date.now() - RECONCILIATION_CLOCK_SAFETY_MS);
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
   return {
-    opening: toDatetimeLocal(startOfMonth),
-    closing: toDatetimeLocal(now)
+    opening: toDateTimeLocal(startOfMonth),
+    closing: toDateTimeLocal(now)
   };
 }
 
@@ -101,7 +101,7 @@ export function getLast30DaysPeriod(): { opening: string; closing: string } {
   const now = new Date(Date.now() - RECONCILIATION_CLOCK_SAFETY_MS);
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   return {
-    opening: toDatetimeLocal(thirtyDaysAgo),
-    closing: toDatetimeLocal(now)
+    opening: toDateTimeLocal(thirtyDaysAgo),
+    closing: toDateTimeLocal(now)
   };
 }

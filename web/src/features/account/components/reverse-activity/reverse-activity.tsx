@@ -6,9 +6,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRef } from 'react';
 import { $api } from '@/api/client';
 import { showApiError } from '@/api/errors';
+import { formatDateTime } from '@/shared/format/date-time';
+import { formatMoney } from '@/shared/format/money';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
 import type { ActivityResponse } from '../../types';
-import { formatCurrency, formatDateTime, getActivityTypeLabel } from '../../utils/account-formatters';
+import { getActivityTypeLabel } from '../../utils/account-formatters';
 import classes from './reverse-activity.module.css';
 
 export interface ReverseActivityProps {
@@ -144,7 +146,7 @@ function ReverseActivityForm({ activity }: ReverseActivityFormProps) {
           <div className={classes.summaryRow}>
             <span className={classes.summaryLabel}>Original Amount:</span>
             <span className={classes.summaryValue}>
-              {formatCurrency(
+              {formatMoney(
                 primaryPosting.amount.startsWith('-') ? primaryPosting.amount.slice(1) : primaryPosting.amount,
                 primaryPosting.currency
               )}

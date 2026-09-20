@@ -1,4 +1,4 @@
-import { formatCurrency } from '@/features/account/utils/account-formatters';
+import { formatMoney } from '@/shared/format/money';
 import type { CalculationPolicy, ProjectionStatus, TradeSide } from '../types';
 
 export function formatQuantity(quantity: string | number | null | undefined): string {
@@ -30,7 +30,7 @@ export function formatUnitCost(
     return '—';
   }
   const avg = basisNum / qtyNum;
-  return formatCurrency(avg.toFixed(4), currency);
+  return formatMoney(avg.toFixed(4), currency);
 }
 
 export interface RealizedPnlPresentation {
@@ -45,7 +45,7 @@ export interface RealizedPnlPresentation {
 export function getRealizedPnlPresentation(pnl: string | number | null | undefined, currency: string = 'USD'): RealizedPnlPresentation {
   if (pnl === null || pnl === undefined || pnl === '') {
     return {
-      text: formatCurrency('0', currency),
+      text: formatMoney('0', currency),
       isProfit: false,
       isLoss: false,
       isZero: true,
@@ -57,7 +57,7 @@ export function getRealizedPnlPresentation(pnl: string | number | null | undefin
   const num = typeof pnl === 'string' ? Number.parseFloat(pnl) : pnl;
   if (Number.isNaN(num) || num === 0) {
     return {
-      text: formatCurrency('0', currency),
+      text: formatMoney('0', currency),
       isProfit: false,
       isLoss: false,
       isZero: true,
@@ -68,7 +68,7 @@ export function getRealizedPnlPresentation(pnl: string | number | null | undefin
 
   if (num > 0) {
     return {
-      text: `+${formatCurrency(num, currency)} Profit`,
+      text: `+${formatMoney(num, currency)} Profit`,
       isProfit: true,
       isLoss: false,
       isZero: false,
@@ -78,7 +78,7 @@ export function getRealizedPnlPresentation(pnl: string | number | null | undefin
   }
 
   return {
-    text: `${formatCurrency(num, currency)} Loss`,
+    text: `${formatMoney(num, currency)} Loss`,
     isProfit: false,
     isLoss: true,
     isZero: false,

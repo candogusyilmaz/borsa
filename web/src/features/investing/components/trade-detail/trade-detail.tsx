@@ -3,14 +3,14 @@ import { ArrowCounterClockwiseIcon, CalendarCheckIcon, DatabaseIcon, TrendUpIcon
 import { $api } from '@/api/client';
 import { ReverseActivityOverlay } from '@/features/account/components/reverse-activity/reverse-activity';
 import {
-  formatCurrency,
-  formatDateTime,
   getPolicyDecisionBadgeColor,
   getPolicyDecisionLabel,
   getPostingRoleLabel,
   getRecordingModeLabel,
   getSecurityPostingRoleLabel
 } from '@/features/account/utils/account-formatters';
+import { formatDateTime } from '@/shared/format/date-time';
+import { formatMoney } from '@/shared/format/money';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
 import { formatQuantity, getCalculationPolicyLabel, getTradeSideBadgeColor, getTradeSideLabel } from '../../utils/investing-formatters';
 import classes from './trade-detail.module.css';
@@ -103,18 +103,18 @@ export function TradeDetail({ activityId }: TradeDetailProps) {
 
             <div className={classes.metricCard}>
               <span className={classes.metricLabel}>Price per Share</span>
-              <span className={classes.metricValue}>{formatCurrency(trade.unitPrice, trade.currency)}</span>
+              <span className={classes.metricValue}>{formatMoney(trade.unitPrice, trade.currency)}</span>
             </div>
 
             <div className={classes.metricCard}>
               <span className={classes.metricLabel}>Total Shares Value</span>
-              <span className={classes.metricValue}>{formatCurrency(trade.grossAmount, trade.currency)}</span>
+              <span className={classes.metricValue}>{formatMoney(trade.grossAmount, trade.currency)}</span>
             </div>
 
             <div className={classes.metricCard}>
               <span className={classes.metricLabel}>Trading Fee</span>
               <span className={classes.metricValue}>
-                {Number.parseFloat(trade.commissionAmount) > 0 ? formatCurrency(trade.commissionAmount, trade.currency) : 'Free (0.00)'}
+                {Number.parseFloat(trade.commissionAmount) > 0 ? formatMoney(trade.commissionAmount, trade.currency) : 'Free (0.00)'}
               </span>
             </div>
 
@@ -126,7 +126,7 @@ export function TradeDetail({ activityId }: TradeDetailProps) {
                   color: trade.cashDelta.startsWith('-') ? 'var(--mantine-color-red-filled)' : 'var(--mantine-color-teal-filled)'
                 }}>
                 {trade.cashDelta.startsWith('-') ? '' : '+'}
-                {formatCurrency(trade.cashDelta, trade.currency)}
+                {formatMoney(trade.cashDelta, trade.currency)}
               </span>
             </div>
           </div>
@@ -204,7 +204,7 @@ export function TradeDetail({ activityId }: TradeDetailProps) {
                     </div>
                     <Text size="sm" fw={700} c={isPositive ? 'teal.6' : 'red.6'} style={{ fontVariantNumeric: 'tabular-nums' }}>
                       {isPositive ? '+' : ''}
-                      {formatCurrency(cashPosting.amount, cashPosting.currency)}
+                      {formatMoney(cashPosting.amount, cashPosting.currency)}
                     </Text>
                   </div>
                 );

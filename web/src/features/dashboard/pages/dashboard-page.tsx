@@ -31,15 +31,10 @@ import {
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { $api } from '@/api/client';
-import {
-  ActivityDetailOverlay,
-  formatCurrency,
-  formatDateTime,
-  getActivityTypeLabel,
-  TransferOverlay,
-  toRelativeTime
-} from '@/features/account';
+import { ActivityDetailOverlay, getActivityTypeLabel, TransferOverlay } from '@/features/account';
 import { siteConfig } from '@/shared/config/site';
+import { formatDateTime, toRelativeTime } from '@/shared/format/date-time';
+import { formatMoney } from '@/shared/format/money';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
 import type { User } from '@/shared/types/auth';
 import classes from './dashboard-page.module.css';
@@ -471,7 +466,7 @@ export function DashboardPage({ user }: DashboardPageProps) {
 
                     <div className={isDeposit ? classes.activityAmountPositive : classes.activityAmountDefault}>
                       {isDeposit ? '+' : isWithdrawal ? '-' : ''}
-                      {formatCurrency(absAmount, currency)}
+                      {formatMoney(absAmount, currency)}
                     </div>
                   </UnstyledButton>
                 );

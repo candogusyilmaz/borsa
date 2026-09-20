@@ -1,8 +1,9 @@
 import { Alert, Button, Divider, Stack, Text, TextInput } from '@mantine/core';
 import { ArrowClockwiseIcon, CheckCircleIcon, InfoIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
+import { formatDateTime } from '@/shared/format/date-time';
+import { formatMoney } from '@/shared/format/money';
 import type { FinancialAccount } from '../../types';
-import { formatCurrency, formatDateTime } from '../../utils/account-formatters';
 import classes from './reconciliation.module.css';
 import { isZeroAmount } from './reconciliation-domain';
 import type { ReconciliationAction, ReconciliationPreviewResponse } from './reconciliation-types';
@@ -74,12 +75,12 @@ export function ReconciliationPreview({
         {hasOpeningMismatch && (
           <Alert icon={<WarningCircleIcon size={20} weight="bold" />} title="Opening Continuity Mismatch" color="red" variant="filled">
             <Text size="xs" mb={4}>
-              The statement opening balance ({formatCurrency(preview.statementOpeningBalance, preview.currency)}) does not match the ledger
-              balance at this date ({formatCurrency(preview.ledgerOpeningBalance, preview.currency)}).
+              The statement opening balance ({formatMoney(preview.statementOpeningBalance, preview.currency)}) does not match the ledger
+              balance at this date ({formatMoney(preview.ledgerOpeningBalance, preview.currency)}).
             </Text>
             <Text size="xs">
-              Difference: <strong>{formatCurrency(preview.openingDifference, preview.currency)}</strong>. Prior periods must be balanced
-              before reconciling this statement.
+              Difference: <strong>{formatMoney(preview.openingDifference, preview.currency)}</strong>. Prior periods must be balanced before
+              reconciling this statement.
             </Text>
           </Alert>
         )}
@@ -92,18 +93,18 @@ export function ReconciliationPreview({
 
           <div className={classes.comparisonRow}>
             <span className={classes.comparisonLabel}>Statement Opening</span>
-            <span className={classes.comparisonValue}>{formatCurrency(preview.statementOpeningBalance, preview.currency)}</span>
+            <span className={classes.comparisonValue}>{formatMoney(preview.statementOpeningBalance, preview.currency)}</span>
           </div>
 
           <div className={classes.comparisonRow}>
             <span className={classes.comparisonLabel}>Ledger Opening</span>
-            <span className={classes.comparisonValue}>{formatCurrency(preview.ledgerOpeningBalance, preview.currency)}</span>
+            <span className={classes.comparisonValue}>{formatMoney(preview.ledgerOpeningBalance, preview.currency)}</span>
           </div>
 
           <div className={classes.comparisonRow}>
             <span className={classes.comparisonLabel}>Opening Difference</span>
             <span className={`${classes.comparisonValue} ${hasOpeningMismatch ? classes.deltaNegative : classes.deltaPositive}`}>
-              {formatCurrency(preview.openingDifference, preview.currency)}
+              {formatMoney(preview.openingDifference, preview.currency)}
             </span>
           </div>
 
@@ -115,14 +116,12 @@ export function ReconciliationPreview({
 
           <div className={classes.comparisonRow}>
             <span className={classes.comparisonLabel}>Statement Closing</span>
-            <span className={classes.comparisonValue}>{formatCurrency(preview.statementClosingBalance, preview.currency)}</span>
+            <span className={classes.comparisonValue}>{formatMoney(preview.statementClosingBalance, preview.currency)}</span>
           </div>
 
           <div className={classes.comparisonRow}>
             <span className={classes.comparisonLabel}>Ledger Closing (Before Adj.)</span>
-            <span className={classes.comparisonValue}>
-              {formatCurrency(preview.ledgerClosingBalanceBeforeAdjustment, preview.currency)}
-            </span>
+            <span className={classes.comparisonValue}>{formatMoney(preview.ledgerClosingBalanceBeforeAdjustment, preview.currency)}</span>
           </div>
 
           <div className={classes.comparisonRow}>
@@ -132,13 +131,13 @@ export function ReconciliationPreview({
                 hasClosingDiff ? (diffNum > 0 ? classes.deltaPositive : classes.deltaNegative) : classes.deltaPositive
               }`}>
               {hasClosingDiff && diffNum > 0 ? '+' : ''}
-              {formatCurrency(preview.closingDifference, preview.currency)}
+              {formatMoney(preview.closingDifference, preview.currency)}
             </span>
           </div>
 
           <div className={classes.comparisonRow}>
             <span className={classes.comparisonLabel}>Period Net Activity</span>
-            <span className={classes.comparisonValue}>{formatCurrency(preview.periodNetPostedAmount, preview.currency)}</span>
+            <span className={classes.comparisonValue}>{formatMoney(preview.periodNetPostedAmount, preview.currency)}</span>
           </div>
 
           <div className={classes.comparisonRow}>
@@ -161,7 +160,7 @@ export function ReconciliationPreview({
         {isAdjustment && !hasOpeningMismatch && (
           <Alert icon={<InfoIcon size={20} />} title="Adjusting Entry Required" color="orange" variant="light">
             <Text size="xs" mb="xs">
-              A difference of <strong>{formatCurrency(preview.closingDifference, preview.currency)}</strong> exists between statement and
+              A difference of <strong>{formatMoney(preview.closingDifference, preview.currency)}</strong> exists between statement and
               ledger. Committing will create a ledger adjustment at statement closing time.
             </Text>
 

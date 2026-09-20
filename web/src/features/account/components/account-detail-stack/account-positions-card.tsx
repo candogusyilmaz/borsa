@@ -4,8 +4,8 @@ import { Link } from '@tanstack/react-router';
 import { useMemo } from 'react';
 import { $api } from '@/api/client';
 import { PositionList, TradeOverlay } from '@/features/investing';
+import { formatMoney } from '@/shared/format/money';
 import type { FinancialAccount } from '../../types';
-import { formatCurrency } from '../../utils/account-formatters';
 import classes from './account-positions-card.module.css';
 
 interface AccountPositionsCardProps {
@@ -61,7 +61,7 @@ export function AccountPositionsCard({ account, expanded, onToggle }: AccountPos
           {positions.length > 0 && (
             <div className={classes.balanceBlock}>
               <span className={classes.balanceLabel}>Total Invested</span>
-              <span className={classes.balanceAmount}>{formatCurrency(totalBasis, account.currency)}</span>
+              <span className={classes.balanceAmount}>{formatMoney(totalBasis, account.currency)}</span>
             </div>
           )}
           <div className={classes.chevronIcon} aria-hidden="true">

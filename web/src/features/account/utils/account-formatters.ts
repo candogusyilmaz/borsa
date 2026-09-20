@@ -169,100 +169,6 @@ export function getPolicyDescription(policy?: string) {
   }
 }
 
-export function formatCurrency(amount: string | number | null | undefined, currency: string = 'USD') {
-  if (amount === null || amount === undefined || amount === '') {
-    return '—';
-  }
-  const numeric = typeof amount === 'string' ? Number.parseFloat(amount) : amount;
-  if (Number.isNaN(numeric)) {
-    return String(amount);
-  }
-
-  try {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(numeric);
-  } catch {
-    return `${numeric.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
-  }
-}
-
-export function formatDate(isoString?: string) {
-  if (!isoString) return '—';
-  try {
-    const date = new Date(isoString);
-    if (Number.isNaN(date.getTime())) return isoString;
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    }).format(date);
-  } catch {
-    return isoString;
-  }
-}
-
-export function formatDateTime(isoString?: string) {
-  if (!isoString) return '—';
-  try {
-    const date = new Date(isoString);
-    if (Number.isNaN(date.getTime())) return isoString;
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
-      hour12: true
-    }).format(date);
-  } catch {
-    return isoString;
-  }
-}
-
-export const PLAIN_DECIMAL_REGEX = /^-?(?:0|[1-9]\d*)(?:\.\d+)?$/;
-
-export function toDatetimeLocal(date: Date = new Date(), includeSeconds = false): string {
-  if (Number.isNaN(date.getTime())) return '';
-  const pad = (n: number) => n.toString().padStart(2, '0');
-  const year = date.getFullYear();
-  const month = pad(date.getMonth() + 1);
-  const day = pad(date.getDate());
-  const hours = pad(date.getHours());
-  const minutes = pad(date.getMinutes());
-  if (includeSeconds) {
-    const seconds = pad(date.getSeconds());
-    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
-  }
-  return `${year}-${month}-${day}T${hours}:${minutes}`;
-}
-
-export function toRelativeTime(isoString?: string): string {
-  if (!isoString) return '';
-  try {
-    const timestamp = new Date(isoString).getTime();
-    if (Number.isNaN(timestamp)) return '';
-    const diffMs = Date.now() - timestamp;
-    const diffSec = Math.floor(diffMs / 1000);
-    if (diffSec < 60) return 'just now';
-    const diffMin = Math.floor(diffSec / 60);
-    if (diffMin < 60) return `${diffMin}m ago`;
-    const diffHours = Math.floor(diffMin / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
-    const diffDays = Math.floor(diffHours / 24);
-    if (diffDays < 30) return `${diffDays}d ago`;
-    const diffMonths = Math.floor(diffDays / 30);
-    if (diffMonths < 12) return `${diffMonths}mo ago`;
-    const diffYears = Math.floor(diffDays / 365);
-    return `${diffYears}y ago`;
-  } catch {
-    return '';
-  }
-}
-
 export const COMMON_TIMEZONES = [
   'UTC',
   'America/New_York',
@@ -292,8 +198,6 @@ export const COMMON_CURRENCIES = [
   { code: 'CAD', name: 'Canadian Dollar', symbol: '$' },
   { code: 'AUD', name: 'Australian Dollar', symbol: '$' }
 ];
-
-export const POSITIVE_DECIMAL_REGEX = /^(?:0|[1-9]\d*)(?:\.\d+)?$/;
 
 export function getActivityTypeLabel(type: ActivityType): string {
   switch (type) {

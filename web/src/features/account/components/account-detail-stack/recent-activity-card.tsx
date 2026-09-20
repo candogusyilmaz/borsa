@@ -13,8 +13,10 @@ import {
   TrendUpIcon
 } from '@phosphor-icons/react';
 import { $api } from '@/api/client';
+import { formatDateTime } from '@/shared/format/date-time';
+import { formatMoney } from '@/shared/format/money';
 import type { ActivityResponse, ActivityType, FinancialAccount } from '../../types';
-import { formatCurrency, formatDateTime, getActivityTypeLabel } from '../../utils/account-formatters';
+import { getActivityTypeLabel } from '../../utils/account-formatters';
 import { ActivityDetailOverlay } from '../activity-detail/activity-detail';
 import classes from './recent-activity-card.module.css';
 
@@ -77,7 +79,7 @@ export function RecentActivityCard({ account, expanded, onToggle, onViewAll }: R
           e.stopPropagation();
           ActivityDetailOverlay.open({ activityId: act.id, isAccountArchived: account.archived });
         }}
-        aria-label={`View details for ${getActivityTypeLabel(act.activityType)}: ${formatCurrency(postingAmount, account.currency)}`}>
+        aria-label={`View details for ${getActivityTypeLabel(act.activityType)}: ${formatMoney(postingAmount, account.currency)}`}>
         <div className={classes.activityItemLeft}>
           <div className={classes.activityIconWrap} aria-hidden="true">
             {getActivityIcon(act.activityType)}
@@ -100,7 +102,7 @@ export function RecentActivityCard({ account, expanded, onToggle, onViewAll }: R
             isPositive ? classes.amountPositive : isNegative ? classes.amountNegative : classes.amountNeutral
           }`}>
           {isPositive ? '+' : ''}
-          {formatCurrency(postingAmount, account.currency)}
+          {formatMoney(postingAmount, account.currency)}
         </div>
       </button>
     );

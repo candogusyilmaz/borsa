@@ -2,8 +2,8 @@ import { Button, Text, TextInput } from '@mantine/core';
 import { CalendarBlankIcon, ClockCounterClockwiseIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { $api } from '@/api/client';
+import { toDateTimeLocal } from '@/shared/format/date-time';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
-import { toDatetimeLocal } from '../../utils/account-formatters';
 import classes from './as-of-date.module.css';
 
 export interface AsOfDateProps {
@@ -14,7 +14,7 @@ export interface AsOfDateProps {
 export function AsOfDate({ accountId, selectedAsOf }: AsOfDateProps) {
   const current = useCurrentOverlay<string | null>();
   const [customInput, setCustomInput] = useState(() =>
-    selectedAsOf ? toDatetimeLocal(new Date(selectedAsOf)) : toDatetimeLocal(new Date())
+    selectedAsOf ? toDateTimeLocal(new Date(selectedAsOf)) : toDateTimeLocal(new Date())
   );
 
   const accountQuery = $api.useQuery('get', '/api/v1/accounts/{accountId}', {

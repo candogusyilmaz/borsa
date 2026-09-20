@@ -1,8 +1,10 @@
 import { Badge, Button, Collapse, Group, Skeleton, Text } from '@mantine/core';
 import { CaretDownIcon, CaretUpIcon, ShieldCheckIcon, SlidersIcon } from '@phosphor-icons/react';
 import { $api } from '@/api/client';
+import { formatDate, formatDateTime } from '@/shared/format/date-time';
+import { formatMoney } from '@/shared/format/money';
 import type { FinancialAccount } from '../../types';
-import { formatCurrency, formatDate, formatDateTime, getCoverageStatusPresentation } from '../../utils/account-formatters';
+import { getCoverageStatusPresentation } from '../../utils/account-formatters';
 import { ReconciliationOverlay } from '../reconciliation';
 import classes from './starting-balance-coverage-card.module.css';
 
@@ -78,7 +80,7 @@ export function StartingBalanceCoverageCard({ account, expanded, onToggle, onOpe
             {openingBalanceQuery.isLoading ? (
               <Skeleton height={28} width={130} radius="sm" />
             ) : (
-              formatCurrency(openingAmount, account.currency)
+              formatMoney(openingAmount, account.currency)
             )}
           </div>
           <div className={classes.collapsedSubtitle}>
