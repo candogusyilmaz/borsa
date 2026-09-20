@@ -1,6 +1,7 @@
 import { Alert, Button, Divider, Stack, Text, TextInput } from '@mantine/core';
 import { ArrowClockwiseIcon, CheckCircleIcon, InfoIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
+import { toFinancialDecimal } from '@/shared/finance/decimal';
 import { formatDateTime } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
 import type { FinancialAccount } from '../../types';
@@ -35,8 +36,9 @@ export function ReconciliationPreview({
   const isBalanced = preview.admissibleResolutions?.includes('CONFIRM_BALANCED');
   const isAdjustment = preview.admissibleResolutions?.includes('CREATE_ADJUSTMENT');
 
-  const diffNum = Number.parseFloat(preview.closingDifference);
-  const hasClosingDiff = !Number.isNaN(diffNum) && Math.abs(diffNum) > 0.000001;
+  const closingDiffDec = toFinancialDecimal(preview.closingDifference);
+  const hasClosingDiff = closingDiffDec ? !closingDiffDec.isZero() : false;
+  const isClosingDiffPositive = closingDiffDec?.isPositive() ?? false;
 
   function handleCommit() {
     if (hasOpeningMismatch) return;
@@ -128,9 +130,9 @@ export function ReconciliationPreview({
             <span className={classes.comparisonLabel}>Closing Difference</span>
             <span
               className={`${classes.comparisonValue} ${
-                hasClosingDiff ? (diffNum > 0 ? classes.deltaPositive : classes.deltaNegative) : classes.deltaPositive
+                hasClosingDiff ? (isClosingDiffPositive ? classes.deltaPositive : classes.deltaNegative) : classes.deltaPositive
               }`}>
-              {hasClosingDiff && diffNum > 0 ? '+' : ''}
+              {hasClosingDiff && isClosingDiffPositive ? '+' : ''}
               {formatMoney(preview.closingDifference, preview.currency)}
             </span>
           </div>

@@ -1,3 +1,4 @@
+import { toFinancialDecimal } from '@/shared/finance/decimal';
 import { toDateTimeLocal } from '@/shared/format/date-time';
 import type { ReconciliationLifecycleStatus, ReconciliationResolution } from './reconciliation-types';
 
@@ -69,9 +70,9 @@ export function getLifecycleStatusDescription(status: ReconciliationLifecycleSta
 }
 
 export function isZeroAmount(amountStr?: string | null) {
-  if (!amountStr) return true;
-  const num = Number.parseFloat(amountStr);
-  return Number.isNaN(num) || Math.abs(num) < 0.000001;
+  if (amountStr === null || amountStr === undefined || amountStr === '') return true;
+  const dec = toFinancialDecimal(amountStr);
+  return dec?.isZero() ?? false;
 }
 
 export function toDateTimeLocalString(date: Date) {

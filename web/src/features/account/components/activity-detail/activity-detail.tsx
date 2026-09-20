@@ -7,6 +7,7 @@ import {
   WarningCircleIcon
 } from '@phosphor-icons/react';
 import { $api } from '@/api/client';
+import { toFinancialDecimal } from '@/shared/finance/decimal';
 import { formatDateTime } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
@@ -172,9 +173,9 @@ export function ActivityDetail({ activityId, isAccountArchived = false, isAlread
               })}
 
               {activity.postings.map((posting) => {
-                const num = Number.parseFloat(posting.amount);
-                const isPositive = !Number.isNaN(num) && num > 0;
-                const isNegative = !Number.isNaN(num) && num < 0;
+                const amountDec = toFinancialDecimal(posting.amount);
+                const isPositive = amountDec?.isPositive() ?? false;
+                const isNegative = amountDec?.isNegative() ?? false;
 
                 return (
                   <div key={`${posting.pocketId}-${posting.role}-${posting.amount}`} className={classes.postingRow}>

@@ -9,6 +9,7 @@ import {
   getSecurityPostingRoleLabel,
   ReverseActivityOverlay
 } from '@/features/account';
+import { toFinancialDecimal } from '@/shared/finance/decimal';
 import { formatDateTime } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
 import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
@@ -115,7 +116,9 @@ export function TradeDetail({ activityId }: TradeDetailProps) {
             <div className={classes.metricCard}>
               <span className={classes.metricLabel}>Trading Fee</span>
               <span className={classes.metricValue}>
-                {Number.parseFloat(trade.commissionAmount) > 0 ? formatMoney(trade.commissionAmount, trade.currency) : 'Free (0.00)'}
+                {toFinancialDecimal(trade.commissionAmount)?.isPositive()
+                  ? formatMoney(trade.commissionAmount, trade.currency)
+                  : 'Free (0.00)'}
               </span>
             </div>
 

@@ -1,7 +1,9 @@
 import { Alert, Badge, Button, Checkbox, Collapse, Group, Text } from '@mantine/core';
 import { ArrowRightIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
+import { toFinancialDecimal } from '@/shared/finance/decimal';
 import { formatMoney } from '@/shared/format/money';
+
 import {
   getCalculationPolicyLabel,
   getRealizedPnlPresentation,
@@ -84,7 +86,9 @@ function TradePreviewContent({ session, previewSession }: TradePreviewContentPro
               Trading Fee
             </Text>
             <Text size="sm" fw={600} style={{ fontVariantNumeric: 'tabular-nums' }}>
-              {Number.parseFloat(preview.commissionAmount) > 0 ? formatMoney(preview.commissionAmount, preview.currency) : 'Free (0.00)'}
+              {toFinancialDecimal(preview.commissionAmount)?.isPositive()
+                ? formatMoney(preview.commissionAmount, preview.currency)
+                : 'Free (0.00)'}
             </Text>
           </div>
 
@@ -107,7 +111,7 @@ function TradePreviewContent({ session, previewSession }: TradePreviewContentPro
               <span
                 className={classes.comparisonValue}
                 style={{
-                  color: Number.parseFloat(preview.cashBalanceAfter) < 0 ? 'var(--mantine-color-red-filled)' : undefined
+                  color: toFinancialDecimal(preview.cashBalanceAfter)?.isNegative() ? 'var(--mantine-color-red-filled)' : undefined
                 }}>
                 {formatMoney(preview.cashBalanceAfter, preview.currency)}
               </span>

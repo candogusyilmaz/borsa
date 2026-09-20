@@ -2,6 +2,7 @@ import { Alert, Badge, Button, Group, Loader, Stack, Text } from '@mantine/core'
 import { CheckCircleIcon, PlusIcon, SlidersIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { $api } from '@/api/client';
+import { toFinancialDecimal } from '@/shared/finance/decimal';
 import { formatDateTime } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
 import type { FinancialAccount } from '../../types';
@@ -101,8 +102,9 @@ export function ReconciliationList({ account, onStartNew, onSelectReconciliation
         <div className={classes.reconcileList}>
           {items.map((rec) => {
             const isSuperseded = rec.lifecycleStatus === 'SUPERSEDED';
-            const diffNum = Number.parseFloat(rec.closingDifference);
-            const hasDiff = !Number.isNaN(diffNum) && Math.abs(diffNum) > 0.000001;
+            const diffDec = toFinancialDecimal(rec.closingDifference);
+            const hasDiff = diffDec ? !diffDec.isZero() : false;
+            const isDiffPositive = diffDec?.isPositive() ?? false;
 
             return (
               <button
@@ -143,8 +145,8 @@ export function ReconciliationList({ account, onStartNew, onSelectReconciliation
                   <div className={classes.dataCell}>
                     <span className={classes.dataLabel}>Closing Difference</span>
                     <span
-                      className={`${classes.dataValue} ${hasDiff ? (diffNum > 0 ? classes.deltaPositive : classes.deltaNegative) : ''}`}>
-                      {hasDiff && diffNum > 0 ? '+' : ''}
+                      className={`${classes.dataValue} ${hasDiff ? (isDiffPositive ? classes.deltaPositive : classes.deltaNegative) : ''}`}>
+                      {hasDiff && isDiffPositive ? '+' : ''}
                       {formatMoney(rec.closingDifference, rec.currency)}
                     </span>
                   </div>

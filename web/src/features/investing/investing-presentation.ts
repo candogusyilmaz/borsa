@@ -1,3 +1,4 @@
+import { toFinancialDecimal } from '@/shared/finance/decimal';
 import { formatMoney } from '@/shared/format/money';
 import type { CalculationPolicy, ProjectionStatus, TradeSide } from './types';
 
@@ -22,8 +23,8 @@ export function getRealizedPnlPresentation(pnl: string | number | null | undefin
     };
   }
 
-  const num = typeof pnl === 'string' ? Number.parseFloat(pnl) : pnl;
-  if (Number.isNaN(num) || num === 0) {
+  const dec = toFinancialDecimal(pnl);
+  if (!dec || dec.isZero()) {
     return {
       text: formatMoney('0', currency),
       isProfit: false,
@@ -34,9 +35,9 @@ export function getRealizedPnlPresentation(pnl: string | number | null | undefin
     };
   }
 
-  if (num > 0) {
+  if (dec.isPositive()) {
     return {
-      text: `+${formatMoney(num, currency)} Profit`,
+      text: `+${formatMoney(pnl, currency)} Profit`,
       isProfit: true,
       isLoss: false,
       isZero: false,
@@ -46,7 +47,7 @@ export function getRealizedPnlPresentation(pnl: string | number | null | undefin
   }
 
   return {
-    text: `${formatMoney(num, currency)} Loss`,
+    text: `${formatMoney(pnl, currency)} Loss`,
     isProfit: false,
     isLoss: true,
     isZero: false,

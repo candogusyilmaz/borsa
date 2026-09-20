@@ -1,6 +1,7 @@
 import { Badge, Collapse, Skeleton } from '@mantine/core';
 import { CaretDownIcon, CaretUpIcon, ClockCounterClockwiseIcon } from '@phosphor-icons/react';
 import { $api } from '@/api/client';
+import { toFinancialDecimal } from '@/shared/finance/decimal';
 import { formatDateTime } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
 import { ActivityTypeIcon } from '../../activity-icon';
@@ -32,9 +33,9 @@ export function RecentActivityCard({ account, expanded, onToggle, onViewAll }: R
   function renderActivityRow(act: ActivityResponse, isSingle = false) {
     const myPosting = act.postings.find((p) => p.accountId === account.id) ?? act.postings[0];
     const postingAmount = myPosting ? myPosting.amount : '0.00';
-    const numAmount = Number.parseFloat(postingAmount);
-    const isPositive = !Number.isNaN(numAmount) && numAmount > 0;
-    const isNegative = !Number.isNaN(numAmount) && numAmount < 0;
+    const amountDec = toFinancialDecimal(postingAmount);
+    const isPositive = amountDec?.isPositive() ?? false;
+    const isNegative = amountDec?.isNegative() ?? false;
 
     return (
       <button

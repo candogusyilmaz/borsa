@@ -2,6 +2,7 @@ import { Alert, Badge, Button, Group, Select, Skeleton, Stack, Text } from '@man
 import { ArrowClockwiseIcon, ClockCounterClockwiseIcon, ReceiptIcon, WarningCircleIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { $api } from '@/api/client';
+import { toFinancialDecimal } from '@/shared/finance/decimal';
 import { formatDateTime } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
 import { isCashFundingCapable } from '../../account-domain';
@@ -245,9 +246,9 @@ export function ActivityHistoryCard({ account }: ActivityHistoryCardProps) {
             // Find posting leg for this account
             const myPosting = act.postings.find((p) => p.accountId === account.id) ?? act.postings[0];
             const postingAmount = myPosting ? myPosting.amount : '0.00';
-            const numAmount = Number.parseFloat(postingAmount);
-            const isPositive = !Number.isNaN(numAmount) && numAmount > 0;
-            const isNegative = !Number.isNaN(numAmount) && numAmount < 0;
+            const amountDec = toFinancialDecimal(postingAmount);
+            const isPositive = amountDec?.isPositive() ?? false;
+            const isNegative = amountDec?.isNegative() ?? false;
 
             // Check if effective time differs from recorded time (> 1 min)
             const isTimeDiscrepancy = Math.abs(new Date(act.effectiveAt).getTime() - new Date(act.recordedAt).getTime()) > 60000;

@@ -1,3 +1,4 @@
+import { toFinancialDecimal } from '@/shared/finance/decimal';
 import { toDateTimeLocal } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
 import { isCashFundingCapable, isLiabilityKind } from '../../account-domain';
@@ -124,11 +125,16 @@ export function getTransferPolicyPresentation(
   }
 
   if (!preview.allowed) {
-    const isNegativeAfter = preview.sourceAfter.startsWith('-');
+    const sourceAfterDec = toFinancialDecimal(preview.sourceAfter);
+    const isNegativeAfter = sourceAfterDec ? sourceAfterDec.isNegative() : preview.sourceAfter.startsWith('-');
     const policy = source?.policy;
 
     if (policy === 'SOFT_FLOOR') {
-      const overdraftDeficit = isNegativeAfter ? preview.sourceAfter.slice(1) : preview.amount;
+      const overdraftDeficit = isNegativeAfter
+        ? sourceAfterDec
+          ? sourceAfterDec.abs().toString()
+          : preview.sourceAfter.slice(1)
+        : preview.amount;
       return {
         severity: 'warning',
         title: 'Overdraft Confirmation Required',

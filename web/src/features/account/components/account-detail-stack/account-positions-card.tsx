@@ -4,6 +4,7 @@ import { Link } from '@tanstack/react-router';
 import { useMemo } from 'react';
 import { $api } from '@/api/client';
 import { PositionList, TradeOverlay } from '@/features/investing';
+import { FinancialDecimal, toFinancialDecimal } from '@/shared/finance/decimal';
 import { formatMoney } from '@/shared/format/money';
 import type { FinancialAccount } from '../../types';
 import classes from './account-positions-card.module.css';
@@ -27,10 +28,12 @@ export function AccountPositionsCard({ account, expanded, onToggle }: AccountPos
   const positions = positionsQuery.data?.items ?? [];
 
   const totalBasis = useMemo(() => {
-    return positions.reduce((acc, pos) => {
-      const num = Number.parseFloat(pos.remainingEconomicBasis);
-      return acc + (Number.isNaN(num) ? 0 : num);
-    }, 0);
+    return positions
+      .reduce((acc, pos) => {
+        const dec = toFinancialDecimal(pos.remainingEconomicBasis);
+        return dec ? acc.plus(dec) : acc;
+      }, new FinancialDecimal(0))
+      .toString();
   }, [positions]);
 
   return (

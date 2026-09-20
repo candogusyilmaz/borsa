@@ -1,3 +1,4 @@
+import { toFinancialDecimal } from '@/shared/finance/decimal';
 import { formatMoney } from '@/shared/format/money';
 
 export function formatQuantity(quantity: string | number | null | undefined) {
@@ -22,12 +23,18 @@ export function formatUnitCost(
   quantity: string | number | null | undefined,
   currency = 'USD'
 ) {
-  if (!totalBasis || !quantity) return '—';
-  const basisNum = Number.parseFloat(String(totalBasis));
-  const qtyNum = Number.parseFloat(String(quantity));
-  if (Number.isNaN(basisNum) || Number.isNaN(qtyNum) || qtyNum === 0) {
+  if (totalBasis === null || totalBasis === undefined || totalBasis === '') return '—';
+  if (quantity === null || quantity === undefined || quantity === '') return '—';
+
+  const basisDec = toFinancialDecimal(totalBasis);
+  const qtyDec = toFinancialDecimal(quantity);
+  if (!basisDec || !qtyDec || qtyDec.isZero()) {
     return '—';
   }
-  const avg = basisNum / qtyNum;
-  return formatMoney(avg.toFixed(4), currency);
+
+  const avg = basisDec.dividedBy(qtyDec);
+  return formatMoney(avg.toFixed(4), currency, 'en-US', {
+    minimumFractionDigits: 4,
+    maximumFractionDigits: 4
+  });
 }
