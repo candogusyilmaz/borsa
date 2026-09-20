@@ -7,10 +7,8 @@ This file is the operating contract and context router for work under `web/`.
 Before substantial frontend work:
 
 1. Read the root [AGENTS.md](../AGENTS.md).
-2. Read the relevant current implementation context when needed:
-   - [CURRENT.md](../docs/implementation/web/CURRENT.md)
+2. Inspect current technical and architectural reality when needed:
    - [STATE.md](../docs/implementation/web/STATE.md)
-   - [README.md](../docs/implementation/web/README.md)
 3. Follow:
    - [frontend-standards.md](../docs/engineering/frontend-standards.md) for frontend engineering decisions.
    - [ui-design-guidelines.md](../docs/engineering/ui-design-guidelines.md) for UI and interaction decisions.
@@ -28,6 +26,7 @@ Do not duplicate those documents here. Inspect the current codebase for implemen
 ## Working Style
 
 - Inspect the relevant existing implementation before making changes.
+- For architectural or structural frontend work, inspect multiple comparable routes/features before deciding the target pattern. Prefer repeated good codebase patterns over isolated examples, and follow [frontend-standards.md](../docs/engineering/frontend-standards.md) for responsibility boundaries.
 - Prefer small, focused changes over broad rewrites.
 - Reuse good existing patterns, but do not preserve an awkward pattern merely because it already exists.
 - Do not introduce abstractions, dependencies, state managers, or infrastructure without a concrete need.
@@ -69,7 +68,7 @@ For normal frontend implementation work, verify at least:
 npm run typecheck
 npx biome check ./src
 npm run build
-````
+```
 
 If a command or script changes, follow the repository's current configuration rather than this document.
 

@@ -39,6 +39,8 @@ Keep application concerns separated:
 - domain features
 - genuinely shared code
 
+### Feature-Local by Default
+
 Prefer feature-local code by default.
 
 A component, hook, utility, or type should remain inside its feature until
@@ -46,8 +48,93 @@ there is a real cross-feature reason to move it into shared code.
 
 Do not promote code to `shared` merely because it could theoretically be reused.
 
-Do not enforce folder structures more deeply than necessary.
-Let the size and complexity of a feature determine its internal organization.
+Do not enforce folder structures more deeply than necessary. Let the size and
+complexity of a feature determine its internal organization. Simple features
+should remain simple.
+
+### Responsibility Boundaries Within Features
+
+As features grow in complexity, organizing code by distinct responsibility keeps
+ownership clear. Complex features may separate the following responsibilities
+when needed, without requiring every feature to adopt an identical deep folder tree:
+
+- **Pages**: A page represents the composition of a real screen or navigation
+  destination. Pages compose feature sections and components, own screen-level
+  loading, error, and empty presentation, coordinate screen-specific
+  interactions, and open contextual workflows or overlays. A page wrapper is
+  not required merely because a route contains a small amount of JSX.
+- **Components**: Components represent contained UI pieces or reusable feature UI.
+  Do not place code under `components/` merely because it happens to render React.
+  A route-aware workspace, screen composition, or large multi-step workflow
+  should not automatically be classified as a generic component.
+- **Workflows**: Multi-step or mutation-heavy user flows (such as flows with
+  edit/configure -> preview -> commit/success steps, coordinated mutations,
+  concurrency and version handling, policy confirmations, or workflow-specific
+  error handling) may be grouped as workflows when complexity justifies the
+  distinction. Do not create a `workflows/` directory in every feature by
+  default; use it only when the feature actually contains such flows.
+- **Domain / Semantic Logic**: Feature-specific business predicates and semantic
+  decisions (e.g., whether an account kind supports a capability, whether an
+  activity has a particular economic direction, or what domain states are
+  allowed together) should have clear ownership rather than being hidden in
+  generic formatter or utility modules. A dedicated `domain/` directory is not
+  prescribed for every feature; require clear ownership instead.
+- **Presentation**: User-facing mappings such as labels, descriptions, badge and
+  status presentation, and enum display should remain close to the feature or
+  concept that owns them. Do not mix presentation mappings with unrelated
+  generic formatting or business rules simply because all of them are helper
+  functions. A dedicated `presentation/` folder is not required where one is
+  unnecessary.
+
+### Avoid Catch-All `utils` and `components`
+
+`utils/` and `components/` are not banned; use them when the responsibility
+genuinely fits. However:
+
+- Do not use `utils/` as the default destination for any non-component code.
+- When a helper clearly represents formatting, validation, presentation, domain
+  rules, cache behavior, or workflow logic, prefer ownership that communicates
+  that specific responsibility.
+- Do not split trivial code into many folders merely to satisfy taxonomy. Simple
+  structure is valued over folder purity.
+
+### Cross-Feature Dependencies
+
+Do not prohibit all feature-to-feature imports. A feature may intentionally use
+another feature's real public capability (for example, an account screen
+launching or composing an exported trading workflow when that interaction is
+genuinely part of the product).
+
+However:
+
+- Do not reach into another feature's internal implementation paths for convenience.
+- Do not make one arbitrary feature the owner of generic formatting, validation,
+  or other cross-feature primitives.
+- When a primitive is genuinely domain-agnostic and has multiple unrelated
+  consumers, move it to an appropriate shared owner.
+- Expose intentional cross-feature capabilities through a small feature public API
+  where useful.
+- Do not broaden feature barrel files to export every internal helper.
+
+### Shared Ownership
+
+Code belongs in `shared` only when it is genuinely cross-feature or
+application-generic.
+
+Good shared candidates:
+- generic formatting primitives
+- generic validation primitives
+- reusable UI primitives
+- cross-cutting hooks and application infrastructure
+
+Bad reasons to move code to `shared`:
+- "it might be reusable someday"
+- avoiding a relative import path
+- hiding unclear ownership
+- making a feature directory appear smaller
+
+Domain-specific rules must remain with their owning domain, even when written as
+pure functions.
 
 ---
 
@@ -88,6 +175,10 @@ existing query infrastructure.
 Prefer invalidation/refetching over manually reproducing server-side state
 changes unless an optimistic update provides meaningful UX value.
 
+When the same meaningful invalidation group is duplicated across several
+workflows, a semantic cache or invalidation helper may be justified. Do not
+create a generic cache abstraction preemptively.
+
 Use the project's typed API client directly when that is sufficient.
 
 Do not create wrapper hooks that merely rename or forward an existing query or
@@ -101,7 +192,24 @@ server state itself when appropriate.
 
 ---
 
-## 5. Preserve Type Safety
+## 5. Authoritative Financial Values
+
+The backend remains authoritative for financial calculations, rounding, and
+financial state.
+
+Frontend code should not invent or reconstruct authoritative financial values
+when the backend already owns them.
+
+Avoid treating JavaScript floating-point arithmetic as authoritative financial
+business logic.
+
+Small UI calculations and comparisons (such as computing display unit costs from
+backend totals or determining PnL signs for visual indicators) may exist where
+appropriate, but exact financial semantics must follow the backend contract.
+
+---
+
+## 6. Preserve Type Safety
 
 Prefer inference over repeated explicit types.
 
@@ -117,7 +225,7 @@ type clearly.
 
 ---
 
-## 6. Keep React State Local
+## 7. Keep React State Local
 
 Use local React state for local UI state.
 
@@ -136,7 +244,7 @@ performance.
 
 ---
 
-## 7. Forms
+## 8. Forms
 
 Use the application's established form solution consistently.
 
@@ -152,7 +260,7 @@ behavior.
 
 ---
 
-## 8. Errors and Mutations
+## 9. Errors and Mutations
 
 Use the application's existing API error normalization rather than interpreting
 raw transport errors independently in each feature.
@@ -172,7 +280,7 @@ into this general guideline.
 
 ---
 
-## 9. UI Implementation
+## 10. UI Implementation
 
 Follow the dedicated UI design guidelines for visual and interaction decisions.
 
@@ -192,7 +300,29 @@ component props. Choose whichever keeps the code clearest.
 
 ---
 
-## 10. Abstraction Rule
+## 11. Localization Readiness
+
+Localization is planned for the future, but translation libraries are not yet
+installed in the codebase. Frontend code should follow stable readiness
+principles:
+
+- Generic helpers should return semantic values or raw data rather than
+  embedding feature-specific user-facing sentences.
+- Repeated user-facing enum and status presentation should have a single, clear
+  owner rather than being duplicated across components.
+- Do not invent translation keys or a pseudo-i18n abstraction before the actual
+  i18n library is introduced.
+- Locale-sensitive generic formatters should be designed so locale can be
+  supplied or adapted later without requiring a full architectural rewrite.
+- Backend enum or error codes should not be blindly converted into user-facing
+  English through generic underscore or casing transformations when explicit
+  presentation is required.
+- Localization concerns belong to presentation, not business or domain rules.
+- Do not mandate a new directory solely for future internationalization.
+
+---
+
+## 12. Abstraction Rule
 
 Start concrete.
 
@@ -210,24 +340,24 @@ Prefer boring code over speculative framework-building.
 
 ---
 
-## 11. Follow Existing Architecture, Not Existing Mistakes
+## 13. Follow Existing Architecture, Not Existing Mistakes
 
-Inspect nearby implementations before adding a new pattern.
+Architectural changes should be based on multiple representative implementations
+rather than a single file:
 
-Reuse them when they are simple and appropriate.
-
-Existing code is evidence of project conventions, not proof that the pattern is
-correct.
-
-Do not propagate an obviously awkward or obsolete design solely for
-consistency.
-
-If changing an established architectural pattern, keep the change deliberate
-and scoped.
+- The current repository code is the implementation source of truth.
+- Inspect neighboring and comparable features before deciding on or introducing
+  a pattern.
+- Repeated good patterns across multiple features provide stronger evidence
+  than one isolated implementation.
+- Existing code may contain transitional, inconsistent, or awkward structures;
+  do not codify or preserve a mistake solely for consistency.
+- When changing an established architectural pattern or cleaning up transitional
+  structures, keep the change deliberate, incremental, and scoped.
 
 ---
 
-## 12. Verification
+## 14. Verification
 
 Before finishing frontend work:
 

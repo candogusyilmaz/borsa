@@ -2,11 +2,10 @@
 
 This directory contains the active backend implementation pointer, the concise current-state handoff, the PR template, and bounded implementation specifications for the backend application (`server/`).
 
-## Dual implementation tracks
+## Implementation tracks
 
-The repository maintains two independent implementation tracks:
-- **Backend track** (`docs/implementation/`): uses the `PR-xxx` specification namespace with `CURRENT.md` and `STATE.md`.
-- **Frontend track** ([docs/implementation/web/](web/README.md)): uses the `UI-xxx` specification namespace with its own `CURRENT.md` and `STATE.md`.
+- **Backend track** (`docs/implementation/`): governed by bounded `PR-xxx` specifications, `CURRENT.md`, and `STATE.md`.
+- **Frontend application** ([docs/implementation/web/](web/README.md)): directly managed and prompt-guided; architectural principles are governed by [frontend standards](../engineering/frontend-standards.md) and technical reality is captured in [web/STATE.md](web/STATE.md) without formal `UI-xxx` specification files or a `CURRENT.md` unit pointer.
 
 ## Active-spec mechanism
 

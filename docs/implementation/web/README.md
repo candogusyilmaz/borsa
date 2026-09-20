@@ -1,17 +1,16 @@
-# Frontend implementation workflow
+# Frontend implementation context
 
-This directory contains the active implementation pointer, current-state handoff, and specifications for the frontend application under `web/`.
+This directory contains the current technical and architectural state snapshot for the frontend application under `web/`.
 
-## Implementation track
+## Workflow
 
-Frontend specifications use the `UI-xxx` unit namespace (e.g. `UI-001`, `UI-002`), independent of the backend `PR-xxx` specifications.
+Frontend implementation work is directly managed and prompt-guided rather than tracked through formal `UI-xxx` specification files or a `CURRENT.md` active unit pointer.
 
-Currently active unit: **UI-001 (Frontend Foundation Rebuild)**.
-
-## Active-spec mechanism
-
-- `CURRENT.md` is a stable pointer to exactly one active `UI-xxx` specification, or explicitly records that no UI unit is currently active (currently pointing to UI-001).
-- `STATE.md` describes current frontend reality: technology baseline, implemented features, and verified status.
+Agents working on the frontend should consult:
+- [`web/AGENTS.md`](../../../web/AGENTS.md) for the frontend operating contract and working style.
+- [`docs/engineering/frontend-standards.md`](../../engineering/frontend-standards.md) for architecture, responsibility boundaries, and frontend principles.
+- [`docs/engineering/ui-design-guidelines.md`](../../engineering/ui-design-guidelines.md) for UI, layout, and interaction decisions.
+- [`STATE.md`](STATE.md) for the verified factual snapshot of current frontend reality (technologies, routes, implemented capabilities, and verification status).
 
 ## Context discipline
 

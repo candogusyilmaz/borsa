@@ -16,9 +16,9 @@ The repository is organized as a plain monorepo with separate application roots:
 
 - `server/` — Spring Boot backend application (Java 25, PostgreSQL 17, Flyway)
 - `web/` — React frontend application (Vite, React 19, Mantine)
-- `docs/` — Architecture, engineering standards, and dual implementation tracks:
+- `docs/` — Architecture, engineering standards, and implementation documentation:
   - `docs/implementation/` — Backend implementation track (`PR-xxx`)
-  - `docs/implementation/web/` — Frontend implementation track (`UI-xxx`)
+  - `docs/implementation/web/` — Frontend implementation state snapshot
 
 ### Running the Backend
 
