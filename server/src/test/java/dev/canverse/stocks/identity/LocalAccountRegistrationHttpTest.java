@@ -10,10 +10,13 @@ import com.jayway.jsonpath.JsonPath;
 import dev.canverse.stocks.identity.infrastructure.AuthIdentityRepository;
 import dev.canverse.stocks.identity.infrastructure.UserAccountRepository;
 import dev.canverse.stocks.platform.web.trace.RequestTraceFilter;
+import dev.canverse.stocks.testing.DatabaseCleaner;
+import dev.canverse.stocks.testing.IntegrationTest;
 import dev.canverse.stocks.testing.RecordingIdGenerator;
-import java.time.Clock;
+import dev.canverse.stocks.testing.RecordingIdGeneratorConfiguration;
+import dev.canverse.stocks.testing.TestClock;
+import dev.canverse.stocks.testing.TestClockConfiguration;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -21,11 +24,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -37,22 +36,16 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.context.WebApplicationContext;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
-@Testcontainers
-@Import(LocalAccountRegistrationHttpTest.TestOverrides.class)
+@IntegrationTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@Import({TestClockConfiguration.class, RecordingIdGeneratorConfiguration.class})
 class LocalAccountRegistrationHttpTest {
 
+    @Autowired
+    DatabaseCleaner databaseCleaner;
+    @Autowired
+    TestClock testClock;
     private static final Instant REGISTRATION_TIME = Instant.parse("2026-08-08T12:34:56Z");
     private static final String RAW_PASSWORD = "correct horse battery staple";
-
-    @Container
-    @ServiceConnection
-    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17");
-
     @Autowired
     WebApplicationContext webApplicationContext;
 
@@ -81,11 +74,10 @@ class LocalAccountRegistrationHttpTest {
 
     @BeforeEach
     void setUp() {
+        testClock.setInstant(REGISTRATION_TIME);
+
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).addFilters(requestTraceFilter).build();
-        runInTransaction(() -> {
-            jdbcTemplate.update("DELETE FROM identity.auth_identity");
-            jdbcTemplate.update("DELETE FROM identity.user_account");
-        });
+        runInTransaction(() -> { databaseCleaner.resetApplicationState(); });
         idGenerator.reset();
     }
 
@@ -254,19 +246,4 @@ class LocalAccountRegistrationHttpTest {
         return UUID.fromString(value);
     }
 
-    @TestConfiguration(proxyBeanMethods = false)
-    static class TestOverrides {
-
-        @Bean
-        @Primary
-        Clock fixedClock() {
-            return Clock.fixed(REGISTRATION_TIME, ZoneOffset.UTC);
-        }
-
-        @Bean
-        @Primary
-        RecordingIdGenerator recordingIdGenerator() {
-            return new RecordingIdGenerator();
-        }
-    }
 }

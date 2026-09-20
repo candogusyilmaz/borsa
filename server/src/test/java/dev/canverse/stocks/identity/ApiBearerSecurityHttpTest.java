@@ -14,8 +14,13 @@ import dev.canverse.stocks.identity.application.AuthenticatedIdentityToken;
 import dev.canverse.stocks.identity.application.LocalAccountRegistrationService;
 import dev.canverse.stocks.identity.application.LocalLoginService;
 import dev.canverse.stocks.platform.web.trace.RequestTraceFilter;
+import dev.canverse.stocks.testing.DatabaseCleaner;
+import dev.canverse.stocks.testing.IdentityTestPropertiesConfiguration;
+import dev.canverse.stocks.testing.IntegrationTest;
 import dev.canverse.stocks.testing.RecordingIdGenerator;
-import java.time.Clock;
+import dev.canverse.stocks.testing.RecordingIdGeneratorConfiguration;
+import dev.canverse.stocks.testing.TestClock;
+import dev.canverse.stocks.testing.TestClockConfiguration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -28,13 +33,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -47,28 +48,20 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        properties = {"stocks.identity.refresh-session.lifetime=2h", "stocks.identity.access-token.issuer=https://issuer.test",
-                "stocks.identity.access-token.audience=canverse-test-api", "stocks.identity.access-token.lifetime=5m",
-                "stocks.identity.access-token.key-id=test-ephemeral"})
+@IntegrationTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, properties = {"stocks.identity.refresh-session.lifetime=2h"})
 @AutoConfigureMockMvc
-@Testcontainers
-@Import({ApiBearerSecurityHttpTest.TestOverrides.class, ApiBearerSecurityHttpTest.ProbeController.class})
+@Import({IdentityTestPropertiesConfiguration.class, TestClockConfiguration.class, ApiBearerSecurityHttpTest.ProbeController.class,
+        RecordingIdGeneratorConfiguration.class})
 class ApiBearerSecurityHttpTest {
 
+    @Autowired
+    DatabaseCleaner databaseCleaner;
+    @Autowired
+    TestClock testClock;
     private static final Instant OBSERVED_AT = Instant.parse("2026-08-09T17:00:00.750Z");
     private static final String RAW_PASSWORD = "correct horse battery staple";
     private static final String API_PROBE_PATH = "/api/v1/test/authentication-probe";
     private static final String OUTSIDE_PROBE_PATH = "/test/outside-security";
-
-    @Container
-    @ServiceConnection
-    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17");
-
     @Autowired
     ApplicationContext applicationContext;
 
@@ -95,11 +88,9 @@ class ApiBearerSecurityHttpTest {
 
     @BeforeEach
     void setUp() {
-        runInTransaction(() -> {
-            jdbcTemplate.update("DELETE FROM identity.device_session");
-            jdbcTemplate.update("DELETE FROM identity.auth_identity");
-            jdbcTemplate.update("DELETE FROM identity.user_account");
-        });
+        testClock.setInstant(OBSERVED_AT);
+
+        runInTransaction(() -> { databaseCleaner.resetApplicationState(); });
         idGenerator.reset();
         probeController.reset();
     }
@@ -277,22 +268,6 @@ class ApiBearerSecurityHttpTest {
 
     private static UUID uuid(String value) {
         return UUID.fromString(value);
-    }
-
-    @TestConfiguration(proxyBeanMethods = false)
-    static class TestOverrides {
-
-        @Bean
-        @Primary
-        Clock fixedClock() {
-            return Clock.fixed(OBSERVED_AT, ZoneOffset.UTC);
-        }
-
-        @Bean
-        @Primary
-        RecordingIdGenerator recordingIdGenerator() {
-            return new RecordingIdGenerator();
-        }
     }
 
     @RestController

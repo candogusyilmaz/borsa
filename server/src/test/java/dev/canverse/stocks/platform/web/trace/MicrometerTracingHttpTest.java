@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import dev.canverse.stocks.platform.error.AppException;
 import dev.canverse.stocks.platform.error.CommonErrorCode;
+import dev.canverse.stocks.testing.IntegrationTest;
 import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
 import java.util.Map;
@@ -17,31 +18,20 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, properties = "management.tracing.sampling.probability=1.0")
+@IntegrationTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, properties = "management.tracing.sampling.probability=1.0")
 @AutoConfigureMockMvc
-@Testcontainers
-@Import(MicrometerTracingHttpTest.TestOverrides.class)
+@Import(MicrometerTracingHttpTest.TraceProbeConfiguration.class)
 class MicrometerTracingHttpTest {
 
     private static final String TRACEPARENT = "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01";
     private static final String INBOUND_TRACE_ID = "4bf92f3577b34da6a3ce929d0e0e4736";
     private static final String INBOUND_SPAN_ID = "00f067aa0ba902b7";
-
-    @Container
-    @ServiceConnection
-    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17");
-
     @Autowired
     MockMvc mockMvc;
 
@@ -133,7 +123,7 @@ class MicrometerTracingHttpTest {
     }
 
     @TestConfiguration(proxyBeanMethods = false)
-    static class TestOverrides {
+    static class TraceProbeConfiguration {
 
         @Bean
         TraceProbeController traceProbeController(Tracer tracer) {

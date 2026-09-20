@@ -9,14 +9,17 @@ import dev.canverse.stocks.identity.application.LocalLoginService;
 import dev.canverse.stocks.identity.error.IdentityErrorCode;
 import dev.canverse.stocks.identity.infrastructure.DeviceSessionRepository;
 import dev.canverse.stocks.platform.error.AppException;
+import dev.canverse.stocks.testing.DatabaseCleaner;
+import dev.canverse.stocks.testing.IntegrationTest;
 import dev.canverse.stocks.testing.RecordingIdGenerator;
+import dev.canverse.stocks.testing.RecordingIdGeneratorConfiguration;
+import dev.canverse.stocks.testing.TestClock;
+import dev.canverse.stocks.testing.TestClockConfiguration;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.List;
@@ -27,7 +30,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
@@ -38,27 +40,21 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.oauth2.jwt.JwtEncodingException;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE,
+@IntegrationTest(webEnvironment = SpringBootTest.WebEnvironment.NONE,
         properties = {"stocks.identity.refresh-session.lifetime=2h", "stocks.identity.access-token.lifetime=5m"})
-@Testcontainers
-@Import(LocalLoginServiceTest.TestOverrides.class)
+@Import({TestClockConfiguration.class, LocalLoginServiceTest.ControllableJwtConfiguration.class, RecordingIdGeneratorConfiguration.class})
 class LocalLoginServiceTest {
 
+    @Autowired
+    DatabaseCleaner databaseCleaner;
+    @Autowired
+    TestClock testClock;
     private static final Instant OBSERVED_AT = Instant.parse("2026-08-09T11:00:00.750Z");
     private static final Duration REFRESH_SESSION_LIFETIME = Duration.ofHours(2);
     private static final Duration ACCESS_TOKEN_LIFETIME = Duration.ofMinutes(5);
     private static final String RAW_PASSWORD = "correct horse battery staple";
     private static final String WRONG_PASSWORD = "incorrect horse battery staple";
     private static final String ACCESS_TOKEN = "deterministic-access-token";
-
-    @Container
-    @ServiceConnection
-    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17");
-
     @Autowired
     LocalAccountRegistrationService registrationService;
 
@@ -82,11 +78,9 @@ class LocalLoginServiceTest {
 
     @BeforeEach
     void clearIdentityTables() {
-        runInTransaction(() -> {
-            jdbcTemplate.update("DELETE FROM identity.device_session");
-            jdbcTemplate.update("DELETE FROM identity.auth_identity");
-            jdbcTemplate.update("DELETE FROM identity.user_account");
-        });
+        testClock.setInstant(OBSERVED_AT);
+
+        runInTransaction(() -> { databaseCleaner.resetApplicationState(); });
         idGenerator.setNextIds();
         jwtEncoder.reset();
     }
@@ -249,19 +243,7 @@ class LocalLoginServiceTest {
     }
 
     @TestConfiguration(proxyBeanMethods = false)
-    static class TestOverrides {
-
-        @Bean
-        @Primary
-        Clock fixedClock() {
-            return Clock.fixed(OBSERVED_AT, ZoneOffset.UTC);
-        }
-
-        @Bean
-        @Primary
-        RecordingIdGenerator recordingIdGenerator() {
-            return new RecordingIdGenerator();
-        }
+    static class ControllableJwtConfiguration {
 
         @Bean
         @Primary

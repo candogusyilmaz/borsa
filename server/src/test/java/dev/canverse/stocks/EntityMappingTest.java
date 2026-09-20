@@ -7,6 +7,7 @@ import dev.canverse.stocks.identity.infrastructure.DeviceSessionRepository;
 import dev.canverse.stocks.identity.infrastructure.UserAccountRepository;
 import dev.canverse.stocks.platform.infrastructure.JobRepository;
 import dev.canverse.stocks.platform.infrastructure.SecurityEventRepository;
+import dev.canverse.stocks.testing.IntegrationTest;
 import jakarta.persistence.EntityManager;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -14,22 +15,11 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@Testcontainers
+@IntegrationTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Transactional
 class EntityMappingTest {
-
-    @Container
-    @ServiceConnection
-    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17");
-
     private static final OffsetDateTime T1 = OffsetDateTime.of(2026, 8, 8, 9, 0, 0, 0, ZoneOffset.UTC);
     private static final OffsetDateTime T2 = OffsetDateTime.of(2026, 8, 8, 10, 0, 0, 0, ZoneOffset.UTC);
     private static final OffsetDateTime T3 = OffsetDateTime.of(2026, 8, 8, 11, 0, 0, 0, ZoneOffset.UTC);

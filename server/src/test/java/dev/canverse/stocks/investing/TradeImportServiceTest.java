@@ -34,8 +34,11 @@ import dev.canverse.stocks.reference.application.ManualInstrumentService;
 import dev.canverse.stocks.reference.domain.InstrumentType;
 import dev.canverse.stocks.reference.domain.ValuationMethod;
 import dev.canverse.stocks.reference.web.request.ManualInstrumentCreateRequest;
+import dev.canverse.stocks.testing.DatabaseCleaner;
+import dev.canverse.stocks.testing.IntegrationTest;
+import dev.canverse.stocks.testing.TestClock;
+import dev.canverse.stocks.testing.TestClockConfiguration;
 import java.nio.charset.StandardCharsets;
-import java.time.Clock;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -45,35 +48,25 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@Testcontainers
-@Import(TradeImportServiceTest.TestOverrides.class)
+@IntegrationTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@Import(TestClockConfiguration.class)
 class TradeImportServiceTest {
 
+    @Autowired
+    DatabaseCleaner databaseCleaner;
+    @Autowired
+    TestClock testClock;
     private static final UUID MANUAL_MARKET_ID = UUID.fromString("10000000-0000-0000-0000-000000000002");
     private static final Instant OBSERVED_AT = Instant.parse("2026-09-20T12:00:00Z");
     private static final Instant OPENED_AT = OBSERVED_AT.minusSeconds(3600);
     private static final Instant TRADE_AT = OBSERVED_AT.minusSeconds(1800);
     private static final String HEADER = "external_id,side,instrument_id,currency,effective_at,economic_sequence,quantity,unit_price,commission_amount";
-
-    @Container
-    @ServiceConnection
-    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17");
-
     @Autowired
     TradeImportService tradeImportService;
 
@@ -110,8 +103,9 @@ class TradeImportServiceTest {
 
     @BeforeEach
     void resetDatabaseAndCreateTradeFixture() {
-        new TransactionTemplate(transactionManager).executeWithoutResult(
-                status -> jdbcTemplate.execute("TRUNCATE TABLE identity.device_session, identity.auth_identity, identity.user_account CASCADE"));
+        testClock.setInstant(OBSERVED_AT);
+
+        databaseCleaner.resetApplicationState();
         ownerId = insertUser();
         accountId = new TransactionTemplate(transactionManager)
                 .execute(status -> accountService
@@ -606,12 +600,4 @@ class TradeImportServiceTest {
 
     private record UploadRequest(UUID clientRequestId, MockMultipartFile file) {}
 
-    @TestConfiguration(proxyBeanMethods = false)
-    static class TestOverrides {
-        @Bean
-        @Primary
-        Clock fixedClock() {
-            return Clock.fixed(OBSERVED_AT, ZoneOffset.UTC);
-        }
-    }
 }

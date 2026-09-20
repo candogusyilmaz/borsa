@@ -15,6 +15,8 @@ import dev.canverse.stocks.ledger.web.request.ReconciliationCommitRequest;
 import dev.canverse.stocks.ledger.web.request.ReconciliationCorrectionRequest;
 import dev.canverse.stocks.ledger.web.request.ReconciliationPreviewRequest;
 import dev.canverse.stocks.ledger.web.response.FinancialAccountResponse;
+import dev.canverse.stocks.testing.DatabaseCleaner;
+import dev.canverse.stocks.testing.IntegrationTest;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -23,25 +25,23 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@Testcontainers
+@IntegrationTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class LedgerReconciliationConcurrencyTest {
 
-    @Container
-    @ServiceConnection
-    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17");
+    @Autowired
+    DatabaseCleaner databaseCleaner;
 
+    @BeforeEach
+    void resetDatabase() {
+        databaseCleaner.resetApplicationState();
+    }
     @Autowired
     FinancialAccountOnboardingService accountService;
 

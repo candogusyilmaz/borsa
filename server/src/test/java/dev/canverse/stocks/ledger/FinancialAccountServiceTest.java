@@ -18,6 +18,7 @@ import dev.canverse.stocks.ledger.web.request.CreateFinancialAccountRequest;
 import dev.canverse.stocks.ledger.web.request.OpeningCorrectionRequest;
 import dev.canverse.stocks.ledger.web.request.OpeningStateRequest;
 import dev.canverse.stocks.platform.error.AppException;
+import dev.canverse.stocks.testing.IntegrationTest;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -26,22 +27,11 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@Testcontainers
+@IntegrationTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Transactional
 class FinancialAccountServiceTest {
-
-    @Container
-    @ServiceConnection
-    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17");
-
     @Autowired
     FinancialAccountOnboardingService accountService;
 

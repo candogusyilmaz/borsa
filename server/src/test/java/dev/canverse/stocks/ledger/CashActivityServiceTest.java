@@ -20,6 +20,7 @@ import dev.canverse.stocks.ledger.web.request.ReversalRequest;
 import dev.canverse.stocks.ledger.web.request.TransferPreviewRequest;
 import dev.canverse.stocks.ledger.web.request.TransferRequest;
 import dev.canverse.stocks.ledger.web.response.FinancialAccountResponse;
+import dev.canverse.stocks.testing.IntegrationTest;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -28,22 +29,11 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@Testcontainers
+@IntegrationTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Transactional
 class CashActivityServiceTest {
-
-    @Container
-    @ServiceConnection
-    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17");
-
     @Autowired
     FinancialAccountOnboardingService accountService;
 

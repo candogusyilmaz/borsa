@@ -32,49 +32,47 @@ import dev.canverse.stocks.reference.application.ManualInstrumentService;
 import dev.canverse.stocks.reference.domain.InstrumentType;
 import dev.canverse.stocks.reference.domain.ValuationMethod;
 import dev.canverse.stocks.reference.web.request.ManualInstrumentCreateRequest;
-import java.time.Clock;
+import dev.canverse.stocks.testing.DatabaseCleaner;
+import dev.canverse.stocks.testing.IdentityTestPropertiesConfiguration;
+import dev.canverse.stocks.testing.IntegrationTest;
+import dev.canverse.stocks.testing.TestClock;
+import dev.canverse.stocks.testing.TestClockConfiguration;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        properties = {"stocks.identity.refresh-session.lifetime=2h", "stocks.identity.access-token.issuer=https://issuer.test",
-                "stocks.identity.access-token.audience=canverse-test-api", "stocks.identity.access-token.lifetime=5m",
-                "stocks.identity.access-token.key-id=portfolio-test"})
+@IntegrationTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK,
+        properties = {"stocks.identity.refresh-session.lifetime=2h", "stocks.identity.access-token.key-id=portfolio-test"})
 @org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
-@Testcontainers
-@Import(PortfolioHttpTest.TestOverrides.class)
 @Execution(ExecutionMode.SAME_THREAD)
+@Import({IdentityTestPropertiesConfiguration.class, TestClockConfiguration.class})
 class PortfolioHttpTest {
 
+    @BeforeEach
+    void resetTestClock() {
+        testClock.setInstant(OBSERVED_AT);
+        databaseCleaner.resetApplicationState();
+    }
+    @Autowired
+    TestClock testClock;
+
+    @Autowired
+    DatabaseCleaner databaseCleaner;
     private static final String PASSWORD = "correct horse battery staple";
     private static final Instant OBSERVED_AT = Instant.parse("2026-09-19T12:00:00Z");
     private static final Instant OPENED_AT = Instant.parse("2026-09-19T10:00:00Z");
     private static final UUID MANUAL_MARKET_ID = UUID.fromString("10000000-0000-0000-0000-000000000002");
-
-    @Container
-    @ServiceConnection
-    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17");
-
     @Autowired
     MockMvc mockMvc;
 
@@ -393,12 +391,4 @@ class PortfolioHttpTest {
         }
     }
 
-    @TestConfiguration(proxyBeanMethods = false)
-    static class TestOverrides {
-        @Bean
-        @Primary
-        Clock fixedClock() {
-            return Clock.fixed(OBSERVED_AT, ZoneOffset.UTC);
-        }
-    }
 }

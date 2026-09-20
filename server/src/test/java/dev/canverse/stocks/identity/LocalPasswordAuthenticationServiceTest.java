@@ -11,6 +11,8 @@ import dev.canverse.stocks.identity.error.IdentityErrorCode;
 import dev.canverse.stocks.identity.infrastructure.AuthIdentityRepository;
 import dev.canverse.stocks.identity.infrastructure.UserAccountRepository;
 import dev.canverse.stocks.platform.error.AppException;
+import dev.canverse.stocks.testing.DatabaseCleaner;
+import dev.canverse.stocks.testing.IntegrationTest;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.UUID;
@@ -18,26 +20,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@Testcontainers
+@IntegrationTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class LocalPasswordAuthenticationServiceTest {
 
+    @Autowired
+    DatabaseCleaner databaseCleaner;
     private static final String RAW_PASSWORD = "correct horse battery staple";
     private static final String WRONG_PASSWORD = "incorrect horse battery staple";
     private static final Instant DISABLED_AT = Instant.parse("2026-08-08T13:00:00Z");
-
-    @Container
-    @ServiceConnection
-    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17");
-
     @Autowired
     LocalAccountRegistrationService registrationService;
 
@@ -58,10 +51,7 @@ class LocalPasswordAuthenticationServiceTest {
 
     @BeforeEach
     void clearIdentityTables() {
-        runInTransaction(() -> {
-            jdbcTemplate.update("DELETE FROM identity.auth_identity");
-            jdbcTemplate.update("DELETE FROM identity.user_account");
-        });
+        runInTransaction(() -> { databaseCleaner.resetApplicationState(); });
     }
 
     @Test

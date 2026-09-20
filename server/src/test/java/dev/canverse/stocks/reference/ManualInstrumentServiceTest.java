@@ -15,9 +15,11 @@ import dev.canverse.stocks.reference.error.ReferenceErrorCode;
 import dev.canverse.stocks.reference.web.request.InstrumentAliasInput;
 import dev.canverse.stocks.reference.web.request.ManualInstrumentCreateRequest;
 import dev.canverse.stocks.reference.web.request.ManualInstrumentUpdateRequest;
+import dev.canverse.stocks.testing.DatabaseCleaner;
+import dev.canverse.stocks.testing.IntegrationTest;
+import dev.canverse.stocks.testing.TestClock;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.validation.Validator;
-import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -33,7 +35,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
@@ -42,22 +43,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@Testcontainers
-@Import(ManualInstrumentServiceTest.TestOverrides.class)
+@IntegrationTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@Import(ManualInstrumentServiceTest.InstrumentServiceConfiguration.class)
 class ManualInstrumentServiceTest {
 
     private static final UUID MANUAL_MARKET = UUID.fromString("10000000-0000-0000-0000-000000000002");
     private static final Instant T0 = Instant.parse("2026-08-16T12:00:00Z");
-
-    @Container
-    @ServiceConnection
-    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17");
-
     @Autowired
     LocalAccountRegistrationService registrationService;
 
@@ -69,6 +60,9 @@ class ManualInstrumentServiceTest {
 
     @Autowired
     PlatformTransactionManager transactionManager;
+
+    @Autowired
+    DatabaseCleaner databaseCleaner;
 
     @Autowired
     FailingIdGenerator idGenerator;
@@ -84,8 +78,7 @@ class ManualInstrumentServiceTest {
         idGenerator.fail.set(false);
         clock.stopCoordinating();
         clock.setInstant(T0);
-        jdbcTemplate.execute("TRUNCATE TABLE reference.instrument_alias, reference.instrument, platform.security_event," +
-                " identity.device_session, identity.auth_identity, identity.user_account CASCADE");
+        databaseCleaner.resetApplicationState();
         jdbcTemplate.update("UPDATE reference.market SET active = true");
         jdbcTemplate.update("UPDATE reference.currency SET active = true");
     }
@@ -404,7 +397,7 @@ class ManualInstrumentServiceTest {
     }
 
     @TestConfiguration(proxyBeanMethods = false)
-    static class TestOverrides {
+    static class InstrumentServiceConfiguration {
 
         @Bean
         @Primary
@@ -419,19 +412,12 @@ class ManualInstrumentServiceTest {
         }
     }
 
-    static final class CoordinatingClock extends Clock {
+    static final class CoordinatingClock extends TestClock {
 
-        private final Clock delegate;
-        private volatile Instant currentInstant;
         private volatile Coordination coordination;
 
         CoordinatingClock(Instant instant) {
-            delegate = Clock.fixed(instant, ZoneOffset.UTC);
-            currentInstant = instant;
-        }
-
-        void setInstant(Instant instant) {
-            currentInstant = instant;
+            super(new java.util.concurrent.atomic.AtomicReference<>(instant), ZoneOffset.UTC);
         }
 
         void coordinateNextTwoCalls() {
@@ -455,12 +441,7 @@ class ManualInstrumentServiceTest {
 
         @Override
         public ZoneId getZone() {
-            return delegate.getZone();
-        }
-
-        @Override
-        public Clock withZone(ZoneId zone) {
-            return delegate.withZone(zone);
+            return super.getZone();
         }
 
         @Override
@@ -475,7 +456,7 @@ class ManualInstrumentServiceTest {
                     throw new IllegalStateException("Coordinating clock interrupted", exception);
                 }
             }
-            return currentInstant;
+            return super.instant();
         }
 
         private record Coordination(CountDownLatch arrived, CountDownLatch release) {}

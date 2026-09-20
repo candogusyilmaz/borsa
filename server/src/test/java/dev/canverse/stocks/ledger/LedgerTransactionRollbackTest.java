@@ -31,6 +31,8 @@ import dev.canverse.stocks.ledger.web.request.ReconciliationAction;
 import dev.canverse.stocks.ledger.web.request.ReconciliationCommitRequest;
 import dev.canverse.stocks.ledger.web.request.ReconciliationCorrectionRequest;
 import dev.canverse.stocks.ledger.web.request.ReconciliationPreviewRequest;
+import dev.canverse.stocks.testing.DatabaseCleaner;
+import dev.canverse.stocks.testing.IntegrationTest;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -39,24 +41,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@Testcontainers
+@IntegrationTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class LedgerTransactionRollbackTest {
 
-    @Container
-    @ServiceConnection
-    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17");
-
+    @Autowired
+    DatabaseCleaner databaseCleaner;
     @Autowired
     FinancialAccountOnboardingService accountService;
 
@@ -89,9 +83,7 @@ class LedgerTransactionRollbackTest {
 
     @BeforeEach
     void cleanDatabase() {
-        new TransactionTemplate(transactionManager).executeWithoutResult(status -> jdbcTemplate
-                .execute("TRUNCATE TABLE ledger.reconciliation, ledger.money_posting, ledger.activity, ledger.account_balance_projection," +
-                        " ledger.account_cash_pocket, ledger.idempotency_record, ledger.financial_account," + " identity.user_account CASCADE"));
+        databaseCleaner.resetApplicationState();
         reset(activityRepository, moneyPostingRepository, projectionRepository, idempotencyRecordRepository, reconciliationRepository);
     }
 

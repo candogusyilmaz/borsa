@@ -15,6 +15,7 @@ import dev.canverse.stocks.reference.infrastructure.InstrumentAliasRepository;
 import dev.canverse.stocks.reference.infrastructure.InstrumentRepository;
 import dev.canverse.stocks.reference.infrastructure.MarketCurrencyRepository;
 import dev.canverse.stocks.reference.infrastructure.MarketRepository;
+import dev.canverse.stocks.testing.IntegrationTest;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -25,26 +26,15 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@Testcontainers
+@IntegrationTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Transactional
 class ReferenceEntityMappingTest {
 
     private static final UUID XIST = UUID.fromString("10000000-0000-0000-0000-000000000001");
     private static final UUID MANUAL = UUID.fromString("10000000-0000-0000-0000-000000000002");
     private static final Instant T1 = Instant.parse("2026-08-16T09:00:00Z");
-
-    @Container
-    @ServiceConnection
-    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17");
-
     @Autowired
     JdbcTemplate jdbcTemplate;
 

@@ -13,6 +13,8 @@ import dev.canverse.stocks.reference.domain.InstrumentType;
 import dev.canverse.stocks.reference.domain.MarketSessionStatus;
 import dev.canverse.stocks.reference.error.ReferenceErrorCode;
 import dev.canverse.stocks.reference.web.response.InstrumentSummaryResponse;
+import dev.canverse.stocks.testing.DatabaseCleaner;
+import dev.canverse.stocks.testing.IntegrationTest;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
@@ -28,7 +30,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
@@ -36,16 +37,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@Testcontainers
+@IntegrationTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Transactional
-@Import(ReferenceCatalogQueryTest.TestOverrides.class)
+@Import(ReferenceCatalogQueryTest.QueryCountingConfiguration.class)
 class ReferenceCatalogQueryTest {
 
+    @Autowired
+    DatabaseCleaner databaseCleaner;
     private static final UUID XIST = UUID.fromString("10000000-0000-0000-0000-000000000001");
     private static final UUID MANUAL = UUID.fromString("10000000-0000-0000-0000-000000000002");
     private static final UUID USER_ONE = UUID.fromString("20000000-0000-4000-8000-000000000001");
@@ -60,11 +58,6 @@ class ReferenceCatalogQueryTest {
     private static final UUID BACKSLASH = UUID.fromString("70000000-0000-4000-8000-000000000008");
     private static final UUID OTHER_OWNER = UUID.fromString("70000000-0000-4000-8000-000000000009");
     private static final OffsetDateTime CREATED = OffsetDateTime.of(2026, 8, 16, 9, 0, 0, 0, ZoneOffset.UTC);
-
-    @Container
-    @ServiceConnection
-    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17");
-
     @Autowired
     ReferenceCatalogQueryService queryService;
 
@@ -76,7 +69,7 @@ class ReferenceCatalogQueryTest {
 
     @BeforeEach
     void cleanCalendar() {
-        jdbcTemplate.execute("DELETE FROM reference.market_calendar");
+        databaseCleaner.resetApplicationState();
     }
 
     @Test
@@ -331,7 +324,7 @@ class ReferenceCatalogQueryTest {
     private static final AtomicReference<List<UUID>> lastAliasQueryIds = new AtomicReference<>(List.of());
 
     @TestConfiguration(proxyBeanMethods = false)
-    static class TestOverrides {
+    static class QueryCountingConfiguration {
 
         @Bean
         @Primary

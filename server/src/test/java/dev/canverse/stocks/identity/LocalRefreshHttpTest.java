@@ -18,32 +18,31 @@ import dev.canverse.stocks.identity.application.LocalAccessTokenAuthenticationCo
 import dev.canverse.stocks.identity.application.LocalAccountRegistrationService;
 import dev.canverse.stocks.identity.infrastructure.DeviceSessionRepository;
 import dev.canverse.stocks.platform.web.trace.RequestTraceFilter;
+import dev.canverse.stocks.testing.DatabaseCleaner;
+import dev.canverse.stocks.testing.IdentityTestPropertiesConfiguration;
+import dev.canverse.stocks.testing.IntegrationTest;
 import dev.canverse.stocks.testing.RecordingIdGenerator;
+import dev.canverse.stocks.testing.RecordingIdGeneratorConfiguration;
+import dev.canverse.stocks.testing.TestClock;
+import dev.canverse.stocks.testing.TestClockConfiguration;
 import jakarta.servlet.http.Cookie;
 import java.net.HttpCookie;
 import java.nio.charset.StandardCharsets;
-import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -52,27 +51,16 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        properties = {"stocks.identity.refresh-session.lifetime=2h", "stocks.identity.access-token.issuer=https://issuer.test",
-                "stocks.identity.access-token.audience=canverse-test-api", "stocks.identity.access-token.lifetime=5m",
-                "stocks.identity.access-token.key-id=test-ephemeral"})
+@IntegrationTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, properties = {"stocks.identity.refresh-session.lifetime=2h"})
 @AutoConfigureMockMvc
-@Testcontainers
-@Import(LocalRefreshHttpTest.TestOverrides.class)
+@Import({IdentityTestPropertiesConfiguration.class, TestClockConfiguration.class, RecordingIdGeneratorConfiguration.class})
 class LocalRefreshHttpTest {
 
+    @Autowired
+    DatabaseCleaner databaseCleaner;
     private static final Instant LOGIN_TIME = Instant.parse("2026-08-15T12:00:00.750Z");
     private static final Instant REFRESH_TIME = LOGIN_TIME.plusSeconds(60);
     private static final String PASSWORD = "correct horse battery staple";
-
-    @Container
-    @ServiceConnection
-    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17");
-
     @Autowired
     MockMvc mockMvc;
 
@@ -98,7 +86,7 @@ class LocalRefreshHttpTest {
     RecordingIdGenerator idGenerator;
 
     @Autowired
-    MutableClock clock;
+    TestClock clock;
 
     @Autowired
     ApplicationContext applicationContext;
@@ -106,11 +94,7 @@ class LocalRefreshHttpTest {
     @BeforeEach
     void clearIdentityTables() {
         clock.setInstant(LOGIN_TIME);
-        new TransactionTemplate(transactionManager).executeWithoutResult(status -> {
-            jdbcTemplate.update("DELETE FROM identity.device_session");
-            jdbcTemplate.update("DELETE FROM identity.auth_identity");
-            jdbcTemplate.update("DELETE FROM identity.user_account");
-        });
+        new TransactionTemplate(transactionManager).executeWithoutResult(status -> { databaseCleaner.resetApplicationState(); });
         idGenerator.reset();
     }
 
@@ -319,50 +303,6 @@ class LocalRefreshHttpTest {
 
     private static UUID uuid(String value) {
         return UUID.fromString(value);
-    }
-
-    @TestConfiguration(proxyBeanMethods = false)
-    static class TestOverrides {
-
-        @Bean
-        @Primary
-        MutableClock mutableClock() {
-            return new MutableClock(LOGIN_TIME);
-        }
-
-        @Bean
-        @Primary
-        RecordingIdGenerator recordingIdGenerator() {
-            return new RecordingIdGenerator();
-        }
-    }
-
-    static final class MutableClock extends Clock {
-
-        private final AtomicReference<Instant> instant;
-
-        MutableClock(Instant instant) {
-            this.instant = new AtomicReference<>(instant);
-        }
-
-        void setInstant(Instant value) {
-            instant.set(value);
-        }
-
-        @Override
-        public ZoneId getZone() {
-            return ZoneId.of("UTC");
-        }
-
-        @Override
-        public Clock withZone(ZoneId zone) {
-            return this;
-        }
-
-        @Override
-        public Instant instant() {
-            return instant.get();
-        }
     }
 
     private record LoginResult(String refreshToken, HttpCookie setCookie, String setCookieHeader) {}

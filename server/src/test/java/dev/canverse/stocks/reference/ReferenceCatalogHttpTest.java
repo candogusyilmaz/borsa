@@ -12,7 +12,11 @@ import dev.canverse.stocks.identity.application.AccessTokenIssuanceService;
 import dev.canverse.stocks.identity.application.LocalAccountRegistrationService;
 import dev.canverse.stocks.identity.application.RefreshSessionIssuanceService;
 import dev.canverse.stocks.platform.web.trace.RequestTraceFilter;
-import java.time.Clock;
+import dev.canverse.stocks.testing.DatabaseCleaner;
+import dev.canverse.stocks.testing.IdentityTestPropertiesConfiguration;
+import dev.canverse.stocks.testing.IntegrationTest;
+import dev.canverse.stocks.testing.TestClock;
+import dev.canverse.stocks.testing.TestClockConfiguration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -23,37 +27,24 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        properties = {"stocks.identity.refresh-session.lifetime=2h", "stocks.identity.access-token.issuer=https://issuer.test",
-                "stocks.identity.access-token.audience=canverse-test-api", "stocks.identity.access-token.lifetime=5m",
-                "stocks.identity.access-token.key-id=test-ephemeral"})
+@IntegrationTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, properties = {"stocks.identity.refresh-session.lifetime=2h"})
 @org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
-@Testcontainers
-@Import(ReferenceCatalogHttpTest.TestOverrides.class)
+@Import({IdentityTestPropertiesConfiguration.class, TestClockConfiguration.class})
 class ReferenceCatalogHttpTest {
 
+    @Autowired
+    DatabaseCleaner databaseCleaner;
+    @Autowired
+    TestClock testClock;
     private static final UUID XIST = UUID.fromString("10000000-0000-0000-0000-000000000001");
     private static final Instant T0 = Instant.parse("2026-08-15T12:00:00Z");
-
-    @Container
-    @ServiceConnection
-    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17");
-
     @Autowired
     MockMvc mockMvc;
 
@@ -74,8 +65,9 @@ class ReferenceCatalogHttpTest {
 
     @BeforeEach
     void cleanDatabase() {
-        jdbcTemplate.execute("TRUNCATE TABLE reference.instrument_alias, reference.instrument, reference.market_calendar," +
-                " platform.security_event, identity.device_session, identity.auth_identity," + " identity.user_account CASCADE");
+        testClock.setInstant(T0);
+
+        databaseCleaner.resetApplicationState();
     }
 
     @Test
@@ -223,13 +215,4 @@ class ReferenceCatalogHttpTest {
         }
     }
 
-    @TestConfiguration(proxyBeanMethods = false)
-    static class TestOverrides {
-
-        @Bean
-        @Primary
-        Clock fixedClock() {
-            return Clock.fixed(T0, ZoneOffset.UTC);
-        }
-    }
 }

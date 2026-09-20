@@ -31,9 +31,12 @@ import dev.canverse.stocks.reference.application.ManualInstrumentService;
 import dev.canverse.stocks.reference.domain.InstrumentType;
 import dev.canverse.stocks.reference.domain.ValuationMethod;
 import dev.canverse.stocks.reference.web.request.ManualInstrumentCreateRequest;
-import java.time.Clock;
+import dev.canverse.stocks.testing.DatabaseCleaner;
+import dev.canverse.stocks.testing.IdentityTestPropertiesConfiguration;
+import dev.canverse.stocks.testing.IntegrationTest;
+import dev.canverse.stocks.testing.TestClock;
+import dev.canverse.stocks.testing.TestClockConfiguration;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -43,11 +46,7 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -55,31 +54,22 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        properties = {"stocks.identity.refresh-session.lifetime=2h", "stocks.identity.access-token.issuer=https://issuer.test",
-                "stocks.identity.access-token.audience=canverse-test-api", "stocks.identity.access-token.lifetime=5m",
-                "stocks.identity.access-token.key-id=test-ephemeral"})
+@IntegrationTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, properties = {"stocks.identity.refresh-session.lifetime=2h"})
 @org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
-@Testcontainers
-@Import(TradeImportHttpTest.TestOverrides.class)
 @Execution(ExecutionMode.SAME_THREAD)
+@Import({IdentityTestPropertiesConfiguration.class, TestClockConfiguration.class})
 class TradeImportHttpTest {
 
+    @Autowired
+    DatabaseCleaner databaseCleaner;
+    @Autowired
+    TestClock testClock;
     private static final String PASSWORD = "correct horse battery staple";
     private static final Instant OBSERVED_AT = Instant.parse("2026-09-20T12:00:00Z");
     private static final Instant OPENED_AT = Instant.parse("2026-09-20T10:00:00Z");
     private static final Instant TRADE_AT = Instant.parse("2026-09-20T11:30:00Z");
     private static final UUID MANUAL_MARKET_ID = UUID.fromString("10000000-0000-0000-0000-000000000002");
     private static final String HEADER = "external_id,side,instrument_id,currency,effective_at,economic_sequence,quantity,unit_price,commission_amount";
-
-    @Container
-    @ServiceConnection
-    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17");
-
     @Autowired
     MockMvc mockMvc;
 
@@ -112,8 +102,9 @@ class TradeImportHttpTest {
 
     @BeforeEach
     void resetOwnerData() {
-        new TransactionTemplate(transactionManager).executeWithoutResult(
-                status -> jdbcTemplate.execute("TRUNCATE TABLE identity.device_session, identity.auth_identity, identity.user_account CASCADE"));
+        testClock.setInstant(OBSERVED_AT);
+
+        databaseCleaner.resetApplicationState();
     }
 
     @Test
@@ -309,12 +300,4 @@ class TradeImportHttpTest {
         }
     }
 
-    @TestConfiguration(proxyBeanMethods = false)
-    static class TestOverrides {
-        @Bean
-        @Primary
-        Clock fixedClock() {
-            return Clock.fixed(OBSERVED_AT, ZoneOffset.UTC);
-        }
-    }
 }

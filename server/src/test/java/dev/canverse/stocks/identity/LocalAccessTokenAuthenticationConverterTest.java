@@ -9,8 +9,13 @@ import dev.canverse.stocks.identity.application.LocalAccessTokenAuthenticationCo
 import dev.canverse.stocks.identity.application.LocalAccountRegistrationService;
 import dev.canverse.stocks.identity.application.RefreshSessionIssuanceService;
 import dev.canverse.stocks.identity.infrastructure.DeviceSessionRepository;
+import dev.canverse.stocks.testing.DatabaseCleaner;
+import dev.canverse.stocks.testing.IdentityTestPropertiesConfiguration;
+import dev.canverse.stocks.testing.IntegrationTest;
 import dev.canverse.stocks.testing.RecordingIdGenerator;
-import java.time.Clock;
+import dev.canverse.stocks.testing.RecordingIdGeneratorConfiguration;
+import dev.canverse.stocks.testing.TestClock;
+import dev.canverse.stocks.testing.TestClockConfiguration;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -21,13 +26,8 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.oauth2.core.OAuth2ErrorCodes;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
@@ -41,26 +41,18 @@ import org.springframework.security.oauth2.server.resource.InvalidBearerTokenExc
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
-@SpringBootTest(properties = {"stocks.identity.refresh-session.lifetime=2h", "stocks.identity.access-token.issuer=https://issuer.test",
-        "stocks.identity.access-token.audience=canverse-test-api", "stocks.identity.access-token.lifetime=5m",
-        "stocks.identity.access-token.key-id=test-ephemeral"})
-@Testcontainers
-@Import(LocalAccessTokenAuthenticationConverterTest.TestOverrides.class)
+@IntegrationTest(properties = {"stocks.identity.refresh-session.lifetime=2h"})
+@Import({IdentityTestPropertiesConfiguration.class, TestClockConfiguration.class, RecordingIdGeneratorConfiguration.class})
 class LocalAccessTokenAuthenticationConverterTest {
 
+    @Autowired
+    DatabaseCleaner databaseCleaner;
+    @Autowired
+    TestClock testClock;
     private static final Instant OBSERVED_AT = Instant.parse("2026-08-09T16:00:00.750Z");
     private static final Instant ISSUED_AT = OBSERVED_AT.truncatedTo(ChronoUnit.SECONDS);
     private static final String RAW_PASSWORD = "correct horse battery staple";
     private static final String SAFE_MESSAGE = "The bearer token is invalid.";
-
-    @Container
-    @ServiceConnection
-    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17");
-
     @Autowired
     ApplicationContext applicationContext;
 
@@ -96,11 +88,9 @@ class LocalAccessTokenAuthenticationConverterTest {
 
     @BeforeEach
     void clearIdentityTables() {
-        runInTransaction(() -> {
-            jdbcTemplate.update("DELETE FROM identity.device_session");
-            jdbcTemplate.update("DELETE FROM identity.auth_identity");
-            jdbcTemplate.update("DELETE FROM identity.user_account");
-        });
+        testClock.setInstant(OBSERVED_AT);
+
+        runInTransaction(() -> { databaseCleaner.resetApplicationState(); });
         idGenerator.setNextIds();
     }
 
@@ -227,22 +217,6 @@ class LocalAccessTokenAuthenticationConverterTest {
 
     private UUID uuid(String value) {
         return UUID.fromString(value);
-    }
-
-    @TestConfiguration(proxyBeanMethods = false)
-    static class TestOverrides {
-
-        @Bean
-        @Primary
-        Clock fixedClock() {
-            return Clock.fixed(OBSERVED_AT, ZoneOffset.UTC);
-        }
-
-        @Bean
-        @Primary
-        RecordingIdGenerator recordingIdGenerator() {
-            return new RecordingIdGenerator();
-        }
     }
 
     private record IssuedIdentity(UUID userAccountId, UUID sessionId, Jwt jwt) {}

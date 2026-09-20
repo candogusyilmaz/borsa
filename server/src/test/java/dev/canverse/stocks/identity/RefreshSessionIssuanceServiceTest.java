@@ -10,11 +10,15 @@ import dev.canverse.stocks.identity.infrastructure.AuthIdentityRepository;
 import dev.canverse.stocks.identity.infrastructure.DeviceSessionRepository;
 import dev.canverse.stocks.identity.infrastructure.UserAccountRepository;
 import dev.canverse.stocks.platform.error.AppException;
+import dev.canverse.stocks.testing.DatabaseCleaner;
+import dev.canverse.stocks.testing.IntegrationTest;
 import dev.canverse.stocks.testing.RecordingIdGenerator;
+import dev.canverse.stocks.testing.RecordingIdGeneratorConfiguration;
+import dev.canverse.stocks.testing.TestClock;
+import dev.canverse.stocks.testing.TestClockConfiguration;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -24,32 +28,22 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, properties = "stocks.identity.refresh-session.lifetime=12h")
-@Testcontainers
-@Import(RefreshSessionIssuanceServiceTest.TestOverrides.class)
+@IntegrationTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, properties = "stocks.identity.refresh-session.lifetime=12h")
+@Import({TestClockConfiguration.class, RecordingIdGeneratorConfiguration.class})
 class RefreshSessionIssuanceServiceTest {
 
+    @Autowired
+    DatabaseCleaner databaseCleaner;
+    @Autowired
+    TestClock testClock;
     private static final Instant ISSUED_AT = Instant.parse("2026-08-09T09:30:00Z");
     private static final Duration SESSION_LIFETIME = Duration.ofHours(12);
     private static final Instant DISABLED_AT = Instant.parse("2026-08-09T09:00:00Z");
     private static final String RAW_PASSWORD = "correct horse battery staple";
-
-    @Container
-    @ServiceConnection
-    static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17");
-
     @Autowired
     LocalAccountRegistrationService registrationService;
 
@@ -76,11 +70,9 @@ class RefreshSessionIssuanceServiceTest {
 
     @BeforeEach
     void clearIdentityTables() {
-        runInTransaction(() -> {
-            jdbcTemplate.update("DELETE FROM identity.device_session");
-            jdbcTemplate.update("DELETE FROM identity.auth_identity");
-            jdbcTemplate.update("DELETE FROM identity.user_account");
-        });
+        testClock.setInstant(ISSUED_AT);
+
+        runInTransaction(() -> { databaseCleaner.resetApplicationState(); });
         idGenerator.setNextIds();
     }
 
@@ -202,19 +194,4 @@ class RefreshSessionIssuanceServiceTest {
         new TransactionTemplate(transactionManager).executeWithoutResult(status -> action.run());
     }
 
-    @TestConfiguration(proxyBeanMethods = false)
-    static class TestOverrides {
-
-        @Bean
-        @Primary
-        Clock fixedClock() {
-            return Clock.fixed(ISSUED_AT, ZoneOffset.UTC);
-        }
-
-        @Bean
-        @Primary
-        RecordingIdGenerator recordingIdGenerator() {
-            return new RecordingIdGenerator();
-        }
-    }
 }
