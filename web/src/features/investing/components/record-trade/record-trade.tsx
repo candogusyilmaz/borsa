@@ -17,7 +17,7 @@ export function RecordTrade(props: RecordTradeProps) {
   };
 
   const handleViewDetails = (activityId: string) => {
-    TradeDetailOverlay.open({ activityId });
+    current.replace(TradeDetailOverlay, { activityId });
   };
 
   return (

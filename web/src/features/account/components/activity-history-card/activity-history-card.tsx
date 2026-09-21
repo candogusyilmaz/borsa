@@ -5,6 +5,7 @@ import { $api } from '@/api/client';
 import { toFinancialDecimal } from '@/shared/finance/decimal';
 import { formatDateTime } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
+import { useCurrentOverlay } from '@/shared/overlay';
 import { isCashFundingCapable } from '../../account-domain';
 import { ActivityTypeIcon } from '../../activity-icon';
 import { getActivityTypeLabel, getRecordingModeLabel } from '../../activity-presentation';
@@ -19,6 +20,7 @@ interface ActivityHistoryCardProps {
 }
 
 export function ActivityHistoryCard({ account }: ActivityHistoryCardProps) {
+  const current = useCurrentOverlay();
   const [page, setPage] = useState(0);
   const [sortOption, setSortOption] = useState('recordedAt,desc');
   const [typeFilter, setTypeFilter] = useState('ALL');
@@ -63,7 +65,7 @@ export function ActivityHistoryCard({ account }: ActivityHistoryCardProps) {
   const hasNext = activitiesQuery.data?.hasNext ?? false;
 
   function handleOpenDetail(id: string) {
-    ActivityDetailOverlay.open({
+    current.push(ActivityDetailOverlay, {
       activityId: id,
       isAccountArchived: account.archived,
       isAlreadyReversed: reversedActivityIds.has(id)
@@ -183,7 +185,7 @@ export function ActivityHistoryCard({ account }: ActivityHistoryCardProps) {
                 variant="light"
                 className={classes.actionBtn}
                 onClick={() =>
-                  CashActivityOverlay.open({
+                  current.push(CashActivityOverlay, {
                     accountId: account.id,
                     defaultType: 'CASH_DEPOSIT'
                   })
@@ -196,7 +198,7 @@ export function ActivityHistoryCard({ account }: ActivityHistoryCardProps) {
                 variant="light"
                 className={classes.actionBtn}
                 onClick={() =>
-                  CashActivityOverlay.open({
+                  current.push(CashActivityOverlay, {
                     accountId: account.id,
                     defaultType: 'CASH_WITHDRAWAL'
                   })
@@ -209,7 +211,7 @@ export function ActivityHistoryCard({ account }: ActivityHistoryCardProps) {
                 variant="light"
                 className={classes.actionBtn}
                 onClick={() =>
-                  CashActivityOverlay.open({
+                  current.push(CashActivityOverlay, {
                     accountId: account.id,
                     defaultType: 'CASH_FEE'
                   })
@@ -222,7 +224,7 @@ export function ActivityHistoryCard({ account }: ActivityHistoryCardProps) {
                 variant="light"
                 className={classes.actionBtn}
                 onClick={() =>
-                  CashActivityOverlay.open({
+                  current.push(CashActivityOverlay, {
                     accountId: account.id,
                     defaultType: 'CASH_INTEREST_CREDIT'
                   })
@@ -234,7 +236,7 @@ export function ActivityHistoryCard({ account }: ActivityHistoryCardProps) {
                 color="blue"
                 variant="light"
                 className={classes.actionBtn}
-                onClick={() => TransferOverlay.open({ defaultSourceAccountId: account.id })}>
+                onClick={() => current.push(TransferOverlay, { defaultSourceAccountId: account.id })}>
                 Transfer Funds
               </Button>
             </Group>

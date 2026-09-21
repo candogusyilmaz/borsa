@@ -8,18 +8,18 @@ import type { CurrentOverlayContextValue } from './types';
 import { CurrentOverlayContext } from './use-current-overlay';
 
 export function OverlayHost() {
-  const { stack, isOpen, direction } = useSyncExternalStore(overlayStore.subscribe, overlayStore.getSnapshot);
+  const { stack, phase, direction, closeGeneration } = useSyncExternalStore(overlayStore.subscribe, overlayStore.getSnapshot);
   const [activeOpened, setActiveOpened] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
+    if (phase === 'open') {
       const frame = requestAnimationFrame(() => {
         setActiveOpened(true);
       });
       return () => cancelAnimationFrame(frame);
     }
     setActiveOpened(false);
-  }, [isOpen]);
+  }, [phase]);
 
   const currentItem = stack[stack.length - 1];
   const currentItemId = currentItem?.id;
@@ -29,8 +29,10 @@ export function OverlayHost() {
     const id = currentItemId;
     return {
       id,
-      close: (reason?: string) => overlayStore.close(reason),
+      push: (overlay, ...args) => overlayStore.push(overlay, ...args),
+      replace: (overlay, ...args) => overlayStore.replace(overlay, ...args),
       dismiss: (reason?: string) => overlayStore.dismissCurrent(reason),
+      dismissAll: (reason?: string) => overlayStore.dismissAll(reason),
       back: () => overlayStore.back(),
       complete: (result: unknown) => overlayStore.complete(result),
       setTitle: (title) => overlayStore.setTitle(id, title),
@@ -38,7 +40,7 @@ export function OverlayHost() {
     };
   }, [currentItemId, stack.length]);
 
-  if (!currentItem && !isOpen) {
+  if (!currentItem && phase === 'closed') {
     return null;
   }
 
@@ -77,6 +79,10 @@ export function OverlayHost() {
     overlayStore.dismissCurrent('backdrop-or-escape');
   }
 
+  const handleExited = () => {
+    overlayStore.onExited(closeGeneration);
+  };
+
   const renderedContent = (
     <CurrentOverlayContext.Provider value={currentContextValue}>
       <div key={currentItem.id} className={`${classes.contentContainer} ${animationClass}`}>
@@ -90,7 +96,7 @@ export function OverlayHost() {
       <Modal
         opened={activeOpened}
         onClose={handleClose}
-        transitionProps={{ onExited: overlayStore.onExited }}
+        transitionProps={{ onExited: handleExited }}
         title={headerTitle}
         size={metadata.size ?? 'md'}
         closeOnClickOutside={metadata.closeOnClickOutside}
@@ -105,7 +111,7 @@ export function OverlayHost() {
     <ResponsiveDrawer
       opened={activeOpened}
       onClose={handleClose}
-      onExitTransitionEnd={overlayStore.onExited}
+      onExitTransitionEnd={handleExited}
       title={headerTitle}
       desktopSize={metadata.desktopSize ?? metadata.size ?? '420px'}
       hiddenFrom={metadata.hiddenFrom}

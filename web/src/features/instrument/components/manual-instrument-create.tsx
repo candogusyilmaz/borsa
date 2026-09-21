@@ -36,8 +36,7 @@ export function ManualInstrumentCreate({ onSuccess, onCancel }: ManualInstrument
     if (onSuccess) {
       onSuccess(instrument);
     } else {
-      current.close();
-      InstrumentDetailOverlay.open({ instrumentId: instrument.id });
+      current.replace(InstrumentDetailOverlay, { instrumentId: instrument.id });
     }
   }
 

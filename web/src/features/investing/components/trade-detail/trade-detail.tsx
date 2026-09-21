@@ -234,8 +234,7 @@ export function TradeDetail({ activityId }: TradeDetailProps) {
                 className={classes.actionBtn}
                 leftSection={<ArrowCounterClockwiseIcon size={16} weight="bold" />}
                 onClick={() => {
-                  handleClose();
-                  ReverseActivityOverlay.open({ activityId: trade.id });
+                  current.push(ReverseActivityOverlay, { activityId: trade.id });
                 }}>
                 Undo Trade
               </Button>

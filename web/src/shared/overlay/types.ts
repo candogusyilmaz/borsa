@@ -5,6 +5,8 @@ export type OverlayPresentation = 'drawer' | 'modal';
 
 export type OverlayNavigationDirection = 'forward' | 'backward' | 'replace';
 
+export type OverlayPhase = 'closed' | 'open' | 'closing';
+
 export type OverlayOutcome<TResult = void> =
   | {
       status: 'completed';
@@ -39,7 +41,6 @@ export interface OverlayDefinition<TProps, TResult = void> {
   component: ComponentType<TProps>;
   metadata: OverlayMetadata<TProps>;
   open: (...args: OpenArgs<TProps>) => OverlayHandle<TResult>;
-  replace: (...args: OpenArgs<TProps>) => OverlayHandle<TResult>;
 }
 
 export interface OverlayStackItem<TProps = unknown, TResult = unknown> {
@@ -54,8 +55,16 @@ export interface OverlayStackItem<TProps = unknown, TResult = unknown> {
 
 export interface CurrentOverlayContextValue<TResult = void> {
   id: string;
-  close: (reason?: string) => void;
+  push: <TNextProps, TNextResult = void>(
+    overlay: OverlayDefinition<TNextProps, TNextResult>,
+    ...args: OpenArgs<TNextProps>
+  ) => OverlayHandle<TNextResult>;
+  replace: <TNextProps, TNextResult = void>(
+    overlay: OverlayDefinition<TNextProps, TNextResult>,
+    ...args: OpenArgs<TNextProps>
+  ) => OverlayHandle<TNextResult>;
   dismiss: (reason?: string) => void;
+  dismissAll: (reason?: string) => void;
   back: () => void;
   complete: (result: TResult) => void;
   setTitle: (title: ReactNode) => void;

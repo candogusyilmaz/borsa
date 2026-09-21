@@ -1,13 +1,13 @@
 import { Avatar, Badge, Button, UnstyledButton } from '@mantine/core';
 import { BankIcon, HouseIcon, StackIcon, TrendUpIcon, UserIcon } from '@phosphor-icons/react';
 import { Link, useLocation } from '@tanstack/react-router';
-import { type MouseEvent, type ReactNode, useMemo, useRef, useState } from 'react';
+import { type MouseEvent, type ReactNode, useMemo, useRef } from 'react';
 import { $api } from '@/api/client';
 import { BrandLogo } from '@/shared/components/brand-logo';
 import { type BottomNavItem, MobileBottomNav } from '@/shared/components/mobile-bottom-nav';
 import { ThemeToggle } from '@/shared/components/theme-toggle';
 import { siteConfig } from '@/shared/config/site';
-import type { OverlayHandle } from '@/shared/overlay';
+import { type OverlayHandle, useOverlayActive } from '@/shared/overlay';
 import type { User } from '@/shared/types/auth';
 import { AccountMenuOverlay } from './account-menu';
 import classes from './app-shell.module.css';
@@ -24,7 +24,7 @@ export function AppShell({ children, user }: AppShellProps) {
 
   const sessionsQuery = $api.useQuery('get', '/api/v1/auth/sessions');
   const activeSessionsCount = sessionsQuery.data ? sessionsQuery.data.filter((s) => s.status === 'ACTIVE').length : undefined;
-  const [accountMenuOpened, setAccountMenuOpened] = useState(false);
+  const accountMenuOpened = useOverlayActive(AccountMenuOverlay);
   const accountMenuHandle = useRef<OverlayHandle | null>(null);
 
   const activeId = useMemo(() => {
@@ -83,15 +83,7 @@ export function AppShell({ children, user }: AppShellProps) {
       return;
     }
 
-    const handle = AccountMenuOverlay.open({ activeSessionsCount });
-    accountMenuHandle.current = handle;
-    setAccountMenuOpened(true);
-    handle.closed.then(() => {
-      if (accountMenuHandle.current?.id === handle.id) {
-        accountMenuHandle.current = null;
-        setAccountMenuOpened(false);
-      }
-    });
+    accountMenuHandle.current = AccountMenuOverlay.open({ activeSessionsCount });
   }
 
   function handleItemSelect(item: BottomNavItem, event: MouseEvent<HTMLAnchorElement>) {

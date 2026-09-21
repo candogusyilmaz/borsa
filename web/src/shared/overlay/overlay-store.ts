@@ -1,30 +1,42 @@
 import type { ReactNode } from 'react';
-import type { OverlayDefinition, OverlayHandle, OverlayNavigationDirection, OverlayOutcome, OverlayStackItem } from './types';
+import type {
+  OpenArgs,
+  OverlayDefinition,
+  OverlayHandle,
+  OverlayNavigationDirection,
+  OverlayOutcome,
+  OverlayPhase,
+  OverlayStackItem
+} from './types';
 
 export interface OverlayStoreState {
   stack: OverlayStackItem[];
-  isOpen: boolean;
+  phase: OverlayPhase;
   direction: OverlayNavigationDirection;
+  closeGeneration: number;
 }
 
-class OverlayStore {
+export class OverlayStore {
   private stack: OverlayStackItem[] = [];
-  private isOpen = false;
+  private phase: OverlayPhase = 'closed';
   private direction: OverlayNavigationDirection = 'forward';
+  private closeGeneration = 0;
   private dismissReason: string | undefined = undefined;
   private listeners = new Set<() => void>();
   private idCounter = 0;
   private snapshot: OverlayStoreState = {
     stack: [],
-    isOpen: false,
-    direction: 'forward'
+    phase: 'closed',
+    direction: 'forward',
+    closeGeneration: 0
   };
 
   private notify() {
     this.snapshot = {
       stack: this.stack,
-      isOpen: this.isOpen,
-      direction: this.direction
+      phase: this.phase,
+      direction: this.direction,
+      closeGeneration: this.closeGeneration
     };
     for (const listener of this.listeners) {
       listener();
@@ -38,11 +50,19 @@ class OverlayStore {
     };
   };
 
-  public getSnapshot = () => {
+  public getSnapshot = (): OverlayStoreState => {
     return this.snapshot;
   };
 
-  public open = <TProps, TResult>(definition: OverlayDefinition<TProps, TResult>, props: TProps) => {
+  public open = <TProps, TResult>(definition: OverlayDefinition<TProps, TResult>, ...args: OpenArgs<TProps>): OverlayHandle<TResult> => {
+    if (this.phase !== 'closed') {
+      throw new Error(
+        `Cannot open an overlay while another overlay is ${this.phase}. ` +
+          'Use current.push(...) or current.replace(...) for overlay-to-overlay navigation.'
+      );
+    }
+
+    const props = (args[0] ?? {}) as TProps;
     const id = `overlay-${++this.idCounter}`;
     let resolveClosed!: (outcome: OverlayOutcome<TResult>) => void;
     const closed = new Promise<OverlayOutcome<TResult>>((resolve) => {
@@ -53,7 +73,7 @@ class OverlayStore {
       id,
       closed,
       close: (reason?: string) => {
-        this.close(reason);
+        this.closeById(id, reason);
       }
     };
 
@@ -65,21 +85,21 @@ class OverlayStore {
       resolveClosed
     };
 
-    if (this.isOpen && this.stack.length > 0) {
-      this.stack = [...this.stack, item as OverlayStackItem];
-      this.direction = 'forward';
-    } else {
-      this.stack = [item as OverlayStackItem];
-      this.isOpen = true;
-      this.direction = 'forward';
-      this.dismissReason = undefined;
-    }
+    this.stack = [item as OverlayStackItem];
+    this.phase = 'open';
+    this.direction = 'forward';
+    this.dismissReason = undefined;
 
     this.notify();
     return handle;
   };
 
-  public replace = <TProps, TResult>(definition: OverlayDefinition<TProps, TResult>, props: TProps) => {
+  public push = <TProps, TResult>(definition: OverlayDefinition<TProps, TResult>, ...args: OpenArgs<TProps>): OverlayHandle<TResult> => {
+    if (this.phase !== 'open') {
+      throw new Error('Cannot push an overlay when no overlay interaction is open.');
+    }
+
+    const props = (args[0] ?? {}) as TProps;
     const id = `overlay-${++this.idCounter}`;
     let resolveClosed!: (outcome: OverlayOutcome<TResult>) => void;
     const closed = new Promise<OverlayOutcome<TResult>>((resolve) => {
@@ -90,7 +110,7 @@ class OverlayStore {
       id,
       closed,
       close: (reason?: string) => {
-        this.close(reason);
+        this.closeById(id, reason);
       }
     };
 
@@ -102,20 +122,48 @@ class OverlayStore {
       resolveClosed
     };
 
-    if (this.isOpen && this.stack.length > 0) {
-      const topItem = this.stack[this.stack.length - 1];
-      const remaining = this.stack.slice(0, -1);
-      this.stack = [...remaining, item as OverlayStackItem];
-      this.direction = 'replace';
-      topItem?.resolveClosed({ status: 'dismissed', reason: 'replaced' });
-    } else {
-      this.stack = [item as OverlayStackItem];
-      this.isOpen = true;
-      this.direction = 'replace';
-      this.dismissReason = undefined;
-    }
+    this.stack = [...this.stack, item as OverlayStackItem];
+    this.direction = 'forward';
 
     this.notify();
+    return handle;
+  };
+
+  public replace = <TProps, TResult>(definition: OverlayDefinition<TProps, TResult>, ...args: OpenArgs<TProps>): OverlayHandle<TResult> => {
+    if (this.phase !== 'open') {
+      throw new Error('Cannot replace an overlay when no overlay interaction is open.');
+    }
+
+    const props = (args[0] ?? {}) as TProps;
+    const id = `overlay-${++this.idCounter}`;
+    let resolveClosed!: (outcome: OverlayOutcome<TResult>) => void;
+    const closed = new Promise<OverlayOutcome<TResult>>((resolve) => {
+      resolveClosed = resolve;
+    });
+
+    const handle: OverlayHandle<TResult> = {
+      id,
+      closed,
+      close: (reason?: string) => {
+        this.closeById(id, reason);
+      }
+    };
+
+    const item: OverlayStackItem<TProps, TResult> = {
+      id,
+      definition,
+      props,
+      handle,
+      resolveClosed
+    };
+
+    const topItem = this.stack[this.stack.length - 1];
+    const remaining = this.stack.slice(0, -1);
+    this.stack = [...remaining, item as OverlayStackItem];
+    this.direction = 'replace';
+
+    this.notify();
+    topItem?.resolveClosed({ status: 'dismissed', reason: 'replaced' });
     return handle;
   };
 
@@ -124,6 +172,8 @@ class OverlayStore {
   };
 
   public dismissCurrent = (reason = 'dismissed') => {
+    if (this.phase !== 'open') return;
+
     if (this.stack.length > 1) {
       const popped = this.stack[this.stack.length - 1];
       this.stack = this.stack.slice(0, -1);
@@ -131,11 +181,31 @@ class OverlayStore {
       this.notify();
       popped?.resolveClosed(popped.completedOutcome ?? { status: 'dismissed', reason });
     } else if (this.stack.length === 1) {
-      this.close(reason);
+      this.startClosing(reason);
     }
   };
 
+  public dismissAll = (reason = 'dismissed') => {
+    if (this.phase !== 'open') return;
+
+    if (this.stack.length > 1) {
+      const nonRootItems = this.stack.slice(1);
+      const rootItem = this.stack[0];
+      if (rootItem) {
+        this.stack = [rootItem];
+      }
+      this.direction = 'backward';
+      for (const item of nonRootItems) {
+        item.resolveClosed(item.completedOutcome ?? { status: 'dismissed', reason });
+      }
+    }
+
+    this.startClosing(reason);
+  };
+
   public complete = <TResult>(result: TResult) => {
+    if (this.phase !== 'open') return;
+
     if (this.stack.length > 1) {
       const popped = this.stack[this.stack.length - 1];
       this.stack = this.stack.slice(0, -1);
@@ -147,8 +217,7 @@ class OverlayStore {
       if (current) {
         current.completedOutcome = { status: 'completed', value: result };
       }
-      this.isOpen = false;
-      this.notify();
+      this.startClosing('completed');
     }
   };
 
@@ -163,17 +232,38 @@ class OverlayStore {
     this.notify();
   };
 
-  public close = (reason = 'dismissed') => {
-    if (!this.isOpen) return;
-    this.dismissReason = reason;
-    this.isOpen = false;
-    this.notify();
+  public closeById = (id: string, reason = 'dismissed') => {
+    if (this.phase !== 'open') return;
+
+    const index = this.stack.findIndex((item) => item.id === id);
+    if (index < 0) return;
+
+    if (index === 0 && this.stack.length === 1) {
+      this.startClosing(reason);
+    } else if (index === this.stack.length - 1) {
+      this.dismissCurrent(reason);
+    } else {
+      const [removed] = this.stack.splice(index, 1);
+      this.notify();
+      removed?.resolveClosed(removed.completedOutcome ?? { status: 'dismissed', reason });
+    }
   };
 
-  public onExited = () => {
+  private startClosing(reason: string) {
+    this.phase = 'closing';
+    this.dismissReason = reason;
+    this.closeGeneration += 1;
+    this.notify();
+  }
+
+  public onExited = (generation?: number) => {
+    if (this.phase !== 'closing') return;
+    if (generation !== undefined && generation !== this.closeGeneration) return;
+
     const items = this.stack;
     const reason = this.dismissReason ?? 'closed';
     this.stack = [];
+    this.phase = 'closed';
     this.direction = 'forward';
     this.dismissReason = undefined;
 

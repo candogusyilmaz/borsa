@@ -3,6 +3,7 @@ import { ArrowCounterClockwiseIcon, InfoIcon, WarningCircleIcon } from '@phospho
 import { $api } from '@/api/client';
 import { formatDateTime } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
+import { useCurrentOverlay } from '@/shared/overlay';
 import { ActivityDetailOverlay } from '../activity-detail/activity-detail';
 import classes from './reconciliation.module.css';
 import {
@@ -26,6 +27,7 @@ export function ReconciliationDetail({
   onBack,
   onStartCorrection
 }: ReconciliationDetailProps) {
+  const current = useCurrentOverlay();
   const detailQuery = $api.useQuery('get', '/api/v1/reconciliations/{reconciliationId}', {
     params: {
       path: { reconciliationId }
@@ -176,7 +178,7 @@ export function ReconciliationDetail({
                 color="orange"
                 size="xs"
                 mt="xs"
-                onClick={() => ActivityDetailOverlay.open({ activityId: rec.adjustmentActivityId! })}>
+                onClick={() => current.push(ActivityDetailOverlay, { activityId: rec.adjustmentActivityId! })}>
                 View Adjustment Activity Details
               </Button>
             )}

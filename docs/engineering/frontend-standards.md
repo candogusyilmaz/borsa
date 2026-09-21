@@ -389,6 +389,24 @@ the task requires them.
 
 ---
 
+## 16. Overlay Navigation
+
+Feature-level business modals and drawers use the shared `registerOverlay` architecture.
+
+Outside an overlay (page-level triggers):
+- `TargetOverlay.open(...)`
+
+Inside an active overlay:
+- `current.push(TargetOverlay, ...)` when returning to the current overlay is expected (e.g., nested reversal, sub-details).
+- `current.replace(TargetOverlay, ...)` when the current overlay should be discarded (e.g., action menus, workflow transitions).
+- `current.dismiss(...)` dismisses the current overlay item (or returns to parent if stacked).
+- `current.dismissAll(...)` closes the entire overlay interaction (e.g., route navigation, logout).
+- `current.complete(result)` completes the current overlay with a typed result.
+
+Never use `dismiss()` or `close()` followed by `TargetOverlay.open(...)` for overlay-to-overlay navigation.
+
+---
+
 ## Working Principle
 
 When multiple implementations are valid, prefer the one with:

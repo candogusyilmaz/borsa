@@ -104,7 +104,7 @@ export function AccountActions({ accountId, onAccountArchived }: AccountActionsP
         className={classes.actionItem}
         disabled={account.archived}
         onClick={() => {
-          AccountSettingsOverlay.replace({ accountId });
+          current.replace(AccountSettingsOverlay, { accountId });
         }}>
         <div className={classes.actionItemLeft}>
           <GearIcon size={20} />
@@ -118,7 +118,7 @@ export function AccountActions({ accountId, onAccountArchived }: AccountActionsP
         type="button"
         className={classes.actionItem}
         onClick={() => {
-          AccountInfoOverlay.replace({ accountId });
+          current.replace(AccountInfoOverlay, { accountId });
         }}>
         <div className={classes.actionItemLeft}>
           <InfoIcon size={20} />
@@ -133,7 +133,7 @@ export function AccountActions({ accountId, onAccountArchived }: AccountActionsP
           type="button"
           className={classes.actionItem}
           onClick={() => {
-            ReconciliationOverlay.replace({ accountId });
+            current.replace(ReconciliationOverlay, { accountId });
           }}>
           <div className={classes.actionItemLeft}>
             <SlidersIcon size={20} />
@@ -149,7 +149,7 @@ export function AccountActions({ accountId, onAccountArchived }: AccountActionsP
           type="button"
           className={classes.actionItem}
           onClick={() => {
-            TransferOverlay.replace({ defaultSourceAccountId: accountId });
+            current.replace(TransferOverlay, { defaultSourceAccountId: accountId });
           }}>
           <div className={classes.actionItemLeft}>
             <ArrowsLeftRightIcon size={20} />
@@ -167,7 +167,7 @@ export function AccountActions({ accountId, onAccountArchived }: AccountActionsP
         className={`${classes.actionItem} ${classes.destructiveItem}`}
         disabled={account.archived}
         onClick={() => {
-          const handle = ArchiveAccountOverlay.replace({ accountId });
+          const handle = current.replace(ArchiveAccountOverlay, { accountId });
           handle.closed.then(async (outcome) => {
             if (outcome.status === 'completed') {
               await onAccountArchived?.();

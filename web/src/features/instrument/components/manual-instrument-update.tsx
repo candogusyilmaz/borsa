@@ -18,7 +18,7 @@ export interface ManualInstrumentUpdateProps {
 }
 
 export function ManualInstrumentUpdate({ instrumentId, onSuccess, onCancel }: ManualInstrumentUpdateProps) {
-  const current = useCurrentOverlay();
+  const current = useCurrentOverlay<InstrumentDetail>();
   const query = $api.useQuery('get', '/api/v1/reference/instruments/{instrumentId}', {
     params: { path: { instrumentId } }
   });
@@ -37,7 +37,7 @@ export function ManualInstrumentUpdate({ instrumentId, onSuccess, onCancel }: Ma
     if (onSuccess) {
       onSuccess(updated);
     } else {
-      current.close();
+      current.complete(updated);
     }
   }
 
@@ -266,7 +266,7 @@ function ManualInstrumentUpdateForm({ instrument, onSuccess, onCancel }: ManualI
   );
 }
 
-export const ManualInstrumentUpdateOverlay = registerOverlay(ManualInstrumentUpdate, {
+export const ManualInstrumentUpdateOverlay = registerOverlay.withResult<InstrumentDetail>()(ManualInstrumentUpdate, {
   name: 'manual-instrument-update',
   title: (
     <Group gap="xs">

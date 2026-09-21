@@ -1,12 +1,11 @@
 import { Box, Burger, Button, Container, Group, Stack } from '@mantine/core';
 import { ArrowRightIcon } from '@phosphor-icons/react';
 import { Link } from '@tanstack/react-router';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { BrandLogo } from '@/shared/components/brand-logo';
 import { ThemeToggle } from '@/shared/components/theme-toggle';
 import { siteConfig } from '@/shared/config/site';
-import type { OverlayHandle } from '@/shared/overlay';
-import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { type OverlayHandle, registerOverlay, useCurrentOverlay, useOverlayActive } from '@/shared/overlay';
 import classes from './marketing-header.module.css';
 
 const NAV_LINKS = [
@@ -22,12 +21,12 @@ function MarketingMenu() {
   return (
     <Stack component="nav" aria-label="Mobile navigation" gap="md" mt="md">
       {NAV_LINKS.map((link) => (
-        <a key={link.href} href={link.href} className={classes.mobileNavLink} onClick={() => current.close('navigation')}>
+        <a key={link.href} href={link.href} className={classes.mobileNavLink} onClick={() => current.dismissAll('navigation')}>
           {link.label}
         </a>
       ))}
       <Box pt="md">
-        <Button component={Link} to="/login" variant="default" fullWidth mb="sm" onClick={() => current.close('navigation')}>
+        <Button component={Link} to="/login" variant="default" fullWidth mb="sm" onClick={() => current.dismissAll('navigation')}>
           Sign in
         </Button>
         <Button
@@ -36,7 +35,7 @@ function MarketingMenu() {
           fullWidth
           color="brand"
           rightSection={<ArrowRightIcon size={14} weight="bold" />}
-          onClick={() => current.close('navigation')}>
+          onClick={() => current.dismissAll('navigation')}>
           Launch App
         </Button>
       </Box>
@@ -53,7 +52,7 @@ export const MarketingMenuOverlay = registerOverlay(MarketingMenu, {
 });
 
 export function MarketingHeader() {
-  const [menuOpened, setMenuOpened] = useState(false);
+  const menuOpened = useOverlayActive(MarketingMenuOverlay);
   const menuHandle = useRef<OverlayHandle | null>(null);
 
   function toggleMenu() {
@@ -62,15 +61,7 @@ export function MarketingHeader() {
       return;
     }
 
-    const handle = MarketingMenuOverlay.open();
-    menuHandle.current = handle;
-    setMenuOpened(true);
-    handle.closed.then(() => {
-      if (menuHandle.current?.id === handle.id) {
-        menuHandle.current = null;
-        setMenuOpened(false);
-      }
-    });
+    menuHandle.current = MarketingMenuOverlay.open();
   }
 
   return (

@@ -10,10 +10,6 @@ export function registerOverlay<TProps, TResult = void>(component: ComponentType
     open: (...args: OpenArgs<TProps>) => {
       const props = (args[0] ?? {}) as TProps;
       return overlayStore.open(definition, props);
-    },
-    replace: (...args: OpenArgs<TProps>) => {
-      const props = (args[0] ?? {}) as TProps;
-      return overlayStore.replace(definition, props);
     }
   };
 

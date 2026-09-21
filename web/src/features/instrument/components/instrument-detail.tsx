@@ -36,7 +36,7 @@ export function InstrumentDetailView({ instrumentId, onBack, onEdit }: Instrumen
     if (onEdit) {
       onEdit();
     } else {
-      ManualInstrumentUpdateOverlay.replace({ instrumentId });
+      current.replace(ManualInstrumentUpdateOverlay, { instrumentId });
     }
   }
   const query = $api.useQuery('get', '/api/v1/reference/instruments/{instrumentId}', {
@@ -231,8 +231,7 @@ export function InstrumentDetailView({ instrumentId, onBack, onEdit }: Instrumen
               className={classes.actionBtn}
               leftSection={<TrendUpIcon size={16} weight="bold" />}
               onClick={() => {
-                handleBack();
-                TradeOverlay.open({ defaultInstrumentId: instrument.id });
+                current.replace(TradeOverlay, { defaultInstrumentId: instrument.id });
               }}>
               Trade
             </Button>

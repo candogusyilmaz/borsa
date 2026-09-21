@@ -10,7 +10,9 @@ export type {
   OverlayMetadata,
   OverlayNavigationDirection,
   OverlayOutcome,
+  OverlayPhase,
   OverlayPresentation,
   OverlayStackItem
 } from './types';
 export { useCurrentOverlay } from './use-current-overlay';
+export { useOverlayActive } from './use-overlay-active';

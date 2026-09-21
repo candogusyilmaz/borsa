@@ -2,6 +2,7 @@ import { Button, Divider, Stack, Text } from '@mantine/core';
 import { CheckCircleIcon, ReceiptIcon } from '@phosphor-icons/react';
 import { formatDateTime } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
+import { useCurrentOverlay } from '@/shared/overlay';
 import { ActivityDetailOverlay } from '../activity-detail/activity-detail';
 import classes from './transfer.module.css';
 import type { TransferSessionResult } from './use-transfer-session';
@@ -13,6 +14,8 @@ interface TransferSuccessProps {
 }
 
 export function TransferSuccess({ session, onDone, onStartAnother }: TransferSuccessProps) {
+  const current = useCurrentOverlay();
+
   if (session.state.step !== 'success') {
     return null;
   }
@@ -22,8 +25,7 @@ export function TransferSuccess({ session, onDone, onStartAnother }: TransferSuc
   const destinationAccount = session.accounts.find((a) => a.id === preview.destinationAccountId) ?? session.destinationAccount;
 
   function handleViewActivity() {
-    onDone();
-    ActivityDetailOverlay.open({ activityId: activity.id });
+    current.replace(ActivityDetailOverlay, { activityId: activity.id });
   }
 
   return (

@@ -32,7 +32,7 @@ function AccountMenu({ activeSessionsCount }: AccountMenuOverlayProps) {
     setIsSigningOut(true);
     try {
       await logout();
-      current.close('logout');
+      current.dismissAll('logout');
       await navigate({ to: '/login', replace: true });
     } catch (error) {
       showApiError(error, {
@@ -80,7 +80,7 @@ function AccountMenu({ activeSessionsCount }: AccountMenuOverlayProps) {
         size="md"
         fullWidth
         leftSection={<BankIcon size={18} weight="bold" />}
-        onClick={() => current.close('navigation')}>
+        onClick={() => current.dismissAll('navigation')}>
         Financial Accounts
       </Button>
 
@@ -91,7 +91,7 @@ function AccountMenu({ activeSessionsCount }: AccountMenuOverlayProps) {
         size="md"
         fullWidth
         leftSection={<TrendUpIcon size={18} weight="bold" />}
-        onClick={() => current.close('navigation')}>
+        onClick={() => current.dismissAll('navigation')}>
         Investing &amp; Positions
       </Button>
 
@@ -102,7 +102,7 @@ function AccountMenu({ activeSessionsCount }: AccountMenuOverlayProps) {
         size="md"
         fullWidth
         leftSection={<StackIcon size={18} weight="bold" />}
-        onClick={() => current.close('navigation')}>
+        onClick={() => current.dismissAll('navigation')}>
         Financial Instruments
       </Button>
 
@@ -113,7 +113,7 @@ function AccountMenu({ activeSessionsCount }: AccountMenuOverlayProps) {
         size="md"
         fullWidth
         leftSection={<DevicesIcon size={18} weight="bold" />}
-        onClick={() => current.close('navigation')}
+        onClick={() => current.dismissAll('navigation')}
         rightSection={
           activeSessionsCount !== undefined ? (
             <Badge color="teal" variant="light" size="xs">
@@ -130,7 +130,7 @@ function AccountMenu({ activeSessionsCount }: AccountMenuOverlayProps) {
         fullWidth
         leftSection={<BookOpenIcon size={18} weight="bold" />}
         onClick={() => {
-          ReferenceCatalogOverlay.replace();
+          current.replace(ReferenceCatalogOverlay);
         }}>
         Reference Catalogue
       </Button>
