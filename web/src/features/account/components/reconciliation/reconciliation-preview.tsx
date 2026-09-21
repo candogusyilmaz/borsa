@@ -81,8 +81,8 @@ export function ReconciliationPreview({
               balance at this date ({formatMoney(preview.ledgerOpeningBalance, preview.currency)}).
             </Text>
             <Text size="xs">
-              Difference: <strong>{formatMoney(preview.openingDifference, preview.currency)}</strong>. Prior periods must be balanced before
-              reconciling this statement.
+              Difference: <strong>{formatMoney(preview.openingDifference, preview.currency, { adaptivePrecision: true })}</strong>. Prior
+              periods must be balanced before reconciling this statement.
             </Text>
           </Alert>
         )}
@@ -106,7 +106,7 @@ export function ReconciliationPreview({
           <div className={classes.comparisonRow}>
             <span className={classes.comparisonLabel}>Opening Difference</span>
             <span className={`${classes.comparisonValue} ${hasOpeningMismatch ? classes.deltaNegative : classes.deltaPositive}`}>
-              {formatMoney(preview.openingDifference, preview.currency)}
+              {formatMoney(preview.openingDifference, preview.currency, { adaptivePrecision: true })}
             </span>
           </div>
 
@@ -133,7 +133,7 @@ export function ReconciliationPreview({
                 hasClosingDiff ? (isClosingDiffPositive ? classes.deltaPositive : classes.deltaNegative) : classes.deltaPositive
               }`}>
               {hasClosingDiff && isClosingDiffPositive ? '+' : ''}
-              {formatMoney(preview.closingDifference, preview.currency)}
+              {formatMoney(preview.closingDifference, preview.currency, { adaptivePrecision: true })}
             </span>
           </div>
 
@@ -162,8 +162,8 @@ export function ReconciliationPreview({
         {isAdjustment && !hasOpeningMismatch && (
           <Alert icon={<InfoIcon size={20} />} title="Adjusting Entry Required" color="orange" variant="light">
             <Text size="xs" mb="xs">
-              A difference of <strong>{formatMoney(preview.closingDifference, preview.currency)}</strong> exists between statement and
-              ledger. Committing will create a ledger adjustment at statement closing time.
+              A difference of <strong>{formatMoney(preview.closingDifference, preview.currency, { adaptivePrecision: true })}</strong>{' '}
+              exists between statement and ledger. Committing will create a ledger adjustment at statement closing time.
             </Text>
 
             <TextInput

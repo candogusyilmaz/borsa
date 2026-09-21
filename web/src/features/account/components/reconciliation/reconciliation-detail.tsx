@@ -159,7 +159,7 @@ export function ReconciliationDetail({
             <div className={classes.comparisonRow}>
               <span className={classes.comparisonLabel}>Adjustment Posted</span>
               <span className={classes.comparisonValue} style={{ color: 'var(--mantine-color-orange-6)' }}>
-                {formatMoney(rec.adjustmentAmount || rec.closingDifference, rec.currency)}
+                {formatMoney(rec.adjustmentAmount || rec.closingDifference, rec.currency, { adaptivePrecision: true })}
               </span>
             </div>
 

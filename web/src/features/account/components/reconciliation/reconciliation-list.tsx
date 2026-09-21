@@ -147,7 +147,7 @@ export function ReconciliationList({ account, onStartNew, onSelectReconciliation
                     <span
                       className={`${classes.dataValue} ${hasDiff ? (isDiffPositive ? classes.deltaPositive : classes.deltaNegative) : ''}`}>
                       {hasDiff && isDiffPositive ? '+' : ''}
-                      {formatMoney(rec.closingDifference, rec.currency)}
+                      {formatMoney(rec.closingDifference, rec.currency, { adaptivePrecision: true })}
                     </span>
                   </div>
 

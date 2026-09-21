@@ -1,55 +1,86 @@
-const VALID_DECIMAL_PATTERN = /^[+-]?(?:0|[1-9]\d*)(?:\.\d+)?$/;
+import { FinancialDecimal, toFinancialDecimal } from '@/shared/finance/decimal';
+
+const DEFAULT_LOCALE = 'en-US';
+const DEFAULT_CURRENCY = 'USD';
+const DEFAULT_MIN_FRACTION_DIGITS = 2;
+const DEFAULT_MAX_FRACTION_DIGITS = 2;
+const DEFAULT_MAX_ADAPTIVE_FRACTION_DIGITS = 18;
 
 export interface FormatMoneyOptions {
+  locale?: string;
   minimumFractionDigits?: number;
   maximumFractionDigits?: number;
+  adaptivePrecision?: boolean;
+  maxAdaptiveFractionDigits?: number;
 }
 
-export function formatMoney(
-  amount: string | number | null | undefined,
-  currency: string = 'USD',
-  locale: string = 'en-US',
-  options?: FormatMoneyOptions
-) {
-  if (amount === null || amount === undefined || amount === '') {
-    return '—';
-  }
+/**
+ * Isolated formatting helper to format arbitrary-precision numeric strings
+ * via Intl.NumberFormat without precision-lossy Number coercion.
+ */
+function formatIntl(formatter: Intl.NumberFormat, value: string | number): string {
+  return formatter.format(value as unknown as number);
+}
 
-  let formattedValue: string | number;
-  if (typeof amount === 'string') {
-    const trimmed = amount.trim();
-    if (!VALID_DECIMAL_PATTERN.test(trimmed)) {
-      return String(amount);
-    }
-    formattedValue = trimmed;
-  } else if (typeof amount === 'number') {
-    if (!Number.isFinite(amount)) {
-      return String(amount);
-    }
-    formattedValue = amount;
-  } else {
-    return '—';
-  }
-
-  const minDigits = options?.minimumFractionDigits ?? 2;
-  const maxDigits = options?.maximumFractionDigits ?? 2;
-
+function formatRawCurrency(value: string | number, currency: string, locale: string, minDigits: number, maxDigits: number): string {
   try {
-    return new Intl.NumberFormat(locale, {
+    const formatter = new Intl.NumberFormat(locale, {
       style: 'currency',
       currency,
       minimumFractionDigits: minDigits,
       maximumFractionDigits: maxDigits
-    }).format(formattedValue as unknown as number);
+    });
+    return formatIntl(formatter, value);
   } catch {
     try {
-      const formattedNumber = new Intl.NumberFormat(locale, {
+      const numberFormatter = new Intl.NumberFormat(locale, {
         minimumFractionDigits: minDigits,
         maximumFractionDigits: maxDigits
-      }).format(formattedValue as unknown as number);
-      return `${formattedNumber} ${currency}`;
+      });
+      return `${formatIntl(numberFormatter, value)} ${currency}`;
     } catch {
-      return `${formattedValue} ${currency}`;
+      return `${value} ${currency}`;
     }
   }
+}
+
+export function formatMoney(
+  amount: string | number | FinancialDecimal | null | undefined,
+  currency: string = DEFAULT_CURRENCY,
+  options?: FormatMoneyOptions | string
+): string {
+  if (amount === null || amount === undefined || (typeof amount === 'string' && amount.trim() === '')) {
+    return '—';
+  }
+
+  if (typeof amount !== 'string' && typeof amount !== 'number' && !(amount instanceof FinancialDecimal)) {
+    return '—';
+  }
+
+  const dec = toFinancialDecimal(amount);
+  if (!dec) {
+    return String(amount);
+  }
+
+  const resolvedOptions: FormatMoneyOptions | undefined = typeof options === 'string' ? { locale: options } : options;
+
+  const activeCurrency = currency || DEFAULT_CURRENCY;
+  const locale = resolvedOptions?.locale ?? DEFAULT_LOCALE;
+  const minDigits = resolvedOptions?.minimumFractionDigits ?? DEFAULT_MIN_FRACTION_DIGITS;
+  let maxDigits = resolvedOptions?.maximumFractionDigits ?? DEFAULT_MAX_FRACTION_DIGITS;
+
+  if (resolvedOptions?.adaptivePrecision && !dec.isZero()) {
+    const roundsToZero = new FinancialDecimal(dec.toFixed(maxDigits)).isZero();
+    if (roundsToZero) {
+      const maxAdaptive = resolvedOptions.maxAdaptiveFractionDigits ?? DEFAULT_MAX_ADAPTIVE_FRACTION_DIGITS;
+      if (new FinancialDecimal(dec.toFixed(maxAdaptive)).isZero()) {
+        const smallestUnit = `0.${'0'.repeat(maxAdaptive - 1)}1`;
+        const formattedThreshold = formatRawCurrency(smallestUnit, activeCurrency, locale, maxAdaptive, maxAdaptive);
+        return dec.isPositive() ? `< ${formattedThreshold}` : `> -${formattedThreshold}`;
+      }
+      maxDigits = Math.max(maxDigits, maxAdaptive);
+    }
+  }
+
+  return formatRawCurrency(dec.toString(), activeCurrency, locale, minDigits, maxDigits);
 }

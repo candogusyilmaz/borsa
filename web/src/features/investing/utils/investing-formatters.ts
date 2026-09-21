@@ -33,7 +33,7 @@ export function formatUnitCost(
   }
 
   const avg = basisDec.dividedBy(qtyDec);
-  return formatMoney(avg.toFixed(4), currency, 'en-US', {
+  return formatMoney(avg.toFixed(4), currency, {
     minimumFractionDigits: 4,
     maximumFractionDigits: 4
   });

@@ -37,7 +37,7 @@ export function getRealizedPnlPresentation(pnl: string | number | null | undefin
 
   if (dec.isPositive()) {
     return {
-      text: `+${formatMoney(pnl, currency)} Profit`,
+      text: `+${formatMoney(pnl, currency, { adaptivePrecision: true })} Profit`,
       isProfit: true,
       isLoss: false,
       isZero: false,
@@ -47,7 +47,7 @@ export function getRealizedPnlPresentation(pnl: string | number | null | undefin
   }
 
   return {
-    text: `${formatMoney(pnl, currency)} Loss`,
+    text: `${formatMoney(pnl, currency, { adaptivePrecision: true })} Loss`,
     isProfit: false,
     isLoss: true,
     isZero: false,
