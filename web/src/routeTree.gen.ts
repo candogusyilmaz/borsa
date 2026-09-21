@@ -14,7 +14,6 @@ import { Route as AppRouteRouteImport } from './routes/app/route'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as AppIndexRouteImport } from './routes/app/index'
-import { Route as AppAccountsRouteRouteImport } from './routes/app/accounts/route'
 import { Route as AppInstrumentsRouteImport } from './routes/app/instruments'
 import { Route as AppInvestingRouteImport } from './routes/app/investing'
 import { Route as AppSessionsRouteImport } from './routes/app/sessions'
@@ -46,11 +45,6 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRouteRoute,
 } as any)
-const AppAccountsRouteRoute = AppAccountsRouteRouteImport.update({
-  id: '/accounts',
-  path: '/accounts',
-  getParentRoute: () => AppRouteRoute,
-} as any)
 const AppInstrumentsRoute = AppInstrumentsRouteImport.update({
   id: '/instruments',
   path: '/instruments',
@@ -67,14 +61,14 @@ const AppSessionsRoute = AppSessionsRouteImport.update({
   getParentRoute: () => AppRouteRoute,
 } as any)
 const AppAccountsIndexRoute = AppAccountsIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AppAccountsRouteRoute,
+  id: '/accounts/',
+  path: '/accounts/',
+  getParentRoute: () => AppRouteRoute,
 } as any)
 const AppAccountsAccountIdRoute = AppAccountsAccountIdRouteImport.update({
-  id: '/$accountId',
-  path: '/$accountId',
-  getParentRoute: () => AppAccountsRouteRoute,
+  id: '/accounts/$accountId',
+  path: '/accounts/$accountId',
+  getParentRoute: () => AppRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -82,7 +76,6 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/app/accounts': typeof AppAccountsRouteRouteWithChildren
   '/app/instruments': typeof AppInstrumentsRoute
   '/app/investing': typeof AppInvestingRoute
   '/app/sessions': typeof AppSessionsRoute
@@ -107,7 +100,6 @@ export interface FileRoutesById {
   '/app': typeof AppRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/app/accounts': typeof AppAccountsRouteRouteWithChildren
   '/app/instruments': typeof AppInstrumentsRoute
   '/app/investing': typeof AppInvestingRoute
   '/app/sessions': typeof AppSessionsRoute
@@ -122,7 +114,6 @@ export interface FileRouteTypes {
     | '/app'
     | '/login'
     | '/register'
-    | '/app/accounts'
     | '/app/instruments'
     | '/app/investing'
     | '/app/sessions'
@@ -146,7 +137,6 @@ export interface FileRouteTypes {
     | '/app'
     | '/login'
     | '/register'
-    | '/app/accounts'
     | '/app/instruments'
     | '/app/investing'
     | '/app/sessions'
@@ -199,13 +189,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRouteRoute
     }
-    '/app/accounts': {
-      id: '/app/accounts'
-      path: '/accounts'
-      fullPath: '/app/accounts'
-      preLoaderRoute: typeof AppAccountsRouteRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
     '/app/instruments': {
       id: '/app/instruments'
       path: '/instruments'
@@ -229,48 +212,37 @@ declare module '@tanstack/react-router' {
     }
     '/app/accounts/': {
       id: '/app/accounts/'
-      path: '/'
+      path: '/accounts'
       fullPath: '/app/accounts/'
       preLoaderRoute: typeof AppAccountsIndexRouteImport
-      parentRoute: typeof AppAccountsRouteRoute
+      parentRoute: typeof AppRouteRoute
     }
     '/app/accounts/$accountId': {
       id: '/app/accounts/$accountId'
-      path: '/$accountId'
+      path: '/accounts/$accountId'
       fullPath: '/app/accounts/$accountId'
       preLoaderRoute: typeof AppAccountsAccountIdRouteImport
-      parentRoute: typeof AppAccountsRouteRoute
+      parentRoute: typeof AppRouteRoute
     }
   }
 }
 
-interface AppAccountsRouteRouteChildren {
-  AppAccountsAccountIdRoute: typeof AppAccountsAccountIdRoute
-  AppAccountsIndexRoute: typeof AppAccountsIndexRoute
-}
-
-const AppAccountsRouteRouteChildren: AppAccountsRouteRouteChildren = {
-  AppAccountsAccountIdRoute: AppAccountsAccountIdRoute,
-  AppAccountsIndexRoute: AppAccountsIndexRoute,
-}
-
-const AppAccountsRouteRouteWithChildren =
-  AppAccountsRouteRoute._addFileChildren(AppAccountsRouteRouteChildren)
-
 interface AppRouteRouteChildren {
-  AppAccountsRouteRoute: typeof AppAccountsRouteRouteWithChildren
   AppInstrumentsRoute: typeof AppInstrumentsRoute
   AppInvestingRoute: typeof AppInvestingRoute
   AppSessionsRoute: typeof AppSessionsRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppAccountsAccountIdRoute: typeof AppAccountsAccountIdRoute
+  AppAccountsIndexRoute: typeof AppAccountsIndexRoute
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
-  AppAccountsRouteRoute: AppAccountsRouteRouteWithChildren,
   AppInstrumentsRoute: AppInstrumentsRoute,
   AppInvestingRoute: AppInvestingRoute,
   AppSessionsRoute: AppSessionsRoute,
   AppIndexRoute: AppIndexRoute,
+  AppAccountsAccountIdRoute: AppAccountsAccountIdRoute,
+  AppAccountsIndexRoute: AppAccountsIndexRoute,
 }
 
 const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(

@@ -22,4 +22,3 @@ export { CashActivityOverlay, RecordCashActivityForm, RecordCashActivityOverlay 
 export { ReverseActivity, ReverseActivityOverlay } from './components/reverse-activity/reverse-activity';
 export { Transfer, TransferOverlay } from './components/transfer/transfer';
 export { AccountDetailPage } from './pages';
-export { AccountWorkspace, useAccountWorkspace } from './workspace';

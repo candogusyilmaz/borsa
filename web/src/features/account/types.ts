@@ -76,14 +76,3 @@ export interface TransferFormValues {
   effectiveAt: string;
   confirmPolicyBreach: boolean;
 }
-
-export interface AccountWorkspaceContext {
-  accounts: FinancialAccount[];
-  activeAccounts: FinancialAccount[];
-  isLoading: boolean;
-  isFetching: boolean;
-  isError: boolean;
-  refetchAccounts: () => Promise<unknown>;
-  openCreateAccount: () => void;
-  openAccountPicker: () => void;
-}
