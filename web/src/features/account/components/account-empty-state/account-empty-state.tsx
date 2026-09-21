@@ -7,16 +7,16 @@ import classes from './account-empty-state.module.css';
 export function AccountEmptyState() {
   const navigate = useNavigate();
 
-  async function handleOpenCreate() {
-    const handle = CreateAccountOverlay.open();
-    const outcome = await handle.closed;
-    if (outcome.status === 'completed') {
-      await navigate({
-        to: '/app/accounts/$accountId',
-        params: { accountId: outcome.value.id },
-        replace: true
-      });
-    }
+  function handleOpenCreate() {
+    CreateAccountOverlay.open(undefined, {
+      onCompleted: async (created) => {
+        await navigate({
+          to: '/app/accounts/$accountId',
+          params: { accountId: created.id },
+          replace: true
+        });
+      }
+    });
   }
 
   return (

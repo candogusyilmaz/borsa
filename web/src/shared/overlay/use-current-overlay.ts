@@ -3,10 +3,10 @@ import type { CurrentOverlayContextValue } from './types';
 
 export const CurrentOverlayContext = createContext<CurrentOverlayContextValue<unknown> | null>(null);
 
-export function useCurrentOverlay<TResult = void>() {
+export function useCurrentOverlayInternal(): CurrentOverlayContextValue<unknown> {
   const context = useContext(CurrentOverlayContext);
   if (!context) {
-    throw new Error('useCurrentOverlay must be used within an active overlay component rendered by OverlayHost');
+    throw new Error('Overlay hook must be used within an active overlay component rendered by OverlayHost');
   }
-  return context as unknown as CurrentOverlayContextValue<TResult>;
+  return context;
 }

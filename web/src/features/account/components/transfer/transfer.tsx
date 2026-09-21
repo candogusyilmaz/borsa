@@ -1,7 +1,8 @@
 import { Group, Text } from '@mantine/core';
 import { ArrowsLeftRightIcon } from '@phosphor-icons/react';
 import { useState } from 'react';
-import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { registerOverlay } from '@/shared/overlay';
+import { ActivityDetailOverlay } from '../activity-detail/activity-detail';
 import { TransferSession } from './transfer-session';
 
 export interface TransferOverlayProps {
@@ -11,7 +12,7 @@ export interface TransferOverlayProps {
 }
 
 export function Transfer({ ...props }: TransferOverlayProps) {
-  const current = useCurrentOverlay();
+  const current = TransferOverlay.useCurrent();
   const [sessionId, setSessionId] = useState(0);
 
   const handleClose = () => {
@@ -22,7 +23,20 @@ export function Transfer({ ...props }: TransferOverlayProps) {
     setSessionId((id) => id + 1);
   };
 
-  return <TransferSession key={sessionId} {...props} onClose={handleClose} onStartAnother={handleStartAnother} />;
+  const handleViewActivity = (activityId: string) => {
+    current.replace(ActivityDetailOverlay, { activityId });
+  };
+
+  return (
+    <TransferSession
+      key={sessionId}
+      {...props}
+      onClose={handleClose}
+      onStartAnother={handleStartAnother}
+      onSetTitle={current.setTitle}
+      onViewActivity={handleViewActivity}
+    />
+  );
 }
 
 export const TransferOverlay = registerOverlay(Transfer, {

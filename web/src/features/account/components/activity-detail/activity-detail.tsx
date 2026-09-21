@@ -10,7 +10,7 @@ import { $api } from '@/api/client';
 import { toFinancialDecimal } from '@/shared/finance/decimal';
 import { formatDateTime } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
-import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { registerOverlay } from '@/shared/overlay';
 import {
   getActivityTypeBadgeColor,
   getActivityTypeDescription,
@@ -31,7 +31,7 @@ interface ActivityDetailProps {
 }
 
 export function ActivityDetail({ activityId, isAccountArchived = false, isAlreadyReversed = false }: ActivityDetailProps) {
-  const current = useCurrentOverlay();
+  const current = ActivityDetailOverlay.useCurrent();
 
   const activityQuery = $api.useQuery('get', '/api/v1/activities/{activityId}', {
     params: { path: { activityId: activityId! } }

@@ -8,7 +8,7 @@ import { $api } from '@/api/client';
 import { showApiError } from '@/api/errors';
 import { formatDateTime } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
-import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { registerOverlay } from '@/shared/overlay';
 import { getActivityTypeLabel } from '../../activity-presentation';
 import type { ActivityResponse } from '../../types';
 import classes from './reverse-activity.module.css';
@@ -49,7 +49,7 @@ export function ReverseActivity({ activityId }: ReverseActivityProps) {
 }
 
 function ReverseActivityForm({ activity }: ReverseActivityFormProps) {
-  const current = useCurrentOverlay();
+  const current = ReverseActivityOverlay.useCurrent();
   const queryClient = useQueryClient();
   const clientRequestRef = useRef<{ activityId: string; correctionReason: string; id: string } | null>(null);
 

@@ -3,8 +3,6 @@ import { ArrowCounterClockwiseIcon, InfoIcon, WarningCircleIcon } from '@phospho
 import { $api } from '@/api/client';
 import { formatDateTime } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
-import { useCurrentOverlay } from '@/shared/overlay';
-import { ActivityDetailOverlay } from '../activity-detail/activity-detail';
 import classes from './reconciliation.module.css';
 import {
   getLifecycleStatusBadgeColor,
@@ -19,15 +17,16 @@ interface ReconciliationDetailProps {
   isAccountArchived?: boolean;
   onBack: () => void;
   onStartCorrection: () => void;
+  onViewAdjustmentActivity: (activityId: string) => void;
 }
 
 export function ReconciliationDetail({
   reconciliationId,
   isAccountArchived = false,
   onBack,
-  onStartCorrection
+  onStartCorrection,
+  onViewAdjustmentActivity
 }: ReconciliationDetailProps) {
-  const current = useCurrentOverlay();
   const detailQuery = $api.useQuery('get', '/api/v1/reconciliations/{reconciliationId}', {
     params: {
       path: { reconciliationId }
@@ -173,12 +172,7 @@ export function ReconciliationDetail({
             )}
 
             {rec.adjustmentActivityId && (
-              <Button
-                variant="light"
-                color="orange"
-                size="xs"
-                mt="xs"
-                onClick={() => current.push(ActivityDetailOverlay, { activityId: rec.adjustmentActivityId! })}>
+              <Button variant="light" color="orange" size="xs" mt="xs" onClick={() => onViewAdjustmentActivity(rec.adjustmentActivityId!)}>
                 View Adjustment Activity Details
               </Button>
             )}

@@ -5,7 +5,7 @@ import { useRef } from 'react';
 import { BrandLogo } from '@/shared/components/brand-logo';
 import { ThemeToggle } from '@/shared/components/theme-toggle';
 import { siteConfig } from '@/shared/config/site';
-import { type OverlayHandle, registerOverlay, useCurrentOverlay, useOverlayActive } from '@/shared/overlay';
+import { type OverlayHandle, registerOverlay, useOverlayActive } from '@/shared/overlay';
 import classes from './marketing-header.module.css';
 
 const NAV_LINKS = [
@@ -16,7 +16,7 @@ const NAV_LINKS = [
 ];
 
 function MarketingMenu() {
-  const current = useCurrentOverlay();
+  const current = MarketingMenuOverlay.useCurrent();
 
   return (
     <Stack component="nav" aria-label="Mobile navigation" gap="md" mt="md">

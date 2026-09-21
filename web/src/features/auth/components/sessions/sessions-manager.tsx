@@ -39,7 +39,7 @@ import { showApiError } from '@/api/errors';
 import type { components } from '@/api/schema';
 import { formatDateTime, toRelativeTime } from '@/shared/format/date-time';
 import { useAuth } from '@/shared/hooks/use-auth';
-import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { registerOverlay } from '@/shared/overlay';
 import classes from './sessions.module.css';
 
 type DeviceSession = components['schemas']['DeviceSessionResponse'];
@@ -96,7 +96,7 @@ interface RevokeSessionOverlayProps {
 }
 
 function RevokeSessionConfirmation({ familyId, deviceLabel, isCurrent }: RevokeSessionOverlayProps) {
-  const overlay = useCurrentOverlay();
+  const overlay = RevokeSessionOverlay.useCurrent();
   const queryClient = useQueryClient();
   const { logout } = useAuth();
   const navigate = useNavigate();
@@ -160,7 +160,7 @@ interface TerminateOthersOverlayProps {
 }
 
 function TerminateOthersConfirmation({ familyIds }: TerminateOthersOverlayProps) {
-  const overlay = useCurrentOverlay();
+  const overlay = TerminateOthersOverlay.useCurrent();
   const queryClient = useQueryClient();
   const [isTerminating, setIsTerminating] = useState(false);
 
@@ -224,7 +224,7 @@ export const TerminateOthersOverlay = registerOverlay(TerminateOthersConfirmatio
 });
 
 function SignOutCurrentConfirmation() {
-  const overlay = useCurrentOverlay();
+  const overlay = SignOutCurrentOverlay.useCurrent();
   const { logout } = useAuth();
   const navigate = useNavigate();
   const [isSigningOut, setIsSigningOut] = useState(false);

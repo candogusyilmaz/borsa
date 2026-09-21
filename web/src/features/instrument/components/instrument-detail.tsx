@@ -3,7 +3,7 @@ import { GlobeHemisphereWestIcon, PencilSimpleIcon, StackIcon, TrendUpIcon, User
 import { $api } from '@/api/client';
 import { TradeOverlay } from '@/features/investing';
 import { formatDateTime } from '@/shared/format/date-time';
-import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { registerOverlay } from '@/shared/overlay';
 import {
   getAliasTypeLabel,
   getInstrumentTypeBadgeColor,
@@ -17,27 +17,17 @@ import { ManualInstrumentUpdateOverlay } from './manual-instrument-update';
 
 export interface InstrumentDetailProps {
   instrumentId: string;
-  onBack?: () => void;
-  onEdit?: () => void;
 }
 
-export function InstrumentDetailView({ instrumentId, onBack, onEdit }: InstrumentDetailProps) {
-  const current = useCurrentOverlay();
+export function InstrumentDetailView({ instrumentId }: InstrumentDetailProps) {
+  const current = InstrumentDetailOverlay.useCurrent();
 
   function handleBack() {
-    if (onBack) {
-      onBack();
-    } else {
-      current.dismiss('cancelled');
-    }
+    current.dismiss('cancelled');
   }
 
   function handleEdit() {
-    if (onEdit) {
-      onEdit();
-    } else {
-      current.replace(ManualInstrumentUpdateOverlay, { instrumentId });
-    }
+    current.replace(ManualInstrumentUpdateOverlay, { instrumentId });
   }
   const query = $api.useQuery('get', '/api/v1/reference/instruments/{instrumentId}', {
     params: {

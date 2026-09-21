@@ -1,8 +1,7 @@
 import { Alert, Badge, Button, Group, Skeleton, Stack, Text } from '@mantine/core';
 import { ArrowsLeftRightIcon, InfoIcon, WarningCircleIcon } from '@phosphor-icons/react';
-import { useEffect } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { $api } from '@/api/client';
-import { useCurrentOverlay } from '@/shared/overlay';
 import classes from './transfer.module.css';
 import { getEligibleTransferAccounts } from './transfer-domain';
 import { TransferForm } from './transfer-form';
@@ -17,6 +16,8 @@ export interface TransferSessionProps {
   lockSourceAccount?: boolean;
   onClose: () => void;
   onStartAnother: () => void;
+  onSetTitle: (title: ReactNode) => void;
+  onViewActivity: (activityId: string) => void;
 }
 
 export function TransferSession({
@@ -24,7 +25,9 @@ export function TransferSession({
   defaultDestinationAccountId,
   lockSourceAccount,
   onClose,
-  onStartAnother
+  onStartAnother,
+  onSetTitle,
+  onViewActivity
 }: TransferSessionProps) {
   // Query all non-archived financial accounts for the user
   const accountsQuery = $api.useQuery('get', '/api/v1/accounts', {
@@ -95,6 +98,8 @@ export function TransferSession({
       lockSourceAccount={lockSourceAccount}
       onClose={onClose}
       onStartAnother={onStartAnother}
+      onSetTitle={onSetTitle}
+      onViewActivity={onViewActivity}
     />
   );
 }
@@ -104,7 +109,6 @@ interface TransferWorkflowProps extends TransferSessionProps {
 }
 
 function TransferWorkflow(props: TransferWorkflowProps) {
-  const current = useCurrentOverlay();
   const session = useTransferSession({
     accounts: props.accounts,
     defaultSourceAccountId: props.defaultSourceAccountId,
@@ -116,8 +120,8 @@ function TransferWorkflow(props: TransferWorkflowProps) {
   const currency = session.sourceAccount?.currency;
 
   useEffect(() => {
-    current.setTitle(<TransferHeaderTitle step={step} currency={currency} />);
-  }, [current, step, currency]);
+    props.onSetTitle(<TransferHeaderTitle step={step} currency={currency} />);
+  }, [props.onSetTitle, step, currency]);
 
   return (
     <>
@@ -128,7 +132,12 @@ function TransferWorkflow(props: TransferWorkflowProps) {
       {session.state.step === 'preview' && <TransferPreview session={session} />}
 
       {session.state.step === 'success' && (
-        <TransferSuccess session={session} onDone={props.onClose} onStartAnother={props.onStartAnother} />
+        <TransferSuccess
+          session={session}
+          onDone={props.onClose}
+          onStartAnother={props.onStartAnother}
+          onViewActivity={props.onViewActivity}
+        />
       )}
     </>
   );

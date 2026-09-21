@@ -14,7 +14,7 @@ import { $api } from '@/api/client';
 import { getApiErrorMessage, normalizeError, showApiError } from '@/api/errors';
 import { formatDateTime } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
-import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { registerOverlay } from '@/shared/overlay';
 import { isDecimal } from '@/shared/validation/decimal';
 import type { FinancialAccount } from '../../types';
 import classes from './opening-correction.module.css';
@@ -64,7 +64,7 @@ export function OpeningCorrection({ accountId, currentOpeningBalance }: OpeningC
 }
 
 function OpeningCorrectionForm({ account, currentOpeningBalance, onRefetchAccount }: OpeningCorrectionFormProps) {
-  const current = useCurrentOverlay();
+  const current = OpeningCorrectionOverlay.useCurrent();
   const queryClient = useQueryClient();
 
   const correctionMutation = $api.useMutation('put', '/api/v1/accounts/{accountId}/opening-state', {

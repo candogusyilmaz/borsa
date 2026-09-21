@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { $api } from '@/api/client';
 import { showApiError } from '@/api/errors';
 import { registerOverlay } from '@/shared/overlay';
+import { ActivityDetailOverlay } from '../activity-detail/activity-detail';
 import { ReconciliationCorrection } from './reconciliation-correction';
 import { ReconciliationDetail } from './reconciliation-detail';
 import { ReconciliationForm } from './reconciliation-form';
@@ -25,6 +26,7 @@ export interface ReconciliationOverlayProps {
 }
 
 export function Reconciliation({ accountId, initialReconciliationId, initialMode = 'list' }: ReconciliationOverlayProps) {
+  const current = ReconciliationOverlay.useCurrent();
   const queryClient = useQueryClient();
 
   const accountQuery = $api.useQuery('get', '/api/v1/accounts/{accountId}', {
@@ -178,6 +180,9 @@ export function Reconciliation({ accountId, initialReconciliationId, initialMode
           reconciliationId={selectedRecId}
           isAccountArchived={account.archived}
           onBack={() => setMode('list')}
+          onViewAdjustmentActivity={(activityId) => {
+            current.push(ActivityDetailOverlay, { activityId });
+          }}
           onStartCorrection={async () => {
             const res = await queryClient.fetchQuery(
               $api.queryOptions('get', '/api/v1/reconciliations/{reconciliationId}', {

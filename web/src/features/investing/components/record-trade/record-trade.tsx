@@ -1,6 +1,6 @@
 import { Group, Text } from '@mantine/core';
 import { TrendUpIcon } from '@phosphor-icons/react';
-import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { registerOverlay } from '@/shared/overlay';
 import { TradeDetailOverlay } from '../trade-detail/trade-detail';
 import { TradeForm } from './trade-form';
 import { TradePreview } from './trade-preview';
@@ -9,7 +9,7 @@ import type { RecordTradeProps } from './trade-types';
 import { useTradeSession } from './use-trade-session';
 
 export function RecordTrade(props: RecordTradeProps) {
-  const current = useCurrentOverlay();
+  const current = TradeOverlay.useCurrent();
   const session = useTradeSession(props);
 
   const handleClose = () => {

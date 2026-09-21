@@ -389,14 +389,23 @@ the task requires them.
 
 ---
 
-## 16. Overlay Navigation
+## 16. Overlay Navigation and Boundaries
 
 Feature-level business modals and drawers use the shared `registerOverlay` architecture.
 
-Outside an overlay (page-level triggers):
-- `TargetOverlay.open(...)`
+### Decoupled Feature Components and Adapters
+- **Domain components**: Feature/domain components (forms, tables, detail cards) should take plain required callbacks (`onSuccess`, `onCancel`, etc.) and remain decoupled from overlay infrastructure.
+- **Adapters / registered overlays**: Thin adapters or registered wrappers bridge plain domain components to overlay navigation and lifecycle.
+- **Definition-bound `useCurrent()`**: Components requiring overlay controls access them via `TargetOverlay.useCurrent()`. This asserts runtime identity and provides typed `complete(result)`. The legacy untyped `useCurrentOverlay()` is internal.
+- **Overlay-only components**: Components that only exist to serve as overlay views (e.g., action sheets, navigation menus) may consume `useCurrent()` directly without a separate adapter.
 
-Inside an active overlay:
+### Opening and Lifecycle Callbacks
+Overlay callers use explicit lifecycle callbacks via open options rather than Promises:
+- `TargetOverlay.open(props, { onCompleted, onDismissed })`
+- `onCompleted?: (result: TResult) => void` fires once the overlay completes successfully (on exit for root, immediately for stacked).
+- `onDismissed?: (reason?: string) => void` fires once dismissed or cancelled.
+
+### Navigation Inside an Active Overlay
 - `current.push(TargetOverlay, ...)` when returning to the current overlay is expected (e.g., nested reversal, sub-details).
 - `current.replace(TargetOverlay, ...)` when the current overlay should be discarded (e.g., action menus, workflow transitions).
 - `current.dismiss(...)` dismisses the current overlay item (or returns to parent if stacked).

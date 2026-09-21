@@ -8,7 +8,7 @@ import { ReferenceCatalogOverlay } from '@/features/reference';
 import { BrandLogo } from '@/shared/components/brand-logo';
 import { ThemeToggle } from '@/shared/components/theme-toggle';
 import { useAuth } from '@/shared/hooks/use-auth';
-import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { registerOverlay } from '@/shared/overlay';
 import classes from './app-shell.module.css';
 
 interface AccountMenuOverlayProps {
@@ -16,7 +16,7 @@ interface AccountMenuOverlayProps {
 }
 
 function AccountMenu({ activeSessionsCount }: AccountMenuOverlayProps) {
-  const current = useCurrentOverlay();
+  const current = AccountMenuOverlay.useCurrent();
   const { logout } = useAuth();
   const navigate = useNavigate();
   const [isSigningOut, setIsSigningOut] = useState(false);

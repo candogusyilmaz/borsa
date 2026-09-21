@@ -8,7 +8,7 @@ import { clearLocalSession, fetchCurrentUser, logoutSession } from '@/api/sessio
 import { queryClient } from '@/app/query-client';
 import { router } from '@/app/router';
 import { AuthContext } from '@/shared/hooks/use-auth';
-import { dismissAllOverlays, OverlayProvider } from '@/shared/overlay';
+import { dismissAllOverlays } from '@/shared/overlay';
 import type { AuthContextValue } from '@/shared/types/auth';
 import { AppThemeProvider } from '@/theme';
 
@@ -86,9 +86,7 @@ export function Providers({ children }: ProvidersProps) {
       <AppThemeProvider>
         <Notifications position="top-right" />
 
-        <AuthProvider>
-          <OverlayProvider>{children}</OverlayProvider>
-        </AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
       </AppThemeProvider>
     </QueryClientProvider>
   );

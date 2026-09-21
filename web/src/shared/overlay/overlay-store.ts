@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react';
 import type {
-  OpenArgs,
   OverlayDefinition,
   OverlayHandle,
   OverlayNavigationDirection,
-  OverlayOutcome,
+  OverlayOpenArgs,
+  OverlayOpenOptions,
   OverlayPhase,
   OverlayStackItem
 } from './types';
@@ -16,12 +16,58 @@ export interface OverlayStoreState {
   closeGeneration: number;
 }
 
+type PendingTerminalState =
+  | {
+      type: 'completed';
+      value: unknown;
+    }
+  | {
+      type: 'dismissed';
+      reason: string;
+    };
+
+function invokeLifecycleCallback<TArgs extends unknown[]>(
+  callback: ((...args: TArgs) => void | Promise<void>) | undefined,
+  ...args: TArgs
+): void {
+  if (!callback) return;
+  try {
+    const result = callback(...args);
+    if (result && typeof result.then === 'function') {
+      result.catch((error) => {
+        console.error('Unhandled error in overlay lifecycle callback:', error);
+      });
+    }
+  } catch (error) {
+    console.error('Unhandled error in overlay lifecycle callback:', error);
+  }
+}
+
+function parseOpenArgs<TProps, TResult>(args: OverlayOpenArgs<TProps, TResult>): { props: TProps; options?: OverlayOpenOptions<TResult> } {
+  const [propsOrOptions, maybeOptions] = args as [unknown?, OverlayOpenOptions<TResult>?];
+  if (
+    propsOrOptions &&
+    typeof propsOrOptions === 'object' &&
+    ('onCompleted' in propsOrOptions || 'onDismissed' in propsOrOptions) &&
+    maybeOptions === undefined
+  ) {
+    return {
+      props: {} as TProps,
+      options: propsOrOptions as OverlayOpenOptions<TResult>
+    };
+  }
+  return {
+    props: (propsOrOptions ?? {}) as TProps,
+    options: maybeOptions
+  };
+}
+
 export class OverlayStore {
   private stack: OverlayStackItem[] = [];
   private phase: OverlayPhase = 'closed';
   private direction: OverlayNavigationDirection = 'forward';
   private closeGeneration = 0;
-  private dismissReason: string | undefined = undefined;
+  private pendingTerminalState: PendingTerminalState | undefined = undefined;
   private listeners = new Set<() => void>();
   private idCounter = 0;
   private snapshot: OverlayStoreState = {
@@ -31,7 +77,7 @@ export class OverlayStore {
     closeGeneration: 0
   };
 
-  private notify() {
+  private notify = () => {
     this.snapshot = {
       stack: this.stack,
       phase: this.phase,
@@ -41,7 +87,29 @@ export class OverlayStore {
     for (const listener of this.listeners) {
       listener();
     }
-  }
+  };
+
+  private createItem = <TProps, TResult>(
+    definition: OverlayDefinition<TProps, TResult>,
+    props: TProps,
+    options?: OverlayOpenOptions<TResult>
+  ): OverlayStackItem<TProps, TResult> => {
+    const id = `overlay-${++this.idCounter}`;
+
+    const handle: OverlayHandle = {
+      close: (reason = 'dismissed') => {
+        this.closeById(id, reason);
+      }
+    };
+
+    return {
+      id,
+      definition,
+      props,
+      options,
+      handle
+    };
+  };
 
   public subscribe = (listener: () => void) => {
     this.listeners.add(listener);
@@ -54,7 +122,10 @@ export class OverlayStore {
     return this.snapshot;
   };
 
-  public open = <TProps, TResult>(definition: OverlayDefinition<TProps, TResult>, ...args: OpenArgs<TProps>): OverlayHandle<TResult> => {
+  public open = <TProps, TResult>(
+    definition: OverlayDefinition<TProps, TResult>,
+    ...args: OverlayOpenArgs<NoInfer<TProps>, TResult>
+  ): OverlayHandle => {
     if (this.phase !== 'closed') {
       throw new Error(
         `Cannot open an overlay while another overlay is ${this.phase}. ` +
@@ -62,100 +133,46 @@ export class OverlayStore {
       );
     }
 
-    const props = (args[0] ?? {}) as TProps;
-    const id = `overlay-${++this.idCounter}`;
-    let resolveClosed!: (outcome: OverlayOutcome<TResult>) => void;
-    const closed = new Promise<OverlayOutcome<TResult>>((resolve) => {
-      resolveClosed = resolve;
-    });
-
-    const handle: OverlayHandle<TResult> = {
-      id,
-      closed,
-      close: (reason?: string) => {
-        this.closeById(id, reason);
-      }
-    };
-
-    const item: OverlayStackItem<TProps, TResult> = {
-      id,
-      definition,
-      props,
-      handle,
-      resolveClosed
-    };
+    const { props, options } = parseOpenArgs(args as OverlayOpenArgs<TProps, TResult>);
+    const item = this.createItem(definition, props, options);
 
     this.stack = [item as OverlayStackItem];
     this.phase = 'open';
     this.direction = 'forward';
-    this.dismissReason = undefined;
+    this.pendingTerminalState = undefined;
 
     this.notify();
-    return handle;
+    return item.handle;
   };
 
-  public push = <TProps, TResult>(definition: OverlayDefinition<TProps, TResult>, ...args: OpenArgs<TProps>): OverlayHandle<TResult> => {
+  public push = <TProps, TResult>(
+    definition: OverlayDefinition<TProps, TResult>,
+    ...args: OverlayOpenArgs<NoInfer<TProps>, TResult>
+  ): OverlayHandle => {
     if (this.phase !== 'open') {
       throw new Error('Cannot push an overlay when no overlay interaction is open.');
     }
 
-    const props = (args[0] ?? {}) as TProps;
-    const id = `overlay-${++this.idCounter}`;
-    let resolveClosed!: (outcome: OverlayOutcome<TResult>) => void;
-    const closed = new Promise<OverlayOutcome<TResult>>((resolve) => {
-      resolveClosed = resolve;
-    });
-
-    const handle: OverlayHandle<TResult> = {
-      id,
-      closed,
-      close: (reason?: string) => {
-        this.closeById(id, reason);
-      }
-    };
-
-    const item: OverlayStackItem<TProps, TResult> = {
-      id,
-      definition,
-      props,
-      handle,
-      resolveClosed
-    };
+    const { props, options } = parseOpenArgs(args as OverlayOpenArgs<TProps, TResult>);
+    const item = this.createItem(definition, props, options);
 
     this.stack = [...this.stack, item as OverlayStackItem];
     this.direction = 'forward';
 
     this.notify();
-    return handle;
+    return item.handle;
   };
 
-  public replace = <TProps, TResult>(definition: OverlayDefinition<TProps, TResult>, ...args: OpenArgs<TProps>): OverlayHandle<TResult> => {
+  public replace = <TProps, TResult>(
+    definition: OverlayDefinition<TProps, TResult>,
+    ...args: OverlayOpenArgs<NoInfer<TProps>, TResult>
+  ): OverlayHandle => {
     if (this.phase !== 'open') {
       throw new Error('Cannot replace an overlay when no overlay interaction is open.');
     }
 
-    const props = (args[0] ?? {}) as TProps;
-    const id = `overlay-${++this.idCounter}`;
-    let resolveClosed!: (outcome: OverlayOutcome<TResult>) => void;
-    const closed = new Promise<OverlayOutcome<TResult>>((resolve) => {
-      resolveClosed = resolve;
-    });
-
-    const handle: OverlayHandle<TResult> = {
-      id,
-      closed,
-      close: (reason?: string) => {
-        this.closeById(id, reason);
-      }
-    };
-
-    const item: OverlayStackItem<TProps, TResult> = {
-      id,
-      definition,
-      props,
-      handle,
-      resolveClosed
-    };
+    const { props, options } = parseOpenArgs(args);
+    const item = this.createItem(definition, props, options);
 
     const topItem = this.stack[this.stack.length - 1];
     const remaining = this.stack.slice(0, -1);
@@ -163,8 +180,8 @@ export class OverlayStore {
     this.direction = 'replace';
 
     this.notify();
-    topItem?.resolveClosed({ status: 'dismissed', reason: 'replaced' });
-    return handle;
+    invokeLifecycleCallback(topItem?.options?.onDismissed, 'replaced');
+    return item.handle;
   };
 
   public back = () => {
@@ -179,19 +196,21 @@ export class OverlayStore {
       this.stack = this.stack.slice(0, -1);
       this.direction = 'backward';
       this.notify();
-      popped?.resolveClosed(popped.completedOutcome ?? { status: 'dismissed', reason });
+      invokeLifecycleCallback(popped?.options?.onDismissed, reason);
     } else if (this.stack.length === 1) {
-      this.startClosing(reason);
+      this.pendingTerminalState = { type: 'dismissed', reason };
+      this.startClosing();
     }
   };
 
   public dismissAll = (reason = 'dismissed') => {
     if (this.phase !== 'open') return;
 
-    this.startClosing(reason);
+    this.pendingTerminalState = { type: 'dismissed', reason };
+    this.startClosing();
   };
 
-  public complete = (result: unknown) => {
+  public complete = (result?: unknown) => {
     if (this.phase !== 'open') return;
 
     if (this.stack.length > 1) {
@@ -199,13 +218,10 @@ export class OverlayStore {
       this.stack = this.stack.slice(0, -1);
       this.direction = 'backward';
       this.notify();
-      popped?.resolveClosed({ status: 'completed', value: result });
+      invokeLifecycleCallback(popped?.options?.onCompleted, popped?.options?.onCompleted ? result : undefined);
     } else if (this.stack.length === 1) {
-      const current = this.stack[0];
-      if (current) {
-        current.completedOutcome = { status: 'completed', value: result };
-      }
-      this.startClosing('completed');
+      this.pendingTerminalState = { type: 'completed', value: result };
+      this.startClosing();
     }
   };
 
@@ -229,9 +245,8 @@ export class OverlayStore {
     this.dismissCurrent(reason);
   };
 
-  private startClosing(reason: string) {
+  private startClosing() {
     this.phase = 'closing';
-    this.dismissReason = reason;
     this.closeGeneration += 1;
     this.notify();
   }
@@ -241,21 +256,21 @@ export class OverlayStore {
     if (generation !== undefined && generation !== this.closeGeneration) return;
 
     const items = this.stack;
-    const reason = this.dismissReason ?? 'closed';
+    const terminal = this.pendingTerminalState ?? { type: 'dismissed', reason: 'closed' };
     this.stack = [];
     this.phase = 'closed';
     this.direction = 'forward';
-    this.dismissReason = undefined;
-
-    for (const item of items) {
-      if (item.completedOutcome) {
-        item.resolveClosed(item.completedOutcome);
-      } else {
-        item.resolveClosed({ status: 'dismissed', reason });
-      }
-    }
+    this.pendingTerminalState = undefined;
 
     this.notify();
+
+    for (const item of items) {
+      if (terminal.type === 'completed') {
+        invokeLifecycleCallback(item.options?.onCompleted, terminal.value);
+      } else {
+        invokeLifecycleCallback(item.options?.onDismissed, terminal.reason);
+      }
+    }
   };
 }
 

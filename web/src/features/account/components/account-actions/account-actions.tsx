@@ -12,7 +12,7 @@ import {
 } from '@phosphor-icons/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { $api } from '@/api/client';
-import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { registerOverlay } from '@/shared/overlay';
 import { isCashFundingCapable } from '../../account-domain';
 import { getAccountKindLabel, getTrackingModeLabel } from '../../account-presentation';
 import { AccountInfoOverlay } from '../account-info';
@@ -28,7 +28,7 @@ export interface AccountActionsProps {
 }
 
 export function AccountActions({ accountId, onAccountArchived }: AccountActionsProps) {
-  const current = useCurrentOverlay();
+  const current = AccountActionsOverlay.useCurrent();
   const queryClient = useQueryClient();
 
   const accountQuery = $api.useQuery('get', '/api/v1/accounts/{accountId}', {
@@ -167,12 +167,15 @@ export function AccountActions({ accountId, onAccountArchived }: AccountActionsP
         className={`${classes.actionItem} ${classes.destructiveItem}`}
         disabled={account.archived}
         onClick={() => {
-          const handle = current.replace(ArchiveAccountOverlay, { accountId });
-          handle.closed.then(async (outcome) => {
-            if (outcome.status === 'completed') {
-              await onAccountArchived?.();
+          current.replace(
+            ArchiveAccountOverlay,
+            { accountId },
+            {
+              onCompleted: async () => {
+                await onAccountArchived?.();
+              }
             }
-          });
+          );
         }}>
         <div className={classes.actionItemLeft}>
           <ArchiveIcon size={20} />

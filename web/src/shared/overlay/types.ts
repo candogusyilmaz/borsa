@@ -7,21 +7,22 @@ export type OverlayNavigationDirection = 'forward' | 'backward' | 'replace';
 
 export type OverlayPhase = 'closed' | 'open' | 'closing';
 
-export type OverlayOutcome<TResult = void> =
-  | {
-      status: 'completed';
-      value: TResult;
-    }
-  | {
-      status: 'dismissed';
-      reason?: string;
-    };
-
-export interface OverlayHandle<TResult = void> {
-  id: string;
-  closed: Promise<OverlayOutcome<TResult>>;
+export interface OverlayHandle {
   close: (reason?: string) => void;
 }
+
+export interface OverlayOpenOptions<TResult = void> {
+  onCompleted?: (result: TResult) => void | Promise<void>;
+  onDismissed?: (reason?: string) => void | Promise<void>;
+}
+
+export type OverlayOpenArgs<TProps, TResult = void> =
+  Record<string, never> extends TProps
+    ? [options?: OverlayOpenOptions<TResult>] | [props?: TProps, options?: OverlayOpenOptions<TResult>]
+    : [props: TProps, options?: OverlayOpenOptions<TResult>];
+
+// biome-ignore lint/suspicious/noConfusingVoidType: conditional type distinguishes void from non-void complete signatures
+export type OverlayCompleteFn<TResult> = [TResult] extends [void] ? (result?: void) => void : (result: TResult) => void;
 
 export interface OverlayMetadata<TProps> {
   name: string;
@@ -34,39 +35,40 @@ export interface OverlayMetadata<TProps> {
   closeOnEscape?: boolean;
 }
 
-export type OpenArgs<TProps> = Record<string, never> extends TProps ? [props?: TProps] : [props: TProps];
-
 export interface OverlayDefinition<TProps, TResult = void> {
   name: string;
   component: ComponentType<TProps>;
   metadata: OverlayMetadata<TProps>;
-  open: (...args: OpenArgs<TProps>) => OverlayHandle<TResult>;
+  open: (...args: OverlayOpenArgs<TProps, TResult>) => OverlayHandle;
+  useCurrent: () => CurrentOverlayContextValue<TResult>;
 }
 
-export interface OverlayStackItem<TProps = unknown, TResult = unknown> {
+// biome-ignore lint/suspicious/noExplicitAny: existential type parameter defaults for store items
+export interface OverlayStackItem<TProps = any, TResult = any> {
   id: string;
   definition: OverlayDefinition<TProps, TResult>;
   props: TProps;
-  handle: OverlayHandle<TResult>;
-  resolveClosed: (outcome: OverlayOutcome<TResult>) => void;
-  completedOutcome?: OverlayOutcome<TResult>;
+  handle: OverlayHandle;
+  options?: OverlayOpenOptions<TResult>;
   titleOverride?: ReactNode;
 }
 
 export interface CurrentOverlayContextValue<TResult = void> {
   id: string;
+  // biome-ignore lint/suspicious/noExplicitAny: existential definition reference
+  definition: OverlayDefinition<any, any>;
   push: <TNextProps, TNextResult = void>(
     overlay: OverlayDefinition<TNextProps, TNextResult>,
-    ...args: OpenArgs<TNextProps>
-  ) => OverlayHandle<TNextResult>;
+    ...args: OverlayOpenArgs<TNextProps, TNextResult>
+  ) => OverlayHandle;
   replace: <TNextProps, TNextResult = void>(
     overlay: OverlayDefinition<TNextProps, TNextResult>,
-    ...args: OpenArgs<TNextProps>
-  ) => OverlayHandle<TNextResult>;
+    ...args: OverlayOpenArgs<TNextProps, TNextResult>
+  ) => OverlayHandle;
   dismiss: (reason?: string) => void;
   dismissAll: (reason?: string) => void;
   back: () => void;
-  complete: (result: TResult) => void;
+  complete: OverlayCompleteFn<TResult>;
   setTitle: (title: ReactNode) => void;
   canGoBack: boolean;
 }

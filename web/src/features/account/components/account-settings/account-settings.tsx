@@ -5,7 +5,7 @@ import { useForm, useStore } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { $api } from '@/api/client';
 import { getApiErrorMessage, normalizeError, showApiError } from '@/api/errors';
-import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { registerOverlay } from '@/shared/overlay';
 import { isAssetKind, isLiabilityKind } from '../../account-domain';
 import { COMMON_TIMEZONES } from '../../account-options';
 import { getPolicyDescription } from '../../account-presentation';
@@ -55,7 +55,7 @@ export function AccountSettings({ accountId }: AccountSettingsOverlayProps) {
 }
 
 function AccountSettingsForm({ account, onRefetchAccount }: AccountSettingsFormProps) {
-  const current = useCurrentOverlay();
+  const current = AccountSettingsOverlay.useCurrent();
   const queryClient = useQueryClient();
 
   const canConfigurePolicy = account.trackingMode === 'FULL_LEDGER' && isAssetKind(account.kind) && !isLiabilityKind(account.kind);

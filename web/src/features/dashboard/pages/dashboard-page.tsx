@@ -32,7 +32,7 @@ import { ActivityDetailOverlay, ActivityTypeIcon, getActivityTypeLabel, Transfer
 import { siteConfig } from '@/shared/config/site';
 import { formatDateTime, toRelativeTime } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
-import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { registerOverlay } from '@/shared/overlay';
 import type { User } from '@/shared/types/auth';
 import classes from './dashboard-page.module.css';
 
@@ -121,7 +121,7 @@ interface QuickTradeOverlayProps {
 }
 
 function QuickTrade({ initialTicker = 'NVDA' }: QuickTradeOverlayProps) {
-  const current = useCurrentOverlay();
+  const current = QuickTradeOverlay.useCurrent();
   const [selectedTicker, setSelectedTicker] = useState(initialTicker);
   const [shares, setShares] = useState(10);
 
@@ -194,7 +194,7 @@ export const QuickTradeOverlay = registerOverlay(QuickTrade, {
 });
 
 function DepositFunds() {
-  const current = useCurrentOverlay();
+  const current = DepositFundsOverlay.useCurrent();
 
   function handleExecuteDeposit() {
     notifications.show({

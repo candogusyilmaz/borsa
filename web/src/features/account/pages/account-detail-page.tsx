@@ -91,28 +91,33 @@ export function AccountDetailPage({ accountId }: AccountDetailPageProps) {
     });
   }
 
-  async function openCreateAccount() {
-    const handle = CreateAccountOverlay.open();
-    const outcome = await handle.closed;
-    if (outcome.status === 'completed') {
-      await navigate({
-        to: '/app/accounts/$accountId',
-        params: { accountId: outcome.value.id },
-        replace: !accountId
-      });
-    }
+  function openCreateAccount() {
+    CreateAccountOverlay.open(undefined, {
+      onCompleted: async (created) => {
+        await navigate({
+          to: '/app/accounts/$accountId',
+          params: { accountId: created.id },
+          replace: !accountId
+        });
+      }
+    });
   }
 
-  async function openAccountPicker() {
-    const handle = AccountPickerOverlay.open({ selectedAccountId: accountId });
-    const outcome = await handle.closed;
-    if (outcome.status === 'completed' && outcome.value !== accountId) {
-      await navigate({
-        to: '/app/accounts/$accountId',
-        params: { accountId: outcome.value },
-        replace: true
-      });
-    }
+  function openAccountPicker() {
+    AccountPickerOverlay.open(
+      { selectedAccountId: accountId },
+      {
+        onCompleted: async ({ accountId: selectedId }) => {
+          if (selectedId !== accountId) {
+            await navigate({
+              to: '/app/accounts/$accountId',
+              params: { accountId: selectedId },
+              replace: true
+            });
+          }
+        }
+      }
+    );
   }
 
   async function handleAccountArchived() {

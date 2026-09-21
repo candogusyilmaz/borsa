@@ -5,22 +5,31 @@ import { $api } from '@/api/client';
 import { toFinancialDecimal } from '@/shared/finance/decimal';
 import { formatDateTime } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
-import { useCurrentOverlay } from '@/shared/overlay';
 import { isCashFundingCapable } from '../../account-domain';
 import { ActivityTypeIcon } from '../../activity-icon';
 import { getActivityTypeLabel, getRecordingModeLabel } from '../../activity-presentation';
 import type { FinancialAccount } from '../../types';
-import { ActivityDetailOverlay } from '../activity-detail/activity-detail';
-import { CashActivityOverlay } from '../record-cash-activity';
-import { TransferOverlay } from '../transfer/transfer';
 import classes from './activity-history-card.module.css';
 
-interface ActivityHistoryCardProps {
+export interface ActivityHistoryCardProps {
   account: FinancialAccount;
+  onOpenDetail?: (activityId: string, isAlreadyReversed: boolean) => void;
+  onDepositCash?: () => void;
+  onWithdrawCash?: () => void;
+  onRecordFee?: () => void;
+  onAddInterest?: () => void;
+  onTransferFunds?: () => void;
 }
 
-export function ActivityHistoryCard({ account }: ActivityHistoryCardProps) {
-  const current = useCurrentOverlay();
+export function ActivityHistoryCard({
+  account,
+  onOpenDetail,
+  onDepositCash,
+  onWithdrawCash,
+  onRecordFee,
+  onAddInterest,
+  onTransferFunds
+}: ActivityHistoryCardProps) {
   const [page, setPage] = useState(0);
   const [sortOption, setSortOption] = useState('recordedAt,desc');
   const [typeFilter, setTypeFilter] = useState('ALL');
@@ -65,11 +74,7 @@ export function ActivityHistoryCard({ account }: ActivityHistoryCardProps) {
   const hasNext = activitiesQuery.data?.hasNext ?? false;
 
   function handleOpenDetail(id: string) {
-    current.push(ActivityDetailOverlay, {
-      activityId: id,
-      isAccountArchived: account.archived,
-      isAlreadyReversed: reversedActivityIds.has(id)
-    });
+    onOpenDetail?.(id, reversedActivityIds.has(id));
   }
 
   if (isHoldings) {
@@ -179,64 +184,19 @@ export function ActivityHistoryCard({ account }: ActivityHistoryCardProps) {
           </Text>
           {typeFilter === 'ALL' && !account.archived && isCashFundingCapable(account.kind) && (
             <Group gap="xs" mt="xs">
-              <Button
-                size="md"
-                color="teal"
-                variant="light"
-                className={classes.actionBtn}
-                onClick={() =>
-                  current.push(CashActivityOverlay, {
-                    accountId: account.id,
-                    defaultType: 'CASH_DEPOSIT'
-                  })
-                }>
+              <Button size="md" color="teal" variant="light" className={classes.actionBtn} onClick={onDepositCash}>
                 Deposit Cash
               </Button>
-              <Button
-                size="md"
-                color="orange"
-                variant="light"
-                className={classes.actionBtn}
-                onClick={() =>
-                  current.push(CashActivityOverlay, {
-                    accountId: account.id,
-                    defaultType: 'CASH_WITHDRAWAL'
-                  })
-                }>
+              <Button size="md" color="orange" variant="light" className={classes.actionBtn} onClick={onWithdrawCash}>
                 Withdraw Cash
               </Button>
-              <Button
-                size="md"
-                color="red"
-                variant="light"
-                className={classes.actionBtn}
-                onClick={() =>
-                  current.push(CashActivityOverlay, {
-                    accountId: account.id,
-                    defaultType: 'CASH_FEE'
-                  })
-                }>
+              <Button size="md" color="red" variant="light" className={classes.actionBtn} onClick={onRecordFee}>
                 Record Fee
               </Button>
-              <Button
-                size="md"
-                color="cyan"
-                variant="light"
-                className={classes.actionBtn}
-                onClick={() =>
-                  current.push(CashActivityOverlay, {
-                    accountId: account.id,
-                    defaultType: 'CASH_INTEREST_CREDIT'
-                  })
-                }>
+              <Button size="md" color="cyan" variant="light" className={classes.actionBtn} onClick={onAddInterest}>
                 Add Interest
               </Button>
-              <Button
-                size="md"
-                color="blue"
-                variant="light"
-                className={classes.actionBtn}
-                onClick={() => current.push(TransferOverlay, { defaultSourceAccountId: account.id })}>
+              <Button size="md" color="blue" variant="light" className={classes.actionBtn} onClick={onTransferFunds}>
                 Transfer Funds
               </Button>
             </Group>

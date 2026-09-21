@@ -4,7 +4,7 @@ import { ArchiveIcon, ArrowClockwiseIcon, CheckCircleIcon, WarningCircleIcon } f
 import { useQueryClient } from '@tanstack/react-query';
 import { $api } from '@/api/client';
 import { getApiErrorMessage, normalizeError, showApiError } from '@/api/errors';
-import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { registerOverlay } from '@/shared/overlay';
 import { getAccountKindBadgeColor, getAccountKindLabel, getTrackingModeBadgeColor, getTrackingModeLabel } from '../../account-presentation';
 import type { FinancialAccount } from '../../types';
 import classes from './archive-account.module.css';
@@ -51,7 +51,7 @@ export function ArchiveAccount({ accountId }: ArchiveAccountOverlayProps) {
 }
 
 function ArchiveAccountForm({ account, onRefetchAccount }: ArchiveAccountFormProps) {
-  const current = useCurrentOverlay<FinancialAccount>();
+  const current = ArchiveAccountOverlay.useCurrent();
   const queryClient = useQueryClient();
 
   const archiveMutation = $api.useMutation('post', '/api/v1/accounts/{accountId}/archive', {
@@ -190,7 +190,7 @@ function ArchiveAccountForm({ account, onRefetchAccount }: ArchiveAccountFormPro
   );
 }
 
-export const ArchiveAccountOverlay = registerOverlay(ArchiveAccount, {
+export const ArchiveAccountOverlay = registerOverlay.withResult<FinancialAccount>()(ArchiveAccount, {
   name: 'archive-account',
   title: (
     <Group gap="xs">

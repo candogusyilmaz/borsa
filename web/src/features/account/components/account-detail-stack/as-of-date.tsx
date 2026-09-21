@@ -3,8 +3,12 @@ import { CalendarBlankIcon, ClockCounterClockwiseIcon } from '@phosphor-icons/re
 import { useState } from 'react';
 import { $api } from '@/api/client';
 import { toDateTimeLocal } from '@/shared/format/date-time';
-import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { registerOverlay } from '@/shared/overlay';
 import classes from './as-of-date.module.css';
+
+export interface AsOfDateResult {
+  asOf: string | null;
+}
 
 export interface AsOfDateProps {
   accountId: string;
@@ -12,7 +16,7 @@ export interface AsOfDateProps {
 }
 
 export function AsOfDate({ accountId, selectedAsOf }: AsOfDateProps) {
-  const current = useCurrentOverlay<string | null>();
+  const current = AsOfDateOverlay.useCurrent();
   const [customInput, setCustomInput] = useState(() =>
     selectedAsOf ? toDateTimeLocal(new Date(selectedAsOf)) : toDateTimeLocal(new Date())
   );
@@ -23,43 +27,43 @@ export function AsOfDate({ accountId, selectedAsOf }: AsOfDateProps) {
   const coverageFrom = accountQuery.data?.coverageFrom;
 
   function handleLive() {
-    current.complete(null);
+    current.complete({ asOf: null });
   }
 
   function handleOpening() {
     if (coverageFrom) {
-      current.complete(coverageFrom);
+      current.complete({ asOf: coverageFrom });
     }
   }
 
   function handleTodayStart() {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
-    current.complete(d.toISOString());
+    current.complete({ asOf: d.toISOString() });
   }
 
   function handleYesterday() {
     const d = new Date();
     d.setDate(d.getDate() - 1);
     d.setHours(23, 59, 59, 999);
-    current.complete(d.toISOString());
+    current.complete({ asOf: d.toISOString() });
   }
 
   function handleStartOfMonth() {
     const d = new Date();
     d.setDate(1);
     d.setHours(0, 0, 0, 0);
-    current.complete(d.toISOString());
+    current.complete({ asOf: d.toISOString() });
   }
 
   function handleApplyCustom() {
     if (!customInput) {
-      current.complete(null);
+      current.complete({ asOf: null });
       return;
     }
     const parsed = new Date(customInput);
     if (!Number.isNaN(parsed.getTime())) {
-      current.complete(parsed.toISOString());
+      current.complete({ asOf: parsed.toISOString() });
     }
   }
 
@@ -125,7 +129,7 @@ export function AsOfDate({ accountId, selectedAsOf }: AsOfDateProps) {
   );
 }
 
-export const AsOfDateOverlay = registerOverlay.withResult<string | null>()(AsOfDate, {
+export const AsOfDateOverlay = registerOverlay.withResult<AsOfDateResult>()(AsOfDate, {
   name: 'as-of-date',
   title: 'View Balance As Of',
   presentation: 'drawer',

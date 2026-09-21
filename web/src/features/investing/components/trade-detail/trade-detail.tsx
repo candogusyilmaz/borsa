@@ -12,7 +12,7 @@ import {
 import { toFinancialDecimal } from '@/shared/finance/decimal';
 import { formatDateTime } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
-import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { registerOverlay } from '@/shared/overlay';
 import { getCalculationPolicyLabel, getTradeSideBadgeColor, getTradeSideLabel } from '../../investing-presentation';
 import { formatQuantity } from '../../utils/investing-formatters';
 import classes from './trade-detail.module.css';
@@ -22,7 +22,7 @@ export interface TradeDetailProps {
 }
 
 export function TradeDetail({ activityId }: TradeDetailProps) {
-  const current = useCurrentOverlay();
+  const current = TradeDetailOverlay.useCurrent();
 
   const tradeQuery = $api.useQuery('get', '/api/v1/trades/{activityId}', {
     params: { path: { activityId } }

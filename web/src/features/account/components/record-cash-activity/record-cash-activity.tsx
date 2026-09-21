@@ -8,7 +8,7 @@ import { $api } from '@/api/client';
 import { showApiError } from '@/api/errors';
 import { formatDateTime, toDateTimeLocal } from '@/shared/format/date-time';
 import { formatMoney } from '@/shared/format/money';
-import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { registerOverlay } from '@/shared/overlay';
 import { isNonNegativeDecimal, isPositiveDecimal } from '@/shared/validation/decimal';
 import { isCashFundingCapable } from '../../account-domain';
 import { getActivityTypeLabel, getRecordingModeLabel } from '../../activity-presentation';
@@ -49,7 +49,7 @@ function CashActivityTitle({ accountId, defaultType }: RecordCashActivityProps) 
 }
 
 export function RecordCashActivityForm({ accountId, defaultType = 'CASH_DEPOSIT' }: RecordCashActivityProps) {
-  const current = useCurrentOverlay();
+  const current = RecordCashActivityOverlay.useCurrent();
   const queryClient = useQueryClient();
   const clientRequestRef = useRef<{ fingerprint: string; id: string; effectiveAt: string } | null>(null);
 

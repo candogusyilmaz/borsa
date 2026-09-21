@@ -1,1 +1,1 @@
-export { AccountPicker, AccountPickerOverlay } from './account-picker';
+export { AccountPicker, AccountPickerOverlay, type AccountPickerResult } from './account-picker';

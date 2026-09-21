@@ -4,7 +4,7 @@ import { type ComponentType, useEffect, useMemo, useState, useSyncExternalStore 
 import { ResponsiveDrawer } from '@/shared/components/responsive-drawer';
 import classes from './overlay-host.module.css';
 import { overlayStore } from './overlay-store';
-import type { CurrentOverlayContextValue } from './types';
+import type { CurrentOverlayContextValue, OverlayDefinition } from './types';
 import { CurrentOverlayContext } from './use-current-overlay';
 
 export function OverlayHost() {
@@ -23,22 +23,25 @@ export function OverlayHost() {
 
   const currentItem = stack[stack.length - 1];
   const currentItemId = currentItem?.id;
+  const currentDefinition = currentItem?.definition;
 
   const currentContextValue = useMemo<CurrentOverlayContextValue<unknown> | null>(() => {
-    if (!currentItemId) return null;
+    if (!currentItemId || !currentDefinition) return null;
     const id = currentItemId;
+    const definition = currentDefinition as unknown as OverlayDefinition<unknown, unknown>;
     return {
       id,
+      definition,
       push: (overlay, ...args) => overlayStore.push(overlay, ...args),
       replace: (overlay, ...args) => overlayStore.replace(overlay, ...args),
       dismiss: (reason?: string) => overlayStore.dismissCurrent(reason),
       dismissAll: (reason?: string) => overlayStore.dismissAll(reason),
       back: () => overlayStore.back(),
-      complete: (result: unknown) => overlayStore.complete(result),
+      complete: (result?: unknown) => overlayStore.complete(result),
       setTitle: (title) => overlayStore.setTitle(id, title),
       canGoBack: stack.length > 1
     };
-  }, [currentItemId, stack.length]);
+  }, [currentItemId, currentDefinition, stack.length]);
 
   if (!currentItem && phase === 'closed') {
     return null;

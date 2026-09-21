@@ -11,10 +11,14 @@ import {
 } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { $api } from '@/api/client';
-import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { registerOverlay } from '@/shared/overlay';
 import { getAccountKindBadgeColor, getAccountKindLabel, getTrackingModeLabel } from '../../account-presentation';
 import type { AccountKind } from '../../types';
 import classes from './account-picker.module.css';
+
+export interface AccountPickerResult {
+  accountId: string;
+}
 
 export interface AccountPickerProps {
   selectedAccountId?: string | null;
@@ -40,7 +44,7 @@ function getAccountIcon(kind: AccountKind) {
 }
 
 export function AccountPicker({ selectedAccountId }: AccountPickerProps) {
-  const current = useCurrentOverlay<string>();
+  const current = AccountPickerOverlay.useCurrent();
   const [search, setSearch] = useState('');
   const [modeFilter, setModeFilter] = useState('ALL');
   const [kindFilter, setKindFilter] = useState('ALL');
@@ -156,7 +160,7 @@ export function AccountPicker({ selectedAccountId }: AccountPickerProps) {
                 type="button"
                 key={acc.id}
                 className={`${classes.accountItem} ${isSelected ? classes.accountItemSelected : ''}`}
-                onClick={() => current.complete(acc.id)}
+                onClick={() => current.complete({ accountId: acc.id })}
                 data-selected={isSelected || undefined}>
                 <div className={classes.itemLeft}>
                   <div className={classes.iconSquircle} aria-hidden="true">
@@ -192,7 +196,7 @@ export function AccountPicker({ selectedAccountId }: AccountPickerProps) {
   );
 }
 
-export const AccountPickerOverlay = registerOverlay.withResult<string>()(AccountPicker, {
+export const AccountPickerOverlay = registerOverlay.withResult<AccountPickerResult>()(AccountPicker, {
   name: 'account-picker',
   title: 'All Financial Accounts',
   presentation: 'drawer',

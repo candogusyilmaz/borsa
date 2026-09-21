@@ -7,7 +7,7 @@ import { useMemo } from 'react';
 import { $api } from '@/api/client';
 import { showApiError } from '@/api/errors';
 import { CurrencySelect, MarketSelect } from '@/features/reference';
-import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { registerOverlay } from '@/shared/overlay';
 import { INSTRUMENT_TYPES, MAX_NAME_LENGTH, MAX_SYMBOL_LENGTH, VALUATION_METHODS } from '../instrument-domain';
 import type { InstrumentDetail, InstrumentType, ManualInstrumentCreateRequest, ValuationMethod } from '../types';
 import { AliasEditor } from './alias-editor';
@@ -15,29 +15,20 @@ import classes from './instrument.module.css';
 import { InstrumentDetailOverlay } from './instrument-detail';
 
 export interface ManualInstrumentCreateProps {
-  onSuccess?: (instrument: InstrumentDetail) => void;
-  onCancel?: () => void;
+  onSuccess: (instrument: InstrumentDetail) => void;
+  onCancel: () => void;
 }
 
 export function ManualInstrumentCreate({ onSuccess, onCancel }: ManualInstrumentCreateProps) {
-  const current = useCurrentOverlay();
   const queryClient = useQueryClient();
   const { data: markets } = $api.useQuery('get', '/api/v1/reference/markets');
 
   function handleCancel() {
-    if (onCancel) {
-      onCancel();
-    } else {
-      current.dismiss('cancelled');
-    }
+    onCancel();
   }
 
   function handleSuccess(instrument: InstrumentDetail) {
-    if (onSuccess) {
-      onSuccess(instrument);
-    } else {
-      current.replace(InstrumentDetailOverlay, { instrumentId: instrument.id });
-    }
+    onSuccess(instrument);
   }
 
   const createMutation = $api.useMutation('post', '/api/v1/reference/instruments', {
@@ -277,7 +268,21 @@ export function ManualInstrumentCreate({ onSuccess, onCancel }: ManualInstrument
   );
 }
 
-export const ManualInstrumentCreateOverlay = registerOverlay(ManualInstrumentCreate, {
+function ManualInstrumentCreateOverlayContent() {
+  const current = ManualInstrumentCreateOverlay.useCurrent();
+  return (
+    <ManualInstrumentCreate
+      onSuccess={(instrument) => {
+        current.replace(InstrumentDetailOverlay, { instrumentId: instrument.id });
+      }}
+      onCancel={() => {
+        current.dismiss('cancelled');
+      }}
+    />
+  );
+}
+
+export const ManualInstrumentCreateOverlay = registerOverlay(ManualInstrumentCreateOverlayContent, {
   name: 'manual-instrument-create',
   title: (
     <Group gap="xs">

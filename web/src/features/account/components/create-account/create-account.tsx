@@ -7,7 +7,7 @@ import { $api } from '@/api/client';
 import { getApiErrorMessage, normalizeError, showApiError } from '@/api/errors';
 import { CurrencySelect } from '@/features/reference';
 import { toDateTimeLocal } from '@/shared/format/date-time';
-import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { registerOverlay } from '@/shared/overlay';
 import { isDecimal } from '@/shared/validation/decimal';
 import { isLiabilityKind, supportsHoldingsOnly, supportsNegativePolicy } from '../../account-domain';
 import { COMMON_TIMEZONES } from '../../account-options';
@@ -22,7 +22,7 @@ import type { AccountKind, FinancialAccount, NegativeBalancePolicy, TrackingMode
 import classes from './create-account.module.css';
 
 export function CreateAccount() {
-  const current = useCurrentOverlay<FinancialAccount>();
+  const current = CreateAccountOverlay.useCurrent();
   const queryClient = useQueryClient();
 
   const createMutation = $api.useMutation('post', '/api/v1/accounts', {

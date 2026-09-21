@@ -11,12 +11,12 @@ import {
 } from '@phosphor-icons/react';
 import { useMemo, useState } from 'react';
 import { $api } from '@/api/client';
-import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { registerOverlay } from '@/shared/overlay';
 import { CountrySelect } from './country-select';
 import classes from './reference-catalog.module.css';
 
 export function ReferenceCatalog() {
-  const current = useCurrentOverlay();
+  const current = ReferenceCatalogOverlay.useCurrent();
   const [tab, setTab] = useState<string | null>('markets');
   const [search, setSearch] = useState('');
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);

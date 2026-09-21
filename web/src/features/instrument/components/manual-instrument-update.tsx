@@ -5,7 +5,7 @@ import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { $api } from '@/api/client';
 import { showApiError } from '@/api/errors';
-import { registerOverlay, useCurrentOverlay } from '@/shared/overlay';
+import { registerOverlay } from '@/shared/overlay';
 import { getInstrumentTypeBadgeColor, getInstrumentTypeLabel, MAX_NAME_LENGTH, VALUATION_METHODS } from '../instrument-domain';
 import type { InstrumentDetail, ManualInstrumentUpdateRequest, ValuationMethod } from '../types';
 import { AliasEditor } from './alias-editor';
@@ -13,12 +13,11 @@ import classes from './instrument.module.css';
 
 export interface ManualInstrumentUpdateProps {
   instrumentId: string;
-  onSuccess?: (updated: InstrumentDetail) => void;
-  onCancel?: () => void;
+  onSuccess: (updated: InstrumentDetail) => void;
+  onCancel: () => void;
 }
 
 export function ManualInstrumentUpdate({ instrumentId, onSuccess, onCancel }: ManualInstrumentUpdateProps) {
-  const current = useCurrentOverlay<InstrumentDetail>();
   const query = $api.useQuery('get', '/api/v1/reference/instruments/{instrumentId}', {
     params: { path: { instrumentId } }
   });
@@ -26,19 +25,11 @@ export function ManualInstrumentUpdate({ instrumentId, onSuccess, onCancel }: Ma
   const instrument = query.data;
 
   function handleCancel() {
-    if (onCancel) {
-      onCancel();
-    } else {
-      current.dismiss('cancelled');
-    }
+    onCancel();
   }
 
   function handleSuccess(updated: InstrumentDetail) {
-    if (onSuccess) {
-      onSuccess(updated);
-    } else {
-      current.complete(updated);
-    }
+    onSuccess(updated);
   }
 
   if (query.isLoading) {
@@ -266,7 +257,26 @@ function ManualInstrumentUpdateForm({ instrument, onSuccess, onCancel }: ManualI
   );
 }
 
-export const ManualInstrumentUpdateOverlay = registerOverlay.withResult<InstrumentDetail>()(ManualInstrumentUpdate, {
+interface ManualInstrumentUpdateOverlayProps {
+  instrumentId: string;
+}
+
+function ManualInstrumentUpdateOverlayContent({ instrumentId }: ManualInstrumentUpdateOverlayProps) {
+  const current = ManualInstrumentUpdateOverlay.useCurrent();
+  return (
+    <ManualInstrumentUpdate
+      instrumentId={instrumentId}
+      onSuccess={(updated) => {
+        current.complete(updated);
+      }}
+      onCancel={() => {
+        current.dismiss('cancelled');
+      }}
+    />
+  );
+}
+
+export const ManualInstrumentUpdateOverlay = registerOverlay.withResult<InstrumentDetail>()(ManualInstrumentUpdateOverlayContent, {
   name: 'manual-instrument-update',
   title: (
     <Group gap="xs">

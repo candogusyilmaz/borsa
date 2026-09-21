@@ -28,12 +28,14 @@ export function BalanceLiquidityCard({ account, expanded, onToggle }: BalanceLiq
   const [selectedAsOf, setSelectedAsOf] = useState<string | null>(null);
 
   function openAsOfDate() {
-    const handle = AsOfDateOverlay.open({ accountId: account.id, selectedAsOf });
-    handle.closed.then((outcome) => {
-      if (outcome.status === 'completed') {
-        setSelectedAsOf(outcome.value);
+    AsOfDateOverlay.open(
+      { accountId: account.id, selectedAsOf },
+      {
+        onCompleted: (result) => {
+          setSelectedAsOf(result.asOf);
+        }
       }
-    });
+    );
   }
 
   // Authoritative queries
