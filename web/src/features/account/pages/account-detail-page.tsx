@@ -82,39 +82,37 @@ export function AccountDetailPage({ accountId }: AccountDetailPageProps) {
         : activeAccounts
       : rawAccounts;
 
-  function handleSelectAccount(targetId: string) {
+  async function handleSelectAccount(targetId: string) {
     if (targetId === accountId) return;
-    navigate({
+    await navigate({
       to: '/app/accounts/$accountId',
       params: { accountId: targetId },
       replace: true
     });
   }
 
-  function openCreateAccount() {
+  async function openCreateAccount() {
     const handle = CreateAccountOverlay.open();
-    handle.closed.then((outcome) => {
-      if (outcome.status === 'completed') {
-        navigate({
-          to: '/app/accounts/$accountId',
-          params: { accountId: outcome.value.id },
-          replace: !accountId
-        });
-      }
-    });
+    const outcome = await handle.closed;
+    if (outcome.status === 'completed') {
+      await navigate({
+        to: '/app/accounts/$accountId',
+        params: { accountId: outcome.value.id },
+        replace: !accountId
+      });
+    }
   }
 
-  function openAccountPicker() {
+  async function openAccountPicker() {
     const handle = AccountPickerOverlay.open({ selectedAccountId: accountId });
-    handle.closed.then((outcome) => {
-      if (outcome.status === 'completed' && outcome.value !== accountId) {
-        navigate({
-          to: '/app/accounts/$accountId',
-          params: { accountId: outcome.value },
-          replace: true
-        });
-      }
-    });
+    const outcome = await handle.closed;
+    if (outcome.status === 'completed' && outcome.value !== accountId) {
+      await navigate({
+        to: '/app/accounts/$accountId',
+        params: { accountId: outcome.value },
+        replace: true
+      });
+    }
   }
 
   async function handleAccountArchived() {
@@ -123,21 +121,13 @@ export function AccountDetailPage({ accountId }: AccountDetailPageProps) {
     const remainingActive = updatedAccounts.filter((a) => !a.archived && a.id !== accountId);
     const firstRemaining = remainingActive[0] ?? updatedAccounts.find((a) => a.id !== accountId);
     if (firstRemaining) {
-      navigate({ to: '/app/accounts/$accountId', params: { accountId: firstRemaining.id }, replace: true });
+      await navigate({ to: '/app/accounts/$accountId', params: { accountId: firstRemaining.id }, replace: true });
     } else {
-      navigate({ to: '/app/accounts', replace: true });
+      await navigate({ to: '/app/accounts', replace: true });
     }
   }
 
   function renderDetailContent() {
-    if (accountsQuery.isError) {
-      return null;
-    }
-
-    if (!accountsQuery.isLoading && rawAccounts.length === 0) {
-      return <AccountEmptyState onOpenCreate={openCreateAccount} />;
-    }
-
     if (accountQuery.isPending || (!account && accountQuery.isFetching)) {
       return (
         <div className={classes.detailContentFlow}>
@@ -161,6 +151,10 @@ export function AccountDetailPage({ accountId }: AccountDetailPageProps) {
       );
     }
 
+    if (!account && accountsQuery.isSuccess && rawAccounts.length === 0) {
+      return <AccountEmptyState />;
+    }
+
     if (!account) {
       return (
         <Alert icon={<WarningCircleIcon size={20} />} title="Account Not Found" color="red" variant="light">
@@ -172,12 +166,12 @@ export function AccountDetailPage({ accountId }: AccountDetailPageProps) {
             variant="outline"
             color="red"
             style={{ minHeight: 44 }}
-            onClick={() => {
+            onClick={async () => {
               const firstActive = activeAccounts[0] ?? rawAccounts[0];
               if (firstActive) {
-                navigate({ to: '/app/accounts/$accountId', params: { accountId: firstActive.id }, replace: true });
+                await navigate({ to: '/app/accounts/$accountId', params: { accountId: firstActive.id }, replace: true });
               } else {
-                navigate({ to: '/app/accounts', replace: true });
+                await navigate({ to: '/app/accounts', replace: true });
               }
             }}>
             Go to Available Account
@@ -190,14 +184,16 @@ export function AccountDetailPage({ accountId }: AccountDetailPageProps) {
       <div className={classes.detailContentFlow}>
         <AccountQuickActions account={account} onAccountArchived={handleAccountArchived} />
         <AccountDetailStack account={account} />
-        <AccountsListSection accounts={rawAccounts} onOpenAccountPicker={openAccountPicker} />
+        {accountsQuery.isSuccess && rawAccounts.length > 0 && (
+          <AccountsListSection accounts={rawAccounts} onOpenAccountPicker={openAccountPicker} />
+        )}
       </div>
     );
   }
 
   return (
     <section className={classes.container} aria-labelledby="accounts-page-title">
-      <AccountLayoutHeader activeCount={activeAccounts.length} onOpenCreate={openCreateAccount} />
+      <AccountLayoutHeader activeCount={accountsQuery.isSuccess ? activeAccounts.length : 0} onOpenCreate={openCreateAccount} />
 
       {accountsQuery.isLoading && (
         <div className={classes.heroRegion}>
@@ -214,7 +210,7 @@ export function AccountDetailPage({ accountId }: AccountDetailPageProps) {
         </Alert>
       )}
 
-      {!accountsQuery.isLoading && !accountsQuery.isError && rawAccounts.length > 0 && (
+      {accountsQuery.isSuccess && rawAccounts.length > 0 && (
         <div className={classes.heroRegion}>
           <AccountCarousel accounts={carouselAccounts} selectedAccountId={accountId} onSelectAccount={handleSelectAccount} />
         </div>

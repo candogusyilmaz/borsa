@@ -4,29 +4,19 @@ import { useNavigate } from '@tanstack/react-router';
 import { CreateAccountOverlay } from '../create-account/create-account';
 import classes from './account-empty-state.module.css';
 
-export interface AccountEmptyStateProps {
-  onOpenCreate?: () => void;
-}
-
-export function AccountEmptyState({ onOpenCreate }: AccountEmptyStateProps = {}) {
+export function AccountEmptyState() {
   const navigate = useNavigate();
 
-  function handleOpenCreate() {
-    if (onOpenCreate) {
-      onOpenCreate();
-      return;
-    }
-
+  async function handleOpenCreate() {
     const handle = CreateAccountOverlay.open();
-    handle.closed.then((outcome) => {
-      if (outcome.status === 'completed') {
-        navigate({
-          to: '/app/accounts/$accountId',
-          params: { accountId: outcome.value.id },
-          replace: true
-        });
-      }
-    });
+    const outcome = await handle.closed;
+    if (outcome.status === 'completed') {
+      await navigate({
+        to: '/app/accounts/$accountId',
+        params: { accountId: outcome.value.id },
+        replace: true
+      });
+    }
   }
 
   return (
