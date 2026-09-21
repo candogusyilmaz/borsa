@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { OverlayStore } from './overlay-store';
+import { dismissAllOverlays } from './dismiss-all-overlays';
+import { OverlayStore, overlayStore } from './overlay-store';
 import type { OverlayDefinition } from './types';
 
 const MockComponent = () => null;
@@ -206,7 +207,7 @@ describe('OverlayStore', () => {
     expect(store.getSnapshot().phase).toBe('closing');
   });
 
-  it('dismissAll: resolves all non-root handles immediately, closes host, and resolves root on exit', async () => {
+  it('dismissAll: preserves full stack while closing and resolves all handles on exit', async () => {
     const handleA = store.open(OverlayA);
     const handleB = store.push(OverlayB);
     const handleC = store.push(OverlayC);
@@ -214,26 +215,109 @@ describe('OverlayStore', () => {
     store.dismissAll('navigate-away');
 
     expect(store.getSnapshot().phase).toBe('closing');
-    expect(store.getSnapshot().stack).toHaveLength(1);
-    expect(store.getSnapshot().stack[0]?.id).toBe(handleA.id);
+    expect(store.getSnapshot().stack).toHaveLength(3);
+    expect(store.getSnapshot().stack[2]?.id).toBe(handleC.id);
 
-    const outcomeB = await handleB.closed;
-    const outcomeC = await handleC.closed;
-    expect(outcomeB).toEqual({ status: 'dismissed', reason: 'navigate-away' });
-    expect(outcomeC).toEqual({ status: 'dismissed', reason: 'navigate-away' });
+    let aResolved = false;
+    let bResolved = false;
+    let cResolved = false;
 
-    let handleAResolved = false;
     handleA.closed.then(() => {
-      handleAResolved = true;
+      aResolved = true;
     });
+    handleB.closed.then(() => {
+      bResolved = true;
+    });
+    handleC.closed.then(() => {
+      cResolved = true;
+    });
+
     await Promise.resolve();
-    expect(handleAResolved).toBe(false);
+    expect(aResolved).toBe(false);
+    expect(bResolved).toBe(false);
+    expect(cResolved).toBe(false);
 
     store.onExited();
-    const outcomeA = await handleA.closed;
-    expect(outcomeA).toEqual({ status: 'dismissed', reason: 'navigate-away' });
+
+    expect(await handleA.closed).toEqual({ status: 'dismissed', reason: 'navigate-away' });
+    expect(await handleB.closed).toEqual({ status: 'dismissed', reason: 'navigate-away' });
+    expect(await handleC.closed).toEqual({ status: 'dismissed', reason: 'navigate-away' });
+
     expect(store.getSnapshot().phase).toBe('closed');
     expect(store.getSnapshot().stack).toHaveLength(0);
+  });
+
+  it('handle close stack integrity: only the top handle can dismiss itself; parent and middle handles are no-ops', async () => {
+    const handleA = store.open(OverlayA);
+    const handleB = store.push(OverlayB);
+    const handleC = store.push(OverlayC);
+
+    // handleB (middle) attempt to close is a no-op
+    handleB.close('middle-attempt');
+    expect(store.getSnapshot().stack).toHaveLength(3);
+    expect(store.getSnapshot().stack[0]?.id).toBe(handleA.id);
+    expect(store.getSnapshot().stack[1]?.id).toBe(handleB.id);
+    expect(store.getSnapshot().stack[2]?.id).toBe(handleC.id);
+
+    // handleA (root under child) attempt to close is a no-op
+    handleA.close('root-attempt');
+    expect(store.getSnapshot().stack).toHaveLength(3);
+
+    // handleC (top) closes cleanly
+    handleC.close('c-close');
+    expect(store.getSnapshot().stack).toHaveLength(2);
+    expect(store.getSnapshot().stack[1]?.id).toBe(handleB.id);
+    expect(await handleC.closed).toEqual({ status: 'dismissed', reason: 'c-close' });
+
+    // handleB is now top, can close
+    handleB.close('b-close');
+    expect(store.getSnapshot().stack).toHaveLength(1);
+    expect(store.getSnapshot().stack[0]?.id).toBe(handleA.id);
+    expect(await handleB.closed).toEqual({ status: 'dismissed', reason: 'b-close' });
+
+    // handleA is now top, closes to closing phase
+    handleA.close('a-close');
+    expect(store.getSnapshot().phase).toBe('closing');
+    expect(store.getSnapshot().stack).toHaveLength(1);
+
+    // calling close while closing is a safe no-op
+    handleA.close('a-close-again');
+    expect(store.getSnapshot().phase).toBe('closing');
+
+    store.onExited();
+    expect(await handleA.closed).toEqual({ status: 'dismissed', reason: 'a-close' });
+    expect(store.getSnapshot().phase).toBe('closed');
+    expect(store.getSnapshot().stack).toHaveLength(0);
+  });
+
+  it('top-of-stack presence: active overlay remains present during closing until onExited', () => {
+    const isOverlayActive = (definition: OverlayDefinition<Record<string, never>, unknown>) => {
+      const state = store.getSnapshot();
+      const top = state.stack[state.stack.length - 1];
+      return top?.definition === definition;
+    };
+
+    expect(isOverlayActive(OverlayA)).toBe(false);
+
+    store.open(OverlayA);
+    expect(isOverlayActive(OverlayA)).toBe(true);
+
+    store.push(OverlayB);
+    expect(isOverlayActive(OverlayA as unknown as OverlayDefinition<Record<string, never>, unknown>)).toBe(false);
+    expect(isOverlayActive(OverlayB as unknown as OverlayDefinition<Record<string, never>, unknown>)).toBe(true);
+
+    store.dismissCurrent();
+    expect(isOverlayActive(OverlayA)).toBe(true);
+    expect(isOverlayActive(OverlayB as unknown as OverlayDefinition<Record<string, never>, unknown>)).toBe(false);
+
+    // Root dismiss transitions to closing phase, but OverlayA remains on top of stack
+    store.dismissCurrent('closing-test');
+    expect(store.getSnapshot().phase).toBe('closing');
+    expect(isOverlayActive(OverlayA)).toBe(true);
+
+    store.onExited();
+    expect(store.getSnapshot().phase).toBe('closed');
+    expect(isOverlayActive(OverlayA)).toBe(false);
   });
 
   it('maintains consistency invariants after every operation', () => {
@@ -267,5 +351,25 @@ describe('OverlayStore', () => {
 
     store.onExited();
     checkInvariants();
+  });
+
+  it('dismissAllOverlays: imperative infrastructure helper dismisses the global overlayStore', () => {
+    // Ensure clean state
+    if (overlayStore.getSnapshot().phase === 'closing') {
+      overlayStore.onExited();
+    } else if (overlayStore.getSnapshot().phase === 'open') {
+      overlayStore.dismissAll('cleanup');
+      overlayStore.onExited();
+    }
+
+    overlayStore.open(OverlayA);
+    expect(overlayStore.getSnapshot().phase).toBe('open');
+
+    dismissAllOverlays('session-lost');
+    expect(overlayStore.getSnapshot().phase).toBe('closing');
+
+    overlayStore.onExited();
+    expect(overlayStore.getSnapshot().phase).toBe('closed');
+    expect(overlayStore.getSnapshot().stack).toHaveLength(0);
   });
 });

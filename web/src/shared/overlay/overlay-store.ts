@@ -188,22 +188,10 @@ export class OverlayStore {
   public dismissAll = (reason = 'dismissed') => {
     if (this.phase !== 'open') return;
 
-    if (this.stack.length > 1) {
-      const nonRootItems = this.stack.slice(1);
-      const rootItem = this.stack[0];
-      if (rootItem) {
-        this.stack = [rootItem];
-      }
-      this.direction = 'backward';
-      for (const item of nonRootItems) {
-        item.resolveClosed(item.completedOutcome ?? { status: 'dismissed', reason });
-      }
-    }
-
     this.startClosing(reason);
   };
 
-  public complete = <TResult>(result: TResult) => {
+  public complete = (result: unknown) => {
     if (this.phase !== 'open') return;
 
     if (this.stack.length > 1) {
@@ -235,18 +223,10 @@ export class OverlayStore {
   public closeById = (id: string, reason = 'dismissed') => {
     if (this.phase !== 'open') return;
 
-    const index = this.stack.findIndex((item) => item.id === id);
-    if (index < 0) return;
+    const top = this.stack[this.stack.length - 1];
+    if (top?.id !== id) return;
 
-    if (index === 0 && this.stack.length === 1) {
-      this.startClosing(reason);
-    } else if (index === this.stack.length - 1) {
-      this.dismissCurrent(reason);
-    } else {
-      const [removed] = this.stack.splice(index, 1);
-      this.notify();
-      removed?.resolveClosed(removed.completedOutcome ?? { status: 'dismissed', reason });
-    }
+    this.dismissCurrent(reason);
   };
 
   private startClosing(reason: string) {

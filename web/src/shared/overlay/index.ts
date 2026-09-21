@@ -1,6 +1,6 @@
+export { dismissAllOverlays } from './dismiss-all-overlays';
 export { OverlayHost } from './overlay-host';
 export { OverlayProvider, type OverlayProviderProps } from './overlay-provider';
-export { overlayStore } from './overlay-store';
 export { registerOverlay, registerOverlayWithResult } from './register-overlay';
 export type {
   CurrentOverlayContextValue,

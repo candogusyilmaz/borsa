@@ -8,7 +8,7 @@ import { clearLocalSession, fetchCurrentUser, logoutSession } from '@/api/sessio
 import { queryClient } from '@/app/query-client';
 import { router } from '@/app/router';
 import { AuthContext } from '@/shared/hooks/use-auth';
-import { OverlayProvider } from '@/shared/overlay';
+import { dismissAllOverlays, OverlayProvider } from '@/shared/overlay';
 import type { AuthContextValue } from '@/shared/types/auth';
 import { AppThemeProvider } from '@/theme';
 
@@ -57,6 +57,7 @@ function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unregister = registerSessionLossHandler(async () => {
+      dismissAllOverlays('session-lost');
       clearLocalSession(queryClient);
 
       await router.navigate({
