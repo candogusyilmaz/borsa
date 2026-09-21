@@ -62,5 +62,3 @@ downloaded/
 .tanstack/
 .local-secrets/
 .codex
-
-routeTree.gen.ts
