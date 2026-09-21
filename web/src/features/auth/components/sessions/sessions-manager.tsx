@@ -188,7 +188,7 @@ function TerminateOthersConfirmation({ familyIds }: TerminateOthersOverlayProps)
         title: 'Termination Incomplete',
         fallbackMessage: 'Some sessions could not be terminated. Refreshing list...'
       });
-      void queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/auth/sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['get', '/api/v1/auth/sessions'] });
     } finally {
       setIsTerminating(false);
     }

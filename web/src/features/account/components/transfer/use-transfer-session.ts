@@ -205,7 +205,7 @@ export function useTransferSession(options: UseTransferSessionOptions) {
     previewMutation,
     commitMutation,
     previewTransfer: () => {
-      void form.handleSubmit();
+      form.handleSubmit();
     },
     commitTransfer,
     editTransfer,

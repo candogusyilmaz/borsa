@@ -8,7 +8,7 @@ export const FinancialDecimal = Decimal.clone({
 
 export type FinancialDecimal = InstanceType<typeof FinancialDecimal>;
 
-export function toFinancialDecimal(value: Numeric | null | undefined): FinancialDecimal | null {
+export function toFinancialDecimal(value: Numeric | null | undefined) {
   if (value === null || value === undefined || value === '') {
     return null;
   }

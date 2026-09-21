@@ -168,7 +168,7 @@ export function AccountActions({ accountId, onAccountArchived }: AccountActionsP
         disabled={account.archived}
         onClick={() => {
           const handle = ArchiveAccountOverlay.replace({ accountId });
-          void handle.closed.then(async (outcome) => {
+          handle.closed.then(async (outcome) => {
             if (outcome.status === 'completed') {
               await onAccountArchived?.();
             }

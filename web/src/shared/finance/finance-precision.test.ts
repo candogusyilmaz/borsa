@@ -61,9 +61,8 @@ describe('Precision-Safe Money Formatting', () => {
     expect(formatted).toBe('$3.3333');
   });
 
-  it('supports custom locale via options object while maintaining backwards-compatible string options', () => {
+  it('supports custom locale via options object', () => {
     expect(formatMoney('123.4', 'USD', { locale: 'en-US' })).toBe('$123.40');
-    expect(formatMoney('123.4', 'USD', 'en-US')).toBe('$123.40');
   });
 
   it('formats exact tiny positive values adaptively to avoid misleading zero display', () => {

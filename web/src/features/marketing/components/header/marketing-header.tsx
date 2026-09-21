@@ -65,7 +65,7 @@ export function MarketingHeader() {
     const handle = MarketingMenuOverlay.open();
     menuHandle.current = handle;
     setMenuOpened(true);
-    void handle.closed.then(() => {
+    handle.closed.then(() => {
       if (menuHandle.current?.id === handle.id) {
         menuHandle.current = null;
         setMenuOpened(false);

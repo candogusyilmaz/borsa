@@ -120,7 +120,7 @@ export function ReconciliationCorrection({ account, targetReconciliation, onSucc
         onCommit={handleCommitCorrection}
         onEdit={() => setStep('edit')}
         onReload={() => {
-          void form.handleSubmit();
+          form.handleSubmit();
         }}
       />
     );

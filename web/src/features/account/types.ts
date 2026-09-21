@@ -77,7 +77,7 @@ export interface TransferFormValues {
   confirmPolicyBreach: boolean;
 }
 
-export interface AccountsLayoutContext {
+export interface AccountWorkspaceContext {
   accounts: FinancialAccount[];
   activeAccounts: FinancialAccount[];
   isLoading: boolean;

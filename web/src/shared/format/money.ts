@@ -18,11 +18,11 @@ export interface FormatMoneyOptions {
  * Isolated formatting helper to format arbitrary-precision numeric strings
  * via Intl.NumberFormat without precision-lossy Number coercion.
  */
-function formatIntl(formatter: Intl.NumberFormat, value: string | number): string {
+function formatIntl(formatter: Intl.NumberFormat, value: string | number) {
   return formatter.format(value as unknown as number);
 }
 
-function formatRawCurrency(value: string | number, currency: string, locale: string, minDigits: number, maxDigits: number): string {
+function formatRawCurrency(value: string | number, currency: string, locale: string, minDigits: number, maxDigits: number) {
   try {
     const formatter = new Intl.NumberFormat(locale, {
       style: 'currency',
@@ -47,8 +47,8 @@ function formatRawCurrency(value: string | number, currency: string, locale: str
 export function formatMoney(
   amount: string | number | FinancialDecimal | null | undefined,
   currency: string = DEFAULT_CURRENCY,
-  options?: FormatMoneyOptions | string
-): string {
+  options?: FormatMoneyOptions
+) {
   if (amount === null || amount === undefined || (typeof amount === 'string' && amount.trim() === '')) {
     return '—';
   }
@@ -62,17 +62,15 @@ export function formatMoney(
     return String(amount);
   }
 
-  const resolvedOptions: FormatMoneyOptions | undefined = typeof options === 'string' ? { locale: options } : options;
-
   const activeCurrency = currency || DEFAULT_CURRENCY;
-  const locale = resolvedOptions?.locale ?? DEFAULT_LOCALE;
-  const minDigits = resolvedOptions?.minimumFractionDigits ?? DEFAULT_MIN_FRACTION_DIGITS;
-  let maxDigits = resolvedOptions?.maximumFractionDigits ?? DEFAULT_MAX_FRACTION_DIGITS;
+  const locale = options?.locale ?? DEFAULT_LOCALE;
+  const minDigits = options?.minimumFractionDigits ?? DEFAULT_MIN_FRACTION_DIGITS;
+  let maxDigits = options?.maximumFractionDigits ?? DEFAULT_MAX_FRACTION_DIGITS;
 
-  if (resolvedOptions?.adaptivePrecision && !dec.isZero()) {
+  if (options?.adaptivePrecision && !dec.isZero()) {
     const roundsToZero = new FinancialDecimal(dec.toFixed(maxDigits)).isZero();
     if (roundsToZero) {
-      const maxAdaptive = resolvedOptions.maxAdaptiveFractionDigits ?? DEFAULT_MAX_ADAPTIVE_FRACTION_DIGITS;
+      const maxAdaptive = options.maxAdaptiveFractionDigits ?? DEFAULT_MAX_ADAPTIVE_FRACTION_DIGITS;
       if (new FinancialDecimal(dec.toFixed(maxAdaptive)).isZero()) {
         const smallestUnit = `0.${'0'.repeat(maxAdaptive - 1)}1`;
         const formattedThreshold = formatRawCurrency(smallestUnit, activeCurrency, locale, maxAdaptive, maxAdaptive);

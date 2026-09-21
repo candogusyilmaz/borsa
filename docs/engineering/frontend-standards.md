@@ -357,7 +357,22 @@ rather than a single file:
 
 ---
 
-## 14. Verification
+## 14. No Unnecessary Internal Backward Compatibility
+
+During active development, do not preserve obsolete internal frontend APIs solely for backward compatibility. When an internal API is intentionally changed, migrate current call sites and remove the old form instead of adding aliases, overloads, shims, deprecated wrappers, or compatibility branches.
+
+Backward compatibility may still matter when dealing with:
+- externally consumed or public APIs
+- backend contracts that cannot be changed by the frontend
+- persisted user data
+- browser or platform compatibility
+- migrations where old and new formats genuinely coexist
+
+Do not interpret this rule as permission to silently break external contracts. The target is unnecessary internal frontend compatibility baggage.
+
+---
+
+## 15. Verification
 
 Before finishing frontend work:
 

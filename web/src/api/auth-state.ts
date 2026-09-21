@@ -93,7 +93,7 @@ export function invalidateSession({ expectedEpoch, expectedToken, notify }: Inva
   advanceSessionEpoch();
 
   if (notify) {
-    void sessionLossHandler?.();
+    sessionLossHandler?.();
   }
 
   return true;

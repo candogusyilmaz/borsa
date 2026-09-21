@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { AccountsLayout } from '@/features/account';
+import { AccountWorkspace } from '@/features/account';
 import { createSeoMeta } from '@/shared/utils/seo';
 
 export const Route = createFileRoute('/app/accounts')({
@@ -15,9 +15,9 @@ export const Route = createFileRoute('/app/accounts')({
       scripts: seo.scripts
     };
   },
-  component: AccountsLayoutRouteComponent
+  component: AccountsRouteComponent
 });
 
-function AccountsLayoutRouteComponent() {
-  return <AccountsLayout />;
+function AccountsRouteComponent() {
+  return <AccountWorkspace />;
 }

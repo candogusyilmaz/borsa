@@ -1,6 +1,6 @@
 import { Skeleton } from '@mantine/core';
 import { createFileRoute, Navigate } from '@tanstack/react-router';
-import { AccountEmptyState, useAccountsLayout } from '@/features/account';
+import { AccountEmptyState, useAccountWorkspace } from '@/features/account';
 import { createSeoMeta } from '@/shared/utils/seo';
 
 export const Route = createFileRoute('/app/accounts/')({
@@ -20,7 +20,7 @@ export const Route = createFileRoute('/app/accounts/')({
 });
 
 function AccountsIndexRouteComponent() {
-  const { accounts, activeAccounts, isLoading, isFetching, isError, openCreateAccount } = useAccountsLayout();
+  const { accounts, activeAccounts, isLoading, isFetching, isError, openCreateAccount } = useAccountWorkspace();
 
   if (isLoading || (accounts.length === 0 && isFetching)) {
     return (

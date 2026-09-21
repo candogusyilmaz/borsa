@@ -42,6 +42,7 @@ Generated files (`src/api/schema.d.ts`, `src/routeTree.gen.ts`) are build artifa
 - Do not duplicate remote server state into local or global client state without a concrete reason.
 - Follow the current project's established form, error-handling, notification, styling, and routing conventions rather than inventing parallel systems.
 - Follow the UI guidelines for mobile-first design and interaction behavior.
+- Do not preserve obsolete internal frontend APIs for backward compatibility during active development. Migrate current call sites and remove the old API unless compatibility is required by an external contract or persisted data.
 
 ## Git
 

@@ -3,24 +3,24 @@ import { WarningCircleIcon } from '@phosphor-icons/react';
 import { Outlet, useNavigate, useParams } from '@tanstack/react-router';
 import { createContext, useContext } from 'react';
 import { $api } from '@/api/client';
-import type { AccountsLayoutContext } from '../../types';
-import { AccountCarousel } from '../account-carousel';
-import { AccountLayoutHeader } from '../account-layout-header';
-import { AccountPickerOverlay } from '../account-picker/account-picker';
-import { CreateAccountOverlay } from '../create-account/create-account';
-import classes from './accounts-layout.module.css';
+import { AccountCarousel } from '../components/account-carousel';
+import { AccountLayoutHeader } from '../components/account-layout-header';
+import { AccountPickerOverlay } from '../components/account-picker/account-picker';
+import { CreateAccountOverlay } from '../components/create-account/create-account';
+import type { AccountWorkspaceContext } from '../types';
+import classes from './account-workspace.module.css';
 
-const AccountsContext = createContext<AccountsLayoutContext | null>(null);
+const AccountWorkspaceReactContext = createContext<AccountWorkspaceContext | null>(null);
 
-export function useAccountsLayout() {
-  const context = useContext(AccountsContext);
+export function useAccountWorkspace() {
+  const context = useContext(AccountWorkspaceReactContext);
   if (!context) {
-    throw new Error('useAccountsLayout must be used within an AccountsLayout');
+    throw new Error('useAccountWorkspace must be used within an AccountWorkspace');
   }
   return context;
 }
 
-export function AccountsLayout() {
+export function AccountWorkspace() {
   const navigate = useNavigate();
   const params = useParams({ strict: false }) as { accountId?: string };
   const currentAccountId = params.accountId;
@@ -57,9 +57,9 @@ export function AccountsLayout() {
 
   function openCreateAccount() {
     const handle = CreateAccountOverlay.open();
-    void handle.closed.then((outcome) => {
+    handle.closed.then((outcome) => {
       if (outcome.status === 'completed') {
-        void navigate({
+        navigate({
           to: '/app/accounts/$accountId',
           params: { accountId: outcome.value.id },
           replace: !currentAccountId
@@ -70,9 +70,9 @@ export function AccountsLayout() {
 
   function openAccountPicker() {
     const handle = AccountPickerOverlay.open({ selectedAccountId });
-    void handle.closed.then((outcome) => {
+    handle.closed.then((outcome) => {
       if (outcome.status === 'completed' && outcome.value !== currentAccountId) {
-        void navigate({
+        navigate({
           to: '/app/accounts/$accountId',
           params: { accountId: outcome.value },
           replace: true
@@ -90,7 +90,7 @@ export function AccountsLayout() {
     });
   }
 
-  const contextValue: AccountsLayoutContext = {
+  const contextValue: AccountWorkspaceContext = {
     accounts: rawAccounts,
     activeAccounts,
     isLoading: accountsQuery.isLoading,
@@ -102,7 +102,7 @@ export function AccountsLayout() {
   };
 
   return (
-    <AccountsContext.Provider value={contextValue}>
+    <AccountWorkspaceReactContext.Provider value={contextValue}>
       <section className={classes.container} aria-labelledby="accounts-page-title">
         {/* 1. Header Row */}
         <AccountLayoutHeader activeCount={activeAccounts.length} onOpenCreate={openCreateAccount} />
@@ -132,6 +132,6 @@ export function AccountsLayout() {
         {/* 3. Child Outlet */}
         <Outlet />
       </section>
-    </AccountsContext.Provider>
+    </AccountWorkspaceReactContext.Provider>
   );
 }

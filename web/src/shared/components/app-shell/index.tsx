@@ -86,7 +86,7 @@ export function AppShell({ children, user }: AppShellProps) {
     const handle = AccountMenuOverlay.open({ activeSessionsCount });
     accountMenuHandle.current = handle;
     setAccountMenuOpened(true);
-    void handle.closed.then(() => {
+    handle.closed.then(() => {
       if (accountMenuHandle.current?.id === handle.id) {
         accountMenuHandle.current = null;
         setAccountMenuOpened(false);

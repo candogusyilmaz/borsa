@@ -33,7 +33,7 @@ export function isAbortError(error: unknown) {
   return false;
 }
 
-export async function fetchCurrentUser(queryClient: QueryClient): Promise<User> {
+export async function fetchCurrentUser(queryClient: QueryClient) {
   const user = await queryClient.query($api.queryOptions('get', '/api/v1/me'));
 
   if (!user) {
