@@ -396,18 +396,20 @@ Feature-level business modals and drawers use the shared `registerOverlay` archi
 ### Decoupled Feature Components and Adapters
 - **Domain components**: Feature/domain components (forms, tables, detail cards) should take plain required callbacks (`onSuccess`, `onCancel`, etc.) and remain decoupled from overlay infrastructure.
 - **Adapters / registered overlays**: Thin adapters or registered wrappers bridge plain domain components to overlay navigation and lifecycle.
-- **Definition-bound `useCurrent()`**: Components requiring overlay controls access them via `TargetOverlay.useCurrent()`. This asserts runtime identity and provides typed `complete(result)`. The legacy untyped `useCurrentOverlay()` is internal.
+- **Definition-bound `useCurrent()`**: Components requiring overlay controls access them via `TargetOverlay.useCurrent()`. This returns an instance-bound controller that asserts runtime identity and provides typed `complete(result)`. If an overlay has already been dismissed or replaced, asynchronous callbacks holding its old `current` controller become safe no-ops and cannot inadvertently mutate or close another overlay. The legacy untyped `useCurrentOverlay()` is internal.
 - **Overlay-only components**: Components that only exist to serve as overlay views (e.g., action sheets, navigation menus) may consume `useCurrent()` directly without a separate adapter.
 
 ### Opening and Lifecycle Callbacks
-Overlay callers use explicit lifecycle callbacks via open options rather than Promises:
+Overlay callers use explicit positional arguments and lifecycle callbacks via open options rather than Promises:
 - `TargetOverlay.open(props, { onCompleted, onDismissed })`
+- For no-prop overlays with lifecycle options: `TargetOverlay.open(undefined, { onCompleted, onDismissed })` (deterministic positional meaning; no runtime guessing from property names).
+- For no-prop overlays without options: `TargetOverlay.open()`
 - `onCompleted?: (result: TResult) => void` fires once the overlay completes successfully (on exit for root, immediately for stacked).
 - `onDismissed?: (reason?: string) => void` fires once dismissed or cancelled.
 
 ### Navigation Inside an Active Overlay
-- `current.push(TargetOverlay, ...)` when returning to the current overlay is expected (e.g., nested reversal, sub-details).
-- `current.replace(TargetOverlay, ...)` when the current overlay should be discarded (e.g., action menus, workflow transitions).
+- `current.push(TargetOverlay, props, options?)` when returning to the current overlay is expected (returns `void`).
+- `current.replace(TargetOverlay, props, options?)` when the current overlay should be discarded (returns `void`).
 - `current.dismiss(...)` dismisses the current overlay item (or returns to parent if stacked).
 - `current.dismissAll(...)` closes the entire overlay interaction (e.g., route navigation, logout).
 - `current.complete(result)` completes the current overlay with a typed result.

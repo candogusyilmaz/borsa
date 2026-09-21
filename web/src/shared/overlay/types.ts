@@ -18,7 +18,7 @@ export interface OverlayOpenOptions<TResult = void> {
 
 export type OverlayOpenArgs<TProps, TResult = void> =
   Record<string, never> extends TProps
-    ? [options?: OverlayOpenOptions<TResult>] | [props?: TProps, options?: OverlayOpenOptions<TResult>]
+    ? [props?: TProps, options?: OverlayOpenOptions<TResult>]
     : [props: TProps, options?: OverlayOpenOptions<TResult>];
 
 // biome-ignore lint/suspicious/noConfusingVoidType: conditional type distinguishes void from non-void complete signatures
@@ -60,11 +60,11 @@ export interface CurrentOverlayContextValue<TResult = void> {
   push: <TNextProps, TNextResult = void>(
     overlay: OverlayDefinition<TNextProps, TNextResult>,
     ...args: OverlayOpenArgs<TNextProps, TNextResult>
-  ) => OverlayHandle;
+  ) => void;
   replace: <TNextProps, TNextResult = void>(
     overlay: OverlayDefinition<TNextProps, TNextResult>,
     ...args: OverlayOpenArgs<TNextProps, TNextResult>
-  ) => OverlayHandle;
+  ) => void;
   dismiss: (reason?: string) => void;
   dismissAll: (reason?: string) => void;
   back: () => void;

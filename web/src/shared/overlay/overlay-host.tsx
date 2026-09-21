@@ -32,12 +32,12 @@ export function OverlayHost() {
     return {
       id,
       definition,
-      push: (overlay, ...args) => overlayStore.push(overlay, ...args),
-      replace: (overlay, ...args) => overlayStore.replace(overlay, ...args),
-      dismiss: (reason?: string) => overlayStore.dismissCurrent(reason),
-      dismissAll: (reason?: string) => overlayStore.dismissAll(reason),
-      back: () => overlayStore.back(),
-      complete: (result?: unknown) => overlayStore.complete(result),
+      push: (overlay, ...args) => overlayStore.pushFrom(id, overlay, ...args),
+      replace: (overlay, ...args) => overlayStore.replaceFrom(id, overlay, ...args),
+      dismiss: (reason?: string) => overlayStore.dismissById(id, reason),
+      dismissAll: (reason?: string) => overlayStore.dismissAllFrom(id, reason),
+      back: () => overlayStore.backFrom(id),
+      complete: (result?: unknown) => overlayStore.completeById(id, result),
       setTitle: (title) => overlayStore.setTitle(id, title),
       canGoBack: stack.length > 1
     };
@@ -61,7 +61,11 @@ export function OverlayHost() {
   const headerTitle = (
     <div className={classes.headerTitleWrapper}>
       {stack.length > 1 && (
-        <button type="button" className={classes.backBtn} onClick={overlayStore.back} aria-label="Go back to previous overlay">
+        <button
+          type="button"
+          className={classes.backBtn}
+          onClick={() => currentItemId && overlayStore.backFrom(currentItemId)}
+          aria-label="Go back to previous overlay">
           <ArrowLeftIcon size={20} weight="bold" />
         </button>
       )}
@@ -79,7 +83,9 @@ export function OverlayHost() {
         : classes.contentForward;
 
   function handleClose() {
-    overlayStore.dismissCurrent('backdrop-or-escape');
+    if (currentItemId) {
+      overlayStore.dismissById(currentItemId, 'backdrop-or-escape');
+    }
   }
 
   const handleExited = () => {

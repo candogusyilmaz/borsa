@@ -16,15 +16,7 @@ export interface OverlayStoreState {
   closeGeneration: number;
 }
 
-type PendingTerminalState =
-  | {
-      type: 'completed';
-      value: unknown;
-    }
-  | {
-      type: 'dismissed';
-      reason: string;
-    };
+type PendingTerminalState = { type: 'completed'; value: unknown } | { type: 'dismissed'; reason?: string };
 
 function invokeLifecycleCallback<TArgs extends unknown[]>(
   callback: ((...args: TArgs) => void | Promise<void>) | undefined,
@@ -44,21 +36,10 @@ function invokeLifecycleCallback<TArgs extends unknown[]>(
 }
 
 function parseOpenArgs<TProps, TResult>(args: OverlayOpenArgs<TProps, TResult>): { props: TProps; options?: OverlayOpenOptions<TResult> } {
-  const [propsOrOptions, maybeOptions] = args as [unknown?, OverlayOpenOptions<TResult>?];
-  if (
-    propsOrOptions &&
-    typeof propsOrOptions === 'object' &&
-    ('onCompleted' in propsOrOptions || 'onDismissed' in propsOrOptions) &&
-    maybeOptions === undefined
-  ) {
-    return {
-      props: {} as TProps,
-      options: propsOrOptions as OverlayOpenOptions<TResult>
-    };
-  }
+  const [props, options] = args as [TProps | undefined, OverlayOpenOptions<TResult>?];
   return {
-    props: (propsOrOptions ?? {}) as TProps,
-    options: maybeOptions
+    props: (props ?? {}) as TProps,
+    options
   };
 }
 
@@ -89,6 +70,14 @@ export class OverlayStore {
     }
   };
 
+  private isCurrent(id: string): boolean {
+    if (this.phase !== 'open') {
+      return false;
+    }
+    const top = this.stack[this.stack.length - 1];
+    return top?.id === id;
+  }
+
   private createItem = <TProps, TResult>(
     definition: OverlayDefinition<TProps, TResult>,
     props: TProps,
@@ -109,6 +98,70 @@ export class OverlayStore {
       options,
       handle
     };
+  };
+
+  private pushInternal = <TProps, TResult>(
+    definition: OverlayDefinition<TProps, TResult>,
+    ...args: OverlayOpenArgs<NoInfer<TProps>, TResult>
+  ): void => {
+    const { props, options } = parseOpenArgs(args as OverlayOpenArgs<TProps, TResult>);
+    const item = this.createItem(definition, props, options);
+
+    this.stack = [...this.stack, item as OverlayStackItem];
+    this.direction = 'forward';
+
+    this.notify();
+  };
+
+  private replaceInternal = <TProps, TResult>(
+    definition: OverlayDefinition<TProps, TResult>,
+    ...args: OverlayOpenArgs<NoInfer<TProps>, TResult>
+  ): void => {
+    const { props, options } = parseOpenArgs(args as OverlayOpenArgs<TProps, TResult>);
+    const item = this.createItem(definition, props, options);
+
+    const topItem = this.stack[this.stack.length - 1];
+    const remaining = this.stack.slice(0, -1);
+    this.stack = [...remaining, item as OverlayStackItem];
+    this.direction = 'replace';
+
+    this.notify();
+    invokeLifecycleCallback(topItem?.options?.onDismissed, 'replaced');
+  };
+
+  private dismissCurrentInternal = (reason = 'dismissed'): void => {
+    if (this.phase !== 'open') return;
+
+    if (this.stack.length > 1) {
+      const popped = this.stack[this.stack.length - 1];
+      this.stack = this.stack.slice(0, -1);
+      this.direction = 'backward';
+      this.notify();
+      invokeLifecycleCallback(popped?.options?.onDismissed, reason);
+    } else if (this.stack.length === 1) {
+      this.pendingTerminalState = { type: 'dismissed', reason };
+      this.startClosing();
+    }
+  };
+
+  private completeInternal = (result?: unknown): void => {
+    if (this.phase !== 'open') return;
+
+    if (this.stack.length > 1) {
+      const popped = this.stack[this.stack.length - 1];
+      this.stack = this.stack.slice(0, -1);
+      this.direction = 'backward';
+      this.notify();
+      invokeLifecycleCallback(popped?.options?.onCompleted, popped?.options?.onCompleted ? result : undefined);
+    } else if (this.stack.length === 1) {
+      this.pendingTerminalState = { type: 'completed', value: result };
+      this.startClosing();
+    }
+  };
+
+  private dismissAllInternal = (reason = 'dismissed'): void => {
+    this.pendingTerminalState = { type: 'dismissed', reason };
+    this.startClosing();
   };
 
   public subscribe = (listener: () => void) => {
@@ -145,104 +198,60 @@ export class OverlayStore {
     return item.handle;
   };
 
-  public push = <TProps, TResult>(
+  public pushFrom = <TProps, TResult>(
+    id: string,
     definition: OverlayDefinition<TProps, TResult>,
     ...args: OverlayOpenArgs<NoInfer<TProps>, TResult>
-  ): OverlayHandle => {
-    if (this.phase !== 'open') {
-      throw new Error('Cannot push an overlay when no overlay interaction is open.');
-    }
-
-    const { props, options } = parseOpenArgs(args as OverlayOpenArgs<TProps, TResult>);
-    const item = this.createItem(definition, props, options);
-
-    this.stack = [...this.stack, item as OverlayStackItem];
-    this.direction = 'forward';
-
-    this.notify();
-    return item.handle;
+  ): void => {
+    if (!this.isCurrent(id)) return;
+    this.pushInternal(definition, ...args);
   };
 
-  public replace = <TProps, TResult>(
+  public replaceFrom = <TProps, TResult>(
+    id: string,
     definition: OverlayDefinition<TProps, TResult>,
     ...args: OverlayOpenArgs<NoInfer<TProps>, TResult>
-  ): OverlayHandle => {
-    if (this.phase !== 'open') {
-      throw new Error('Cannot replace an overlay when no overlay interaction is open.');
-    }
-
-    const { props, options } = parseOpenArgs(args);
-    const item = this.createItem(definition, props, options);
-
-    const topItem = this.stack[this.stack.length - 1];
-    const remaining = this.stack.slice(0, -1);
-    this.stack = [...remaining, item as OverlayStackItem];
-    this.direction = 'replace';
-
-    this.notify();
-    invokeLifecycleCallback(topItem?.options?.onDismissed, 'replaced');
-    return item.handle;
+  ): void => {
+    if (!this.isCurrent(id)) return;
+    this.replaceInternal(definition, ...args);
   };
 
-  public back = () => {
-    this.dismissCurrent('back');
+  public dismissById = (id: string, reason = 'dismissed'): void => {
+    if (!this.isCurrent(id)) return;
+    this.dismissCurrentInternal(reason);
   };
 
-  public dismissCurrent = (reason = 'dismissed') => {
-    if (this.phase !== 'open') return;
-
-    if (this.stack.length > 1) {
-      const popped = this.stack[this.stack.length - 1];
-      this.stack = this.stack.slice(0, -1);
-      this.direction = 'backward';
-      this.notify();
-      invokeLifecycleCallback(popped?.options?.onDismissed, reason);
-    } else if (this.stack.length === 1) {
-      this.pendingTerminalState = { type: 'dismissed', reason };
-      this.startClosing();
-    }
+  public completeById = (id: string, result?: unknown): void => {
+    if (!this.isCurrent(id)) return;
+    this.completeInternal(result);
   };
 
-  public dismissAll = (reason = 'dismissed') => {
-    if (this.phase !== 'open') return;
-
-    this.pendingTerminalState = { type: 'dismissed', reason };
-    this.startClosing();
+  public backFrom = (id: string): void => {
+    if (!this.isCurrent(id)) return;
+    this.dismissCurrentInternal('back');
   };
 
-  public complete = (result?: unknown) => {
-    if (this.phase !== 'open') return;
-
-    if (this.stack.length > 1) {
-      const popped = this.stack[this.stack.length - 1];
-      this.stack = this.stack.slice(0, -1);
-      this.direction = 'backward';
-      this.notify();
-      invokeLifecycleCallback(popped?.options?.onCompleted, popped?.options?.onCompleted ? result : undefined);
-    } else if (this.stack.length === 1) {
-      this.pendingTerminalState = { type: 'completed', value: result };
-      this.startClosing();
-    }
+  public dismissAllFrom = (id: string, reason = 'dismissed'): void => {
+    if (!this.isCurrent(id)) return;
+    this.dismissAllInternal(reason);
   };
 
-  public setTitle = (id: string, title: ReactNode) => {
-    const index = this.stack.findIndex((item) => item.id === id);
-    if (index < 0) return;
-
-    const item = this.stack[index];
-    if (!item) return;
-
-    this.stack = [...this.stack.slice(0, index), { ...item, titleOverride: title }, ...this.stack.slice(index + 1)];
-    this.notify();
-  };
-
-  public closeById = (id: string, reason = 'dismissed') => {
-    if (this.phase !== 'open') return;
-
+  public setTitle = (id: string, title: ReactNode): void => {
+    if (!this.isCurrent(id)) return;
     const top = this.stack[this.stack.length - 1];
-    if (top?.id !== id) return;
+    if (!top) return;
 
-    this.dismissCurrent(reason);
+    this.stack = [...this.stack.slice(0, -1), { ...top, titleOverride: title }];
+    this.notify();
+  };
+
+  public closeById = (id: string, reason = 'dismissed'): void => {
+    this.dismissById(id, reason);
+  };
+
+  public dismissAll = (reason = 'dismissed'): void => {
+    if (this.phase !== 'open') return;
+    this.dismissAllInternal(reason);
   };
 
   private startClosing() {
