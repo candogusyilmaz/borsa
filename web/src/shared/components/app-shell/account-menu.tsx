@@ -130,8 +130,7 @@ function AccountMenu({ activeSessionsCount }: AccountMenuOverlayProps) {
         fullWidth
         leftSection={<BookOpenIcon size={18} weight="bold" />}
         onClick={() => {
-          current.close('navigation');
-          ReferenceCatalogOverlay.open({});
+          ReferenceCatalogOverlay.replace();
         }}>
         Reference Catalogue
       </Button>
