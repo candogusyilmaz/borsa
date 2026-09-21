@@ -203,6 +203,18 @@ body,
   margin-top: 4px;
 }
 
+
+/*
+ * Prevent iOS focus zoom without disabling user zoom.
+ * Compact Mantine input sizes may resolve below WebKit's
+ * 16px focus threshold.
+ */
+@media (hover: none) and (pointer: coarse) {
+  .mantine-Input-input {
+    font-size: max(var(--input-fz, 1rem), 1rem);
+  }
+}
+
 /* ---------------------------------------------------------- */
 /* CARD / PAPER                                               */
 /* ---------------------------------------------------------- */
