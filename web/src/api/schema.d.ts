@@ -4,16 +4,16 @@
  */
 
 export interface paths {
-    "/api/v1/reference/instruments/{instrumentId}": {
+    "/api/v1/accounts": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["get"];
-        put: operations["update"];
-        post?: never;
+        get: operations["list_2"];
+        put?: never;
+        post: operations["create_2"];
         delete?: never;
         options?: never;
         head?: never;
@@ -27,7 +27,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["get_1"];
+        get: operations["get_2"];
         put: operations["updateMetadata"];
         post?: never;
         delete?: never;
@@ -36,7 +36,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/accounts/{accountId}/policy": {
+    "/api/v1/accounts/{accountId}/activities": {
         parameters: {
             query?: never;
             header?: never;
@@ -44,7 +44,39 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        put: operations["updatePolicy"];
+        put?: never;
+        post: operations["record"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/accounts/{accountId}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["archive_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/accounts/{accountId}/balance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["balance"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -68,7 +100,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/transfers": {
+    "/api/v1/accounts/{accountId}/policy": {
         parameters: {
             query?: never;
             header?: never;
@@ -76,200 +108,8 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        put?: never;
-        post: operations["transfer"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/transfers/previews": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["preview"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/trades": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["list"];
-        put?: never;
-        post: operations["commit"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/trades/previews": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["preview_1"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/reference/instruments": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["search"];
-        put?: never;
-        post: operations["create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/reconciliations/{reconciliationId}/corrections": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["correct"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/register": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["register"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/refresh": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["refresh"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/logout": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["logout"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/auth/login": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["login"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/activities/{activityId}/reversals": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["reverse"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/accounts": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["list_1"];
-        put?: never;
-        post: operations["create_1"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/accounts/{accountId}/reconciliations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["list_2"];
-        put?: never;
-        post: operations["commit_1"];
+        put: operations["updatePolicy"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -292,7 +132,307 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/accounts/{accountId}/archive": {
+    "/api/v1/accounts/{accountId}/reconciliations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_3"];
+        put?: never;
+        post: operations["commit_2"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/activities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_5"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/activities/{activityId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_5"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/activities/{activityId}/reversals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["reverse"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["refresh"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/register": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["register"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listSessions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/sessions/{familyId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getSession"];
+        put?: never;
+        post?: never;
+        delete: operations["revokeSession"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload a funded-trade CSV
+         * @description Stores a bounded FUNDED_TRADE_CSV_V1 file for owner-scoped preview.
+         */
+        post: operations["upload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/{batchId}/commit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Commit a reviewed import batch
+         * @description Revalidates the confirmed preview under deterministic financial locks and posts the batch atomically.
+         */
+        post: operations["commit_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/{batchId}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Preview an import batch
+         * @description Returns stored normalization evidence and a repeatable current-state simulation.
+         */
+        get: operations["preview_3"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/investing/positions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_4"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/investing/positions/{accountId}/{instrumentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_4"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["me"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/portfolios": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_1"];
+        put?: never;
+        post: operations["create_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/portfolios/{portfolioId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get_1"];
+        put: operations["update_1"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/portfolios/{portfolioId}/archive": {
         parameters: {
             query?: never;
             header?: never;
@@ -308,7 +448,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/accounts/{accountId}/activities": {
+    "/api/v1/reconciliations/{reconciliationId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["detail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reconciliations/{reconciliationId}/corrections": {
         parameters: {
             query?: never;
             header?: never;
@@ -317,22 +473,70 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["record"];
+        post: operations["correct"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/trades/{activityId}": {
+    "/api/v1/reference/countries": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["get_2"];
+        get: operations["countries"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reference/currencies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["currencies"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reference/instruments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["search"];
+        put?: never;
+        post: operations["create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reference/instruments/{instrumentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["get"];
+        put: operations["update"];
         post?: never;
         delete?: never;
         options?: never;
@@ -372,87 +576,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/reference/currencies": {
+    "/api/v1/trades": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["currencies"];
+        get: operations["list"];
         put?: never;
-        post?: never;
+        post: operations["commit"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/reference/countries": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["countries"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/reconciliations/{reconciliationId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["detail"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/me": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["me"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/investing/positions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["list_3"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/investing/positions/{accountId}/{instrumentId}": {
+    "/api/v1/trades/{activityId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -468,80 +608,48 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/auth/sessions": {
+    "/api/v1/trades/previews": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["listSessions"];
+        get?: never;
         put?: never;
-        post?: never;
+        post: operations["preview_1"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/auth/sessions/{familyId}": {
+    "/api/v1/transfers": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["getSession"];
+        get?: never;
         put?: never;
-        post?: never;
-        delete: operations["revokeSession"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/activities": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["list_4"];
-        put?: never;
-        post?: never;
+        post: operations["transfer"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/activities/{activityId}": {
+    "/api/v1/transfers/previews": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["get_4"];
+        get?: never;
         put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/accounts/{accountId}/balance": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["balance"];
-        put?: never;
-        post?: never;
+        post: operations["preview"];
         delete?: never;
         options?: never;
         head?: never;
@@ -552,52 +660,8 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        InstrumentAliasInput: {
-            /** @enum {string} */
-            type: "TICKER" | "ISIN" | "PROVIDER" | "USER";
-            value: string;
-        };
-        ManualInstrumentUpdateRequest: {
-            /** Format: int64 */
-            version?: number;
-            name: string;
-            /** @enum {string} */
-            valuationMethod: "MARKET_OBSERVATION" | "MANUAL_VALUE" | "NOT_VALUED";
-            active?: boolean;
-            aliases?: components["schemas"]["InstrumentAliasInput"][];
-        };
-        InstrumentAliasResponse: {
-            /** Format: uuid */
-            id: string;
-            /** @enum {string} */
-            type: "TICKER" | "ISIN" | "PROVIDER" | "USER";
-            value: string;
-        };
-        InstrumentResponse: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            ownerId?: string;
-            /** Format: uuid */
-            marketId: string;
-            marketCode: string;
-            symbol: string;
-            name: string;
-            /** @enum {string} */
-            instrumentType: "EQUITY" | "ETF" | "FUND" | "INDEX" | "BOND" | "CRYPTO" | "COMMODITY" | "CURRENCY" | "CASH_EQUIVALENT" | "OTHER";
-            quotationCurrency: string;
-            /** @enum {string} */
-            valuationMethod: "MARKET_OBSERVATION" | "MANUAL_VALUE" | "NOT_VALUED";
-            active?: boolean;
-            sourceKind: string;
-            /** Format: int64 */
-            version?: number;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            updatedAt: string;
-            aliases: components["schemas"]["InstrumentAliasResponse"][];
-        };
+        /** @enum {string} */
+        AccountKind: "CASH_CURRENT" | "CASH_SAVINGS" | "CASH_WALLET" | "BROKERAGE" | "CREDIT_CARD" | "LOAN";
         AccountMetadataRequest: {
             /** Format: uuid */
             clientRequestId: string;
@@ -606,345 +670,557 @@ export interface components {
             /** Format: int64 */
             version: number;
         };
-        FinancialAccountResponse: {
+        AccountPolicyRequest: {
+            authorizedLimit?: string;
+            /** Format: uuid */
+            clientRequestId: string;
+            policy?: components["schemas"]["NegativeBalancePolicy"];
+            /** Format: int64 */
+            version: number;
+        };
+        ActivityResponse: {
+            activityType: components["schemas"]["ActivityType"];
+            /** Format: date-time */
+            effectiveAt: string;
             /** Format: uuid */
             id: string;
+            policyDecision: components["schemas"]["PolicyDecision"];
+            postings: components["schemas"]["PostingResponse"][];
+            /** Format: date-time */
+            recordedAt: string;
+            recordingMode: components["schemas"]["RecordingMode"];
+            /** Format: uuid */
+            reversesActivityId?: string;
+            securityPostings: components["schemas"]["SecurityPostingResponse"][];
+            sourceKind: string;
+            /** Format: uuid */
+            supersedesActivityId?: string;
+        };
+        /** @enum {string} */
+        ActivityType: "OPENING_BALANCE" | "CASH_DEPOSIT" | "CASH_WITHDRAWAL" | "CASH_FEE" | "CASH_INTEREST_CREDIT" | "OWNED_TRANSFER" | "SECURITY_BUY" | "SECURITY_SELL" | "REVERSAL" | "RECONCILIATION_ADJUSTMENT";
+        /** @enum {string} */
+        AliasType: "TICKER" | "ISIN" | "PROVIDER" | "USER";
+        ApiProblem: {
+            code: string;
+            detail?: string | null;
+            /** Format: uri */
+            instance?: string | null;
+            key: string;
+            params?: {
+                [key: string]: Record<string, never> | null;
+            } | null;
+            /** Format: int32 */
+            status?: number;
+            /** Format: date-time */
+            timestamp: string;
+            title: string;
+            traceId: string;
+            /** Format: uri */
+            type: string;
+        };
+        ArchiveAccountRequest: {
+            /** Format: uuid */
+            clientRequestId: string;
+            /** Format: int64 */
+            version: number;
+        };
+        ArchivePortfolioRequest: {
+            /** Format: int64 */
+            version: number;
+        };
+        BalanceResponse: {
+            /** Format: uuid */
+            accountId: string;
+            /** Format: date-time */
+            actualAsOf: string;
+            cashHeld?: string;
+            clearedBalance?: string;
+            /** Format: date-time */
+            coverageFrom?: string;
+            coverageStatus: components["schemas"]["CoverageStatus"];
+            creditAvailable?: string;
+            lastReconciliation?: components["schemas"]["LastReconciliationSummaryResponse"];
+            ledgerBalance?: string;
+            liabilityOutstanding?: string;
+            nativeCurrency: string;
+            overdraftUsed?: string;
+            policyBreach?: boolean;
+            projectionStatus: components["schemas"]["ProjectionStatus"];
+            /** Format: date-time */
+            requestedAsOf: string;
+            sourceKind: string;
+            /** Format: uuid */
+            watermarkActivityId?: string;
+            /** Format: date-time */
+            watermarkRecordedAt?: string;
+        };
+        /** @enum {string} */
+        CalculationPolicy: "WEIGHTED_AVERAGE_ECONOMIC_V1";
+        /** @enum {string} */
+        CalendarCoverageStatus: "NONE" | "PARTIAL" | "COMPLETE";
+        CashActivityRequest: {
+            activityType: components["schemas"]["ActivityType"];
+            amount: string;
+            /** Format: uuid */
+            clientRequestId: string;
+            confirmPolicyBreach?: boolean;
+            /** Format: date-time */
+            effectiveAt: string;
+            /** Format: int64 */
+            expectedBalanceVersion?: number;
+            recordingMode: components["schemas"]["RecordingMode"];
+        };
+        CountryResponse: {
+            active?: boolean;
+            code: string;
             name: string;
-            /** @enum {string} */
-            kind: "CASH_CURRENT" | "CASH_SAVINGS" | "CASH_WALLET" | "BROKERAGE" | "CREDIT_CARD" | "LOAN";
-            /** @enum {string} */
-            trackingMode: "FULL_LEDGER" | "HOLDINGS_ONLY";
-            currency: string;
-            timeZone: string;
-            /** @enum {string} */
-            policy?: "HARD_FLOOR" | "SOFT_FLOOR" | "TRACK_REALITY" | "AUTHORIZED_LIMIT";
+        };
+        /** @enum {string} */
+        CoverageStatus: "KNOWN_FROM_OPENING" | "UNTRACKED";
+        CreateFinancialAccountRequest: {
             authorizedLimit?: string;
+            /** Format: uuid */
+            clientRequestId: string;
+            currency: string;
+            kind: components["schemas"]["AccountKind"];
+            name: string;
+            openingState?: components["schemas"]["OpeningStateRequest"];
+            policy?: components["schemas"]["NegativeBalancePolicy"];
+            timeZone: string;
+            trackingMode: components["schemas"]["TrackingMode"];
+        };
+        CreatePortfolioRequest: {
+            accountIds: string[];
+            name: string;
+        };
+        CurrencyResponse: {
+            active?: boolean;
+            code: string;
+            /** Format: int32 */
+            minorUnit?: number;
+            name: string;
+            symbol: string;
+        };
+        CurrentUserResponse: {
+            /** Format: date-time */
+            createdAt: string;
+            email: string;
+            /** Format: uuid */
+            id: string;
+        };
+        DeviceSessionResponse: {
+            /** Format: date-time */
+            createdAt: string;
+            current?: boolean;
+            deviceLabel?: string;
+            /** Format: date-time */
+            endedAt?: string;
+            /** Format: date-time */
+            expiresAt: string;
+            /** Format: uuid */
+            familyId: string;
+            /** Format: date-time */
+            lastUsedAt?: string;
+            /** Format: uuid */
+            latestGenerationId: string;
+            status: components["schemas"]["DeviceSessionStatus"];
+        };
+        /** @enum {string} */
+        DeviceSessionStatus: "ACTIVE" | "EXPIRED" | "REVOKED" | "COMPROMISED";
+        FinancialAccountResponse: {
             archived?: boolean;
             /** Format: date-time */
             archivedAt?: string;
-            /** @enum {string} */
-            cashCoverageStatus: "KNOWN_FROM_OPENING" | "UNTRACKED";
+            authorizedLimit?: string;
+            cashCoverageStatus: components["schemas"]["CoverageStatus"];
             /** Format: date-time */
             coverageFrom?: string;
-            sourceKind: string;
-            /** Format: int64 */
-            version?: number;
             /** Format: date-time */
             createdAt: string;
-            /** Format: date-time */
-            updatedAt: string;
-            policyBreach?: boolean;
-        };
-        AccountPolicyRequest: {
-            /** Format: uuid */
-            clientRequestId: string;
-            /** @enum {string} */
-            policy?: "HARD_FLOOR" | "SOFT_FLOOR" | "TRACK_REALITY" | "AUTHORIZED_LIMIT";
-            authorizedLimit?: string;
-            /** Format: int64 */
-            version: number;
-        };
-        OpeningCorrectionRequest: {
-            /** Format: uuid */
-            clientRequestId: string;
-            amount: string;
-            /** Format: date-time */
-            effectiveAt: string;
-            correctionReason: string;
-            /** Format: int64 */
-            version: number;
-        };
-        TransferRequest: {
-            /** Format: uuid */
-            clientRequestId: string;
-            /** Format: uuid */
-            sourceAccountId: string;
-            /** Format: uuid */
-            destinationAccountId: string;
-            amount: string;
-            /** @enum {string} */
-            recordingMode: "CURRENT_ACTION" | "HISTORICAL_FACT";
-            /** Format: date-time */
-            effectiveAt: string;
-            confirmPolicyBreach?: boolean;
-            /** Format: int64 */
-            expectedSourceBalanceVersion?: number;
-            /** Format: int64 */
-            expectedDestinationBalanceVersion?: number;
-        };
-        ActivityResponse: {
+            currency: string;
             /** Format: uuid */
             id: string;
-            /** @enum {string} */
-            activityType: "OPENING_BALANCE" | "CASH_DEPOSIT" | "CASH_WITHDRAWAL" | "CASH_FEE" | "CASH_INTEREST_CREDIT" | "OWNED_TRANSFER" | "SECURITY_BUY" | "SECURITY_SELL" | "REVERSAL" | "RECONCILIATION_ADJUSTMENT";
-            /** @enum {string} */
-            recordingMode: "CURRENT_ACTION" | "HISTORICAL_FACT";
+            kind: components["schemas"]["AccountKind"];
+            name: string;
+            policy?: components["schemas"]["NegativeBalancePolicy"];
+            policyBreach?: boolean;
+            sourceKind: string;
+            timeZone: string;
+            trackingMode: components["schemas"]["TrackingMode"];
+            /** Format: date-time */
+            updatedAt: string;
+            /** Format: int64 */
+            version?: number;
+        };
+        InstrumentAliasInput: {
+            type: components["schemas"]["AliasType"];
+            value: string;
+        };
+        InstrumentAliasResponse: {
+            /** Format: uuid */
+            id: string;
+            type: components["schemas"]["AliasType"];
+            value: string;
+        };
+        InstrumentResponse: {
+            active?: boolean;
+            aliases: components["schemas"]["InstrumentAliasResponse"][];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: uuid */
+            id: string;
+            instrumentType: components["schemas"]["InstrumentType"];
+            marketCode: string;
+            /** Format: uuid */
+            marketId: string;
+            name: string;
+            /** Format: uuid */
+            ownerId?: string;
+            quotationCurrency: string;
+            sourceKind: string;
+            symbol: string;
+            /** Format: date-time */
+            updatedAt: string;
+            valuationMethod: components["schemas"]["ValuationMethod"];
+            /** Format: int64 */
+            version?: number;
+        };
+        InstrumentSummaryResponse: {
+            active?: boolean;
+            aliases: components["schemas"]["InstrumentAliasResponse"][];
+            /** Format: uuid */
+            id: string;
+            instrumentType: components["schemas"]["InstrumentType"];
+            marketCode: string;
+            /** Format: uuid */
+            marketId: string;
+            name: string;
+            ownerManaged?: boolean;
+            quotationCurrency: string;
+            sourceKind: string;
+            symbol: string;
+            valuationMethod: components["schemas"]["ValuationMethod"];
+        };
+        /** @enum {string} */
+        InstrumentType: "EQUITY" | "ETF" | "FUND" | "INDEX" | "BOND" | "CRYPTO" | "COMMODITY" | "CURRENCY" | "CASH_EQUIVALENT" | "OTHER";
+        LastReconciliationSummaryResponse: {
+            /** Format: date-time */
+            createdAt: string;
+            lifecycleStatus: components["schemas"]["ReconciliationLifecycleStatus"];
+            /** Format: uuid */
+            reconciliationId: string;
+            resolution: components["schemas"]["ReconciliationResolution"];
+            /** Format: date-time */
+            statementClosingAt: string;
+            statementClosingBalance: string;
+        };
+        LocalAuthenticationResponse: {
+            accessToken: string;
+            /** Format: date-time */
+            accessTokenExpiresAt: string;
+            refreshToken?: string;
+            /** Format: date-time */
+            refreshTokenExpiresAt: string;
+            /** Format: date-time */
+            serverTime: string;
+            /** Format: uuid */
+            sessionId: string;
+        };
+        LocalLoginRequest: {
+            deviceLabel?: string;
+            /** Format: email */
+            email: string;
+            password: string;
+            refreshTokenDelivery: components["schemas"]["RefreshTokenDelivery"];
+        };
+        LocalRefreshRequest: {
+            refreshToken?: string;
+            refreshTokenDelivery: components["schemas"]["RefreshTokenDelivery"];
+        };
+        LogoutRequest: {
+            scope: components["schemas"]["LogoutScope"];
+        };
+        /** @enum {string} */
+        LogoutScope: "CURRENT_SESSION" | "ALL_SESSIONS";
+        ManualInstrumentCreateRequest: {
+            aliases?: components["schemas"]["InstrumentAliasInput"][];
+            instrumentType: components["schemas"]["InstrumentType"];
+            /** Format: uuid */
+            marketId: string;
+            name: string;
+            quotationCurrency: string;
+            symbol: string;
+            valuationMethod: components["schemas"]["ValuationMethod"];
+        };
+        ManualInstrumentUpdateRequest: {
+            active?: boolean;
+            aliases?: components["schemas"]["InstrumentAliasInput"][];
+            name: string;
+            valuationMethod: components["schemas"]["ValuationMethod"];
+            /** Format: int64 */
+            version?: number;
+        };
+        MarketCalendarResponse: {
+            coverageStatus: components["schemas"]["CalendarCoverageStatus"];
+            /** Format: date */
+            from: string;
+            marketCode: string;
+            /** Format: uuid */
+            marketId: string;
+            missingDates: string[];
+            sessions: components["schemas"]["MarketCalendarSessionResponse"][];
+            timeZone: string;
+            /** Format: date */
+            to: string;
+        };
+        MarketCalendarSessionResponse: {
+            closesAt?: string;
+            /** Format: date */
+            date: string;
+            opensAt?: string;
+            sessionStatus: components["schemas"]["MarketSessionStatus"];
+            sourceKind: string;
+        };
+        MarketResponse: {
+            active?: boolean;
+            code: string;
+            countryCode?: string;
+            /** Format: uuid */
+            id: string;
+            marketType: string;
+            name: string;
+            primaryQuotationCurrency?: string;
+            quotationCurrencies: string[];
+            sourceKind: string;
+            timeZone: string;
+        };
+        /** @enum {string} */
+        MarketSessionStatus: "OPEN" | "CLOSED";
+        /** @enum {string} */
+        NegativeBalancePolicy: "HARD_FLOOR" | "SOFT_FLOOR" | "TRACK_REALITY" | "AUTHORIZED_LIMIT";
+        OpeningCorrectionRequest: {
+            amount: string;
+            /** Format: uuid */
+            clientRequestId: string;
+            correctionReason: string;
             /** Format: date-time */
             effectiveAt: string;
+            /** Format: int64 */
+            version: number;
+        };
+        OpeningStateRequest: {
+            amount: string;
             /** Format: date-time */
-            recordedAt: string;
-            /** @enum {string} */
-            policyDecision: "NOT_APPLICABLE" | "ALLOWED" | "CONFIRMED_BREACH" | "HISTORICAL_BREACH_RECORDED";
-            sourceKind: string;
+            effectiveAt: string;
+        };
+        Pageable: {
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            size?: number;
+            sort?: string[];
+        };
+        /** @enum {string} */
+        PolicyDecision: "NOT_APPLICABLE" | "ALLOWED" | "CONFIRMED_BREACH" | "HISTORICAL_BREACH_RECORDED";
+        PortfolioAccountResponse: {
+            archived: boolean;
+            /** Format: date-time */
+            archivedAt?: string | null;
+            currency: string;
             /** Format: uuid */
-            reversesActivityId?: string;
+            id: string;
+            kind: components["schemas"]["AccountKind"];
+            name: string;
+            trackingMode: components["schemas"]["TrackingMode"];
+        };
+        PortfolioResponse: {
+            /** Format: int32 */
+            accountCount: number;
+            accounts: components["schemas"]["PortfolioAccountResponse"][];
+            archived: boolean;
+            /** Format: date-time */
+            archivedAt?: string | null;
+            /** Format: date-time */
+            createdAt: string;
             /** Format: uuid */
-            supersedesActivityId?: string;
-            postings: components["schemas"]["PostingResponse"][];
-            securityPostings: components["schemas"]["SecurityPostingResponse"][];
+            id: string;
+            name: string;
+            /** Format: date-time */
+            updatedAt: string;
+            /** Format: int64 */
+            version: number;
+        };
+        PortfolioSummaryResponse: {
+            /** Format: int32 */
+            accountCount: number;
+            archived: boolean;
+            /** Format: date-time */
+            archivedAt?: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** Format: date-time */
+            updatedAt: string;
+            /** Format: int64 */
+            version: number;
+        };
+        PositionResponse: {
+            /** Format: uuid */
+            accountId: string;
+            accountName: string;
+            /** Format: date-time */
+            asOf: string;
+            calculationPolicy: components["schemas"]["CalculationPolicy"];
+            cumulativeRealizedEconomicPnl: string;
+            currency: string;
+            /** Format: uuid */
+            inputWatermarkActivityId: string;
+            /** Format: uuid */
+            instrumentId: string;
+            instrumentName: string;
+            instrumentSymbol: string;
+            instrumentType: components["schemas"]["InstrumentType"];
+            /** Format: date-time */
+            lastSuccessfulBuildAt: string;
+            projectionStatus: components["schemas"]["ProjectionStatus"];
+            quantity: string;
+            remainingEconomicBasis: string;
+            /** Format: date-time */
+            staleFrom?: string;
+            /** Format: int64 */
+            version: number;
         };
         PostingResponse: {
             /** Format: uuid */
             accountId: string;
+            amount: string;
+            currency: string;
             /** Format: uuid */
             pocketId: string;
-            currency: string;
-            amount: string;
-            /** @enum {string} */
-            role: "OPENING" | "DEPOSIT" | "WITHDRAWAL" | "FEE" | "INTEREST_CREDIT" | "TRANSFER_SOURCE" | "TRANSFER_DESTINATION" | "TRADE_PURCHASE" | "TRADE_PROCEEDS" | "REVERSAL" | "ADJUSTMENT";
+            role: components["schemas"]["PostingRole"];
         };
-        SecurityPostingResponse: {
-            /** Format: uuid */
-            accountId: string;
-            /** Format: uuid */
-            instrumentId: string;
-            currency: string;
-            quantityDelta: string;
-            unitPrice?: string;
-            grossAmount?: string;
-            /** @enum {string} */
-            role: "BUY" | "SELL" | "REVERSAL";
-            /** Format: date-time */
-            effectiveAt: string;
-            /** Format: int64 */
-            economicSequence: number;
-            /** Format: uuid */
-            reversesSecurityPostingId?: string;
-        };
-        TransferPreviewRequest: {
-            /** Format: uuid */
-            sourceAccountId: string;
-            /** Format: uuid */
-            destinationAccountId: string;
-            amount: string;
-            /** @enum {string} */
-            recordingMode: "CURRENT_ACTION" | "HISTORICAL_FACT";
-            /** Format: date-time */
-            effectiveAt: string;
-            confirmPolicyBreach?: boolean;
-        };
-        TransferPreviewResponse: {
-            /** Format: uuid */
-            sourceAccountId: string;
-            /** Format: uuid */
-            destinationAccountId: string;
-            currency: string;
-            amount: string;
-            sourceBefore: string;
-            sourceAfter: string;
-            destinationBefore: string;
-            destinationAfter: string;
-            /** @enum {string} */
-            sourceDecision: "NOT_APPLICABLE" | "ALLOWED" | "CONFIRMED_BREACH" | "HISTORICAL_BREACH_RECORDED";
-            /** @enum {string} */
-            destinationDecision: "NOT_APPLICABLE" | "ALLOWED" | "CONFIRMED_BREACH" | "HISTORICAL_BREACH_RECORDED";
-            /** Format: int64 */
-            sourceVersion?: number;
-            /** Format: int64 */
-            destinationVersion?: number;
-            allowed?: boolean;
-        };
-        TradeCommitRequest: {
-            /** Format: uuid */
-            clientRequestId: string;
-            /** Format: uuid */
-            accountId: string;
-            /** Format: uuid */
-            instrumentId: string;
-            /** @enum {string} */
-            side: "BUY" | "SELL";
-            quantity: string;
-            unitPrice: string;
-            commissionAmount: string;
-            /** @enum {string} */
-            recordingMode: "CURRENT_ACTION" | "HISTORICAL_FACT";
-            /** Format: date-time */
-            effectiveAt: string;
-            /** Format: int64 */
-            economicSequence: number;
-            confirmPolicyBreach: boolean;
-            /** Format: int64 */
-            expectedCashBalanceVersion: number;
-            /** Format: int64 */
-            expectedPositionVersion: number;
-        };
-        TradeResponse: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            accountId: string;
-            accountName: string;
-            /** Format: uuid */
-            instrumentId: string;
-            instrumentSymbol: string;
-            instrumentName: string;
-            /** @enum {string} */
-            instrumentType: "EQUITY" | "ETF" | "FUND" | "INDEX" | "BOND" | "CRYPTO" | "COMMODITY" | "CURRENCY" | "CASH_EQUIVALENT" | "OTHER";
-            currency: string;
-            /** @enum {string} */
-            side: "BUY" | "SELL";
-            quantity: string;
-            unitPrice: string;
-            grossAmount: string;
-            commissionAmount: string;
-            cashDelta: string;
-            quantityDelta: string;
-            /** Format: date-time */
-            effectiveAt: string;
-            /** Format: date-time */
-            recordedAt: string;
-            /** Format: int64 */
-            economicSequence: number;
-            /** @enum {string} */
-            recordingMode: "CURRENT_ACTION" | "HISTORICAL_FACT";
-            /** @enum {string} */
-            policyDecision: "NOT_APPLICABLE" | "ALLOWED" | "CONFIRMED_BREACH" | "HISTORICAL_BREACH_RECORDED";
-            sourceKind: string;
-            /** @enum {string} */
-            calculationPolicy: "WEIGHTED_AVERAGE_ECONOMIC_V1";
-            cashPostings: components["schemas"]["PostingResponse"][];
-            securityPosting: components["schemas"]["SecurityPostingResponse"];
-            /** Format: uuid */
-            reversalActivityId?: string;
-            reversalReason?: string;
-            /** Format: date-time */
-            reversedAt?: string;
-        };
-        TradePreviewRequest: {
-            /** Format: uuid */
-            accountId: string;
-            /** Format: uuid */
-            instrumentId: string;
-            /** @enum {string} */
-            side: "BUY" | "SELL";
-            quantity: string;
-            unitPrice: string;
-            commissionAmount: string;
-            /** @enum {string} */
-            recordingMode: "CURRENT_ACTION" | "HISTORICAL_FACT";
-            /** Format: date-time */
-            effectiveAt: string;
-            /** Format: int64 */
-            economicSequence: number;
-            confirmPolicyBreach: boolean;
-        };
-        TradePreviewResponse: {
-            /** Format: uuid */
-            accountId: string;
-            /** Format: uuid */
-            instrumentId: string;
-            instrumentSymbol: string;
-            /** @enum {string} */
-            side: "BUY" | "SELL";
-            quantity: string;
-            unitPrice: string;
-            commissionAmount: string;
-            grossAmount: string;
-            currency: string;
-            /** @enum {string} */
-            recordingMode: "CURRENT_ACTION" | "HISTORICAL_FACT";
-            /** Format: date-time */
-            effectiveAt: string;
-            /** Format: int64 */
-            economicSequence: number;
-            cashDelta: string;
-            cashBalanceBefore: string;
-            cashBalanceAfter: string;
-            /** @enum {string} */
-            policyDecision: "NOT_APPLICABLE" | "ALLOWED" | "CONFIRMED_BREACH" | "HISTORICAL_BREACH_RECORDED";
-            allowed: boolean;
-            quantityBefore: string;
-            quantityAfter: string;
-            remainingBasisBefore: string;
-            remainingBasisAfter: string;
-            realizedEconomicPnlBefore: string;
-            realizedEconomicPnlAfter: string;
-            allocatedBasis?: string;
-            realizedEconomicPnl?: string;
-            /** @enum {string} */
-            calculationPolicy: "WEIGHTED_AVERAGE_ECONOMIC_V1";
-            /** Format: int64 */
-            cashBalanceVersion: number;
-            /** Format: int64 */
-            positionVersion: number;
-        };
-        ManualInstrumentCreateRequest: {
-            /** Format: uuid */
-            marketId: string;
-            symbol: string;
-            name: string;
-            /** @enum {string} */
-            instrumentType: "EQUITY" | "ETF" | "FUND" | "INDEX" | "BOND" | "CRYPTO" | "COMMODITY" | "CURRENCY" | "CASH_EQUIVALENT" | "OTHER";
-            quotationCurrency: string;
-            /** @enum {string} */
-            valuationMethod: "MARKET_OBSERVATION" | "MANUAL_VALUE" | "NOT_VALUED";
-            aliases?: components["schemas"]["InstrumentAliasInput"][];
-        };
-        ReconciliationCorrectionRequest: {
-            statementReference: string;
-            /** Format: date-time */
-            statementOpeningAt: string;
-            /** Format: date-time */
-            statementClosingAt: string;
-            statementOpeningBalance: string;
-            statementClosingBalance: string;
+        /** @enum {string} */
+        PostingRole: "OPENING" | "DEPOSIT" | "WITHDRAWAL" | "FEE" | "INTEREST_CREDIT" | "TRANSFER_SOURCE" | "TRANSFER_DESTINATION" | "TRADE_PURCHASE" | "TRADE_PROCEEDS" | "REVERSAL" | "ADJUSTMENT";
+        /** @enum {string} */
+        ProjectionStatus: "NOT_APPLICABLE" | "CURRENT" | "STALE" | "REBUILDING" | "FAILED";
+        /** @enum {string} */
+        ReconciliationAction: "CONFIRM_BALANCED" | "CREATE_ADJUSTMENT";
+        ReconciliationCommitRequest: {
+            adjustmentReason?: string;
             /** Format: uuid */
             clientRequestId: string;
             /** Format: int64 */
             expectedBalanceVersion: number;
-            /** @enum {string} */
-            resolution: "CONFIRM_BALANCED" | "CREATE_ADJUSTMENT";
-            adjustmentReason?: string;
-            correctionReason: string;
-        };
-        ReconciliationResponse: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            accountId: string;
-            /** Format: uuid */
-            cashPocketId: string;
-            currency: string;
-            statementReference: string;
-            /** Format: date-time */
-            statementOpeningAt: string;
+            resolution: components["schemas"]["ReconciliationAction"];
             /** Format: date-time */
             statementClosingAt: string;
-            statementOpeningBalance: string;
             statementClosingBalance: string;
-            ledgerOpeningBalance: string;
+            /** Format: date-time */
+            statementOpeningAt: string;
+            statementOpeningBalance: string;
+            statementReference: string;
+        };
+        ReconciliationCorrectionRequest: {
+            adjustmentReason?: string;
+            /** Format: uuid */
+            clientRequestId: string;
+            correctionReason: string;
+            /** Format: int64 */
+            expectedBalanceVersion: number;
+            resolution: components["schemas"]["ReconciliationAction"];
+            /** Format: date-time */
+            statementClosingAt: string;
+            statementClosingBalance: string;
+            /** Format: date-time */
+            statementOpeningAt: string;
+            statementOpeningBalance: string;
+            statementReference: string;
+        };
+        /** @enum {string} */
+        ReconciliationLifecycleStatus: "CURRENT" | "STALE" | "SUPERSEDED";
+        ReconciliationPreviewRequest: {
+            /** Format: date-time */
+            statementClosingAt: string;
+            statementClosingBalance: string;
+            /** Format: date-time */
+            statementOpeningAt: string;
+            statementOpeningBalance: string;
+            statementReference: string;
+        };
+        ReconciliationPreviewResponse: {
+            /** Format: uuid */
+            accountId: string;
+            admissibleResolutions: string[];
+            /** Format: uuid */
+            cashPocketId: string;
+            closingDifference: string;
+            /** Format: date-time */
+            coverageFrom: string;
+            coverageStatus: components["schemas"]["CoverageStatus"];
+            currency: string;
             ledgerClosingBalanceBeforeAdjustment: string;
+            ledgerOpeningBalance: string;
             openingDifference: string;
             periodNetPostedAmount: string;
-            closingDifference: string;
-            adjustmentAmount?: string;
             /** Format: int64 */
             periodPostingCount?: number;
             /** Format: int64 */
+            projectionVersion?: number;
+            /** Format: date-time */
+            statementClosingAt: string;
+            statementClosingBalance: string;
+            /** Format: date-time */
+            statementOpeningAt: string;
+            statementOpeningBalance: string;
+            statementReference: string;
+            /** Format: int64 */
             totalPostingCountThroughClosing?: number;
-            /** @enum {string} */
-            resolution: "BALANCED" | "ADJUSTED";
+            warnings: string[];
+        };
+        /** @enum {string} */
+        ReconciliationResolution: "BALANCED" | "ADJUSTED";
+        ReconciliationResponse: {
+            /** Format: uuid */
+            accountId: string;
             /** Format: uuid */
             adjustmentActivityId?: string;
+            adjustmentAmount?: string;
             adjustmentReason?: string;
             /** Format: uuid */
-            supersedesReconciliationId?: string;
-            /** @enum {string} */
-            lifecycleStatus: "CURRENT" | "STALE" | "SUPERSEDED";
-            sourceKind: string;
+            cashPocketId: string;
+            closingDifference: string;
             /** Format: date-time */
             createdAt: string;
+            currency: string;
+            /** Format: uuid */
+            id: string;
+            ledgerClosingBalanceBeforeAdjustment: string;
+            ledgerOpeningBalance: string;
+            lifecycleStatus: components["schemas"]["ReconciliationLifecycleStatus"];
+            openingDifference: string;
+            periodNetPostedAmount: string;
+            /** Format: int64 */
+            periodPostingCount?: number;
+            resolution: components["schemas"]["ReconciliationResolution"];
+            sourceKind: string;
+            /** Format: date-time */
+            statementClosingAt: string;
+            statementClosingBalance: string;
+            /** Format: date-time */
+            statementOpeningAt: string;
+            statementOpeningBalance: string;
+            statementReference: string;
+            /** Format: uuid */
+            supersedesReconciliationId?: string;
+            /** Format: int64 */
+            totalPostingCountThroughClosing?: number;
         };
+        /** @enum {string} */
+        RecordingMode: "CURRENT_ACTION" | "HISTORICAL_FACT";
+        /** @enum {string} */
+        RefreshTokenDelivery: "RESPONSE_BODY" | "HTTP_ONLY_COOKIE";
         RegistrationRequest: {
             /** Format: email */
             email: string;
@@ -954,387 +1230,467 @@ export interface components {
             /** Format: uuid */
             userId: string;
         };
-        LocalRefreshRequest: {
-            refreshToken?: string;
-            /** @enum {string} */
-            refreshTokenDelivery: "RESPONSE_BODY" | "HTTP_ONLY_COOKIE";
-        };
-        LocalAuthenticationResponse: {
-            /** Format: uuid */
-            sessionId: string;
-            accessToken: string;
-            /** Format: date-time */
-            accessTokenExpiresAt: string;
-            /** Format: date-time */
-            refreshTokenExpiresAt: string;
-            /** Format: date-time */
-            serverTime: string;
-            refreshToken?: string;
-        };
-        LogoutRequest: {
-            /** @enum {string} */
-            scope: "CURRENT_SESSION" | "ALL_SESSIONS";
-        };
-        LocalLoginRequest: {
-            /** Format: email */
-            email: string;
-            password: string;
-            deviceLabel?: string;
-            /** @enum {string} */
-            refreshTokenDelivery: "RESPONSE_BODY" | "HTTP_ONLY_COOKIE";
-        };
         ReversalRequest: {
             /** Format: uuid */
             clientRequestId: string;
             correctionReason: string;
         };
-        CreateFinancialAccountRequest: {
-            /** Format: uuid */
-            clientRequestId: string;
-            name: string;
-            /** @enum {string} */
-            kind: "CASH_CURRENT" | "CASH_SAVINGS" | "CASH_WALLET" | "BROKERAGE" | "CREDIT_CARD" | "LOAN";
-            /** @enum {string} */
-            trackingMode: "FULL_LEDGER" | "HOLDINGS_ONLY";
-            currency: string;
-            timeZone: string;
-            /** @enum {string} */
-            policy?: "HARD_FLOOR" | "SOFT_FLOOR" | "TRACK_REALITY" | "AUTHORIZED_LIMIT";
-            authorizedLimit?: string;
-            openingState?: components["schemas"]["OpeningStateRequest"];
-        };
-        OpeningStateRequest: {
-            amount: string;
-            /** Format: date-time */
-            effectiveAt: string;
-        };
-        ReconciliationCommitRequest: {
-            statementReference: string;
-            /** Format: date-time */
-            statementOpeningAt: string;
-            /** Format: date-time */
-            statementClosingAt: string;
-            statementOpeningBalance: string;
-            statementClosingBalance: string;
-            /** Format: uuid */
-            clientRequestId: string;
-            /** Format: int64 */
-            expectedBalanceVersion: number;
-            /** @enum {string} */
-            resolution: "CONFIRM_BALANCED" | "CREATE_ADJUSTMENT";
-            adjustmentReason?: string;
-        };
-        ReconciliationPreviewRequest: {
-            statementReference: string;
-            /** Format: date-time */
-            statementOpeningAt: string;
-            /** Format: date-time */
-            statementClosingAt: string;
-            statementOpeningBalance: string;
-            statementClosingBalance: string;
-        };
-        ReconciliationPreviewResponse: {
+        SecurityPostingResponse: {
             /** Format: uuid */
             accountId: string;
-            /** Format: uuid */
-            cashPocketId: string;
             currency: string;
-            /** @enum {string} */
-            coverageStatus: "KNOWN_FROM_OPENING" | "UNTRACKED";
-            /** Format: date-time */
-            coverageFrom: string;
-            statementReference: string;
-            /** Format: date-time */
-            statementOpeningAt: string;
-            /** Format: date-time */
-            statementClosingAt: string;
-            statementOpeningBalance: string;
-            statementClosingBalance: string;
-            ledgerOpeningBalance: string;
-            ledgerClosingBalanceBeforeAdjustment: string;
-            openingDifference: string;
-            periodNetPostedAmount: string;
-            closingDifference: string;
-            /** Format: int64 */
-            periodPostingCount?: number;
-            /** Format: int64 */
-            totalPostingCountThroughClosing?: number;
-            /** Format: int64 */
-            projectionVersion?: number;
-            admissibleResolutions: string[];
-            warnings: string[];
-        };
-        ArchiveAccountRequest: {
-            /** Format: uuid */
-            clientRequestId: string;
-            /** Format: int64 */
-            version: number;
-        };
-        CashActivityRequest: {
-            /** Format: uuid */
-            clientRequestId: string;
-            /** @enum {string} */
-            activityType: "CASH_DEPOSIT" | "CASH_WITHDRAWAL" | "CASH_FEE" | "CASH_INTEREST_CREDIT";
-            amount: string;
-            /** @enum {string} */
-            recordingMode: "CURRENT_ACTION" | "HISTORICAL_FACT";
-            /** Format: date-time */
-            effectiveAt: string;
-            confirmPolicyBreach?: boolean;
-            /** Format: int64 */
-            expectedBalanceVersion?: number;
-        };
-        Pageable: {
-            /** Format: int32 */
-            page?: number;
-            /** Format: int32 */
-            size?: number;
-            sort?: string[];
-        };
-        SliceResponseTradeSummaryResponse: {
-            items: components["schemas"]["TradeSummaryResponse"][];
-            /** Format: int32 */
-            page: number;
-            /** Format: int32 */
-            size: number;
-            hasNext: boolean;
-        };
-        TradeSummaryResponse: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            accountId: string;
-            accountName: string;
-            /** Format: uuid */
-            instrumentId: string;
-            instrumentSymbol: string;
-            instrumentName: string;
-            /** @enum {string} */
-            instrumentType: "EQUITY" | "ETF" | "FUND" | "INDEX" | "BOND" | "CRYPTO" | "COMMODITY" | "CURRENCY" | "CASH_EQUIVALENT" | "OTHER";
-            currency: string;
-            /** @enum {string} */
-            side: "BUY" | "SELL";
-            quantity: string;
-            unitPrice: string;
-            grossAmount: string;
-            commissionAmount: string;
-            cashDelta: string;
-            quantityDelta: string;
-            /** Format: date-time */
-            effectiveAt: string;
-            /** Format: date-time */
-            recordedAt: string;
             /** Format: int64 */
             economicSequence: number;
-            /** @enum {string} */
-            recordingMode: "CURRENT_ACTION" | "HISTORICAL_FACT";
-            /** @enum {string} */
-            policyDecision: "NOT_APPLICABLE" | "ALLOWED" | "CONFIRMED_BREACH" | "HISTORICAL_BREACH_RECORDED";
-            sourceKind: string;
-            /** @enum {string} */
-            calculationPolicy: "WEIGHTED_AVERAGE_ECONOMIC_V1";
-            cashPostings: components["schemas"]["PostingResponse"][];
-            securityPosting: components["schemas"]["SecurityPostingResponse"];
-            /** Format: uuid */
-            reversalActivityId?: string;
-            reversalReason?: string;
             /** Format: date-time */
-            reversedAt?: string;
-        };
-        MarketResponse: {
-            /** Format: uuid */
-            id: string;
-            code: string;
-            name: string;
-            marketType: string;
-            countryCode?: string;
-            timeZone: string;
-            quotationCurrencies: string[];
-            primaryQuotationCurrency?: string;
-            active?: boolean;
-            sourceKind: string;
-        };
-        MarketCalendarResponse: {
-            /** Format: uuid */
-            marketId: string;
-            marketCode: string;
-            timeZone: string;
-            /** Format: date */
-            from: string;
-            /** Format: date */
-            to: string;
-            /** @enum {string} */
-            coverageStatus: "NONE" | "PARTIAL" | "COMPLETE";
-            sessions: components["schemas"]["MarketCalendarSessionResponse"][];
-            missingDates: string[];
-        };
-        MarketCalendarSessionResponse: {
-            /** Format: date */
-            date: string;
-            /** @enum {string} */
-            sessionStatus: "OPEN" | "CLOSED";
-            opensAt?: string;
-            closesAt?: string;
-            sourceKind: string;
-        };
-        InstrumentSummaryResponse: {
-            /** Format: uuid */
-            id: string;
-            symbol: string;
-            name: string;
-            /** @enum {string} */
-            instrumentType: "EQUITY" | "ETF" | "FUND" | "INDEX" | "BOND" | "CRYPTO" | "COMMODITY" | "CURRENCY" | "CASH_EQUIVALENT" | "OTHER";
-            /** Format: uuid */
-            marketId: string;
-            marketCode: string;
-            quotationCurrency: string;
-            /** @enum {string} */
-            valuationMethod: "MARKET_OBSERVATION" | "MANUAL_VALUE" | "NOT_VALUED";
-            active?: boolean;
-            sourceKind: string;
-            ownerManaged?: boolean;
-            aliases: components["schemas"]["InstrumentAliasResponse"][];
-        };
-        SliceResponseInstrumentSummaryResponse: {
-            items: components["schemas"]["InstrumentSummaryResponse"][];
-            /** Format: int32 */
-            page: number;
-            /** Format: int32 */
-            size: number;
-            hasNext: boolean;
-        };
-        CurrencyResponse: {
-            code: string;
-            name: string;
-            symbol: string;
-            /** Format: int32 */
-            minorUnit?: number;
-            active?: boolean;
-        };
-        CountryResponse: {
-            code: string;
-            name: string;
-            active?: boolean;
-        };
-        CurrentUserResponse: {
-            /** Format: uuid */
-            id: string;
-            email: string;
-            /** Format: date-time */
-            createdAt: string;
-        };
-        PositionResponse: {
-            /** Format: uuid */
-            accountId: string;
-            accountName: string;
+            effectiveAt: string;
+            grossAmount?: string;
             /** Format: uuid */
             instrumentId: string;
-            instrumentSymbol: string;
-            instrumentName: string;
-            /** @enum {string} */
-            instrumentType: "EQUITY" | "ETF" | "FUND" | "INDEX" | "BOND" | "CRYPTO" | "COMMODITY" | "CURRENCY" | "CASH_EQUIVALENT" | "OTHER";
-            currency: string;
-            quantity: string;
-            remainingEconomicBasis: string;
-            cumulativeRealizedEconomicPnl: string;
-            /** @enum {string} */
-            calculationPolicy: "WEIGHTED_AVERAGE_ECONOMIC_V1";
-            /** @enum {string} */
-            projectionStatus: "NOT_APPLICABLE" | "CURRENT" | "STALE" | "REBUILDING" | "FAILED";
-            /** Format: date-time */
-            asOf: string;
+            quantityDelta: string;
             /** Format: uuid */
-            inputWatermarkActivityId: string;
-            /** Format: date-time */
-            lastSuccessfulBuildAt: string;
-            /** Format: date-time */
-            staleFrom?: string;
-            /** Format: int64 */
-            version: number;
+            reversesSecurityPostingId?: string;
+            role: components["schemas"]["SecurityPostingRole"];
+            unitPrice?: string;
         };
-        SliceResponsePositionResponse: {
-            items: components["schemas"]["PositionResponse"][];
-            /** Format: int32 */
-            page: number;
-            /** Format: int32 */
-            size: number;
-            hasNext: boolean;
-        };
-        DeviceSessionResponse: {
-            /** Format: uuid */
-            familyId: string;
-            /** Format: uuid */
-            latestGenerationId: string;
-            deviceLabel?: string;
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            lastUsedAt?: string;
-            /** Format: date-time */
-            expiresAt: string;
-            /** Format: date-time */
-            endedAt?: string;
-            /** @enum {string} */
-            status: "ACTIVE" | "EXPIRED" | "REVOKED" | "COMPROMISED";
-            current?: boolean;
-        };
+        /** @enum {string} */
+        SecurityPostingRole: "BUY" | "SELL" | "REVERSAL";
         SliceResponseActivityResponse: {
+            hasNext: boolean;
             items: components["schemas"]["ActivityResponse"][];
             /** Format: int32 */
             page: number;
             /** Format: int32 */
             size: number;
+        };
+        SliceResponseInstrumentSummaryResponse: {
             hasNext: boolean;
+            items: components["schemas"]["InstrumentSummaryResponse"][];
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            size: number;
+        };
+        SliceResponsePositionResponse: {
+            hasNext: boolean;
+            items: components["schemas"]["PositionResponse"][];
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            size: number;
         };
         SliceResponseReconciliationResponse: {
+            hasNext: boolean;
             items: components["schemas"]["ReconciliationResponse"][];
             /** Format: int32 */
             page: number;
             /** Format: int32 */
             size: number;
-            hasNext: boolean;
         };
-        BalanceResponse: {
+        SliceResponseTradeSummaryResponse: {
+            hasNext: boolean;
+            items: components["schemas"]["TradeSummaryResponse"][];
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            size: number;
+        };
+        /** @enum {string} */
+        TrackingMode: "FULL_LEDGER" | "HOLDINGS_ONLY";
+        TradeCommitRequest: {
+            /** Format: uuid */
+            accountId: string;
+            /** Format: uuid */
+            clientRequestId: string;
+            commissionAmount: string;
+            confirmPolicyBreach: boolean;
+            /** Format: int64 */
+            economicSequence: number;
+            /** Format: date-time */
+            effectiveAt: string;
+            /** Format: int64 */
+            expectedCashBalanceVersion: number;
+            /** Format: int64 */
+            expectedPositionVersion: number;
+            /** Format: uuid */
+            instrumentId: string;
+            quantity: string;
+            recordingMode: components["schemas"]["RecordingMode"];
+            side: components["schemas"]["TradeSide"];
+            unitPrice: string;
+        };
+        TradeImportBatchIssueResponse: {
+            code: string;
+            detail: string;
+            field: string;
+        };
+        TradeImportCommitRequest: {
+            /** Format: uuid */
+            clientRequestId: string;
+            previewToken: string;
+        };
+        TradeImportCommitResponse: {
+            /** Format: uuid */
+            accountId: string;
+            activityIds: string[];
+            cashBalanceAfter: string;
+            /** Format: int64 */
+            cashBalanceVersion: number;
+            /** Format: date-time */
+            committedAt: string;
+            /** Format: int32 */
+            committedRowCount: number;
+            /** Format: uuid */
+            id: string;
+            positions: components["schemas"]["TradeImportPositionCommitResponse"][];
+            status: components["schemas"]["TradeImportStatus"];
+        };
+        /** @enum {string} */
+        TradeImportFormat: "FUNDED_TRADE_CSV_V1";
+        TradeImportPositionCommitResponse: {
+            /** Format: uuid */
+            instrumentId: string;
+            /** Format: int64 */
+            positionVersion: number;
+        };
+        TradeImportPositionImpactResponse: {
+            currency: string;
+            /** Format: uuid */
+            instrumentId: string;
+            /** Format: int64 */
+            positionVersion: number;
+            quantityAfter: string;
+            quantityBefore: string;
+            realizedEconomicPnlAfter: string;
+            realizedEconomicPnlBefore: string;
+            remainingBasisAfter: string;
+            remainingBasisBefore: string;
+            symbol: string;
+        };
+        TradeImportPreviewResponse: {
+            /** Format: uuid */
+            accountId: string;
+            batchIssues: components["schemas"]["TradeImportBatchIssueResponse"][];
+            /** Format: int64 */
+            byteSize: number;
+            commitEligible: boolean;
+            /** Format: date-time */
+            committedAt?: string | null;
+            contentSha256: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: uuid */
+            id: string;
+            importFormat: components["schemas"]["TradeImportFormat"];
+            mediaType: string;
+            originalFileName: string;
+            positionImpacts: components["schemas"]["TradeImportPositionImpactResponse"][];
+            previewToken?: string | null;
+            /** Format: int32 */
+            rowCount: number;
+            rows: components["schemas"]["TradeImportRowResponse"][];
+            status: components["schemas"]["TradeImportStatus"];
+            summary: components["schemas"]["TradeImportSummaryResponse"];
+        };
+        TradeImportRowIssueResponse: {
+            code: string;
+            detail: string;
+            field: string;
+            /** Format: uuid */
+            relatedActivityId?: string | null;
+        };
+        TradeImportRowResponse: {
+            cashDelta?: string | null;
+            commissionAmount?: string | null;
+            /** Format: uuid */
+            committedActivityId?: string | null;
+            currency?: string | null;
+            /** Format: int64 */
+            economicSequence?: number | null;
+            /** Format: date-time */
+            effectiveAt?: string | null;
+            externalId?: string | null;
+            grossAmount?: string | null;
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            instrumentId?: string | null;
+            issues: components["schemas"]["TradeImportRowIssueResponse"][];
+            policyDecision?: components["schemas"]["PolicyDecision"];
+            quantity?: string | null;
+            rowFingerprint?: string | null;
+            side?: components["schemas"]["TradeSide"];
+            /** Format: int32 */
+            sourceRecordNumber: number;
+            sourceValues: string[];
+            unitPrice?: string | null;
+        };
+        /** @enum {string} */
+        TradeImportStatus: "PARSED" | "COMMITTED";
+        TradeImportSummaryResponse: {
+            /** Format: int64 */
+            accountVersion?: number | null;
+            /** Format: int32 */
+            buyCount: number;
+            buyGross: string;
+            cashBalanceAfter?: string | null;
+            cashBalanceBefore?: string | null;
+            /** Format: int64 */
+            cashBalanceVersion?: number | null;
+            cashDeltaTotal: string;
+            commissionTotal: string;
+            currency: string;
+            /** Format: int32 */
+            duplicateRowCount: number;
+            /** Format: int32 */
+            issueRowCount: number;
+            /** Format: int32 */
+            normalizedRowCount: number;
+            /** Format: int32 */
+            rowCount: number;
+            /** Format: int32 */
+            sellCount: number;
+            sellGross: string;
+        };
+        TradeImportUploadRequest: {
+            /** Format: uuid */
+            accountId: string;
+            /** Format: uuid */
+            clientRequestId: string;
+            /** Format: binary */
+            file: string;
+        };
+        TradeImportUploadResponse: {
             /** Format: uuid */
             accountId: string;
             /** Format: date-time */
-            requestedAsOf: string;
-            /** Format: date-time */
-            actualAsOf: string;
-            nativeCurrency: string;
-            /** @enum {string} */
-            coverageStatus: "KNOWN_FROM_OPENING" | "UNTRACKED";
-            /** Format: date-time */
-            coverageFrom?: string;
-            sourceKind: string;
-            /** @enum {string} */
-            projectionStatus: "NOT_APPLICABLE" | "CURRENT" | "STALE" | "REBUILDING" | "FAILED";
-            /** Format: date-time */
-            watermarkRecordedAt?: string;
-            /** Format: uuid */
-            watermarkActivityId?: string;
-            ledgerBalance?: string;
-            clearedBalance?: string;
-            cashHeld?: string;
-            liabilityOutstanding?: string;
-            overdraftUsed?: string;
-            creditAvailable?: string;
-            policyBreach?: boolean;
-            lastReconciliation?: components["schemas"]["LastReconciliationSummaryResponse"];
-        };
-        LastReconciliationSummaryResponse: {
-            /** Format: uuid */
-            reconciliationId: string;
-            /** Format: date-time */
-            statementClosingAt: string;
-            statementClosingBalance: string;
-            /** @enum {string} */
-            resolution: "BALANCED" | "ADJUSTED";
-            /** @enum {string} */
-            lifecycleStatus: "CURRENT" | "STALE" | "SUPERSEDED";
-            /** Format: date-time */
             createdAt: string;
+            duplicateContent: boolean;
+            /** Format: uuid */
+            id: string;
+            importFormat: components["schemas"]["TradeImportFormat"];
+            previewUrl: string;
+            status: components["schemas"]["TradeImportStatus"];
         };
+        TradePreviewRequest: {
+            /** Format: uuid */
+            accountId: string;
+            commissionAmount: string;
+            confirmPolicyBreach: boolean;
+            /** Format: int64 */
+            economicSequence: number;
+            /** Format: date-time */
+            effectiveAt: string;
+            /** Format: uuid */
+            instrumentId: string;
+            quantity: string;
+            recordingMode: components["schemas"]["RecordingMode"];
+            side: components["schemas"]["TradeSide"];
+            unitPrice: string;
+        };
+        TradePreviewResponse: {
+            /** Format: uuid */
+            accountId: string;
+            allocatedBasis?: string;
+            allowed: boolean;
+            calculationPolicy: components["schemas"]["CalculationPolicy"];
+            cashBalanceAfter: string;
+            cashBalanceBefore: string;
+            /** Format: int64 */
+            cashBalanceVersion: number;
+            cashDelta: string;
+            commissionAmount: string;
+            currency: string;
+            /** Format: int64 */
+            economicSequence: number;
+            /** Format: date-time */
+            effectiveAt: string;
+            grossAmount: string;
+            /** Format: uuid */
+            instrumentId: string;
+            instrumentSymbol: string;
+            policyDecision: components["schemas"]["PolicyDecision"];
+            /** Format: int64 */
+            positionVersion: number;
+            quantity: string;
+            quantityAfter: string;
+            quantityBefore: string;
+            realizedEconomicPnl?: string;
+            realizedEconomicPnlAfter: string;
+            realizedEconomicPnlBefore: string;
+            recordingMode: components["schemas"]["RecordingMode"];
+            remainingBasisAfter: string;
+            remainingBasisBefore: string;
+            side: components["schemas"]["TradeSide"];
+            unitPrice: string;
+        };
+        TradeResponse: {
+            /** Format: uuid */
+            accountId: string;
+            accountName: string;
+            calculationPolicy: components["schemas"]["CalculationPolicy"];
+            cashDelta: string;
+            cashPostings: components["schemas"]["PostingResponse"][];
+            commissionAmount: string;
+            currency: string;
+            /** Format: int64 */
+            economicSequence: number;
+            /** Format: date-time */
+            effectiveAt: string;
+            grossAmount: string;
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            instrumentId: string;
+            instrumentName: string;
+            instrumentSymbol: string;
+            instrumentType: components["schemas"]["InstrumentType"];
+            policyDecision: components["schemas"]["PolicyDecision"];
+            quantity: string;
+            quantityDelta: string;
+            /** Format: date-time */
+            recordedAt: string;
+            recordingMode: components["schemas"]["RecordingMode"];
+            /** Format: uuid */
+            reversalActivityId?: string;
+            reversalReason?: string;
+            /** Format: date-time */
+            reversedAt?: string;
+            securityPosting: components["schemas"]["SecurityPostingResponse"];
+            side: components["schemas"]["TradeSide"];
+            sourceExternalId?: string | null;
+            /** Format: uuid */
+            sourceImportBatchId?: string | null;
+            /** Format: uuid */
+            sourceImportRowId?: string | null;
+            sourceKind: string;
+            unitPrice: string;
+        };
+        /** @enum {string} */
+        TradeSide: "BUY" | "SELL";
+        TradeSummaryResponse: {
+            /** Format: uuid */
+            accountId: string;
+            accountName: string;
+            calculationPolicy: components["schemas"]["CalculationPolicy"];
+            cashDelta: string;
+            cashPostings: components["schemas"]["PostingResponse"][];
+            commissionAmount: string;
+            currency: string;
+            /** Format: int64 */
+            economicSequence: number;
+            /** Format: date-time */
+            effectiveAt: string;
+            grossAmount: string;
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            instrumentId: string;
+            instrumentName: string;
+            instrumentSymbol: string;
+            instrumentType: components["schemas"]["InstrumentType"];
+            policyDecision: components["schemas"]["PolicyDecision"];
+            quantity: string;
+            quantityDelta: string;
+            /** Format: date-time */
+            recordedAt: string;
+            recordingMode: components["schemas"]["RecordingMode"];
+            /** Format: uuid */
+            reversalActivityId?: string;
+            reversalReason?: string;
+            /** Format: date-time */
+            reversedAt?: string;
+            securityPosting: components["schemas"]["SecurityPostingResponse"];
+            side: components["schemas"]["TradeSide"];
+            sourceExternalId?: string | null;
+            /** Format: uuid */
+            sourceImportBatchId?: string | null;
+            /** Format: uuid */
+            sourceImportRowId?: string | null;
+            sourceKind: string;
+            unitPrice: string;
+        };
+        TransferPreviewRequest: {
+            amount: string;
+            confirmPolicyBreach?: boolean;
+            /** Format: uuid */
+            destinationAccountId: string;
+            /** Format: date-time */
+            effectiveAt: string;
+            recordingMode: components["schemas"]["RecordingMode"];
+            /** Format: uuid */
+            sourceAccountId: string;
+        };
+        TransferPreviewResponse: {
+            allowed?: boolean;
+            amount: string;
+            currency: string;
+            /** Format: uuid */
+            destinationAccountId: string;
+            destinationAfter: string;
+            destinationBefore: string;
+            destinationDecision: components["schemas"]["PolicyDecision"];
+            /** Format: int64 */
+            destinationVersion?: number;
+            /** Format: uuid */
+            sourceAccountId: string;
+            sourceAfter: string;
+            sourceBefore: string;
+            sourceDecision: components["schemas"]["PolicyDecision"];
+            /** Format: int64 */
+            sourceVersion?: number;
+        };
+        TransferRequest: {
+            amount: string;
+            /** Format: uuid */
+            clientRequestId: string;
+            confirmPolicyBreach?: boolean;
+            /** Format: uuid */
+            destinationAccountId: string;
+            /** Format: date-time */
+            effectiveAt: string;
+            /** Format: int64 */
+            expectedDestinationBalanceVersion?: number;
+            /** Format: int64 */
+            expectedSourceBalanceVersion?: number;
+            recordingMode: components["schemas"]["RecordingMode"];
+            /** Format: uuid */
+            sourceAccountId: string;
+        };
+        UpdatePortfolioRequest: {
+            accountIds: string[];
+            name: string;
+            /** Format: int64 */
+            version: number;
+        };
+        ValidationError: {
+            detail: string;
+            field: string;
+            key: string;
+            params?: {
+                [key: string]: Record<string, never> | null;
+            } | null;
+        };
+        ValidationParams: {
+            errors: components["schemas"]["ValidationError"][];
+        };
+        ValidationProblem: {
+            code: string;
+            detail?: string | null;
+            /** Format: uri */
+            instance?: string | null;
+            key: string;
+            params: components["schemas"]["ValidationParams"];
+            /** Format: int32 */
+            status?: number;
+            /** Format: date-time */
+            timestamp: string;
+            title: string;
+            traceId: string;
+            /** Format: uri */
+            type: string;
+        };
+        /** @enum {string} */
+        ValuationMethod: "MARKET_OBSERVATION" | "MANUAL_VALUE" | "NOT_VALUED";
     };
     responses: never;
     parameters: never;
@@ -1344,13 +1700,13 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    get: {
+    list_2: {
         parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                instrumentId: string;
+            query?: {
+                includeArchived?: boolean;
             };
+            header?: never;
+            path?: never;
             cookie?: never;
         };
         requestBody?: never;
@@ -1361,23 +1717,39 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["InstrumentResponse"];
+                    "*/*": components["schemas"]["FinancialAccountResponse"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
                 };
             };
         };
     };
-    update: {
+    create_2: {
         parameters: {
             query?: never;
             header?: never;
-            path: {
-                instrumentId: string;
-            };
+            path?: never;
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ManualInstrumentUpdateRequest"];
+                "application/json": components["schemas"]["CreateFinancialAccountRequest"];
             };
         };
         responses: {
@@ -1387,12 +1759,39 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["InstrumentResponse"];
+                    "*/*": components["schemas"]["FinancialAccountResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Validation Failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
                 };
             };
         };
     };
-    get_1: {
+    get_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -1410,6 +1809,24 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["FinancialAccountResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
                 };
             };
         };
@@ -1438,520 +1855,31 @@ export interface operations {
                     "*/*": components["schemas"]["FinancialAccountResponse"];
                 };
             };
-        };
-    };
-    updatePolicy: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                accountId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["AccountPolicyRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
+            /** @description Bad Request */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["FinancialAccountResponse"];
+                    "application/problem+json": components["schemas"]["ApiProblem"];
                 };
             };
-        };
-    };
-    correctOpening: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                accountId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["OpeningCorrectionRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
+            /** @description Validation Failed */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["FinancialAccountResponse"];
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
                 };
             };
-        };
-    };
-    transfer: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TransferRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
+            /** @description Internal Server Error */
+            500: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ActivityResponse"];
-                };
-            };
-        };
-    };
-    preview: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TransferPreviewRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["TransferPreviewResponse"];
-                };
-            };
-        };
-    };
-    list: {
-        parameters: {
-            query: {
-                accountId?: string;
-                instrumentId?: string;
-                pageable: components["schemas"]["Pageable"];
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["SliceResponseTradeSummaryResponse"];
-                };
-            };
-        };
-    };
-    commit: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TradeCommitRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["TradeResponse"];
-                };
-            };
-        };
-    };
-    preview_1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TradePreviewRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["TradePreviewResponse"];
-                };
-            };
-        };
-    };
-    search: {
-        parameters: {
-            query: {
-                query?: string;
-                marketId?: string;
-                type?: "EQUITY" | "ETF" | "FUND" | "INDEX" | "BOND" | "CRYPTO" | "COMMODITY" | "CURRENCY" | "CASH_EQUIVALENT" | "OTHER";
-                includeInactive?: boolean;
-                pageable: components["schemas"]["Pageable"];
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["SliceResponseInstrumentSummaryResponse"];
-                };
-            };
-        };
-    };
-    create: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ManualInstrumentCreateRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["InstrumentResponse"];
-                };
-            };
-        };
-    };
-    correct: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                reconciliationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReconciliationCorrectionRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ReconciliationResponse"];
-                };
-            };
-        };
-    };
-    register: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RegistrationRequest"];
-            };
-        };
-        responses: {
-            /** @description Created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["RegistrationResponse"];
-                };
-            };
-        };
-    };
-    refresh: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["LocalRefreshRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["LocalAuthenticationResponse"];
-                };
-            };
-        };
-    };
-    logout: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["LogoutRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    login: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["LocalLoginRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["LocalAuthenticationResponse"];
-                };
-            };
-        };
-    };
-    reverse: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                activityId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReversalRequest"];
-            };
-        };
-        responses: {
-            /** @description Activity reversal created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ActivityResponse"];
-                };
-            };
-        };
-    };
-    list_1: {
-        parameters: {
-            query?: {
-                includeArchived?: boolean;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["FinancialAccountResponse"][];
-                };
-            };
-        };
-    };
-    create_1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateFinancialAccountRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["FinancialAccountResponse"];
-                };
-            };
-        };
-    };
-    list_2: {
-        parameters: {
-            query: {
-                pageable: components["schemas"]["Pageable"];
-            };
-            header?: never;
-            path: {
-                accountId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["SliceResponseReconciliationResponse"];
-                };
-            };
-        };
-    };
-    commit_1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                accountId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReconciliationCommitRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ReconciliationResponse"];
-                };
-            };
-        };
-    };
-    preview_2: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                accountId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ReconciliationPreviewRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ReconciliationPreviewResponse"];
-                };
-            };
-        };
-    };
-    archive: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                accountId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ArchiveAccountRequest"];
-            };
-        };
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["FinancialAccountResponse"];
+                    "application/problem+json": components["schemas"]["ApiProblem"];
                 };
             };
         };
@@ -1980,9 +1908,426 @@ export interface operations {
                     "*/*": components["schemas"]["ActivityResponse"];
                 };
             };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Validation Failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
         };
     };
-    get_2: {
+    archive_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ArchiveAccountRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["FinancialAccountResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Validation Failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    balance: {
+        parameters: {
+            query?: {
+                asOf?: string;
+            };
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BalanceResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    correctOpening: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OpeningCorrectionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["FinancialAccountResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Validation Failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    updatePolicy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccountPolicyRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["FinancialAccountResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Validation Failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    preview_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReconciliationPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReconciliationPreviewResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Validation Failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    list_3: {
+        parameters: {
+            query: {
+                pageable: components["schemas"]["Pageable"];
+            };
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SliceResponseReconciliationResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    commit_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReconciliationCommitRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReconciliationResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Validation Failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    list_5: {
+        parameters: {
+            query: {
+                accountId?: string;
+                pageable: components["schemas"]["Pageable"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SliceResponseActivityResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    get_5: {
         parameters: {
             query?: never;
             header?: never;
@@ -1999,7 +2344,1268 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["TradeResponse"];
+                    "*/*": components["schemas"]["ActivityResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    reverse: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                activityId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReversalRequest"];
+            };
+        };
+        responses: {
+            /** @description Activity reversal created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ActivityResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Validation Failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    login: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LocalLoginRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LocalAuthenticationResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Validation Failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LogoutRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Validation Failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    refresh: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LocalRefreshRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LocalAuthenticationResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Validation Failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    register: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegistrationRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RegistrationResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Validation Failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    listSessions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DeviceSessionResponse"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    getSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DeviceSessionResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    revokeSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                familyId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    upload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["TradeImportUploadRequest"];
+            };
+        };
+        responses: {
+            /** @description An existing batch with the same account and file content was returned */
+            200: {
+                headers: {
+                    /** @description The preview URL for the existing batch */
+                    Location?: unknown;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TradeImportUploadResponse"];
+                };
+            };
+            /** @description A new import batch was created */
+            201: {
+                headers: {
+                    /** @description The preview URL for the created batch */
+                    Location?: unknown;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TradeImportUploadResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Validation Failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    commit_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TradeImportCommitRequest"];
+            };
+        };
+        responses: {
+            /** @description The committed batch or an exact commit retry */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TradeImportCommitResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Validation Failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    preview_3: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batchId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The current import preview */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TradeImportPreviewResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    list_4: {
+        parameters: {
+            query: {
+                accountId?: string;
+                pageable: components["schemas"]["Pageable"];
+                portfolioId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SliceResponsePositionResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    get_4: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+                instrumentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PositionResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    me: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CurrentUserResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    list_1: {
+        parameters: {
+            query?: {
+                includeArchived?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PortfolioSummaryResponse"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    create_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePortfolioRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PortfolioResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Validation Failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    get_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                portfolioId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PortfolioResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    update_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                portfolioId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePortfolioRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PortfolioResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Validation Failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    archive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                portfolioId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ArchivePortfolioRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PortfolioResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Validation Failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    detail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reconciliationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReconciliationResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    correct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reconciliationId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReconciliationCorrectionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReconciliationResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Validation Failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    countries: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CountryResponse"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    currencies: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CurrencyResponse"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    search: {
+        parameters: {
+            query: {
+                includeInactive?: boolean;
+                marketId?: string;
+                pageable: components["schemas"]["Pageable"];
+                query?: string;
+                type?: components["schemas"]["InstrumentType"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SliceResponseInstrumentSummaryResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ManualInstrumentCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["InstrumentResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Validation Failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                instrumentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["InstrumentResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                instrumentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ManualInstrumentUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["InstrumentResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Validation Failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
                 };
             };
         };
@@ -2020,6 +3626,24 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["MarketResponse"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
                 };
             };
         };
@@ -2047,95 +3671,33 @@ export interface operations {
                     "*/*": components["schemas"]["MarketCalendarResponse"];
                 };
             };
-        };
-    };
-    currencies: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
+            /** @description Bad Request */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CurrencyResponse"][];
+                    "application/problem+json": components["schemas"]["ApiProblem"];
                 };
             };
-        };
-    };
-    countries: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
+            /** @description Internal Server Error */
+            500: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["CountryResponse"][];
+                    "application/problem+json": components["schemas"]["ApiProblem"];
                 };
             };
         };
     };
-    detail: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                reconciliationId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ReconciliationResponse"];
-                };
-            };
-        };
-    };
-    me: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CurrentUserResponse"];
-                };
-            };
-        };
-    };
-    list_3: {
+    list: {
         parameters: {
             query: {
                 accountId?: string;
+                instrumentId?: string;
                 pageable: components["schemas"]["Pageable"];
+                portfolioId?: string;
             };
             header?: never;
             path?: never;
@@ -2149,120 +3711,81 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["SliceResponsePositionResponse"];
+                    "*/*": components["schemas"]["SliceResponseTradeSummaryResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    commit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TradeCommitRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TradeResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Validation Failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
                 };
             };
         };
     };
     get_3: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                accountId: string;
-                instrumentId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PositionResponse"];
-                };
-            };
-        };
-    };
-    listSessions: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["DeviceSessionResponse"][];
-                };
-            };
-        };
-    };
-    getSession: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                familyId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["DeviceSessionResponse"];
-                };
-            };
-        };
-    };
-    revokeSession: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                familyId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    list_4: {
-        parameters: {
-            query: {
-                accountId?: string;
-                pageable: components["schemas"]["Pageable"];
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["SliceResponseActivityResponse"];
-                };
-            };
-        };
-    };
-    get_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -2279,23 +3802,41 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ActivityResponse"];
+                    "*/*": components["schemas"]["TradeResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
                 };
             };
         };
     };
-    balance: {
+    preview_1: {
         parameters: {
-            query?: {
-                asOf?: string;
-            };
+            query?: never;
             header?: never;
-            path: {
-                accountId: string;
-            };
+            path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TradePreviewRequest"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {
@@ -2303,7 +3844,136 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["BalanceResponse"];
+                    "*/*": components["schemas"]["TradePreviewResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Validation Failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    transfer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransferRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ActivityResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Validation Failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+        };
+    };
+    preview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransferPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TransferPreviewResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
+                };
+            };
+            /** @description Validation Failed */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ValidationProblem"];
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ApiProblem"];
                 };
             };
         };

@@ -26,7 +26,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
-import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
@@ -94,6 +93,27 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         } else {
             log.warn("Application error code={} traceId={} params={}", errorCode.getCode(), traceId(request), exception.getParams());
         }
+
+        if (errorCode == CommonErrorCode.VALIDATION_FAILED && exception.getParams().containsKey("errors")) {
+            var rawErrors = exception.getParams().get("errors");
+            if (rawErrors instanceof List<?> list) {
+                var validationErrors = new ArrayList<ValidationError>();
+                for (var item : list) {
+                    if (item instanceof ValidationError ve) {
+                        validationErrors.add(ve);
+                    } else if (item instanceof Map<?, ?> map) {
+                        var field = java.util.Objects.toString(map.get("field"), "");
+                        var key = java.util.Objects.toString(map.get("key"), ValidationKeySupport.FALLBACK_KEY);
+                        var detail = java.util.Objects.toString(map.get("detail"), "Validation failed.");
+                        @SuppressWarnings("unchecked")
+                        var p = map.get("params") instanceof Map<?, ?> mp ? (Map<String, Object>) mp : null;
+                        validationErrors.add(new ValidationError(field, key, detail, p));
+                    }
+                }
+                return validationProblemResponse(errorCode, validationErrors, HttpHeaders.EMPTY, request);
+            }
+        }
+
         return problemResponse(errorCode, exception.getParams(), HttpHeaders.EMPTY, request);
     }
 
@@ -264,15 +284,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return frameworkResponse(errorCode, headers, request, exception);
     }
 
-    private ResponseEntity<Object> validationResponse(List<Map<String, Object>> errors, HttpHeaders headers, WebRequest request) {
-        var safeErrors = errors.isEmpty() ? List.of(Map.of("field", "", "key", ValidationKeySupport.FALLBACK_KEY, "detail", "Validation failed."))
+    private ResponseEntity<Object> validationResponse(List<ValidationError> errors, HttpHeaders headers, WebRequest request) {
+        var safeErrors = errors.isEmpty() ? List.of(new ValidationError("", ValidationKeySupport.FALLBACK_KEY, "Validation failed.", null))
                 : List.copyOf(errors);
         log.warn("Request validation failed traceId={} nativeTraceId={} errorCount={}", traceId(request), nativeTraceId(), safeErrors.size());
-        return problemResponse(CommonErrorCode.VALIDATION_FAILED, Map.of("errors", safeErrors), headers, request);
+        return validationProblemResponse(CommonErrorCode.VALIDATION_FAILED, safeErrors, headers, request);
     }
 
-    private List<Map<String, Object>> validationErrors(MethodValidationResult exception) {
-        var errors = new ArrayList<Map<String, Object>>();
+    private List<ValidationError> validationErrors(MethodValidationResult exception) {
+        var errors = new ArrayList<ValidationError>();
         for (var result : exception.getParameterValidationResults()) {
             if (result instanceof ParameterErrors parameterErrors) {
                 for (var error : parameterErrors.getAllErrors()) {
@@ -291,13 +311,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return List.copyOf(errors);
     }
 
-    private Map<String, Object> validationError(ConstraintViolation<?> violation) {
+    private ValidationError validationError(ConstraintViolation<?> violation) {
         var field = lastPathSegment(violation.getPropertyPath().toString());
         var constraintName = violation.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName();
         return validationEntry(field, constraintName, violation.getMessageTemplate(), safeAttributes(violation));
     }
 
-    private Map<String, Object> validationError(ObjectError error) {
+    private ValidationError validationError(ObjectError error) {
         var violation = unwrapViolation(error);
         var field = error instanceof FieldError fieldError ? fieldError.getField() : error.getObjectName();
         var constraintName = violation == null ? constraintName(error.getCodes())
@@ -307,11 +327,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return validationEntry(field, constraintName, messageTemplate, attributes);
     }
 
-    private Map<String, Object> validationError(String field, MessageSourceResolvable error) {
+    private ValidationError validationError(String field, MessageSourceResolvable error) {
         return validationEntry(field, constraintName(error.getCodes()), error.getDefaultMessage(), Map.of());
     }
 
-    private Map<String, Object> validationEntry(String field, String constraintName, String messageTemplate, Map<String, Object> attributes) {
+    private ValidationError validationEntry(String field, String constraintName, String messageTemplate, Map<String, Object> attributes) {
         var explicitKey = ValidationKeySupport.explicitApplicationKey(messageTemplate);
         var builtInKey = ValidationKeySupport.builtInKey(constraintName);
         if (explicitKey == null && builtInKey == null) {
@@ -319,14 +339,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         }
         var key = explicitKey == null ? builtInKey == null ? ValidationKeySupport.FALLBACK_KEY : builtInKey : explicitKey;
         var detail = ValidationKeySupport.safeDetail(constraintName, messageTemplate, explicitKey != null);
-        var error = new LinkedHashMap<String, Object>();
-        error.put("field", field == null ? "" : field);
-        error.put("key", key);
-        error.put("detail", detail);
-        if (!attributes.isEmpty()) {
-            error.put("params", attributes);
-        }
-        return Map.copyOf(error);
+        return new ValidationError(field == null ? "" : field, key, detail, attributes.isEmpty() ? null : attributes);
     }
 
     private ResponseEntity<Object> frameworkResponse(ErrorCode errorCode, HttpHeaders headers, WebRequest request, Exception exception) {
@@ -341,25 +354,48 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return problemResponse(CommonErrorCode.INTERNAL_ERROR, Map.of("detail", "Internal framework failure"), headers, request);
     }
 
-    private ResponseEntity<Object> problemResponse(ErrorCode errorCode, Map<String, ?> params, HttpHeaders headers, WebRequest request) {
-        var problem = ProblemDetail.forStatus(errorCode.getStatus());
-        problem.setType(URI.create(PROBLEM_TYPE_BASE + toKebabCase(errorCode.getCode())));
-        problem.setTitle(reasonPhrase(errorCode.getStatus()));
-        problem.setInstance(requestUri(request));
-        problem.setProperty("code", errorCode.getCode());
-        problem.setProperty("key", errorCode.getMessageKey());
-        problem.setProperty("traceId", traceId(request));
-        problem.setProperty("timestamp", Instant.now(clock));
-        if (errorCode.getStatus().is4xxClientError() && params != null && !params.isEmpty()) {
-            problem.setProperty("params", params);
-        }
+    private ResponseEntity<Object> validationProblemResponse(ErrorCode errorCode, List<ValidationError> errors, HttpHeaders headers, WebRequest request) {
+        var type = URI.create(PROBLEM_TYPE_BASE + toKebabCase(errorCode.getCode()));
+        var title = reasonPhrase(errorCode.getStatus());
+        var instance = requestUri(request);
+        var code = errorCode.getCode();
+        var key = errorCode.getMessageKey();
+        var trace = traceId(request);
+        var timestamp = Instant.now(clock);
+        var validationProblem = new ValidationProblem(type, title, errorCode.getStatus().value(), null, instance, code, key, trace, timestamp,
+                new ValidationProblem.ValidationParams(errors));
 
         var responseHeaders = new HttpHeaders();
         if (headers != null) {
             responseHeaders.putAll(headers);
         }
         responseHeaders.setContentType(MediaType.APPLICATION_PROBLEM_JSON);
-        return new ResponseEntity<>(problem, responseHeaders, errorCode.getStatus());
+        return new ResponseEntity<>(validationProblem, responseHeaders, errorCode.getStatus());
+    }
+
+    @SuppressWarnings("unchecked")
+    private ResponseEntity<Object> problemResponse(ErrorCode errorCode, Map<String, ?> params, HttpHeaders headers, WebRequest request) {
+        var type = URI.create(PROBLEM_TYPE_BASE + toKebabCase(errorCode.getCode()));
+        var title = reasonPhrase(errorCode.getStatus());
+        var instance = requestUri(request);
+        var code = errorCode.getCode();
+        var key = errorCode.getMessageKey();
+        var trace = traceId(request);
+        var timestamp = Instant.now(clock);
+
+        Map<String, Object> safeParams = null;
+        if (errorCode.getStatus().is4xxClientError() && params != null && !params.isEmpty()) {
+            safeParams = (Map<String, Object>) params;
+        }
+
+        var apiProblem = new ApiProblem(type, title, errorCode.getStatus().value(), null, instance, code, key, trace, timestamp, safeParams);
+
+        var responseHeaders = new HttpHeaders();
+        if (headers != null) {
+            responseHeaders.putAll(headers);
+        }
+        responseHeaders.setContentType(MediaType.APPLICATION_PROBLEM_JSON);
+        return new ResponseEntity<>(apiProblem, responseHeaders, errorCode.getStatus());
     }
 
     private static String constraintName(String[] codes) {

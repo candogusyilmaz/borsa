@@ -13,6 +13,6 @@ public final class ValidationErrors {
 
     public static AppException invalidField(String field, String key, String detail) {
         return new AppException(CommonErrorCode.VALIDATION_FAILED,
-                Map.of("errors", List.of(Map.of("field", field, "key", Objects.requireNonNull(key, "key"), "detail", detail))));
+                Map.of("errors", List.of(new ValidationError(field, Objects.requireNonNull(key, "key"), detail, null))));
     }
 }

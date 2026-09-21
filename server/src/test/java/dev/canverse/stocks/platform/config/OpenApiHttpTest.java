@@ -24,6 +24,9 @@ class OpenApiHttpTest {
     @Test
     void publishesControllerContractsWithRequiredSliceProperties() throws Exception {
         var response = mockMvc.perform(get("/v3/api-docs")).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        var targetDir = java.nio.file.Path.of("target");
+        java.nio.file.Files.createDirectories(targetDir);
+        java.nio.file.Files.writeString(targetDir.resolve("openapi.json"), response, java.nio.charset.StandardCharsets.UTF_8);
         var document = JsonPath.parse(response);
 
         assertThat(document.<String>read("$.openapi")).isEqualTo("3.0.1");
@@ -42,7 +45,9 @@ class OpenApiHttpTest {
                 "ArchivePortfolioRequest", "PortfolioSummaryResponse", "PortfolioResponse", "PortfolioAccountResponse", "TradeImportCommitRequest",
                 "TradeImportUploadResponse", "TradeImportPreviewResponse", "TradeImportCommitResponse", "TradeImportBatchIssueResponse",
                 "TradeImportSummaryResponse", "TradeImportRowResponse", "TradeImportRowIssueResponse", "TradeImportPositionImpactResponse",
-                "TradeImportPositionCommitResponse", "TradeImportUploadRequest");
+                "TradeImportPositionCommitResponse", "TradeImportUploadRequest", "CashActivityRequest", "ApiProblem", "ValidationProblem", "ValidationError",
+                "TradeSide", "InstrumentType", "ValuationMethod", "PostingRole", "SecurityPostingRole", "RecordingMode", "PolicyDecision", "TrackingMode",
+                "AccountKind", "ActivityType");
         assertRequiredProperties(schemas, "CreatePortfolioRequest", "name", "accountIds");
         assertRequiredProperties(schemas, "UpdatePortfolioRequest", "name", "accountIds", "version");
         assertRequiredProperties(schemas, "ArchivePortfolioRequest", "version");
@@ -58,8 +63,10 @@ class OpenApiHttpTest {
         assertThat(requiredProperties(schemas, "TradeCommitRequest"))
                 .containsAll(List.of("clientRequestId", "accountId", "instrumentId", "side", "quantity", "unitPrice", "commissionAmount", "recordingMode",
                         "effectiveAt", "economicSequence", "confirmPolicyBreach", "expectedCashBalanceVersion", "expectedPositionVersion"));
+        assertThat(((Map<?, ?>) properties(schemas, "TradeCommitRequest").get("side")).get("$ref")).isEqualTo("#/components/schemas/TradeSide");
         assertThat(requiredProperties(schemas, "TradePreviewRequest")).containsAll(List.of("accountId", "instrumentId", "side", "quantity", "unitPrice",
                 "commissionAmount", "recordingMode", "effectiveAt", "economicSequence", "confirmPolicyBreach"));
+        assertThat(((Map<?, ?>) properties(schemas, "TradePreviewRequest").get("side")).get("$ref")).isEqualTo("#/components/schemas/TradeSide");
         assertThat(properties(schemas, "ActivityResponse").keySet().stream().map(Object::toString).toList()).contains("securityPostings");
         assertThat(requiredProperties(schemas, "ActivityResponse")).contains("securityPostings");
         assertRequiredProperties(schemas, "TradePreviewResponse", "accountId", "instrumentId", "instrumentSymbol", "side", "quantity", "unitPrice",
@@ -71,6 +78,9 @@ class OpenApiHttpTest {
                 "currency", "side", "quantity", "unitPrice", "grossAmount", "commissionAmount", "cashDelta", "quantityDelta", "effectiveAt", "recordedAt",
                 "economicSequence", "recordingMode", "policyDecision", "sourceKind", "calculationPolicy", "cashPostings", "securityPosting"};
         assertRequiredProperties(schemas, "TradeResponse", tradeResponseFields);
+        assertThat(((Map<?, ?>) properties(schemas, "TradeResponse").get("side")).get("$ref")).isEqualTo("#/components/schemas/TradeSide");
+        assertThat(((Map<?, ?>) properties(schemas, "TradeResponse").get("instrumentType")).get("$ref")).isEqualTo("#/components/schemas/InstrumentType");
+        assertThat(((Map<?, ?>) properties(schemas, "CashActivityRequest").get("activityType")).get("$ref")).isEqualTo("#/components/schemas/ActivityType");
         assertRequiredProperties(schemas, "TradeSummaryResponse", tradeResponseFields);
         assertRequiredProperties(schemas, "SecurityPostingResponse", "accountId", "instrumentId", "currency", "quantityDelta", "role", "effectiveAt",
                 "economicSequence");
@@ -96,11 +106,15 @@ class OpenApiHttpTest {
             assertThat(requiredProperties(schemas, "TradeImportSummaryResponse")).doesNotContain(nullableField);
         }
         assertRequiredProperties(schemas, "TradeImportRowResponse", "id", "sourceRecordNumber", "sourceValues", "issues");
-        for (var nullableField : List.of("externalId", "side", "instrumentId", "currency", "effectiveAt", "economicSequence", "quantity", "unitPrice",
-                "commissionAmount", "grossAmount", "cashDelta", "rowFingerprint", "policyDecision", "committedActivityId")) {
+        for (var nullableField : List.of("externalId", "instrumentId", "currency", "effectiveAt", "economicSequence", "quantity", "unitPrice",
+                "commissionAmount", "grossAmount", "cashDelta", "rowFingerprint", "committedActivityId")) {
             assertThat(((Map<?, ?>) properties(schemas, "TradeImportRowResponse").get(nullableField)).get("nullable")).isEqualTo(true);
             assertThat(requiredProperties(schemas, "TradeImportRowResponse")).doesNotContain(nullableField);
         }
+        assertThat(((Map<?, ?>) properties(schemas, "TradeImportRowResponse").get("side")).get("$ref")).isEqualTo("#/components/schemas/TradeSide");
+        assertThat(((Map<?, ?>) properties(schemas, "TradeImportRowResponse").get("policyDecision")).get("$ref"))
+                .isEqualTo("#/components/schemas/PolicyDecision");
+        assertThat(requiredProperties(schemas, "TradeImportRowResponse")).doesNotContain("side", "policyDecision");
         assertRequiredProperties(schemas, "TradeImportCommitResponse", "id", "accountId", "status", "committedRowCount", "activityIds", "cashBalanceAfter",
                 "cashBalanceVersion", "positions", "committedAt");
         assertRequiredProperties(schemas, "TradeImportPositionImpactResponse", "instrumentId", "symbol", "currency", "positionVersion", "quantityBefore",
@@ -140,6 +154,54 @@ class OpenApiHttpTest {
 
         assertThat(parameterNames(paths, "/api/v1/trades", "get")).contains("portfolioId");
         assertThat(parameterNames(paths, "/api/v1/investing/positions", "get")).contains("portfolioId");
+    }
+
+    @Test
+    void apiErrorResponsesAreDocumentedAcrossAllOperations() throws Exception {
+        var response = mockMvc.perform(get("/v3/api-docs")).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        var document = JsonPath.parse(response);
+        var paths = document.<Map<String, Map<String, Object>>>read("$.paths");
+
+        for (var pathEntry : paths.entrySet()) {
+            for (var methodEntry : pathEntry.getValue().entrySet()) {
+                if (!(methodEntry.getValue() instanceof Map<?, ?> operation)) {
+                    continue;
+                }
+                var responses = (Map<?, ?>) operation.get("responses");
+                assertThat(responses).isNotNull();
+
+                var badRequest = (Map<?, ?>) responses.get("400");
+                assertThat(badRequest).describedAs("400 response for %s %s", methodEntry.getKey(), pathEntry.getKey()).isNotNull();
+                assertThat(schemaRef(badRequest, "application/problem+json")).isEqualTo("#/components/schemas/ApiProblem");
+
+                var internalError = (Map<?, ?>) responses.get("500");
+                assertThat(internalError).describedAs("500 response for %s %s", methodEntry.getKey(), pathEntry.getKey()).isNotNull();
+                assertThat(schemaRef(internalError, "application/problem+json")).isEqualTo("#/components/schemas/ApiProblem");
+
+                if (operation.containsKey("requestBody")) {
+                    var validationError = (Map<?, ?>) responses.get("422");
+                    assertThat(validationError).describedAs("422 response for %s %s", methodEntry.getKey(), pathEntry.getKey()).isNotNull();
+                    assertThat(schemaRef(validationError, "application/problem+json")).isEqualTo("#/components/schemas/ValidationProblem");
+                }
+            }
+        }
+    }
+
+    private static String schemaRef(Map<?, ?> apiResponse, String mediaType) {
+        var content = (Map<?, ?>) apiResponse.get("content");
+        if (content == null) {
+            return null;
+        }
+        var media = (Map<?, ?>) content.get(mediaType);
+        if (media == null) {
+            return null;
+        }
+        var schema = (Map<?, ?>) media.get("schema");
+        if (schema == null) {
+            return null;
+        }
+        var ref = schema.get("$ref");
+        return ref != null ? ref.toString() : null;
     }
 
     private static List<String> requiredProperties(Map<?, ?> schemas, String schemaName) {

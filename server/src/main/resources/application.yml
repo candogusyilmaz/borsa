@@ -40,6 +40,7 @@ springdoc:
     - /api/v1/**
   api-docs:
     version: openapi-3-0
+  writer-with-order-by-keys: true
 
 logging:
   pattern:

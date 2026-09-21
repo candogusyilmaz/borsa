@@ -18,9 +18,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:agent": "vitest run --reporter=minimal",
-    "verify:agent": "npm run --silent typecheck && npm run --silent check:agent && npm run --silent test:agent && npm run --silent build:agent",
-    "generate:openapi": "openapi-typescript http://localhost:8080/v3/api-docs --output ./src/api/schema.d.ts",
-    "check:openapi": "openapi-typescript http://localhost:8080/v3/api-docs --output ./src/api/schema.d.ts --check",
+    "verify:agent": "npm run --silent check:openapi && npm run --silent typecheck && npm run --silent check:agent && npm run --silent test:agent && npm run --silent build:agent",
+    "generate:openapi": "openapi-typescript ../server/target/openapi.json --output ./src/api/schema.d.ts --alphabetize",
+    "check:openapi": "openapi-typescript ../server/target/openapi.json --output ./src/api/schema.d.ts --check --alphabetize",
     "prepare": "cd .. && husky"
   },
   "dependencies": {
