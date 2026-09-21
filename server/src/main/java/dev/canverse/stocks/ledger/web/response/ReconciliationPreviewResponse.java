@@ -9,12 +9,28 @@ import java.util.List;
 import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record ReconciliationPreviewResponse(@NotNull UUID accountId, @NotNull UUID cashPocketId, @NotNull String currency,
-        @NotNull CoverageStatus coverageStatus, @NotNull Instant coverageFrom, @NotNull String statementReference, @NotNull Instant statementOpeningAt,
-        @NotNull Instant statementClosingAt, @NotNull String statementOpeningBalance, @NotNull String statementClosingBalance,
-        @NotNull String ledgerOpeningBalance, @NotNull String ledgerClosingBalanceBeforeAdjustment, @NotNull String openingDifference,
-        @NotNull String periodNetPostedAmount, @NotNull String closingDifference, long periodPostingCount, long totalPostingCountThroughClosing,
-        long projectionVersion, @NotNull List<String> admissibleResolutions, @NotNull List<String> warnings) {
+public record ReconciliationPreviewResponse(
+        @NotNull UUID accountId,
+        @NotNull UUID cashPocketId,
+        @NotNull String currency,
+        @NotNull CoverageStatus coverageStatus,
+        @NotNull Instant coverageFrom,
+        @NotNull String statementReference,
+        @NotNull Instant statementOpeningAt,
+        @NotNull Instant statementClosingAt,
+        @NotNull String statementOpeningBalance,
+        @NotNull String statementClosingBalance,
+        @NotNull String ledgerOpeningBalance,
+        @NotNull String ledgerClosingBalanceBeforeAdjustment,
+        @NotNull String openingDifference,
+        @NotNull String periodNetPostedAmount,
+        @NotNull String closingDifference,
+        long periodPostingCount,
+        long totalPostingCountThroughClosing,
+        long projectionVersion,
+        @NotNull List<String> admissibleResolutions,
+        @NotNull List<String> warnings
+) {
 
     public ReconciliationPreviewResponse {
         admissibleResolutions = List.copyOf(admissibleResolutions);

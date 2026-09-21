@@ -7,7 +7,15 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.Map;
 
-public record ApiProblem(@NotNull URI type, @NotNull String title, int status,
+public record ApiProblem(
+        @NotNull URI type,
+        @NotNull String title,
+        int status,
         @Schema(nullable = true) @JsonInclude(JsonInclude.Include.NON_NULL) String detail,
-        @Schema(nullable = true) @JsonInclude(JsonInclude.Include.NON_NULL) URI instance, @NotNull String code, @NotNull String key, @NotNull String traceId,
-        @NotNull Instant timestamp, @Schema(nullable = true) @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, Object> params) {}
+        @Schema(nullable = true) @JsonInclude(JsonInclude.Include.NON_NULL) URI instance,
+        @NotNull String code,
+        @NotNull String key,
+        @NotNull String traceId,
+        @NotNull Instant timestamp,
+        @Schema(nullable = true) @JsonInclude(JsonInclude.Include.NON_EMPTY) Map<String, Object> params
+) {}

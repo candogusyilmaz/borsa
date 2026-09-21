@@ -340,11 +340,36 @@ public class InvestingReadRepository {
         return value == null ? null : value.toInstant();
     }
 
-    private record TradeRow(UUID id, UUID accountId, String accountName, UUID instrumentId, String instrumentSymbol, String instrumentName,
-            InstrumentType instrumentType, String currency, TradeSide side, FinancialAmount quantity, FinancialAmount unitPrice, FinancialAmount grossAmount,
-            FinancialAmount commissionAmount, FinancialAmount cashDelta, FinancialAmount quantityDelta, Instant effectiveAt, Instant recordedAt,
-            long economicSequence, RecordingMode recordingMode, PolicyDecision policyDecision, String sourceKind, SecurityPostingResponse securityPosting,
-            UUID reversalActivityId, String reversalReason, Instant reversedAt, UUID sourceImportBatchId, UUID sourceImportRowId, String sourceExternalId) {}
+    private record TradeRow(
+            UUID id,
+            UUID accountId,
+            String accountName,
+            UUID instrumentId,
+            String instrumentSymbol,
+            String instrumentName,
+            InstrumentType instrumentType,
+            String currency,
+            TradeSide side,
+            FinancialAmount quantity,
+            FinancialAmount unitPrice,
+            FinancialAmount grossAmount,
+            FinancialAmount commissionAmount,
+            FinancialAmount cashDelta,
+            FinancialAmount quantityDelta,
+            Instant effectiveAt,
+            Instant recordedAt,
+            long economicSequence,
+            RecordingMode recordingMode,
+            PolicyDecision policyDecision,
+            String sourceKind,
+            SecurityPostingResponse securityPosting,
+            UUID reversalActivityId,
+            String reversalReason,
+            Instant reversedAt,
+            UUID sourceImportBatchId,
+            UUID sourceImportRowId,
+            String sourceExternalId
+    ) {}
 
     private record PostingRow(UUID activityId, PostingResponse posting) {}
 }

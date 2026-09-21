@@ -97,8 +97,16 @@ public class TradeImportReadRepository {
                 """).param("instrumentId", instrumentId).param("ownerUserAccountId", ownerUserAccountId).query(UUID.class).optional().isPresent();
     }
 
-    public record ExistingTrade(UUID activityId, UUID instrumentId, TradeSide side, String currency, FinancialAmount quantity, FinancialAmount unitPrice,
-            FinancialAmount grossAmount, FinancialAmount commissionAmount) {}
+    public record ExistingTrade(
+            UUID activityId,
+            UUID instrumentId,
+            TradeSide side,
+            String currency,
+            FinancialAmount quantity,
+            FinancialAmount unitPrice,
+            FinancialAmount grossAmount,
+            FinancialAmount commissionAmount
+    ) {}
 
     public record CommittedActivity(UUID activityId, PolicyDecision policyDecision) {}
 }

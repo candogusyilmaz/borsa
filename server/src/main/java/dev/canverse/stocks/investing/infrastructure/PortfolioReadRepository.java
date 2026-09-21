@@ -86,6 +86,13 @@ public class PortfolioReadRepository {
         return value == null ? null : value.toInstant();
     }
 
-    private record PortfolioDetailRow(PortfolioSummaryView portfolio, UUID accountId, String accountName, String accountKind, String trackingMode,
-            String currency, Instant accountArchivedAt) {}
+    private record PortfolioDetailRow(
+            PortfolioSummaryView portfolio,
+            UUID accountId,
+            String accountName,
+            String accountKind,
+            String trackingMode,
+            String currency,
+            Instant accountArchivedAt
+    ) {}
 }

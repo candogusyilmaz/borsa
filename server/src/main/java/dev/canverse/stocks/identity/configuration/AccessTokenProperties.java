@@ -6,9 +6,14 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 
 @ConfigurationProperties("stocks.identity.access-token")
-public record AccessTokenProperties(@DefaultValue("https://canverse.dev") URI issuer, @DefaultValue("canverse-api") String audience,
-        @DefaultValue("15m") Duration lifetime, @DefaultValue("local-ephemeral") String keyId, @DefaultValue(" ") String privateKeyPem,
-        @DefaultValue(" ") String publicKeyPem) {
+public record AccessTokenProperties(
+        @DefaultValue("https://canverse.dev") URI issuer,
+        @DefaultValue("canverse-api") String audience,
+        @DefaultValue("15m") Duration lifetime,
+        @DefaultValue("local-ephemeral") String keyId,
+        @DefaultValue(" ") String privateKeyPem,
+        @DefaultValue(" ") String publicKeyPem
+) {
 
     public AccessTokenProperties {
         if (issuer == null || !issuer.isAbsolute()) {

@@ -568,14 +568,31 @@ public class TradeImportService {
 
     private record BatchIssue(String code, String fieldName) {}
 
-    private record SummaryTotals(int normalizedRowCount, int buyCount, int sellCount, BigDecimal buyGross, BigDecimal sellGross, BigDecimal commissionTotal,
-            BigDecimal cashDeltaTotal, boolean hasNumericOverflow) {}
+    private record SummaryTotals(
+            int normalizedRowCount,
+            int buyCount,
+            int sellCount,
+            BigDecimal buyGross,
+            BigDecimal sellGross,
+            BigDecimal commissionTotal,
+            BigDecimal cashDeltaTotal,
+            boolean hasNumericOverflow
+    ) {}
 
     private record PositionSnapshot(Instrument instrument, PositionProjection projection, PositionState before, TradeReplayResult after) {}
 
-    private record Simulation(boolean successful, Map<UUID, Map<IssueKey, PreviewIssue>> rowIssues, List<BatchIssue> batchIssues,
-            Map<UUID, PolicyDecision> policyDecisions, AccountBalanceProjection cashProjection, FinancialAmount cashBefore, FinancialAmount cashAfter,
-            List<TradeImportPositionImpactResponse> positionImpacts, Map<UUID, PositionSnapshot> positions, String previewToken) {
+    private record Simulation(
+            boolean successful,
+            Map<UUID, Map<IssueKey, PreviewIssue>> rowIssues,
+            List<BatchIssue> batchIssues,
+            Map<UUID, PolicyDecision> policyDecisions,
+            AccountBalanceProjection cashProjection,
+            FinancialAmount cashBefore,
+            FinancialAmount cashAfter,
+            List<TradeImportPositionImpactResponse> positionImpacts,
+            Map<UUID, PositionSnapshot> positions,
+            String previewToken
+    ) {
 
         static Simulation failed(Map<UUID, Map<IssueKey, PreviewIssue>> rowIssues, Set<BatchIssue> batchIssues) {
             return new Simulation(false, rowIssues, List.copyOf(batchIssues), Map.of(), null, null, null, List.of(), Map.of(), null);

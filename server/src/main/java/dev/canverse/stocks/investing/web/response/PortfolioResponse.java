@@ -8,8 +8,17 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-public record PortfolioResponse(@NotNull UUID id, @NotNull String name, @NotNull Integer accountCount, @NotNull Boolean archived, @NotNull Long version,
-        @NotNull Instant createdAt, @NotNull Instant updatedAt, @Schema(nullable = true) Instant archivedAt, @NotNull List<PortfolioAccountResponse> accounts) {
+public record PortfolioResponse(
+        @NotNull UUID id,
+        @NotNull String name,
+        @NotNull Integer accountCount,
+        @NotNull Boolean archived,
+        @NotNull Long version,
+        @NotNull Instant createdAt,
+        @NotNull Instant updatedAt,
+        @Schema(nullable = true) Instant archivedAt,
+        @NotNull List<PortfolioAccountResponse> accounts
+) {
 
     public PortfolioResponse {
         accounts = List.copyOf(Objects.requireNonNull(accounts, "accounts"));

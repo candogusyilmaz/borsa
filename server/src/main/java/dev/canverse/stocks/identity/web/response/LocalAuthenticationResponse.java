@@ -8,8 +8,14 @@ import java.util.Objects;
 import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record LocalAuthenticationResponse(@NotNull UUID sessionId, @NotNull String accessToken, @NotNull Instant accessTokenExpiresAt,
-        @NotNull Instant refreshTokenExpiresAt, @NotNull Instant serverTime, String refreshToken) {
+public record LocalAuthenticationResponse(
+        @NotNull UUID sessionId,
+        @NotNull String accessToken,
+        @NotNull Instant accessTokenExpiresAt,
+        @NotNull Instant refreshTokenExpiresAt,
+        @NotNull Instant serverTime,
+        String refreshToken
+) {
 
     public LocalAuthenticationResponse {
         Objects.requireNonNull(sessionId, "sessionId");

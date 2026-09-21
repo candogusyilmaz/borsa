@@ -7,6 +7,15 @@ import java.time.Instant;
 import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record SecurityPostingResponse(@NotNull UUID accountId, @NotNull UUID instrumentId, @NotNull String currency, @NotNull String quantityDelta,
-        String unitPrice, String grossAmount, @NotNull SecurityPostingRole role, @NotNull Instant effectiveAt, @NotNull Long economicSequence,
-        UUID reversesSecurityPostingId) {}
+public record SecurityPostingResponse(
+        @NotNull UUID accountId,
+        @NotNull UUID instrumentId,
+        @NotNull String currency,
+        @NotNull String quantityDelta,
+        String unitPrice,
+        String grossAmount,
+        @NotNull SecurityPostingRole role,
+        @NotNull Instant effectiveAt,
+        @NotNull Long economicSequence,
+        UUID reversesSecurityPostingId
+) {}

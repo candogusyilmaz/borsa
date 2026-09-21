@@ -310,8 +310,18 @@ public class InvestingTradeCommandService {
         throw ValidationErrors.invalidField(field, "error.fields.investing.invalid_amount", "The value must be a non-negative exact decimal.");
     }
 
-    private record TradeInputs(UUID accountId, UUID instrumentId, TradeSide side, FinancialAmount quantity, FinancialAmount unitPrice,
-            FinancialAmount commissionAmount, RecordingMode recordingMode, Instant effectiveAt, long economicSequence, boolean confirmPolicyBreach) {
+    private record TradeInputs(
+            UUID accountId,
+            UUID instrumentId,
+            TradeSide side,
+            FinancialAmount quantity,
+            FinancialAmount unitPrice,
+            FinancialAmount commissionAmount,
+            RecordingMode recordingMode,
+            Instant effectiveAt,
+            long economicSequence,
+            boolean confirmPolicyBreach
+    ) {
 
         TradeSettlement settle(int minorUnit) {
             return TradeSettlement.calculate(side, quantity, unitPrice, commissionAmount, minorUnit);

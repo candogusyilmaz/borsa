@@ -69,5 +69,7 @@
       value="one_line_if_empty" />
     <setting id="org.eclipse.jdt.core.formatter.blank_lines_between_type_declarations"
       value="1" />
+      <setting id="org.eclipse.jdt.core.formatter.alignment_for_record_components" value="48" />
+      <setting id="org.eclipse.jdt.core.formatter.parentheses_positions_in_record_declaration" value="separate_lines_if_wrapped" />
   </profile>
 </profiles>

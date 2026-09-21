@@ -1141,7 +1141,19 @@ class FinancialAccountMigrationTest {
         assertThat(shape).containsEntry("numeric_precision", 38).containsEntry("numeric_scale", 18);
     }
 
-    private record RawTrade(UUID activityId, UUID grossPostingId, UUID feePostingId, UUID securityPostingId, UUID accountId, UUID cashPocketId,
-            UUID instrumentId, String currencyCode, String quantityDelta, String grossCashAmount, String feeCashAmount, OffsetDateTime effectiveAt,
-            long economicSequence) {}
+    private record RawTrade(
+            UUID activityId,
+            UUID grossPostingId,
+            UUID feePostingId,
+            UUID securityPostingId,
+            UUID accountId,
+            UUID cashPocketId,
+            UUID instrumentId,
+            String currencyCode,
+            String quantityDelta,
+            String grossCashAmount,
+            String feeCashAmount,
+            OffsetDateTime effectiveAt,
+            long economicSequence
+    ) {}
 }

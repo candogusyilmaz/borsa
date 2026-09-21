@@ -7,9 +7,20 @@ import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.UUID;
 
-public record InstrumentSummaryResponse(@NotNull UUID id, @NotNull String symbol, @NotNull String name, @NotNull InstrumentType instrumentType,
-        @NotNull UUID marketId, @NotNull String marketCode, @NotNull String quotationCurrency, @NotNull ValuationMethod valuationMethod, boolean active,
-        @NotNull String sourceKind, boolean ownerManaged, @NotNull List<InstrumentAliasResponse> aliases) {
+public record InstrumentSummaryResponse(
+        @NotNull UUID id,
+        @NotNull String symbol,
+        @NotNull String name,
+        @NotNull InstrumentType instrumentType,
+        @NotNull UUID marketId,
+        @NotNull String marketCode,
+        @NotNull String quotationCurrency,
+        @NotNull ValuationMethod valuationMethod,
+        boolean active,
+        @NotNull String sourceKind,
+        boolean ownerManaged,
+        @NotNull List<InstrumentAliasResponse> aliases
+) {
 
     public InstrumentSummaryResponse {
         aliases = List.copyOf(aliases);

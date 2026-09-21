@@ -6,5 +6,12 @@ import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.UUID;
 
-public record TradeImportUploadResponse(@NotNull UUID id, @NotNull UUID accountId, @NotNull TradeImportFormat importFormat, @NotNull TradeImportStatus status,
-        @NotNull boolean duplicateContent, @NotNull Instant createdAt, @NotNull String previewUrl) {}
+public record TradeImportUploadResponse(
+        @NotNull UUID id,
+        @NotNull UUID accountId,
+        @NotNull TradeImportFormat importFormat,
+        @NotNull TradeImportStatus status,
+        @NotNull boolean duplicateContent,
+        @NotNull Instant createdAt,
+        @NotNull String previewUrl
+) {}

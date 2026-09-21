@@ -11,8 +11,14 @@ import java.util.List;
 import java.util.UUID;
 
 /** Compact, import-specific state needed to reproduce a committed response from its idempotency record. */
-public record TradeImportCommitReplaySnapshot(UUID accountId, String cashBalanceAfter, long cashBalanceVersion, String packedActivityIds,
-        String packedPositions, Instant committedAt) {
+public record TradeImportCommitReplaySnapshot(
+        UUID accountId,
+        String cashBalanceAfter,
+        long cashBalanceVersion,
+        String packedActivityIds,
+        String packedPositions,
+        Instant committedAt
+) {
 
     public static TradeImportCommitReplaySnapshot from(TradeImportCommitResponse response) {
         return new TradeImportCommitReplaySnapshot(response.accountId(), response.cashBalanceAfter(), response.cashBalanceVersion(),

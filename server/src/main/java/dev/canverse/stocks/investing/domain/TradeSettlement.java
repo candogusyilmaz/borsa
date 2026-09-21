@@ -7,8 +7,14 @@ import java.math.RoundingMode;
 import java.util.Objects;
 
 /** Settles manually calculated gross once at the trade currency's minor-unit boundary. */
-public record TradeSettlement(TradeSide side, FinancialAmount quantity, FinancialAmount unitPrice, FinancialAmount commissionAmount,
-        FinancialAmount grossAmount, FinancialAmount cashDelta) {
+public record TradeSettlement(
+        TradeSide side,
+        FinancialAmount quantity,
+        FinancialAmount unitPrice,
+        FinancialAmount commissionAmount,
+        FinancialAmount grossAmount,
+        FinancialAmount cashDelta
+) {
 
     public static TradeSettlement calculate(TradeSide side, FinancialAmount quantity, FinancialAmount unitPrice, FinancialAmount commissionAmount,
             int minorUnit) {

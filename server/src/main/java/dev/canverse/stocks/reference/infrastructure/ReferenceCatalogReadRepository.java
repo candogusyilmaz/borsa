@@ -249,8 +249,22 @@ public class ReferenceCatalogReadRepository {
 
     public record CalendarRow(LocalDate date, MarketSessionStatus sessionStatus, LocalTime opensAt, LocalTime closesAt, String sourceKind) {}
 
-    public record InstrumentRow(UUID id, UUID ownerId, UUID marketId, String marketCode, String symbol, String name, InstrumentType instrumentType,
-            String quotationCurrency, ValuationMethod valuationMethod, boolean active, String sourceKind, long version, Instant createdAt, Instant updatedAt) {}
+    public record InstrumentRow(
+            UUID id,
+            UUID ownerId,
+            UUID marketId,
+            String marketCode,
+            String symbol,
+            String name,
+            InstrumentType instrumentType,
+            String quotationCurrency,
+            ValuationMethod valuationMethod,
+            boolean active,
+            String sourceKind,
+            long version,
+            Instant createdAt,
+            Instant updatedAt
+    ) {}
 
     public record AliasRow(UUID id, UUID instrumentId, AliasType type, String value) {}
 

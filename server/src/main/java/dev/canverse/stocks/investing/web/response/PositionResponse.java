@@ -8,11 +8,25 @@ import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.UUID;
 
-public record PositionResponse(@NotNull UUID accountId, @NotNull String accountName, @NotNull UUID instrumentId, @NotNull String instrumentSymbol,
-        @NotNull String instrumentName, @NotNull InstrumentType instrumentType, @NotNull String currency, @NotNull String quantity,
-        @NotNull String remainingEconomicBasis, @NotNull String cumulativeRealizedEconomicPnl, @NotNull CalculationPolicy calculationPolicy,
-        @NotNull ProjectionStatus projectionStatus, @NotNull Instant asOf, @NotNull UUID inputWatermarkActivityId, @NotNull Instant lastSuccessfulBuildAt,
-        Instant staleFrom, @NotNull Long version) {
+public record PositionResponse(
+        @NotNull UUID accountId,
+        @NotNull String accountName,
+        @NotNull UUID instrumentId,
+        @NotNull String instrumentSymbol,
+        @NotNull String instrumentName,
+        @NotNull InstrumentType instrumentType,
+        @NotNull String currency,
+        @NotNull String quantity,
+        @NotNull String remainingEconomicBasis,
+        @NotNull String cumulativeRealizedEconomicPnl,
+        @NotNull CalculationPolicy calculationPolicy,
+        @NotNull ProjectionStatus projectionStatus,
+        @NotNull Instant asOf,
+        @NotNull UUID inputWatermarkActivityId,
+        @NotNull Instant lastSuccessfulBuildAt,
+        Instant staleFrom,
+        @NotNull Long version
+) {
 
     public static PositionResponse from(PositionReadModel model) {
         return new PositionResponse(model.accountId(), model.accountName(), model.instrumentId(), model.instrumentSymbol(), model.instrumentName(),

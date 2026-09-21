@@ -16,13 +16,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
-public record ManualInstrumentUpdateRequest(@Min(0) long version,
+public record ManualInstrumentUpdateRequest(
+        @Min(0) long version,
 
         @NotBlank String name,
 
-        @NotNull ValuationMethod valuationMethod, boolean active,
+        @NotNull ValuationMethod valuationMethod,
+        boolean active,
 
-        @Size(max = ManualInstrumentConstraints.MAX_ALIASES_PER_INSTRUMENT) List<@NotNull @Valid InstrumentAliasInput> aliases) {
+        @Size(max = ManualInstrumentConstraints.MAX_ALIASES_PER_INSTRUMENT) List<@NotNull @Valid InstrumentAliasInput> aliases
+) {
 
     public ManualInstrumentUpdateRequest {
         aliases = aliases == null ? List.of() : Collections.unmodifiableList(new ArrayList<>(aliases));

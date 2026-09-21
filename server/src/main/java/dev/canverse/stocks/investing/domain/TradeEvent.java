@@ -6,8 +6,16 @@ import java.util.Objects;
 import java.util.UUID;
 
 /** Immutable replay input projected from a security posting and its activity. */
-public record TradeEvent(UUID activityId, TradeSide side, UUID reversesActivityId, FinancialAmount quantityDelta, FinancialAmount grossAmount,
-        FinancialAmount commissionAmount, Instant effectiveAt, long economicSequence) {
+public record TradeEvent(
+        UUID activityId,
+        TradeSide side,
+        UUID reversesActivityId,
+        FinancialAmount quantityDelta,
+        FinancialAmount grossAmount,
+        FinancialAmount commissionAmount,
+        Instant effectiveAt,
+        long economicSequence
+) {
 
     public TradeEvent {
         Objects.requireNonNull(activityId, "activityId");

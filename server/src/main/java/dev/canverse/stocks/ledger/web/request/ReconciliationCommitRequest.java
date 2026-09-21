@@ -8,9 +8,17 @@ import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.util.UUID;
 
-public record ReconciliationCommitRequest(@NotBlank @Size(max = 200) String statementReference, @NotNull Instant statementOpeningAt,
-        @NotNull Instant statementClosingAt, @NotBlank String statementOpeningBalance, @NotBlank String statementClosingBalance, @NotNull UUID clientRequestId,
-        @NotNull @PositiveOrZero Long expectedBalanceVersion, @NotNull ReconciliationAction resolution, @Size(max = 500) String adjustmentReason) {
+public record ReconciliationCommitRequest(
+        @NotBlank @Size(max = 200) String statementReference,
+        @NotNull Instant statementOpeningAt,
+        @NotNull Instant statementClosingAt,
+        @NotBlank String statementOpeningBalance,
+        @NotBlank String statementClosingBalance,
+        @NotNull UUID clientRequestId,
+        @NotNull @PositiveOrZero Long expectedBalanceVersion,
+        @NotNull ReconciliationAction resolution,
+        @Size(max = 500) String adjustmentReason
+) {
 
     public void validate() {
         validatePeriod();

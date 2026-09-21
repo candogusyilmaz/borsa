@@ -7,9 +7,16 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-public record MarketCalendarResponse(@NotNull UUID marketId, @NotNull String marketCode, @NotNull String timeZone, @NotNull LocalDate from,
-        @NotNull LocalDate to, @NotNull CalendarCoverageStatus coverageStatus, @NotNull List<MarketCalendarSessionResponse> sessions,
-        @NotNull List<LocalDate> missingDates) {
+public record MarketCalendarResponse(
+        @NotNull UUID marketId,
+        @NotNull String marketCode,
+        @NotNull String timeZone,
+        @NotNull LocalDate from,
+        @NotNull LocalDate to,
+        @NotNull CalendarCoverageStatus coverageStatus,
+        @NotNull List<MarketCalendarSessionResponse> sessions,
+        @NotNull List<LocalDate> missingDates
+) {
 
     public MarketCalendarResponse {
         sessions = List.copyOf(sessions);

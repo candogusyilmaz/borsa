@@ -277,6 +277,11 @@ public class ReconciliationCommandService {
                 LedgerAmountParser.exact(statementClosingBalance, "statementClosingBalance"));
     }
 
-    private record StatementValues(String statementReference, Instant statementOpeningAt, Instant statementClosingAt, FinancialAmount statementOpeningBalance,
-            FinancialAmount statementClosingBalance) {}
+    private record StatementValues(
+            String statementReference,
+            Instant statementOpeningAt,
+            Instant statementClosingAt,
+            FinancialAmount statementOpeningBalance,
+            FinancialAmount statementClosingBalance
+    ) {}
 }

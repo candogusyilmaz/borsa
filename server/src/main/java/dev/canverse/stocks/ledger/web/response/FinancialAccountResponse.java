@@ -11,10 +11,25 @@ import java.time.Instant;
 import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record FinancialAccountResponse(@NotNull UUID id, @NotNull String name, @NotNull AccountKind kind, @NotNull TrackingMode trackingMode,
-        @NotNull String currency, @NotNull String timeZone, NegativeBalancePolicy policy, String authorizedLimit, boolean archived, Instant archivedAt,
-        @NotNull CoverageStatus cashCoverageStatus, Instant coverageFrom, @NotNull String sourceKind, long version, @NotNull Instant createdAt,
-        @NotNull Instant updatedAt, boolean policyBreach) {
+public record FinancialAccountResponse(
+        @NotNull UUID id,
+        @NotNull String name,
+        @NotNull AccountKind kind,
+        @NotNull TrackingMode trackingMode,
+        @NotNull String currency,
+        @NotNull String timeZone,
+        NegativeBalancePolicy policy,
+        String authorizedLimit,
+        boolean archived,
+        Instant archivedAt,
+        @NotNull CoverageStatus cashCoverageStatus,
+        Instant coverageFrom,
+        @NotNull String sourceKind,
+        long version,
+        @NotNull Instant createdAt,
+        @NotNull Instant updatedAt,
+        boolean policyBreach
+) {
 
     public static FinancialAccountResponse from(FinancialAccountView view) {
         return new FinancialAccountResponse(view.id(), view.name(), view.accountKind(), view.trackingMode(), view.currencyCode(), view.timeZone(),

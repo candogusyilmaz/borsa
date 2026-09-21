@@ -130,7 +130,20 @@ class LocalPasswordAuthenticationServiceTest {
         new TransactionTemplate(transactionManager).executeWithoutResult(status -> action.run());
     }
 
-    private record PersistedIdentityState(int userCount, int identityCount, UUID userId, String email, String emailNormalized, Instant disabledAt,
-            Instant userCreatedAt, Instant userUpdatedAt, UUID identityId, String provider, String providerSubject, String passwordHash,
-            Instant identityCreatedAt, Instant identityUpdatedAt) {}
+    private record PersistedIdentityState(
+            int userCount,
+            int identityCount,
+            UUID userId,
+            String email,
+            String emailNormalized,
+            Instant disabledAt,
+            Instant userCreatedAt,
+            Instant userUpdatedAt,
+            UUID identityId,
+            String provider,
+            String providerSubject,
+            String passwordHash,
+            Instant identityCreatedAt,
+            Instant identityUpdatedAt
+    ) {}
 }

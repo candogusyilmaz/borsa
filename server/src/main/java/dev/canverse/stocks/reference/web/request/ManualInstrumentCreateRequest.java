@@ -19,15 +19,19 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-public record ManualInstrumentCreateRequest(@NotNull UUID marketId,
+public record ManualInstrumentCreateRequest(
+        @NotNull UUID marketId,
 
         @NotBlank String symbol,
 
         @NotBlank String name,
 
-        @NotNull InstrumentType instrumentType, @NotBlank @Pattern(regexp = "[A-Z]{3}") String quotationCurrency, @NotNull ValuationMethod valuationMethod,
+        @NotNull InstrumentType instrumentType,
+        @NotBlank @Pattern(regexp = "[A-Z]{3}") String quotationCurrency,
+        @NotNull ValuationMethod valuationMethod,
 
-        @Size(max = ManualInstrumentConstraints.MAX_ALIASES_PER_INSTRUMENT) List<@NotNull @Valid InstrumentAliasInput> aliases) {
+        @Size(max = ManualInstrumentConstraints.MAX_ALIASES_PER_INSTRUMENT) List<@NotNull @Valid InstrumentAliasInput> aliases
+) {
 
     public ManualInstrumentCreateRequest {
         aliases = aliases == null ? List.of() : Collections.unmodifiableList(new ArrayList<>(aliases));

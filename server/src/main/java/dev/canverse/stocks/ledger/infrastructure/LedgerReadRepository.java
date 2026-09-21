@@ -315,8 +315,18 @@ public class LedgerReadRepository {
 
     private record ProjectionRow(BigDecimal ledgerBalance, Instant recordedAt, UUID activityId) {}
 
-    private record ActivityRow(UUID id, UUID ownerUserAccountId, ActivityType activityType, RecordingMode recordingMode, Instant effectiveAt,
-            Instant recordedAt, PolicyDecision policyDecision, String sourceKind, UUID reversesActivityId, UUID supersedesActivityId) {}
+    private record ActivityRow(
+            UUID id,
+            UUID ownerUserAccountId,
+            ActivityType activityType,
+            RecordingMode recordingMode,
+            Instant effectiveAt,
+            Instant recordedAt,
+            PolicyDecision policyDecision,
+            String sourceKind,
+            UUID reversesActivityId,
+            UUID supersedesActivityId
+    ) {}
 
     private record PostingRow(UUID activityId, PostingResponse posting) {}
 

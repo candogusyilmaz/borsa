@@ -312,6 +312,17 @@ class RefreshSessionRotationServiceTest {
 
     private record Fixture(UUID userId, UUID sessionId, String refreshToken, String accessToken) {}
 
-    private record PersistedSession(UUID id, UUID userAccountId, UUID familyId, String refreshTokenHash, String deviceLabel, Instant createdAt,
-            Instant lastUsedAt, Instant expiresAt, Instant revokedAt, String revokeReason, UUID replacedBySessionId) {}
+    private record PersistedSession(
+            UUID id,
+            UUID userAccountId,
+            UUID familyId,
+            String refreshTokenHash,
+            String deviceLabel,
+            Instant createdAt,
+            Instant lastUsedAt,
+            Instant expiresAt,
+            Instant revokedAt,
+            String revokeReason,
+            UUID replacedBySessionId
+    ) {}
 }

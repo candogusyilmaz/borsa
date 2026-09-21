@@ -15,15 +15,38 @@ import java.util.List;
 import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record TradeSummaryResponse(@NotNull UUID id, @NotNull UUID accountId, @NotNull String accountName, @NotNull UUID instrumentId,
-        @NotNull String instrumentSymbol, @NotNull String instrumentName, @NotNull InstrumentType instrumentType, @NotNull String currency,
-        @NotNull TradeSide side, @NotNull String quantity, @NotNull String unitPrice, @NotNull String grossAmount, @NotNull String commissionAmount,
-        @NotNull String cashDelta, @NotNull String quantityDelta, @NotNull Instant effectiveAt, @NotNull Instant recordedAt, @NotNull Long economicSequence,
-        @NotNull RecordingMode recordingMode, @NotNull PolicyDecision policyDecision, @NotNull String sourceKind, @NotNull CalculationPolicy calculationPolicy,
-        @NotNull List<PostingResponse> cashPostings, @NotNull SecurityPostingResponse securityPosting, UUID reversalActivityId, String reversalReason,
-        Instant reversedAt, @JsonInclude(JsonInclude.Include.ALWAYS) @Schema(nullable = true) UUID sourceImportBatchId,
+public record TradeSummaryResponse(
+        @NotNull UUID id,
+        @NotNull UUID accountId,
+        @NotNull String accountName,
+        @NotNull UUID instrumentId,
+        @NotNull String instrumentSymbol,
+        @NotNull String instrumentName,
+        @NotNull InstrumentType instrumentType,
+        @NotNull String currency,
+        @NotNull TradeSide side,
+        @NotNull String quantity,
+        @NotNull String unitPrice,
+        @NotNull String grossAmount,
+        @NotNull String commissionAmount,
+        @NotNull String cashDelta,
+        @NotNull String quantityDelta,
+        @NotNull Instant effectiveAt,
+        @NotNull Instant recordedAt,
+        @NotNull Long economicSequence,
+        @NotNull RecordingMode recordingMode,
+        @NotNull PolicyDecision policyDecision,
+        @NotNull String sourceKind,
+        @NotNull CalculationPolicy calculationPolicy,
+        @NotNull List<PostingResponse> cashPostings,
+        @NotNull SecurityPostingResponse securityPosting,
+        UUID reversalActivityId,
+        String reversalReason,
+        Instant reversedAt,
+        @JsonInclude(JsonInclude.Include.ALWAYS) @Schema(nullable = true) UUID sourceImportBatchId,
         @JsonInclude(JsonInclude.Include.ALWAYS) @Schema(nullable = true) UUID sourceImportRowId,
-        @JsonInclude(JsonInclude.Include.ALWAYS) @Schema(nullable = true) String sourceExternalId) {
+        @JsonInclude(JsonInclude.Include.ALWAYS) @Schema(nullable = true) String sourceExternalId
+) {
 
     public TradeSummaryResponse {
         cashPostings = List.copyOf(cashPostings);
