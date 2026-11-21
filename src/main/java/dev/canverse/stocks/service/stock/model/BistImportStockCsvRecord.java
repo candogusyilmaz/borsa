@@ -1,8 +1,10 @@
 package dev.canverse.stocks.service.stock.model;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public record BistImportStockCsvRecord(
+        LocalDate tarih,
         String islemKodu,
         String bultenAdi,
         String enstrumanGrubu,
@@ -17,7 +19,7 @@ public record BistImportStockCsvRecord(
         return INSTRUMENT_GROUP_EQT.equals(enstrumanGrubu);
     }
 
-    public boolean isETF() {
+    public boolean isCertificate() {
         return INSTRUMENT_GROUP_EMS.equals(enstrumanGrubu);
     }
 

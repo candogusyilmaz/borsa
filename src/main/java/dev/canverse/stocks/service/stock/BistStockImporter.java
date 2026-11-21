@@ -1,5 +1,6 @@
 package dev.canverse.stocks.service.stock;
 
+import dev.canverse.stocks.domain.Calculator;
 import dev.canverse.stocks.domain.entity.instrument.Market;
 import dev.canverse.stocks.domain.entity.instrument.StockInstrument;
 import dev.canverse.stocks.repository.MarketRepository;
@@ -8,6 +9,7 @@ import dev.canverse.stocks.service.stock.model.BistImportStockCsvRecord;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -25,9 +27,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -42,11 +46,14 @@ public class BistStockImporter {
     private final Market bist;
 
     private final StockInstrumentRepository stockInstrumentRepository;
+    private final JdbcTemplate jdbcTemplate;
 
     public BistStockImporter(
             MarketRepository marketRepository,
-            StockInstrumentRepository stockInstrumentRepository) {
+            StockInstrumentRepository stockInstrumentRepository,
+            JdbcTemplate jdbcTemplate) {
         this.stockInstrumentRepository = stockInstrumentRepository;
+        this.jdbcTemplate = jdbcTemplate;
         this.bist = marketRepository.findByCode("BIST");
         if (this.bist == null) {
             log.error("Market with code BIST not found. Importer will be effectively disabled.");
@@ -68,14 +75,15 @@ public class BistStockImporter {
             return;
         }
 
-        List<BistImportStockCsvRecord> records;
         try {
-            records = readCsv(csvPath);
+            importCsv(csvPath);
         } catch (IOException e) {
             log.error("Failed reading CSV file {}", csvPath.toAbsolutePath(), e);
-            return;
         }
+    }
 
+    void importCsv(Path csvPath) throws IOException {
+        var records = readCsv(csvPath);
         int processed = 0;
         for (BistImportStockCsvRecord record : records) {
             try {
@@ -220,12 +228,14 @@ public class BistStockImporter {
                             e);
             case ConnectException connectException ->
                     log.error(
-                            "{} - Connection refused. Remote server might be down or blocked by firewall.",
+                            "{} - Connection refused. Remote server might be down or blocked by"
+                                    + " firewall.",
                             base,
                             e);
             case SSLHandshakeException sslHandshakeException ->
                     log.error(
-                            "{} - SSL Handshake failed. Possible missing CA certificates or protocol mismatch.",
+                            "{} - SSL Handshake failed. Possible missing CA certificates or"
+                                    + " protocol mismatch.",
                             base,
                             e);
             case FileNotFoundException fileNotFoundException ->
@@ -238,8 +248,8 @@ public class BistStockImporter {
     }
 
     private boolean processStock(BistImportStockCsvRecord record) {
-        if (!record.isEquity() && !record.isETF()) {
-            return false; // Only process if Equity OR ETF
+        if (!record.isEquity() && !record.isCertificate()) {
+            return false;
         }
 
         var stock =
@@ -249,9 +259,56 @@ public class BistStockImporter {
                                 new StockInstrument(
                                         record.bultenAdi(), record.getIslemKodu(), bist));
 
-        stockInstrumentRepository.save(stock);
+        stock = stockInstrumentRepository.save(stock);
+
+        if (record.isCertificate()) {
+            updateClosingPrice(stock, record);
+        }
 
         return true;
+    }
+
+    private void updateClosingPrice(StockInstrument stock, BistImportStockCsvRecord record) {
+        if (record.kapanisFiyati().signum() <= 0 || record.oncekiKapanisFiyati().signum() <= 0) {
+            log.warn(
+                    "Skipping invalid closing prices for {} on {}",
+                    stock.getSymbol(),
+                    record.tarih());
+            return;
+        }
+
+        // The bulletin supplies a trade date, not a quote time. Use the start of that
+        // trading day so a daily fallback cannot replace a newer intraday quote.
+        var updatedAt =
+                Timestamp.from(
+                        record.tarih().atStartOfDay(ZoneId.of("Europe/Istanbul")).toInstant());
+        var change = record.kapanisFiyati().subtract(record.oncekiKapanisFiyati());
+        var percent =
+                Calculator.calculatePercentageChange(
+                        record.kapanisFiyati(), record.oncekiKapanisFiyati());
+
+        jdbcTemplate.update(
+                """
+                    INSERT INTO instrument.instrument_snapshots (
+                        instrument_id, currency_code, last, previous_close,
+                        daily_change, daily_change_percent, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT (instrument_id, currency_code)
+                    DO UPDATE SET
+                        last = EXCLUDED.last,
+                        previous_close = EXCLUDED.previous_close,
+                        daily_change = EXCLUDED.daily_change,
+                        daily_change_percent = EXCLUDED.daily_change_percent,
+                        updated_at = EXCLUDED.updated_at
+                    WHERE instrument.instrument_snapshots.updated_at <= EXCLUDED.updated_at
+                """,
+                stock.getId(),
+                "TRY",
+                record.kapanisFiyati(),
+                record.oncekiKapanisFiyati(),
+                change,
+                percent,
+                updatedAt);
     }
 
     // Manual CSV parsing replacing Spring Batch FlatFileItemReader
@@ -278,6 +335,7 @@ public class BistStockImporter {
                 try {
                     BistImportStockCsvRecord record =
                             new BistImportStockCsvRecord(
+                                    LocalDate.parse(safeString(cols[0])),
                                     safeString(cols[1]),
                                     safeString(cols[2]),
                                     safeString(cols[6]),
