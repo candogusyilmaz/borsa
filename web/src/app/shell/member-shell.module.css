@@ -1,0 +1,66 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  background: var(--mantine-color-body);
+  color: var(--mantine-color-text);
+}
+
+.header {
+  flex-shrink: 0;
+  width: 100%;
+  border-bottom: 1px solid var(--app-border-subtle);
+  background: var(--mantine-color-body);
+}
+
+.headerInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 80rem;
+  min-height: 60px;
+  margin-inline: auto;
+  padding-inline: var(--mantine-spacing-md);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--mantine-color-text);
+  font-weight: var(--mantine-font-weight-bold);
+  text-decoration: none;
+}
+
+.links a[data-status='active'] {
+  background: var(--mantine-primary-color-light);
+}
+
+.main {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.skipLink {
+  position: absolute;
+  z-index: 1000;
+  inset-inline-start: var(--mantine-spacing-md);
+  transform: translateY(-110%);
+  padding: var(--mantine-spacing-xs) var(--mantine-spacing-md);
+  border-radius: var(--mantine-radius-sm);
+  background: var(--mantine-primary-color-filled);
+  color: var(--mantine-color-white);
+}
+
+.skipLink:focus {
+  transform: translateY(0);
+}
+
+@media (min-width: $mantine-breakpoint-sm) {
+  .headerInner {
+    padding-inline: var(--mantine-spacing-lg);
+  }
+}

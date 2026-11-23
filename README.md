@@ -3,6 +3,41 @@
 A personal finance and investment tracking platform that allows users to record their trades and analyze performance
 across multiple portfolios and dashboards.
 
+## Repository layout
+
+| Directory | Contents |
+| --- | --- |
+| `server/` | Spring Boot 3.5 on Java 21, Maven wrapper, backend resources, Flyway history and tests |
+| `web/` | React, Vite, Mantine 9, TanStack Router and Query, and the generated OpenAPI types |
+| `docs/` | Engineering guidance and screenshots |
+
+## Local development
+
+Use Java 21, Node.js 24 and an initialized PostgreSQL database. Set the datasource URL, username and password for your local database in the server environment. Hibernate validates the existing schema on startup. The versioned Flyway scripts build on the original database schema.
+
+Maven automatically selects an installed JDK 21 for the backend build and Spring Boot launch, even if your shell uses another Java version. If Maven cannot find your JDK 21 installation, set `JAVA21_HOME` to its directory.
+
+Run Spring from `server/` and Vite from `web/` in separate terminals:
+
+```text
+cd server
+./mvnw spring-boot:run
+```
+
+```text
+cd web
+npm ci
+npm run dev
+```
+
+Use `mvnw.cmd` on Windows. Vite runs at `http://localhost:5173` and uses the development API URL in `web/.env.development`. Use `web/.env.development.local` for a local override. With Spring running on port 8080, run `npm run generate:openapi` in `web/` to refresh the API types.
+
+## Production build
+
+Run `docker build -t borsa .` from the repository root. The image builds Vite and packages its output in the Spring jar. The container serves the frontend and API from port 8080 on the same origin. Set `SPRING_PROFILES_ACTIVE=prod` and the existing production environment variables on the deployed container.
+
+To produce the same jar locally, run `npm run build` in `web/`, followed by `./mvnw clean package` in `server/`. Maven copies `web/dist` to the jar's static resources. Run `npm run typecheck` and `npm run check` in `web/`, and `./mvnw test` in `server/` against an initialized test database.
+
 This project is actively evolving and focuses on real-world architecture, deployment, and scalability practices.
 
 The platform is continuously being refactored to improve code quality,

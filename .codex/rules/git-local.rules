@@ -1,0 +1,45 @@
+# Allow the supervisor to stage completed work locally.
+prefix_rule(
+    pattern = ["git", "add"],
+    decision = "allow",
+    justification = "Local staging is allowed for reviewed PR-sized commits.",
+)
+
+# Allow creation of local commits.
+prefix_rule(
+    pattern = ["git", "commit"],
+    decision = "allow",
+    justification = "Local commits are allowed after independent review.",
+)
+
+# Never rewrite an existing commit.
+prefix_rule(
+    pattern = ["git", "commit", "--amend"],
+    decision = "forbidden",
+    justification = "Create a new local commit instead; do not rewrite reviewed history.",
+)
+
+# Nothing may ever be pushed from this automated run.
+prefix_rule(
+    pattern = ["git", "push"],
+    decision = "forbidden",
+    justification = "This workflow is local-only. The human handles all pushes.",
+)
+
+prefix_rule(
+    pattern = ["git", "rebase"],
+    decision = "forbidden",
+    justification = "Do not rewrite local history during the automated rewrite.",
+)
+
+prefix_rule(
+    pattern = ["git", "reset"],
+    decision = "forbidden",
+    justification = "Do not rewrite or discard local history during the automated rewrite.",
+)
+
+prefix_rule(
+    pattern = ["git", "remote", "set-url"],
+    decision = "forbidden",
+    justification = "Do not modify repository remotes.",
+)

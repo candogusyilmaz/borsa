@@ -2,7 +2,7 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 
 # ── Java: Google Java Formatter ──────────────────────────────────────────────
 echo 'Running Google Java Formatter (fmt:format)...'
-cd "$REPO_ROOT" || exit 1
+cd "$REPO_ROOT/server" || exit 1
 ./mvnw fmt:format -q
 FMT_EXIT=$?
 
@@ -18,7 +18,7 @@ echo 'OK: Java formatting done.'
 
 # ── Frontend: TypeScript type check ──────────────────────────────────────────
 echo 'Running TypeScript type check (tsc -b)...'
-cd "$REPO_ROOT/src/main/web" || exit 1
+cd "$REPO_ROOT/web" || exit 1
 npx tsc -b
 TSC_EXIT=$?
 
@@ -37,7 +37,7 @@ BIOME_CHECK_EXIT=$?
 
 if [ $BIOME_CHECK_EXIT -ne 0 ]; then
   # Auto-fix what can be fixed
-  npm run check
+  npm run check:fix
   echo ''
   echo 'Biome found and fixed issues. Staging the fixed files...'
   git diff --name-only | xargs -r git add

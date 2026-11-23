@@ -1,32 +1,31 @@
-# Stage 1: Build stage
-FROM eclipse-temurin:21-jdk-alpine as builder
+FROM node:24-alpine AS web-builder
+WORKDIR /app/web
+COPY web/package.json web/package-lock.json ./
+RUN HUSKY=0 npm ci
+COPY web/index.html web/tsconfig*.json web/vite.config.ts web/postcss.config.cjs ./
+COPY web/src/ ./src/
+COPY web/public/ ./public/
+RUN npm run build
 
-# Set the working directory
-WORKDIR /app
+FROM eclipse-temurin:21-jdk-alpine AS builder
+WORKDIR /app/server
 
-# Copy the Maven wrapper and give execution permission
-COPY .mvn/ .mvn
-COPY mvnw .
-COPY pom.xml .
+COPY server/.mvn/ .mvn/
+COPY server/mvnw server/pom.xml ./
 
 RUN chmod +x ./mvnw
-
-# Resolve dependencies
 RUN ./mvnw dependency:resolve
 
-# Copy the source code
-COPY src ./src
+COPY server/src/ ./src/
+COPY --from=web-builder /app/web/dist /app/web/dist
+RUN ./mvnw clean package -DskipTests
 
-# Package the Spring Boot application as a JAR file
-RUN ./mvnw clean package -DskipTests -Pprod
-
-# Stage 2: Runtime stage
-FROM eclipse-temurin:21-jre-alpine as runtime
+FROM eclipse-temurin:21-jre-alpine AS runtime
 
 WORKDIR /app
 
 # Copy the JAR file from the builder stage
-COPY --from=builder /app/target/stocks-0.0.1-SNAPSHOT.jar /app/app.jar
+COPY --from=builder /app/server/target/stocks-0.0.1-SNAPSHOT.jar /app/app.jar
 
 EXPOSE 8080
 

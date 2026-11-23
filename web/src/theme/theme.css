@@ -1,0 +1,616 @@
+html {
+  background: var(--mantine-color-body);
+  overflow-x: clip;
+}
+
+body {
+  margin: 0;
+  background: var(--mantine-color-body);
+  color: var(--mantine-color-text);
+  font-family: var(--mantine-font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: var(--mantine-primary-color-light);
+  color: var(--mantine-color-text);
+}
+
+/* ---------------------------------------------------------- */
+/* SCROLLBARS                                                 */
+/* ---------------------------------------------------------- */
+
+html,
+body,
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--app-scrollbar-thumb) var(--app-scrollbar-track);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--app-scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--app-scrollbar-thumb);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--app-scrollbar-thumb-hover);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+@media (max-width: 47.999em) {
+  html,
+  body,
+  * {
+    scrollbar-width: none;
+  }
+
+  ::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+}
+
+/* ---------------------------------------------------------- */
+/* TYPOGRAPHY                                                 */
+/* ---------------------------------------------------------- */
+
+.app-page-title {
+  margin: 0;
+  color: var(--mantine-color-text);
+  font-size: 1.75rem;
+  line-height: 1.12;
+  font-weight: var(--mantine-font-weight-bold);
+  letter-spacing: -0.025em;
+}
+
+.app-section-title {
+  margin: 0;
+  color: var(--mantine-color-text);
+  font-size: 1.25rem;
+  line-height: 1.25;
+  font-weight: var(--mantine-font-weight-bold);
+  letter-spacing: -0.015em;
+}
+
+.app-secondary-text {
+  color: var(--mantine-color-dimmed);
+}
+
+.app-numeric {
+  font-variant-numeric: tabular-nums;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* ---------------------------------------------------------- */
+/* BUTTON                                                     */
+/* ---------------------------------------------------------- */
+
+.mantine-Button-root {
+  min-height: 44px;
+  font-weight: var(--mantine-font-weight-medium);
+  letter-spacing: -0.01em;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    background-color var(--app-motion-normal) var(--app-ease),
+    border-color var(--app-motion-normal) var(--app-ease),
+    color var(--app-motion-normal) var(--app-ease),
+    transform var(--app-motion-fast) var(--app-ease);
+}
+
+.mantine-Button-root:active:not(:disabled):not([data-disabled]) {
+  transform: translateY(1px);
+}
+
+/*
+ * No special CSS required for filled/default/light/subtle colors.
+ *
+ * Mantine will use:
+ *
+ *   --mantine-primary-color-filled
+ *   --mantine-primary-color-filled-hover
+ *   --mantine-primary-color-light
+ *   --mantine-primary-color-light-color
+ *   --mantine-color-default
+ *   --mantine-color-default-hover
+ *   --mantine-color-default-border
+ */
+
+/* ---------------------------------------------------------- */
+/* ACTION ICON                                                */
+/* ---------------------------------------------------------- */
+
+.mantine-ActionIcon-root {
+  min-width: 44px;
+  min-height: 44px;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    background-color var(--app-motion-normal) var(--app-ease),
+    color var(--app-motion-normal) var(--app-ease),
+    transform var(--app-motion-fast) var(--app-ease);
+}
+
+.mantine-ActionIcon-root:active:not(:disabled):not([data-disabled]) {
+  transform: translateY(1px);
+}
+
+/* ---------------------------------------------------------- */
+/* INPUTS                                                     */
+/* ---------------------------------------------------------- */
+
+.mantine-Input-input {
+  min-height: 44px;
+  background: var(--mantine-color-default);
+  border-color: var(--mantine-color-default-border);
+  color: var(--mantine-color-text);
+  transition:
+    border-color var(--app-motion-normal) var(--app-ease),
+    box-shadow var(--app-motion-normal) var(--app-ease),
+    background-color var(--app-motion-normal) var(--app-ease);
+}
+
+.mantine-Input-input::placeholder {
+  color: var(--mantine-color-placeholder);
+}
+
+.mantine-Input-input:hover:not(:disabled):not(:focus-within) {
+  border-color: var(--app-border-strong);
+}
+
+.mantine-Input-input:focus,
+.mantine-Input-input:focus-within {
+  border-color: var(--mantine-primary-color-filled);
+  box-shadow: 0 0 0 3px var(--app-focus-ring);
+}
+
+.mantine-InputWrapper-label {
+  margin-bottom: 6px;
+  color: var(--mantine-color-text);
+  font-size: var(--mantine-font-size-sm);
+  font-weight: var(--mantine-font-weight-medium);
+}
+
+.mantine-InputWrapper-description {
+  margin-top: 3px;
+  color: var(--mantine-color-dimmed);
+}
+
+.mantine-InputWrapper-error {
+  margin-top: 4px;
+}
+
+
+/*
+ * Prevent iOS focus zoom without disabling user zoom.
+ * Compact Mantine input sizes may resolve below WebKit's
+ * 16px focus threshold.
+ */
+@media (hover: none) and (pointer: coarse) {
+  .mantine-Input-input {
+    font-size: max(var(--input-fz, 1rem), 1rem);
+  }
+}
+
+/* ---------------------------------------------------------- */
+/* CARD / PAPER                                               */
+/* ---------------------------------------------------------- */
+
+.mantine-Paper-root,
+.mantine-Card-root {
+  background: var(--mantine-color-default);
+  color: var(--mantine-color-text);
+}
+
+/*
+ * Intentionally no global shadow.
+ * Intentionally no global border.
+ *
+ * Use withBorder only when the component structurally needs it.
+ */
+
+/* ---------------------------------------------------------- */
+/* FLOATING SURFACES & DROPDOWNS                              */
+/* ---------------------------------------------------------- */
+
+.mantine-Menu-dropdown,
+.mantine-Popover-dropdown,
+.mantine-Combobox-dropdown,
+.mantine-Select-dropdown,
+.mantine-MultiSelect-dropdown {
+  background: var(--app-surface-elevated);
+  border: 1px solid var(--app-border-subtle);
+  box-shadow: var(--mantine-shadow-lg);
+  max-width: min(calc(100vw - 2rem), 36rem);
+  overflow: hidden;
+}
+
+.mantine-Menu-item,
+.mantine-Combobox-option,
+.mantine-Select-option {
+  border-radius: var(--mantine-radius-sm);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition:
+    background-color var(--app-motion-fast) var(--app-ease),
+    color var(--app-motion-fast) var(--app-ease);
+}
+
+.mantine-Menu-itemLabel,
+.mantine-Combobox-option > *,
+.mantine-Select-option > * {
+  min-width: 0;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mantine-Combobox-option > span,
+.mantine-Select-option > span {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mantine-Menu-item:hover,
+.mantine-Menu-item[data-hovered],
+.mantine-Combobox-option:hover,
+.mantine-Combobox-option[data-hovered] {
+  background: var(--mantine-color-default-hover);
+}
+
+.mantine-Combobox-option[data-checked] {
+  background: var(--mantine-primary-color-light);
+  color: var(--mantine-primary-color-filled);
+  font-weight: var(--mantine-font-weight-medium);
+}
+
+/* ---------------------------------------------------------- */
+/* MODAL / DRAWER                                             */
+/* ---------------------------------------------------------- */
+
+.mantine-Modal-content,
+.mantine-Drawer-content {
+  background: var(--app-surface-elevated);
+  color: var(--mantine-color-text);
+  box-shadow: var(--mantine-shadow-xl);
+}
+
+.mantine-Modal-header,
+.mantine-Drawer-header {
+  background: transparent;
+}
+
+.mantine-Modal-title,
+.mantine-Drawer-title {
+  font-weight: var(--mantine-font-weight-bold);
+  letter-spacing: -0.015em;
+}
+
+/* ---------------------------------------------------------- */
+/* TOOLTIP                                                    */
+/* ---------------------------------------------------------- */
+
+.mantine-Tooltip-tooltip {
+  background: var(--mantine-color-text);
+  color: var(--mantine-color-body);
+  border-radius: var(--mantine-radius-sm);
+  box-shadow: var(--mantine-shadow-sm);
+}
+
+/* ---------------------------------------------------------- */
+/* SEGMENTED CONTROL                                          */
+/* ---------------------------------------------------------- */
+
+.mantine-SegmentedControl-root {
+  padding: 3px;
+  background: var(--app-surface-secondary);
+  border: 0;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.mantine-SegmentedControl-indicator {
+  background: var(--mantine-color-default);
+  box-shadow: var(--mantine-shadow-xs);
+}
+
+.mantine-SegmentedControl-label {
+  color: var(--mantine-color-dimmed);
+  font-weight: var(--mantine-font-weight-medium);
+  transition: color var(--app-motion-fast) var(--app-ease);
+}
+
+.mantine-SegmentedControl-label[data-active] {
+  color: var(--mantine-color-text);
+}
+
+/* ---------------------------------------------------------- */
+/* TABS                                                       */
+/* ---------------------------------------------------------- */
+
+.mantine-Tabs-tab {
+  min-height: 44px;
+  color: var(--mantine-color-dimmed);
+  font-weight: var(--mantine-font-weight-medium);
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    color var(--app-motion-fast) var(--app-ease),
+    background-color var(--app-motion-fast) var(--app-ease);
+}
+
+.mantine-Tabs-tab:hover {
+  color: var(--mantine-color-text);
+  background: var(--mantine-color-default-hover);
+}
+
+.mantine-Tabs-tab[data-active] {
+  color: var(--mantine-color-anchor);
+}
+
+/* ---------------------------------------------------------- */
+/* NAVIGATION                                                 */
+/* ---------------------------------------------------------- */
+
+.mantine-NavLink-root {
+  min-height: 44px;
+  border-radius: var(--mantine-radius-md);
+  color: var(--mantine-color-dimmed);
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    background-color var(--app-motion-fast) var(--app-ease),
+    color var(--app-motion-fast) var(--app-ease);
+}
+
+.mantine-NavLink-root:hover {
+  color: var(--mantine-color-text);
+  background: var(--mantine-color-default-hover);
+}
+
+.mantine-NavLink-root[data-active] {
+  color: var(--mantine-primary-color-light-color);
+  background: var(--mantine-primary-color-light);
+}
+
+/* ---------------------------------------------------------- */
+/* DIVIDERS / TABLES                                          */
+/* ---------------------------------------------------------- */
+
+.mantine-Divider-root {
+  border-color: var(--app-border-subtle);
+}
+
+.mantine-Table-th {
+  color: var(--mantine-color-dimmed);
+  font-size: var(--mantine-font-size-sm);
+  font-weight: var(--mantine-font-weight-medium);
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.mantine-Table-th,
+.mantine-Table-td {
+  border-color: var(--app-border-subtle);
+}
+
+.mantine-Table-td {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* ---------------------------------------------------------- */
+/* GENERIC APPLICATION SURFACES                               */
+/* ---------------------------------------------------------- */
+
+.app-surface-secondary {
+  background: var(--app-surface-secondary);
+}
+
+.app-surface-elevated {
+  background: var(--app-surface-elevated);
+  border: 1px solid var(--app-border-subtle);
+  box-shadow: var(--mantine-shadow-sm);
+}
+
+.app-surface-selected {
+  background: var(--app-surface-selected);
+}
+
+/* ---------------------------------------------------------- */
+/* MOBILE-FIRST PAGE LAYOUT                                   */
+/* ---------------------------------------------------------- */
+
+.app-page {
+  width: 100%;
+  max-width: 80rem;
+  margin-inline: auto;
+  padding: var(--mantine-spacing-md) var(--mantine-spacing-md);
+}
+
+.app-section {
+  margin-block: var(--mantine-spacing-xl);
+}
+
+.app-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--mantine-spacing-md);
+}
+
+@media (min-width: 30em) {
+  .app-page {
+    padding-inline: var(--mantine-spacing-lg);
+  }
+}
+
+@media (min-width: 48em) {
+  .app-page {
+    padding: var(--mantine-spacing-xl) var(--mantine-spacing-xl);
+  }
+
+  .app-page-title {
+    font-size: 2rem;
+  }
+
+  .app-grid {
+    gap: var(--mantine-spacing-lg);
+  }
+}
+
+@media (min-width: 64em) {
+  .app-grid[data-columns='2'] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .app-grid[data-columns='3'] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ---------------------------------------------------------- */
+/* CHARTS                                                     */
+/* ---------------------------------------------------------- */
+
+.mantine-ChartTooltip-tooltip {
+  min-width: 0 !important;
+  background: var(--app-surface-elevated) !important;
+  border: 1px solid var(--app-border-subtle) !important;
+  border-radius: var(--mantine-radius-md) !important;
+  box-shadow: var(--mantine-shadow-md) !important;
+  padding: 0.5rem 0.75rem !important;
+}
+
+.mantine-ChartTooltip-tooltipLabel {
+  color: var(--mantine-color-dimmed) !important;
+  font-size: var(--mantine-font-size-xs) !important;
+  font-weight: var(--mantine-font-weight-medium) !important;
+  margin-bottom: 2px !important;
+  padding: 0 !important;
+}
+
+.mantine-ChartTooltip-tooltipBody {
+  padding: 0 !important;
+}
+
+.mantine-ChartTooltip-tooltipItemData {
+  color: var(--mantine-color-bright) !important;
+  font-size: var(--mantine-font-size-sm) !important;
+  font-weight: var(--mantine-font-weight-bold) !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.mantine-ChartTooltip-tooltipItemName {
+  color: var(--mantine-color-text) !important;
+  font-size: var(--mantine-font-size-xs) !important;
+}
+
+.recharts-cartesian-grid line {
+  stroke: var(--app-border-subtle);
+  stroke-dasharray: 3 3;
+}
+
+.recharts-cartesian-axis-tick text {
+  fill: var(--mantine-color-dimmed);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.recharts-cartesian-axis line {
+  stroke: var(--app-border-subtle);
+}
+
+.recharts-tooltip-cursor {
+  stroke: var(--app-border-strong);
+  stroke-dasharray: 3 3;
+}
+
+/* ---------------------------------------------------------- */
+/* REDUCED MOTION                                             */
+/* ---------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --app-motion-fast: 1ms;
+    --app-motion-normal: 1ms;
+    --app-motion-slow: 1ms;
+  }
+}
+
+.mantine-Modal-overlay,
+.mantine-Drawer-overlay {
+  background: var(--app-overlay);
+}
+
+.mantine-Notification-root {
+  background: var(--app-surface-elevated);
+  border-color: var(--app-border-subtle);
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.finance-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  background: var(--app-surface-secondary);
+  color: var(--mantine-color-dimmed);
+  font-size: var(--mantine-font-size-xs);
+  font-weight: var(--mantine-font-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.finance-badge[data-tone='profit'] {
+  background: var(--app-finance-profit-bg);
+  color: var(--app-finance-profit);
+}
+
+.finance-badge[data-tone='loss'] {
+  background: var(--app-finance-loss-bg);
+  color: var(--app-finance-loss);
+}

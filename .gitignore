@@ -31,7 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
-/src/main/resources/static/
+/server/src/main/resources/static/
 
 # Logs
 logs
