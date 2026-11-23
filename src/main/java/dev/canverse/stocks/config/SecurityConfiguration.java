@@ -42,7 +42,8 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain securityFilterChain(
-            HttpSecurity http, JwtAuthenticationConverter jwtConverter) throws Exception {
+            HttpSecurity http, JwtAuthenticationConverter jwtConverter,
+            CookieBearerTokenResolver cookieBearerTokenResolver) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable);
         http.cors(Customizer.withDefaults());
 
@@ -56,6 +57,8 @@ public class SecurityConfiguration {
                                 .permitAll()
                                 .requestMatchers("/api/auth/refresh-token")
                                 .permitAll()
+                                .requestMatchers("/api/auth/logout")
+                                .permitAll()
                                 .requestMatchers("/v3/api-docs")
                                 .permitAll()
                                 .requestMatchers("/swagger-ui/**")
@@ -66,7 +69,8 @@ public class SecurityConfiguration {
                                 .permitAll());
 
         http.oauth2ResourceServer(
-                config -> config.jwt(s -> s.jwtAuthenticationConverter(jwtConverter)));
+                config -> config.jwt(s -> s.jwtAuthenticationConverter(jwtConverter))
+                        .bearerTokenResolver(cookieBearerTokenResolver));
 
         http.exceptionHandling(
                 handler ->
