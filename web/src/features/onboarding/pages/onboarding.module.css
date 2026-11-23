@@ -4,7 +4,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  min-height: 100dvh;
   padding: 3rem 1rem;
   transition: background 0.3s ease;
   background: var(--mantine-color-body);

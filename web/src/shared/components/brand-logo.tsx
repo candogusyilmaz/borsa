@@ -1,15 +1,13 @@
-import { Group, Text, ThemeIcon } from '@mantine/core';
 import { IconTrendingUp } from '@tabler/icons-react';
+import styles from './brand-logo.module.css';
 
 export function BrandLogo() {
   return (
-    <Group gap="xs" wrap="nowrap">
-      <ThemeIcon size={32} radius="sm" aria-hidden="true">
-        <IconTrendingUp size={20} />
-      </ThemeIcon>
-      <Text span fw={600} lts="-0.02em">
-        Canverse
-      </Text>
-    </Group>
+    <span className={styles.brand}>
+      <span className={styles.mark} aria-hidden="true">
+        <IconTrendingUp size={17} stroke={1.7} />
+      </span>
+      Canverse
+    </span>
   );
 }

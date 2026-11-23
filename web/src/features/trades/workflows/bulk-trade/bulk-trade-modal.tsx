@@ -1,11 +1,13 @@
-import { Button, Divider, Group, Modal, Text } from '@mantine/core';
-import { IconArrowNarrowRight, IconCirclePlus, IconFile, IconLayoutGrid, IconSparkles, IconTrash, IconUpload } from '@tabler/icons-react';
+import { Button, Group, Text } from '@mantine/core';
+import { IconArrowNarrowRight, IconCirclePlus, IconFile, IconTrash, IconUpload } from '@tabler/icons-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { $api } from '~/api/openapi';
+import { ResponsiveOverlay } from '~/shared/components/responsive-overlay/responsive-overlay';
 import { alerts } from '~/shared/feedback/alerts';
 import { getCurrencySymbol } from '~/shared/format/currency';
+import { useIsMobile } from '~/shared/hooks/use-is-mobile';
 import classes from './bulk-trade-modal.module.css';
 import { useBulkTradeModalStore } from './store';
 import type { TradeRow } from './types';
@@ -17,21 +19,9 @@ export function BulkTradeModal() {
   const { opened, close, portfolioId } = useBulkTradeModalStore();
 
   return (
-    <Modal
-      centered
-      opened={opened}
-      onClose={close}
-      size="980px"
-      withCloseButton={false}
-      padding={0}
-      styles={{
-        body: { padding: 0 },
-        content: { overflow: 'hidden' }
-      }}
-      transitionProps={{ transition: 'fade' }}
-      closeOnClickOutside={false}>
+    <ResponsiveOverlay opened={opened} onClose={close} title="Bulk trade import" size={980} closeOnClickOutside={false}>
       <BulkTradeForm portfolioId={portfolioId} close={close} />
-    </Modal>
+    </ResponsiveOverlay>
   );
 }
 
@@ -71,35 +61,23 @@ function BulkTradeForm({ portfolioId, close }: { portfolioId: number; close: () 
     setRows((prev) => prev.filter((r) => r.id !== rowId));
   }, []);
 
-  const buys = useMemo(() => rows.filter((r) => r.type === 'BUY').length, [rows]);
-  const sells = useMemo(() => rows.filter((r) => r.type === 'SELL').length, [rows]);
-  const notional = useMemo(() => rows.reduce((s, r) => s + (r.price || 0) * (r.quantity || 0), 0), [rows]);
-
-  const fmtNotional = useMemo(
-    () =>
-      notional >= 1_000_000
-        ? `$${(notional / 1_000_000).toFixed(2)}M`
-        : notional >= 1_000
-          ? `$${(notional / 1_000).toFixed(1)}K`
-          : `$${notional.toFixed(0)}`,
-    [notional]
-  );
-
   const getCurrencyPrefix = useCallback(
     (stockId: string) => {
       const inst = instrumentMap.get(stockId);
-      return inst ? getCurrencySymbol(inst.supportedCurrencies[0] || 'USD') : '$';
+      const currency = inst?.supportedCurrencies[0];
+      return currency ? getCurrencySymbol(currency) : '';
     },
     [instrumentMap]
   );
 
   // ── Virtualizer ────────────────────────────────────────────
 
-  const ROW_HEIGHT = 52;
+  const isMobile = useIsMobile();
   const virtualizer = useVirtualizer({
     count: rows.length,
+    getItemKey: (index) => rows[index]?.id ?? index,
     getScrollElement: () => tableRef.current,
-    estimateSize: () => ROW_HEIGHT,
+    estimateSize: () => (isMobile ? 220 : 52),
     overscan: 8
   });
   const virtualItems = virtualizer.getVirtualItems();
@@ -168,53 +146,6 @@ function BulkTradeForm({ portfolioId, close }: { portfolioId: number; close: () 
   return (
     <form onSubmit={handleSubmit} style={{ display: 'contents' }}>
       <div className={classes.modalBody}>
-        {/* Header */}
-        <div className={classes.modalHeader}>
-          <div className={classes.modalIconBox}>
-            <IconLayoutGrid size={18} stroke={1.5} color="var(--mantine-color-brand-4)" />
-          </div>
-          <div>
-            <Text fw={600} size="lg" lh={1.2}>
-              Bulk Trade Import
-            </Text>
-            <Text size="xs" c="dimmed" mt={2}>
-              Enter trades manually or upload a CSV / JSON file
-            </Text>
-          </div>
-          <button type="button" className={classes.closeBtn} onClick={close} aria-label="Close">
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
-              <path d="M2 2l9 9M11 2L2 11" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Stats */}
-        <div className={classes.statsRow}>
-          <div className={classes.statItem}>
-            <div className={classes.statLabel}>Total rows</div>
-            <div className={classes.statValue}>{rows.length}</div>
-          </div>
-          <div className={classes.statItem}>
-            <div className={classes.statLabel}>Buys</div>
-            <div className={classes.statValue} style={{ color: 'var(--mantine-color-profit-5)' }}>
-              {buys}
-            </div>
-          </div>
-          <div className={classes.statItem}>
-            <div className={classes.statLabel}>Sells</div>
-            <div className={classes.statValue} style={{ color: 'var(--mantine-color-loss-5)' }}>
-              {sells}
-            </div>
-          </div>
-          <div className={classes.statItem}>
-            <div className={classes.statLabel}>Notional</div>
-            <div className={classes.statValue} data-numeric>
-              {fmtNotional}
-            </div>
-          </div>
-        </div>
-
-        {/* Toolbar */}
         <div className={classes.toolbar}>
           <Group gap="xs">
             <Button
@@ -225,13 +156,11 @@ function BulkTradeForm({ portfolioId, close }: { portfolioId: number; close: () 
               disabled={importMutation.isPending || saveMutation.isPending}>
               Add row
             </Button>
-            <Divider orientation="vertical" />
+
             <Button
               variant="subtle"
               size="sm"
-              className={classes.aiBtn}
               leftSection={<IconUpload size={15} />}
-              rightSection={<IconSparkles size={13} />}
               loading={importMutation.isPending}
               onClick={() => fileInputRef.current?.click()}
               disabled={importMutation.isPending || saveMutation.isPending}>
@@ -266,15 +195,15 @@ function BulkTradeForm({ portfolioId, close }: { portfolioId: number; close: () 
               </Text>
             </div>
           ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 780, tableLayout: 'fixed' }}>
+            <table className={classes.table} aria-label="Bulk trades">
               <thead className={classes.tableHead}>
                 <tr>
                   <th style={{ width: 44, textAlign: 'center' }}>#</th>
                   <th style={{ width: 110 }}>Type</th>
                   <th>Asset</th>
-                  <th style={{ width: 150 }}>Price</th>
+                  <th style={{ width: 135 }}>Price</th>
                   <th style={{ width: 120 }}>Quantity</th>
-                  <th style={{ width: 210 }}>Execution date</th>
+                  <th style={{ width: 180 }}>Execution date</th>
                   <th style={{ width: 50 }} />
                 </tr>
               </thead>
@@ -292,6 +221,7 @@ function BulkTradeForm({ portfolioId, close }: { portfolioId: number; close: () 
                       key={row.id}
                       row={row}
                       index={vi.index}
+                      measure={virtualizer.measureElement}
                       isLast={vi.index === rows.length - 1}
                       instruments={instruments}
                       currencyPrefix={getCurrencyPrefix(row.stockId)}
@@ -314,15 +244,8 @@ function BulkTradeForm({ portfolioId, close }: { portfolioId: number; close: () 
 
         {/* Footer */}
         <div className={classes.footer}>
-          <Text size="sm" c="dimmed" ff="monospace">
-            <Text span c="brand.4">
-              {rows.length}
-            </Text>{' '}
-            trade{rows.length !== 1 ? 's' : ''} &nbsp;·&nbsp;{' '}
-            <Text span c="brand.4">
-              {notional.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-            </Text>{' '}
-            notional
+          <Text size="sm" c="dimmed">
+            {rows.length} {rows.length === 1 ? 'trade' : 'trades'}
           </Text>
           <Group gap="xs">
             <Button variant="default" onClick={close} disabled={saveMutation.isPending}>

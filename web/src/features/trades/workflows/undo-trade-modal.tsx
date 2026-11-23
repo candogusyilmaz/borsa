@@ -1,41 +1,31 @@
-import { Modal, ScrollArea } from '@mantine/core';
 import { create } from 'zustand';
-import type { paths } from '~/api/schema';
+import type { components } from '~/api/schema';
+import { ResponsiveOverlay } from '~/shared/components/responsive-overlay/responsive-overlay';
 import { UndoTradeForm } from './undo-trade-form';
 
-type Trade = paths['/api/portfolios/{portfolioId}/trades']['get']['responses']['200']['content']['*/*']['trades'][number];
+type Trade = components['schemas']['Item'];
 
 interface UndoTradeModalState {
   opened: boolean;
   trade: Trade;
-
-  // Actions
-  open: (trade: Trade) => void;
+  portfolioId?: string;
+  currencyCode?: string;
+  open: (trade: Trade, portfolioId?: string, currencyCode?: string) => void;
   close: () => void;
 }
 
 export const useUndoTradeModalStore = create<UndoTradeModalState>((set) => ({
-  // Initial state
   opened: false,
   trade: null!,
-
-  // Actions
-  open: (trade) => set({ opened: true, trade }),
+  open: (trade, portfolioId, currencyCode) => set({ opened: true, trade, portfolioId, currencyCode }),
   close: () => set({ opened: false })
 }));
 
 export function UndoTradeModal() {
   const { opened, close } = useUndoTradeModalStore();
-
   return (
-    <Modal
-      centered
-      withCloseButton={false}
-      opened={opened}
-      onClose={close}
-      transitionProps={{ transition: 'fade' }}
-      scrollAreaComponent={ScrollArea.Autosize}>
+    <ResponsiveOverlay opened={opened} onClose={close} title="Undo trade">
       <UndoTradeForm />
-    </Modal>
+    </ResponsiveOverlay>
   );
 }

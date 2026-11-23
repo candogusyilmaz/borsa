@@ -1,1 +1,1 @@
-export { CreatePortfolioButton } from './workflows/create-portfolio-button';
+export { PortfolioSelector } from './components/portfolio-selector/portfolio-selector';

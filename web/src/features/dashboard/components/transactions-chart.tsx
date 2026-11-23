@@ -1,201 +1,163 @@
-import { CompositeChart } from '@mantine/charts';
-import { Button, Card, ColorSwatch, Divider, Group, Stack, Text, ThemeIcon } from '@mantine/core';
-import {
-  IconChartBarPopular,
-  IconChartLine,
-  IconCheck,
-  IconPencilCode,
-  IconReportAnalytics,
-  IconReportMoney,
-  IconWorld
-} from '@tabler/icons-react';
-import dayjs from 'dayjs';
-import { $api } from '~/api/openapi';
+import { Button, SegmentedControl, Skeleton, Switch } from '@mantine/core';
+import { useId, useState } from 'react';
+import { Area, Bar, CartesianGrid, ComposedChart, Rectangle, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { format } from '~/shared/format/format';
+import type { ChartRange, getPerformanceSeries } from '../dashboard-placeholders';
+import type { DashboardModel } from '../hooks/use-dashboard-view';
+import styles from '../pages/dashboard-page.module.css';
 
-export function TransactionsChart({ currencyCode, dashboardId }: { currencyCode: string; dashboardId: string }) {
-  const { data: transactions } = $api.useQuery('get', '/api/dashboards/{dashboardId}/transactions', {
-    params: {
-      path: {
-        dashboardId: Number(dashboardId)
-      }
-    }
-  });
+type Points = ReturnType<typeof getPerformanceSeries>['points'];
+const axisDate = new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' });
+const fullDate = new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', year: 'numeric' });
 
-  const chartData = (() => {
-    if (!transactions) return [] as Array<{ date: string; sell: number; cumulative?: number }>;
-    const aggregate = new Map<string, { date: string; sell: number }>();
-    for (const t of transactions) {
-      if (t.type !== 'SELL') continue; // only SELL transactions per request
-      const d = dayjs(t.actionDate);
-      const key = d.format('YYYY-MM-DD');
-      const rec = aggregate.get(key) ?? { date: key, sell: 0 };
-      const value = t.profit;
-      rec.sell += value ?? 0;
-      aggregate.set(key, rec);
-    }
-    const sorted = Array.from(aggregate.values()).sort((a, b) => (a.date < b.date ? -1 : 1));
-
-    // add cumulative running total to each point
-    let running = 0;
-    return sorted.map((r) => {
-      running += r.sell;
-      return { date: r.date, sell: r.sell, cumulative: running };
-    });
-  })();
-
-  if (chartData.length === 0) {
-    return <EmptyState />;
-  }
+export function TransactionsChart({ model, currency }: { model: DashboardModel; currency: string }) {
+  const [dailyBars, setDailyBars] = useState(true);
+  const { chart, trades } = model;
 
   return (
-    <Card p="lg" withBorder>
-      <Group>
-        <Stack gap={4}>
-          <Group gap={6} align="center">
-            <IconChartBarPopular />
-            <Text fw={600} fz={24}>
-              Trades
-            </Text>
-          </Group>
-          <Text fw={500} c="dimmed" fz="xs">
-            This chart shows your realized profit over time.
-          </Text>
-        </Stack>
-      </Group>
-      <Divider my="lg" />
-
-      {chartData.length > 0 && (
-        <>
-          <Group gap={'xl'} align="center">
-            <Stack gap={8}>
-              <Group gap={8} align="center">
-                <ColorSwatch color="var(--mantine-color-dimmed)" size={14} radius="xs" />
-                <Text size="sm" fw={600} lh={1}>
-                  {transactions?.filter((t) => t.type === 'SELL').length ?? 0}
-                </Text>
-              </Group>
-              <Text size="xs" c={'dimmed'} lh={1}>
-                Transactions
-              </Text>
-            </Stack>
-            <Stack gap={8}>
-              <Group gap={8} align="center">
-                <ColorSwatch color="var(--mantine-color-brand-6)" size={14} radius="xs" />
-                <Text size="sm" fw={600} lh={1}>
-                  {format.toCurrency(
-                    chartData.reduce((a, b) => a + b.sell, 0),
-                    false,
-                    currencyCode
-                  )}
-                </Text>
-              </Group>
-              <Text size="xs" c={'dimmed'} lh={1}>
-                Cumulative Profit
-              </Text>
-            </Stack>
-            <Stack gap={8} ml={'auto'}>
-              <Group gap={8} align="center">
-                <ColorSwatch color="var(--mantine-color-blue-5)" size={14} radius="xs" />
-                <Text size="sm" fw={600} lh={1}>
-                  {transactions &&
-                    format.toLocalePercentage(
-                      transactions.length === 0
-                        ? 0
-                        : (transactions.filter((t) => t.type === 'SELL' && t.profit! > 0).length /
-                            transactions.filter((t) => t.type === 'SELL').length) *
-                            100
-                    )}
-                </Text>
-              </Group>
-              <Text size="xs" c={'dimmed'} lh={1} ta={'right'}>
-                Win Rate
-              </Text>
-            </Stack>
-          </Group>
-          <CompositeChart
-            mt="xl"
-            h={350}
-            data={chartData}
-            dataKey="date"
-            withYAxis={false}
-            withDots={false}
-            connectNulls={true}
-            valueFormatter={(v) => format.toCurrency(v, true, currencyCode)}
-            maxBarWidth={15}
-            series={[
-              { name: 'sell', color: 'blue.5', label: 'Profit', type: 'bar' },
-              { name: 'cumulative', color: 'brand.6', label: 'Cumulative', type: 'area' }
-            ]}
-            tooltipAnimationDuration={160}
-            yAxisProps={{ tickFormatter: (v: number) => format.toCurrency(v, true, currencyCode, currencyCode, 0, 0) }}
-            xAxisProps={{
-              tickFormatter: (d) => dayjs(d).format('MMM D'),
-              minTickGap: 100
-            }}
-            strokeWidth={3}
+    <section className={styles.chartSurface} aria-labelledby="performance-title">
+      <div className={styles.chartHeader}>
+        <div className={styles.sectionTitle}>
+          <h2 id="performance-title">Realized performance</h2>
+          {trades.isSuccess && (
+            <output>
+              {chart.count} {chart.count === 1 ? 'transaction' : 'transactions'}
+              {chart.count > 0 && ` · ${format.toCurrency(chart.cumulative, false, currency)} cumulative`}
+            </output>
+          )}
+        </div>
+        <div className={styles.chartControls}>
+          <SegmentedControl<ChartRange>
+            className={styles.range}
+            size="xs"
+            aria-label="Performance period"
+            value={model.chartRange}
+            onChange={model.setChartRange}
+            data={['3M', '6M', 'All']}
           />
-        </>
+          <Switch
+            className={styles.dailySwitch}
+            size="xs"
+            color="gray.6"
+            label="Daily bars"
+            checked={dailyBars}
+            onChange={(event) => setDailyBars(event.currentTarget.checked)}
+          />
+        </div>
+      </div>
+      {trades.isPending && <Skeleton h={224} aria-label="Loading performance chart" />}
+      {trades.isError && (
+        <div className={styles.state}>
+          <p role="alert">Could not load realized performance.</p>
+          <Button variant="default" onClick={() => void trades.refetch()}>
+            Try again
+          </Button>
+        </div>
       )}
-    </Card>
+      {trades.isSuccess &&
+        (chart.points.length > 0 ? (
+          <PerformancePlot points={chart.points} currency={currency} dailyBars={dailyBars} />
+        ) : (
+          <p className={styles.chartEmpty}>No realized sales in this period.</p>
+        ))}
+    </section>
   );
 }
 
-function EmptyState() {
+function PerformancePlot({ points, currency, dailyBars }: { points: Points; currency: string; dailyBars: boolean }) {
+  const gradient = useId();
+  const isSingle = points.length === 1;
+  const money = (value: number) => format.toCurrency(value, false, currency);
+
   return (
-    <Card p="lg" withBorder>
-      <Stack align="center" justify="center" py="xl">
-        <ThemeIcon size={64} radius="xl" variant="light" c="gray.5">
-          <IconReportAnalytics size={36} />
-        </ThemeIcon>
+    <div className={styles.chart}>
+      <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+        <ComposedChart
+          aria-label="Daily and cumulative realized profit and loss. Use arrow keys to browse dates."
+          accessibilityLayer
+          data={points}
+          margin={{ top: 8, right: 6, bottom: 0, left: 0 }}>
+          <defs>
+            <linearGradient id={gradient} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="var(--app-chart-line)" stopOpacity={0.22} />
+              <stop offset="100%" stopColor="var(--app-chart-line)" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid vertical={false} stroke="var(--app-border-strong)" strokeOpacity={0.35} strokeDasharray="3 3" />
+          <XAxis
+            dataKey="date"
+            type="number"
+            scale="time"
+            domain={['dataMin', 'dataMax']}
+            ticks={isSingle ? [points[0]!.date] : undefined}
+            padding={{ left: 8, right: 8 }}
+            tickFormatter={(date: number) => axisDate.format(date)}
+            tick={{ fill: 'var(--mantine-color-dimmed)', fontSize: 12 }}
+            minTickGap={28}
+            tickLine={false}
+            axisLine={false}
+          />
+          <YAxis
+            width="auto"
+            tickFormatter={(value: number) => format.toCurrency(value, true, currency, 'tr-TR', 0, 1)}
+            tick={{ fill: 'var(--mantine-color-dimmed)', fontSize: 11.5 }}
+            tickLine={false}
+            axisLine={false}
+            tickCount={4}
+          />
+          <Tooltip
+            isAnimationActive={false}
+            cursor={{ stroke: 'var(--app-border-strong)' }}
+            content={({ active, payload }) => {
+              const point = payload?.[0]?.payload as Points[number] | undefined;
+              if (!active || !point) return null;
 
-        <Text fw={700} fz="lg" mt="md">
-          No SELL trades yet
-        </Text>
-        <Text c="dimmed" size="sm" ta="center" maw={420}>
-          Once you record or import SELL trades, this chart will visualize your realized profit over time.
-        </Text>
-
-        <Group gap="sm" mt="md">
-          <Button leftSection={<IconPencilCode size={16} />} onClick={() => {}}>
-            Record trade
-          </Button>
-          <Button leftSection={<IconWorld size={16} />} variant="subtle" onClick={() => {}}>
-            Import CSV
-          </Button>
-        </Group>
-
-        <Divider my="sm" style={{ width: '100%', maxWidth: 420 }} />
-
-        <Group gap="lg" align="center">
-          <Stack gap={4} align="center">
-            <ThemeIcon variant="transparent" c="teal">
-              <IconChartLine />
-            </ThemeIcon>
-            <Text size="xs" c="dimmed">
-              Real-time insights
-            </Text>
-          </Stack>
-
-          <Stack gap={4} align="center">
-            <ThemeIcon variant="transparent" c="green">
-              <IconCheck />
-            </ThemeIcon>
-            <Text size="xs" c="dimmed">
-              Win rate & profit
-            </Text>
-          </Stack>
-
-          <Stack gap={4} align="center">
-            <ThemeIcon variant="transparent" c="blue">
-              <IconReportMoney />
-            </ThemeIcon>
-            <Text size="xs" c="dimmed">
-              Export & reports
-            </Text>
-          </Stack>
-        </Group>
-      </Stack>
-    </Card>
+              return (
+                <div className={styles.tooltip}>
+                  <time dateTime={new Date(point.date).toISOString()}>{fullDate.format(point.date)}</time>
+                  <div>
+                    <span>Cumulative</span>
+                    <strong>{money(point.cumulative)}</strong>
+                  </div>
+                  <div>
+                    <span>Daily P&L</span>
+                    <strong data-tone={point.daily > 0 ? 'profit' : point.daily < 0 ? 'loss' : undefined}>{money(point.daily)}</strong>
+                  </div>
+                </div>
+              );
+            }}
+          />
+          <Area
+            type="monotone"
+            dataKey="cumulative"
+            name="Cumulative"
+            fill={`url(#${gradient})`}
+            fillOpacity={1}
+            stroke="var(--app-chart-line)"
+            strokeWidth={2}
+            baseValue={0}
+            dot={isSingle}
+            activeDot={{ r: 4 }}
+            isAnimationActive={false}
+          />
+          {dailyBars && (
+            <Bar
+              dataKey="daily"
+              name="Daily P&L"
+              barSize={8}
+              isAnimationActive={false}
+              shape={(props) => (
+                <Rectangle
+                  {...props}
+                  fill={props.payload.daily < 0 ? 'var(--app-finance-loss)' : 'var(--app-finance-profit)'}
+                  fillOpacity={0.36}
+                  radius={props.payload.daily < 0 ? [0, 0, 3, 3] : [3, 3, 0, 0]}
+                />
+              )}
+            />
+          )}
+        </ComposedChart>
+      </ResponsiveContainer>
+    </div>
   );
 }

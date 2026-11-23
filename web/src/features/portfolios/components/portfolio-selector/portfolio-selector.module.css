@@ -1,0 +1,51 @@
+.choices {
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.choice {
+  display: block;
+  padding: 0.75rem 0.25rem;
+  border-bottom: 1px solid var(--app-border-subtle);
+  color: inherit;
+  text-decoration: none;
+}
+
+.choice:hover,
+.choice[aria-current='page'] {
+  background: var(--app-surface-selected);
+  border-radius: 8px;
+  color: var(--mantine-color-text);
+}
+
+.choiceContent {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  overflow-wrap: anywhere;
+}
+
+.choiceContent small {
+  display: block;
+  color: var(--mantine-color-dimmed);
+}
+
+.choiceContent svg {
+  flex: none;
+  color: var(--mantine-color-text);
+}
+
+.menuChoices {
+  max-height: min(55dvh, 22rem);
+  overflow-y: auto;
+}
+
+.status {
+  margin: 0;
+  padding: 0.75rem;
+  color: var(--mantine-color-dimmed);
+  font-size: 0.875rem;
+}

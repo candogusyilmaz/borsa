@@ -1,7 +1,6 @@
-import { Container, Stack, Title } from '@mantine/core';
+import { Title } from '@mantine/core';
 import { createFileRoute } from '@tanstack/react-router';
-import { PositionsFilter } from '~/features/positions/components/positions-table/positions-filter';
-import { PositionsTable } from '~/features/positions/components/positions-table/positions-table';
+import { PositionsView } from '~/features/positions/components/positions-view/positions-view';
 
 export const Route = createFileRoute('/_authenticated/_member/positions')({
   component: RouteComponent,
@@ -10,12 +9,11 @@ export const Route = createFileRoute('/_authenticated/_member/positions')({
 
 function RouteComponent() {
   return (
-    <Container strategy="grid" size="lg" p="lg">
-      <Stack>
-        <Title>Positions</Title>
-        <PositionsFilter />
-        <PositionsTable />
-      </Stack>
-    </Container>
+    <>
+      <Title order={1} mb="md" className="member-page-title">
+        Positions
+      </Title>
+      <PositionsView />
+    </>
   );
 }

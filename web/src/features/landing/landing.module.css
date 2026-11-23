@@ -1,5 +1,5 @@
 .container {
-  min-height: 100vh;
+  min-height: 100dvh;
   background-color: var(--mantine-color-body);
   color: var(--mantine-color-text);
   overflow: hidden;

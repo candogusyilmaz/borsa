@@ -110,6 +110,7 @@ export const AssetCombobox = memo(function AssetCombobox({ value, onChange, inst
             const resolved = instruments.find((i) => i.id === value);
             if (resolved) setSearch(resolved.symbol);
           }}
+          aria-label="Asset"
           placeholder="Search symbol or name…"
           leftSection={<IconSearch size={12} />}
           classNames={{ input: classes.assetInput }}

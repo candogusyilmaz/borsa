@@ -1,0 +1,176 @@
+.view,
+.inspector {
+  display: grid;
+  gap: 0.9rem;
+  min-width: 0;
+}
+
+.search {
+  width: min(100%, 22rem);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.table th,
+.table td {
+  padding: 0.8rem 0.65rem;
+  border-bottom: 1px solid var(--app-border-subtle);
+  font-size: 0.84375rem;
+  text-align: end;
+  overflow-wrap: anywhere;
+}
+
+.table th:first-child,
+.table td:first-child {
+  padding-inline-start: 0;
+  text-align: start;
+}
+
+.table th:last-child,
+.table td:last-child {
+  padding-inline-end: 0;
+}
+
+.table th {
+  color: var(--mantine-color-dimmed);
+  font-weight: 500;
+}
+
+.table tr {
+  position: relative;
+}
+
+.table tbody tr:hover,
+.table tbody tr:focus-within,
+.mobileRow:hover {
+  background: var(--mantine-color-default-hover);
+}
+
+.symbolIdentity {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.symbolIdentity > :last-child {
+  min-width: 0;
+}
+
+.rowTrigger {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.rowTrigger::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+}
+
+.table small,
+.mobileRow small {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--mantine-color-dimmed);
+}
+
+.muted,
+.state,
+[data-stale='true'] {
+  color: var(--mantine-color-dimmed);
+}
+
+.return[data-tone='profit'],
+.return[data-tone='profit'] small {
+  color: var(--app-finance-profit);
+}
+
+.return[data-tone='loss'],
+.return[data-tone='loss'] small {
+  color: var(--app-finance-loss);
+}
+
+.state {
+  margin: 0;
+  padding-block: 1.25rem;
+}
+
+.mobileSearch {
+  justify-self: start;
+  max-width: 100%;
+}
+
+.mobileList {
+  padding: 0;
+  margin: 0;
+  border-top: 1px solid var(--app-border-subtle);
+  list-style: none;
+}
+
+.mobileRow {
+  display: grid;
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 0.45rem;
+  align-items: center;
+  min-height: 3.75rem;
+  padding: 0.65rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--app-border-subtle);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.84375rem;
+  text-align: start;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.mobileRow > svg {
+  color: var(--mantine-color-dimmed);
+}
+
+.end {
+  text-align: end;
+}
+
+.inspector p {
+  margin: 0;
+}
+
+.inspector h3 {
+  margin: 1rem 0 0.75rem;
+  font-size: 1rem;
+}
+
+.metrics {
+  padding: 0;
+  margin: 0;
+}
+
+.metrics > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 0.55rem;
+  border-bottom: 1px solid var(--app-border-subtle);
+}
+
+.metrics dt {
+  color: var(--mantine-color-dimmed);
+}
+
+.metrics dd {
+  margin: 0;
+  text-align: end;
+}

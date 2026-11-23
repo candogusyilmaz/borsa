@@ -5,25 +5,25 @@ export function PeriodNavigator({
   label,
   onPrev,
   onNext,
-  canPrev = true,
-  canNext = true
+  canPrev,
+  canNext
 }: {
   label: string;
   onPrev: () => void;
   onNext: () => void;
-  canPrev?: boolean;
-  canNext?: boolean;
+  canPrev: boolean;
+  canNext: boolean;
 }) {
   return (
-    <Group gap={2} align="center" wrap="nowrap">
-      <ActionIcon size="xs" variant="subtle" onClick={onPrev} disabled={!canPrev}>
-        <IconChevronLeft size={13} />
+    <Group gap={4} align="center" wrap="nowrap">
+      <ActionIcon variant="subtle" aria-label="Previous period" onClick={onPrev} disabled={!canPrev}>
+        <IconChevronLeft size={16} />
       </ActionIcon>
-      <Text size="xs" fw={600} style={{ minWidth: 80, textAlign: 'center', whiteSpace: 'nowrap' }}>
+      <Text size="sm" fw={550}>
         {label}
       </Text>
-      <ActionIcon size="xs" variant="subtle" onClick={onNext} disabled={!canNext}>
-        <IconChevronRight size={13} />
+      <ActionIcon variant="subtle" aria-label="Next period" onClick={onNext} disabled={!canNext}>
+        <IconChevronRight size={16} />
       </ActionIcon>
     </Group>
   );

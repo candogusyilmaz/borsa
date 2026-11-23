@@ -3,12 +3,14 @@ import { DateTimePicker } from '@mantine/dates';
 import { IconTrash } from '@tabler/icons-react';
 import { memo, useState } from 'react';
 import { AssetCombobox } from './asset-combobox';
+import styles from './bulk-trade-modal.module.css';
 import { TypePill } from './type-pill';
 import type { Instrument, TradeRow } from './types';
 
 interface VirtualRowProps {
   row: TradeRow;
   index: number;
+  measure: (element: HTMLTableRowElement | null) => void;
   isLast?: boolean;
   instruments: Instrument[];
   currencyPrefix: string;
@@ -21,6 +23,7 @@ interface VirtualRowProps {
 export const VirtualRow = memo(function VirtualRow({
   row,
   index,
+  measure,
   isLast,
   instruments,
   currencyPrefix,
@@ -38,19 +41,23 @@ export const VirtualRow = memo(function VirtualRow({
   const toNum = (v: string | number) => (typeof v === 'number' ? v : parseFloat(String(v).replace(/,/g, '')) || 0);
 
   return (
-    <tr style={isLast ? undefined : { borderBottom: '1px solid var(--app-border-subtle)' }}>
-      <td style={{ textAlign: 'center', padding: '6px 8px', width: 44 }}>
+    <tr
+      ref={measure}
+      data-index={index}
+      className={styles.editorRow}
+      style={isLast ? undefined : { borderBottom: '1px solid var(--app-border-subtle)' }}>
+      <td className={styles.rowNumber} style={{ textAlign: 'center', padding: '6px 8px' }}>
         <Text size="xs" c="dimmed" ff="monospace">
           {String(index + 1).padStart(2, '0')}
         </Text>
       </td>
-      <td style={{ padding: '6px 8px', width: 110 }}>
+      <td className={styles.typeCell} style={{ padding: '6px 8px' }}>
         <TypePill value={row.type} onChange={(v) => onTypeChange(row.id, v)} />
       </td>
-      <td style={{ padding: '6px 8px' }}>
+      <td className={styles.assetCell} style={{ padding: '6px 8px' }}>
         <AssetCombobox value={row.stockId} onChange={(id) => onStockChange(row.id, id)} instruments={instruments} />
       </td>
-      <td style={{ padding: '6px 8px', width: 150 }}>
+      <td style={{ padding: '6px 8px' }}>
         <NumberInput
           prefix={currencyPrefix}
           hideControls
@@ -66,7 +73,7 @@ export const VirtualRow = memo(function VirtualRow({
           }}
         />
       </td>
-      <td style={{ padding: '6px 8px', width: 120 }}>
+      <td style={{ padding: '6px 8px' }}>
         <NumberInput
           hideControls
           min={0}
@@ -79,7 +86,7 @@ export const VirtualRow = memo(function VirtualRow({
           }}
         />
       </td>
-      <td style={{ padding: '6px 8px', width: 210 }}>
+      <td className={styles.dateCell} style={{ padding: '6px 8px' }}>
         <DateTimePicker
           radius="md"
           valueFormat="MMM DD, YYYY HH:mm"
@@ -92,8 +99,8 @@ export const VirtualRow = memo(function VirtualRow({
           }}
         />
       </td>
-      <td style={{ textAlign: 'center', padding: '6px 8px', width: 50 }}>
-        <ActionIcon variant="subtle" color="red" size="sm" onClick={() => onRemove(row.id)}>
+      <td className={styles.removeCell} style={{ textAlign: 'center', padding: '6px 8px' }}>
+        <ActionIcon variant="subtle" color="loss" aria-label="Remove trade row" onClick={() => onRemove(row.id)}>
           <IconTrash size={14} />
         </ActionIcon>
       </td>

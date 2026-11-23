@@ -1,118 +1,152 @@
-import { Button, Container, Divider, Menu, SimpleGrid, Skeleton, Stack, Title } from '@mantine/core';
-import {
-  IconCashBanknote,
-  IconChartLine,
-  IconCheck,
-  IconChevronDown,
-  IconLayoutDashboardFilled,
-  IconTrendingDown,
-  IconTrendingUp
-} from '@tabler/icons-react';
-import { useState } from 'react';
-import { $api } from '~/api/openapi';
-import { useCreateNewDashboardModalStore } from '~/features/dashboard/workflows/create-dashboard-modal';
-import { StatCard } from '../components/stat-card';
+import { Button, Menu, Skeleton } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { IconCheck, IconChevronDown, IconPlus } from '@tabler/icons-react';
+import { isDataStale } from '~/features/positions';
+import { ResponsiveOverlay } from '~/shared/components/responsive-overlay/responsive-overlay';
+import { format } from '~/shared/format/format';
+import { useIsMobile } from '~/shared/hooks/use-is-mobile';
+import { DashboardPortfolios } from '../components/dashboard-portfolios';
+import { DashboardSummary } from '../components/dashboard-summary';
 import { TransactionsChart } from '../components/transactions-chart';
-import classes from './dashboard-page.module.css';
+import { type DashboardModel, useDashboardView } from '../hooks/use-dashboard-view';
+import { useCreateNewDashboardModalStore } from '../workflows/create-dashboard-modal';
+import styles from './dashboard-page.module.css';
 
 export function DashboardPage() {
-  const { data: dashboards } = $api.useSuspenseQuery('get', '/api/dashboards');
-
-  const [selectedDashboard, setSelectedDashboard] = useState(dashboards.find((s) => s.isDefault)?.id ?? dashboards[0]!.id);
-
-  const { data: dashboard, status } = $api.useQuery('get', '/api/dashboards/{dashboardId}', {
-    params: {
-      path: {
-        dashboardId: Number(selectedDashboard)
-      }
-    }
-  });
-
-  const open = useCreateNewDashboardModalStore((s) => s.open);
+  const model = useDashboardView();
+  const dashboard = model.dashboard.data;
 
   return (
-    <Container strategy="grid" size="lg" p={{ base: 'md', sm: 'xl' }} w="100%">
-      <Stack>
-        <Menu width={250} position="bottom-start" shadow="xl">
-          <Menu.Target>
-            <Button
-              mr="auto"
-              maw="100%"
-              size="compact-xl"
-              variant="subtle"
-              px={5}
-              ml={-5}
-              color="gray"
-              rightSection={<IconChevronDown size={20} />}>
-              <Title component="span" className={classes.dashboardName}>
-                {dashboards.find((d) => d.id === selectedDashboard)?.name}
-              </Title>
-            </Button>
-          </Menu.Target>
-          <Menu.Dropdown ml={5} p={0} bdrs="sm">
-            {dashboards.map((d, index) => (
-              <Menu.Item
-                styles={{
-                  item: { borderRadius: index === 0 ? 'var(--mantine-radius-sm) var(--mantine-radius-sm) 0 0' : '0' }
-                }}
-                h={50}
-                key={d.id}
-                color="gray"
-                bg={d.id === selectedDashboard ? 'var(--app-surface-selected)' : undefined}
-                leftSection={d.id === selectedDashboard ? <IconCheck color="var(--mantine-color-success)" size={16} /> : null}
-                onClick={() => setSelectedDashboard(d.id)}>
-                {d.name}
-              </Menu.Item>
+    <div className={styles.page}>
+      <header className={styles.pageHeader}>
+        <div>
+          <DashboardSelector model={model} />
+          {model.selected && (
+            <p className={styles.pageMeta}>
+              {model.details?.knownPortfolioCount ?? '—'} {model.details?.knownPortfolioCount === 1 ? 'portfolio' : 'portfolios'} with
+              recorded activity
+            </p>
+          )}
+        </div>
+        {model.details && <MarketStatus market={model.details.market} />}
+      </header>
+      {!model.selected && <p className={styles.state}>Create a dashboard to track your balance and realized performance.</p>}
+      {model.selected && model.dashboard.isPending && <Skeleton h={154} aria-label="Loading dashboard" />}
+      {model.selected && model.dashboard.isError && (
+        <div className={styles.state}>
+          <p role="alert">Could not load this dashboard.</p>
+          <Button variant="default" onClick={() => void model.dashboard.refetch()}>
+            Try again
+          </Button>
+        </div>
+      )}
+      {dashboard && (
+        <>
+          <DashboardSummary dashboard={dashboard} realized={model.realized} />
+          <TransactionsChart model={model} currency={dashboard.currencyCode} />
+          {model.details && (
+            <DashboardPortfolios
+              key={dashboard.id}
+              details={model.details}
+              pending={model.trades.isPending || model.portfolios.isPending || model.positions.isPending}
+              unavailable={model.trades.isError || model.portfolios.isError || model.positions.isError}
+            />
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+function DashboardSelector({ model }: { model: DashboardModel }) {
+  const isMobile = useIsMobile();
+  const openCreate = useCreateNewDashboardModalStore((store) => store.open);
+  const [opened, picker] = useDisclosure();
+  const title = model.selected?.name || 'Dashboard';
+
+  function create() {
+    picker.close();
+    openCreate();
+  }
+
+  function select(id?: string) {
+    model.setSelectedId(id);
+    picker.close();
+  }
+
+  const choices = model.dashboards.filter(({ id }) => !!id);
+  if (isMobile) {
+    return (
+      <>
+        <h1 className={styles.title}>
+          <button type="button" className={styles.titleButton} onClick={picker.open} aria-haspopup="dialog">
+            {title}
+            <IconChevronDown size={16} stroke={1.6} aria-hidden="true" />
+          </button>
+        </h1>
+        <ResponsiveOverlay opened={opened} onClose={picker.close} title="Dashboards">
+          <ul className={styles.picker}>
+            {choices.map(({ id, name }) => (
+              <li key={id}>
+                <button type="button" aria-current={id === model.selected?.id || undefined} onClick={() => select(id)}>
+                  {name}
+                  {id === model.selected?.id && <IconCheck size={16} aria-hidden="true" />}
+                </button>
+              </li>
             ))}
-            <Divider my={0} />
+          </ul>
+          <Button fullWidth variant="default" leftSection={<IconPlus size={16} />} onClick={create}>
+            New dashboard
+          </Button>
+        </ResponsiveOverlay>
+      </>
+    );
+  }
+
+  return (
+    <h1 className={styles.title}>
+      <Menu opened={opened} onChange={picker.set} position="bottom-start" width={260}>
+        <Menu.Target>
+          <button type="button" className={styles.titleButton}>
+            {title}
+            <IconChevronDown size={16} stroke={1.6} aria-hidden="true" />
+          </button>
+        </Menu.Target>
+        <Menu.Dropdown>
+          {choices.map(({ id, name }) => (
             <Menu.Item
-              styles={{
-                item: { borderRadius: '0 0 var(--mantine-radius-sm) var(--mantine-radius-sm)' }
-              }}
-              h={50}
-              variant="subtle"
-              color="gray"
-              ta="left"
-              leftSection={<IconLayoutDashboardFilled color="var(--mantine-color-anchor)" size={16} />}
-              onClick={open}>
-              Create new dashboard
+              key={id}
+              onClick={() => select(id)}
+              aria-current={id === model.selected?.id || undefined}
+              rightSection={id === model.selected?.id && <IconCheck size={16} />}>
+              {name}
             </Menu.Item>
-          </Menu.Dropdown>
-        </Menu>
-        {status === 'success' && (
-          <SimpleGrid cols={{ base: 1, md: 2, lg: 3 }} spacing="md" mih={125}>
-            <StatCard
-              title="Total Balance"
-              subtitle="All-Time Growth"
-              displayValue={dashboard.totalBalance.value!}
-              percentageChange={dashboard.totalBalance.percentageChange}
-              currencyCode={dashboard.currencyCode}
-              icon={<IconChartLine />}
-            />
-            <StatCard
-              title="Daily Change"
-              subtitle="Daily Performance"
-              displayValue={dashboard.dailyChange.currentValue! - dashboard.dailyChange.previousValue!}
-              percentageChange={dashboard.dailyChange.percentageChange}
-              currencyCode={dashboard.currencyCode}
-              icon={dashboard.dailyChange.percentageChange! >= 0 ? <IconTrendingUp /> : <IconTrendingDown />}
-            />
-            <StatCard
-              title="Realized P&L"
-              subtitle={dashboard.realizedGains.percentageChange ? 'Current Month' : undefined}
-              displayValue={dashboard.realizedGains.currentPeriod!}
-              percentageChange={dashboard.realizedGains.percentageChange}
-              currencyCode={dashboard.currencyCode}
-              statusValue={dashboard.realizedGains.currentPeriod} // Uses currentPeriod value for icon color
-              icon={<IconCashBanknote />}
-            />
-          </SimpleGrid>
-        )}
-        <SimpleGrid cols={{ base: 1 }} mt="md">
-          {status === 'success' && <TransactionsChart currencyCode={dashboard.currencyCode} dashboardId={dashboard.id} />}
-          {status === 'pending' && <Skeleton height="80vh" />}
-        </SimpleGrid>
-      </Stack>
-    </Container>
+          ))}
+          {!!choices.length && <Menu.Divider />}
+          <Menu.Item leftSection={<IconPlus size={16} />} onClick={create}>
+            New dashboard
+          </Menu.Item>
+        </Menu.Dropdown>
+      </Menu>
+    </h1>
+  );
+}
+
+function MarketStatus({ market }: { market: NonNullable<DashboardModel['details']>['market'] }) {
+  const quote = market.updatedAt == null ? undefined : new Date(market.updatedAt);
+  const fresh = quote != null && !isDataStale(quote);
+  const status = quote ? (fresh ? 'Prices updated' : 'Last quote') : 'Quotes pending';
+
+  return (
+    <p className={styles.market} data-fresh={fresh || undefined}>
+      {market.label} ·{' '}
+      {quote ? (
+        <time dateTime={quote.toISOString()} title={format.toShortDateTime(quote)}>
+          {status}
+        </time>
+      ) : (
+        status
+      )}
+    </p>
   );
 }

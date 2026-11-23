@@ -1,0 +1,93 @@
+.page,
+.sections {
+  display: grid;
+  gap: clamp(1.1rem, 3vw, 2.25rem);
+  min-width: 0;
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.heading h1 {
+  margin: 0;
+  min-width: 0;
+}
+
+.titleButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 1.5rem;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  text-align: start;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.titleButton svg {
+  flex: none;
+  color: var(--mantine-color-dimmed);
+}
+
+.titleButton:hover {
+  color: var(--mantine-color-text);
+}
+
+.mobileChevron {
+  display: none;
+}
+
+.sections > section {
+  min-width: 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--app-border-subtle);
+}
+
+.sections h2 {
+  margin: 0 0 1rem;
+  font-size: 0.9375rem;
+  letter-spacing: -0.025em;
+}
+
+.tabs {
+  --tabs-list-border-color: var(--app-border-subtle);
+}
+
+.tab {
+  min-height: 44px;
+  padding-inline: 0.35rem;
+  color: var(--mantine-color-dimmed);
+}
+
+.tab[data-active] {
+  background: var(--app-surface-selected);
+  border-radius: 8px 8px 0 0;
+  color: var(--mantine-color-text);
+  font-weight: 600;
+}
+
+.panel {
+  padding-top: 1rem;
+  min-width: 0;
+}
+
+@media (max-width: 48em) {
+  .titleButton {
+    min-height: 44px;
+  }
+
+  .mobileChevron {
+    display: block;
+  }
+}

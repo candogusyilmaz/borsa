@@ -1,283 +1,156 @@
-import { Card, Group, SegmentedControl, Skeleton, Stack, Text } from '@mantine/core';
-import { IconTrendingDown, IconTrendingUp } from '@tabler/icons-react';
+import { Button, SegmentedControl, Select, Skeleton } from '@mantine/core';
 import dayjs from 'dayjs';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { $api } from '~/api/openapi';
-import { PeriodNavigator } from '~/features/portfolios/components/earnings-overview/period-navigator';
-import { useAnimatedNumber } from '~/features/portfolios/components/earnings-overview/use-animated-number';
-import { useContainerWidth } from '~/features/portfolios/components/earnings-overview/use-container-width';
-import { useDebouncedHover } from '~/features/portfolios/components/earnings-overview/use-debounced-hover';
 import { format } from '~/shared/format/format';
-import classes from './earnings-overview.module.css';
+import styles from './earnings-overview.module.css';
+import { PeriodNavigator } from './period-navigator';
 
-const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+type Period = 'monthly' | 'weekly';
 
-type BarItem = { label: string; amount: number; state: 'normal' | 'future' | 'empty' };
-
-type Props = {
-  portfolioId: number;
-};
-
-const EMPTY_BAR_HEIGHTS = [38, 62, 48, 75, 52, 68, 44];
-
-function EmptyState() {
-  return (
-    <div className={classes.emptyState}>
-      <div className={classes.emptyBars}>
-        {EMPTY_BAR_HEIGHTS.map((h, i) => (
-          <div key={h} className={classes.emptyBar} style={{ height: `${h}%`, animationDelay: `${i * 0.12}s` }} />
-        ))}
-      </div>
-      <p className={classes.emptyTitle}>No trades this period</p>
-      <p className={classes.emptySubtitle}>Sell a position to see your earnings show up here.</p>
-    </div>
-  );
-}
-
-function EarningsBarChart({
-  bars,
-  activeIdx,
-  compact,
-  onEnter,
-  onLeave,
-  onTap
-}: {
-  bars: BarItem[];
-  activeIdx: number;
-  compact: boolean;
-  onEnter: (idx: number) => void;
-  onLeave: () => void;
-  onTap: (idx: number) => void;
-}) {
-  const CHART_H = compact ? 70 : 90;
-  const max = Math.max(...bars.map((b) => Math.abs(b.amount)), 1);
-  return (
-    <div className={classes.barChart} data-compact={compact || undefined}>
-      {bars.map((b, i) => {
-        const barH = Math.max(7, (Math.abs(b.amount) / max) * CHART_H);
-        const isActive = i === activeIdx;
-        // On compact 12-bar monthly view, hide every other label to prevent crowding
-        const showLabel = !compact || bars.length <= 7 || i % 2 === 0;
-        return (
-          <button
-            key={b.label}
-            type="button"
-            className={classes.barCol}
-            data-state={b.state}
-            onMouseEnter={() => onEnter(i)}
-            onMouseLeave={onLeave}
-            onClick={() => onTap(i)}>
-            <div
-              className={`${classes.bar} ${isActive ? classes.barActive : ''} ${b.amount >= 0 ? classes.barBrand : classes.barLoss}`}
-              style={{ height: `${barH}px` }}
-            />
-            <span className={`${classes.barLabel} ${isActive ? classes.barLabelActive : ''} ${showLabel ? '' : classes.barLabelHidden}`}>
-              {b.label}
-            </span>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-export function EarningsOverview({ portfolioId }: Props) {
+export function EarningsOverview({ portfolioId }: { portfolioId: number }) {
   const now = dayjs();
-  const thisYear = now.year();
-  const [tab, setTab] = useState<'weekly' | 'monthly'>('monthly');
-  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
-  const [year, setYear] = useState(thisYear);
-  const [weekStart, setWeekStart] = useState(() => now.startOf('week'));
-  const containerRef = useRef<HTMLDivElement>(null);
-  const containerWidth = useContainerWidth(containerRef);
-  const compact = containerWidth > 0 && containerWidth < 360;
+  const [period, setPeriod] = useState<Period>('monthly');
+  const [year, setYear] = useState(now.year());
+  const [week, setWeek] = useState(now.startOf('week'));
+  const [selectedCurrency, selectCurrency] = useState<string>();
+  const [selectedBar, selectBar] = useState<number>();
+  const trades = $api.useQuery('get', '/api/trades', { params: { query: { portfolioId } } });
 
-  const onTap = (i: number) => setHoveredIdx((prev) => (prev === i ? null : i));
-  const { onEnter, onLeave } = useDebouncedHover(setHoveredIdx);
-
-  const { data: trades, isLoading } = $api.useQuery('get', '/api/trades', {
-    params: { query: { portfolioId } }
-  });
-
-  const sellTrades = trades?.filter((t) => t.type === 'SELL') ?? [];
-  const currencyCode = sellTrades[0]?.position.currencyCode ?? 'TRY';
-
-  // Monthly: current year grouped by month
-  const monthlyBars: BarItem[] = MONTH_LABELS.map((label, idx) => {
-    const isFuture = year === thisYear && idx > now.month();
-    const amount = isFuture
-      ? 0
-      : sellTrades
-          .filter((t) => {
-            const d = dayjs(t.actionDate);
-            return d.year() === year && d.month() === idx;
-          })
-          .reduce((s, t) => s + (t.profit ?? 0), 0);
-    const state: BarItem['state'] = isFuture ? 'future' : amount === 0 ? 'empty' : 'normal';
-    return { label, amount, state };
-  });
-
-  const monthlyTotal = monthlyBars.reduce((s, b) => s + b.amount, 0);
-  const monthlyPrevTotal = sellTrades.filter((t) => dayjs(t.actionDate).year() === year - 1).reduce((s, t) => s + (t.profit ?? 0), 0);
-
-  // Weekly: 7 days of the selected week
-  const todayStr = now.format('YYYY-MM-DD');
-  const weeklyBars: BarItem[] = Array.from({ length: 7 }, (_, i) => {
-    const d = weekStart.add(i, 'day');
-    const dateStr = d.format('YYYY-MM-DD');
-    const amount = sellTrades.filter((t) => dayjs(t.actionDate).format('YYYY-MM-DD') === dateStr).reduce((s, t) => s + (t.profit ?? 0), 0);
-    return {
-      label: DAY_LABELS[d.day()] ?? d.format('ddd'),
-      amount,
-      state: dateStr > todayStr ? 'future' : amount === 0 ? 'empty' : 'normal'
-    };
-  });
-
-  const weeklyTotal = weeklyBars.reduce((s, b) => s + b.amount, 0);
-  const prevWeekStartStr = weekStart.subtract(1, 'week').format('YYYY-MM-DD');
-  const prevWeekEndStr = weekStart.subtract(1, 'day').format('YYYY-MM-DD');
-  const weeklyPrevTotal = sellTrades
-    .filter((t) => {
-      const d = dayjs(t.actionDate).format('YYYY-MM-DD');
-      return d >= prevWeekStartStr && d <= prevWeekEndStr;
-    })
-    .reduce((s, t) => s + (t.profit ?? 0), 0);
-
-  const isMonthly = tab === 'monthly';
-  const bars = isMonthly ? monthlyBars : weeklyBars;
-  const total = isMonthly ? monthlyTotal : weeklyTotal;
-  const prevTotal = isMonthly ? monthlyPrevTotal : weeklyPrevTotal;
-
-  const change = prevTotal !== 0 ? ((total - prevTotal) / Math.abs(prevTotal)) * 100 : null;
-  const isPositive = change === null || change >= 0;
-
-  const isCurrentWeek = weekStart.format('YYYY-MM-DD') === now.startOf('week').format('YYYY-MM-DD');
-  // Default: current month / Dec for past years; today's weekday for current week, Sat for past
-  const defaultIdx = isMonthly ? (year === thisYear ? now.month() : 11) : isCurrentWeek ? now.day() : 6;
-  const displayIdx = hoveredIdx !== null ? hoveredIdx : defaultIdx;
-  const displayBar = bars[displayIdx] ?? { label: '', amount: 0 };
-
-  const isEmpty = bars.filter((b) => b.state !== 'future').every((b) => b.amount === 0);
-  const allTradeYears = [...new Set([...sellTrades.map((t) => dayjs(t.actionDate).year()), thisYear])];
-  const minYear = allTradeYears.length > 0 ? Math.min(...allTradeYears) : thisYear;
-  const weekEnd = weekStart.add(6, 'day');
-  const weekLabel =
-    weekStart.month() === weekEnd.month()
-      ? `${weekStart.format('MMM D')} – ${weekEnd.format('D')}`
-      : `${weekStart.format('MMM D')} – ${weekEnd.format('MMM D')}`;
-
-  const animatedTotal = useAnimatedNumber(total);
-
-  if (isLoading) {
+  if (trades.isPending) return <Skeleton h={150} aria-label="Loading earnings" />;
+  if (trades.isError)
     return (
-      <Card shadow="md" p="lg" withBorder>
-        <Stack gap="md">
-          <Group justify="space-between">
-            <Skeleton height={14} width={80} />
-            <Skeleton height={28} width={140} radius="xl" />
-          </Group>
-          <Skeleton height={44} width={180} mt={4} />
-          <Skeleton height={20} width={100} />
-          <Skeleton height={80} mt={4} />
-          <Skeleton height={1} />
-          <Group justify="space-between">
-            <Skeleton height={14} width={60} />
-            <Skeleton height={14} width={80} />
-          </Group>
-        </Stack>
-      </Card>
+      <div className={styles.state}>
+        <p role="alert">Could not load earnings.</p>
+        <Button variant="default" onClick={() => void trades.refetch()}>
+          Try again
+        </Button>
+      </div>
     );
+
+  const realized = trades.data.flatMap(({ type, profit, actionDate, position }) =>
+    type === 'SELL' && profit != null ? [{ profit, date: dayjs(actionDate), currency: position.currencyCode }] : []
+  );
+  const currencies = [...new Set(realized.map(({ currency }) => currency))].sort();
+  const currency = currencies.find((value) => value === selectedCurrency) ?? currencies[0];
+  if (!currency) return <p className={styles.state}>Earnings will appear here after a sale with recorded P&L.</p>;
+
+  const relevant = realized.filter((trade) => trade.currency === currency);
+  const monthly = period === 'monthly';
+  const start = monthly ? now.year(year).startOf('year') : week;
+  const unit = monthly ? 'month' : 'day';
+  const values = new Map<number, number>();
+  let previous = 0;
+  const previousStart = monthly ? start.subtract(1, 'year') : start.subtract(1, 'week');
+  for (const { date, profit } of relevant) {
+    if (date.isBefore(start) && !date.isBefore(previousStart)) previous += profit;
+    if (!date.isBefore(start) && date.isBefore(start.add(1, monthly ? 'year' : 'week'))) {
+      const index = date.diff(start, unit);
+      values.set(index, (values.get(index) ?? 0) + profit);
+    }
+  }
+  const bars = Array.from({ length: monthly ? 12 : 7 }, (_, index) => ({
+    index,
+    label: start.add(index, unit).format(monthly ? 'MMM' : 'ddd'),
+    profit: values.get(index)
+  }));
+  const total = [...values.values()].reduce((sum, profit) => sum + profit, 0);
+  const max = Math.max(1, ...[...values.values()].map(Math.abs));
+  const change = previous !== 0 ? ((total - previous) / Math.abs(previous)) * 100 : undefined;
+  const active = bars[selectedBar ?? -1];
+  const earliest = relevant.reduce((earlier, { date }) => (date.isBefore(earlier) ? date : earlier), now);
+  const weekLabel = `${week.format('MMM D')} – ${week.add(6, 'day').format('MMM D')}`;
+  const money = (value: number) => format.toCurrency(value, false, currency);
+
+  function shift(offset: number) {
+    if (monthly) setYear((value) => value + offset);
+    else setWeek((value) => value.add(offset, 'week'));
+    selectBar(undefined);
   }
 
   return (
-    <Card ref={containerRef} shadow="md" p={compact ? 'md' : 'lg'} withBorder>
-      {/* Header: label + tab switcher + period navigator */}
-      <Group justify="space-between" align="center" mb="md">
-        <Text className={classes.sectionLabel}>Earnings</Text>
-        <Group gap="xs" align="center" wrap="nowrap">
-          {isMonthly ? (
-            <PeriodNavigator
-              label={String(year)}
-              onPrev={() => {
-                setYear((y) => y - 1);
-                setHoveredIdx(null);
-              }}
-              onNext={() => {
-                setYear((y) => y + 1);
-                setHoveredIdx(null);
-              }}
-              canPrev={year > minYear}
-              canNext={year < thisYear}
-            />
-          ) : (
-            <PeriodNavigator
-              label={weekLabel}
-              onPrev={() => {
-                setWeekStart((ws) => ws.subtract(1, 'week'));
-                setHoveredIdx(null);
-              }}
-              onNext={() => {
-                setWeekStart((ws) => ws.add(1, 'week'));
-                setHoveredIdx(null);
-              }}
-              canNext={!isCurrentWeek}
-            />
-          )}
-          <SegmentedControl
-            size="xs"
-            value={tab}
-            onChange={(v) => {
-              setTab(v as typeof tab);
-              setHoveredIdx(null);
+    <div className={styles.view}>
+      <div className={styles.controls}>
+        <PeriodNavigator
+          label={monthly ? String(year) : weekLabel}
+          onPrev={() => shift(-1)}
+          onNext={() => shift(1)}
+          canPrev={monthly ? year > earliest.year() : week.isAfter(earliest.startOf('week'))}
+          canNext={monthly ? year < now.year() : week.isBefore(now.startOf('week'))}
+        />
+        <SegmentedControl
+          aria-label="Earnings period"
+          size="xs"
+          value={period}
+          onChange={(value) => {
+            setPeriod(value === 'weekly' ? 'weekly' : 'monthly');
+            selectBar(undefined);
+          }}
+          data={[
+            { label: 'Weekly', value: 'weekly' },
+            { label: 'Monthly', value: 'monthly' }
+          ]}
+        />
+        {currencies.length > 1 && (
+          <Select
+            aria-label="Earnings currency"
+            value={currency}
+            data={currencies}
+            allowDeselect={false}
+            onChange={(value) => {
+              if (value) selectCurrency(value);
+              selectBar(undefined);
             }}
-            data={[
-              { label: 'Weekly', value: 'weekly' },
-              { label: 'Monthly', value: 'monthly' }
-            ]}
+            className={styles.currency}
           />
-        </Group>
-      </Group>
-
-      {/* Total amount + change badge */}
-      {!isEmpty && (
-        <Stack gap={8} mb="md">
-          <Text className={classes.totalAmount} data-compact={compact || undefined} data-numeric>
-            {format.currency(animatedTotal, { currency: currencyCode, compactDisplay: 'short' })}
-          </Text>
-          {change !== null && (
-            <Group gap={8} align="center" wrap="wrap">
-              <span className="finance-badge" data-tone={isPositive ? 'profit' : 'loss'}>
-                {isPositive ? <IconTrendingUp size={11} /> : <IconTrendingDown size={11} />}
-                {Math.abs(change).toFixed(1)}%
+        )}
+      </div>
+      {values.size ? (
+        <>
+          <div className={styles.summary}>
+            <strong>{money(total)}</strong>
+            {change != null && (
+              <span className="finance-badge" data-tone={change > 0 ? 'profit' : change < 0 ? 'loss' : undefined}>
+                {change > 0 ? '+' : ''}
+                {format.toLocalePercentage(change, 1)} vs previous period
               </span>
-              <Text size="xs" c="dimmed">
-                vs last period
-              </Text>
-            </Group>
+            )}
+          </div>
+          <fieldset className={styles.chart} data-monthly={monthly || undefined} aria-label="Realized profit and loss by period">
+            {bars.map(({ index, label, profit }) => (
+              <button
+                type="button"
+                key={label}
+                className={styles.column}
+                aria-label={`${label}, ${profit == null ? 'no recorded P&L' : money(profit)}`}
+                aria-pressed={index === selectedBar}
+                onPointerEnter={(event) => {
+                  if (event.pointerType === 'mouse') selectBar(index);
+                }}
+                onFocus={() => selectBar(index)}
+                onClick={() => selectBar(index)}>
+                <span className={styles.plot}>
+                  {profit != null && (
+                    <span
+                      className={styles.bar}
+                      data-loss={profit < 0 || undefined}
+                      style={{ blockSize: `${Math.max(2, (Math.abs(profit) / max) * 48)}%` }}
+                    />
+                  )}
+                </span>
+                <span className={styles.label}>{label}</span>
+              </button>
+            ))}
+          </fieldset>
+          {active && (
+            <p className={styles.detail}>
+              {active.label} · {active.profit == null ? 'No recorded P&L' : money(active.profit)}
+            </p>
           )}
-        </Stack>
-      )}
-
-      {/* Bar chart or empty state */}
-      {isEmpty ? (
-        <EmptyState />
+        </>
       ) : (
-        <EarningsBarChart bars={bars} activeIdx={displayIdx} compact={compact} onEnter={onEnter} onLeave={onLeave} onTap={onTap} />
+        <p className={styles.state}>No realized P&L in this period.</p>
       )}
-
-      {/* Hovered bar detail */}
-      {!isEmpty && (
-        <Group justify="space-between" align="center" mt="md" pt="md" className={classes.detailRow}>
-          <Text size="sm" c="dimmed">
-            {displayBar.label}
-            {displayIdx === defaultIdx ? ' (latest)' : ''}
-          </Text>
-          <Text size="sm" fw={700} className={classes.detailAmount} data-numeric>
-            {format.currency(displayBar.amount, { currency: currencyCode, compactDisplay: 'short' })}
-          </Text>
-        </Group>
-      )}
-    </Card>
+    </div>
   );
 }

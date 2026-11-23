@@ -1,8 +1,9 @@
-import { Button, Checkbox, Group, Modal, ScrollArea, Select, SimpleGrid, Stack, TextInput } from '@mantine/core';
+import { Button, Checkbox, Group, Select, SimpleGrid, Stack, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useQueryClient } from '@tanstack/react-query';
 import { create } from 'zustand';
 import { $api } from '~/api/openapi';
+import { ResponsiveOverlay } from '~/shared/components/responsive-overlay/responsive-overlay';
 import { alerts } from '~/shared/feedback/alerts';
 
 interface CreateNewDashboardModalState {
@@ -26,15 +27,9 @@ export function CreateNewDashboardModal() {
   const { opened, close } = useCreateNewDashboardModalStore();
 
   return (
-    <Modal
-      title="Create New Dashboard"
-      centered
-      opened={opened}
-      onClose={close}
-      transitionProps={{ transition: 'fade' }}
-      scrollAreaComponent={ScrollArea.Autosize}>
+    <ResponsiveOverlay title="New dashboard" opened={opened} onClose={close}>
       <CreateNewDashboardForm />
-    </Modal>
+    </ResponsiveOverlay>
   );
 }
 
@@ -80,7 +75,7 @@ function CreateNewDashboardForm() {
       close();
       alerts.success(`Dashboard ${form.getValues().name} created successfully.`);
       client.invalidateQueries({
-        predicate: (q) => q.queryKey.includes('/dashboards')
+        queryKey: ['get', '/api/dashboards']
       });
     },
     onError: (res) => {
@@ -130,7 +125,7 @@ function CreateNewDashboardForm() {
             Cancel
           </Button>
 
-          <Button type="submit" color="green.6" loading={mutation.isPending} disabled={mutation.isSuccess}>
+          <Button type="submit" loading={mutation.isPending} disabled={mutation.isSuccess}>
             Create dashboard
           </Button>
         </Group>

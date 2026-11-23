@@ -1,6 +1,6 @@
-import { Container, Stack, Title } from '@mantine/core';
+import { Title } from '@mantine/core';
 import { createFileRoute } from '@tanstack/react-router';
-import { TradesTable } from '~/features/trades/components/trades-table/trades-table';
+import { TradesList } from '~/features/trades/components/trades-list/trades-list';
 
 export const Route = createFileRoute('/_authenticated/_member/trades')({
   component: RouteComponent,
@@ -9,11 +9,11 @@ export const Route = createFileRoute('/_authenticated/_member/trades')({
 
 function RouteComponent() {
   return (
-    <Container strategy="grid" size="lg" p="lg">
-      <Stack>
-        <Title>Trades</Title>
-        <TradesTable />
-      </Stack>
-    </Container>
+    <>
+      <Title order={1} mb="md" className="member-page-title">
+        Trades
+      </Title>
+      <TradesList />
+    </>
   );
 }

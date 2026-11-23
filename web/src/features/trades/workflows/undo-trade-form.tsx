@@ -1,4 +1,4 @@
-import { Alert, Button, Card, Checkbox, Group, Stack, Text } from '@mantine/core';
+import { Alert, Button, Checkbox, Group, Stack, Text } from '@mantine/core';
 import { useQueryClient } from '@tanstack/react-query';
 import { useParams } from '@tanstack/react-router';
 import { useState } from 'react';
@@ -21,9 +21,10 @@ function DetailLine({ label, value, color }: { label: string; value: React.React
 }
 
 export function UndoTradeForm() {
-  const { portfolioId } = useParams({ strict: false });
+  const { portfolioId: routePortfolioId } = useParams({ strict: false });
   const client = useQueryClient();
-  const { trade, close } = useUndoTradeModalStore();
+  const { trade, close, portfolioId: selectedPortfolioId, currencyCode } = useUndoTradeModalStore();
+  const portfolioId = selectedPortfolioId ?? routePortfolioId;
   const [hasConfirmed, setHasConfirmed] = useState(false);
 
   const mutation = $api.useMutation('post', '/api/portfolios/{portfolioId}/trades/undo/{holdingId}', {
@@ -57,25 +58,24 @@ export function UndoTradeForm() {
     <Stack>
       <Text size="lg" fw={500}>
         Undo trade for{' '}
-        <Text span fw={700} c="blue">
+        <Text span fw={600} c="var(--mantine-color-text)">
           {trade.symbol}
         </Text>
       </Text>
 
-      {/* Add trade details section */}
-      <Card p="sm" withBorder>
+      <div>
         <Stack gap="xs">
           <Text size="sm" fw={500}>
             Trade Summary
           </Text>
           <DetailLine label="Date" value={format.toFullDateTime(new Date(trade.date))} />
           <DetailLine label="Quantity" value={trade.quantity} />
-          <DetailLine label="Price" value={format.toCurrency(trade.price, false)} />
-          <DetailLine label="Total" value={format.toCurrency(trade.total, false)} />
+          <DetailLine label="Price" value={format.toCurrency(trade.price, false, currencyCode)} />
+          <DetailLine label="Total" value={format.toCurrency(trade.total, false, currencyCode)} />
         </Stack>
-      </Card>
+      </div>
 
-      <Alert title="Warning" color="red" variant="filled">
+      <Alert title="Warning" color="loss" variant="light">
         This will permanently remove this trade record. This action cannot be reversed. Daily portfolio snapshots will not be retroactively
         modified.
       </Alert>
@@ -89,7 +89,7 @@ export function UndoTradeForm() {
           Cancel
         </Button>
 
-        <Button onClick={handleFormSubmit} color="red" loading={mutation.isPending} disabled={!hasConfirmed || mutation.isSuccess}>
+        <Button onClick={handleFormSubmit} color="loss" loading={mutation.isPending} disabled={!hasConfirmed || mutation.isSuccess}>
           Confirm Removal
         </Button>
       </Group>

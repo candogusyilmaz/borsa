@@ -1,7 +1,7 @@
 import { Container, Text } from '@mantine/core';
 import { Link } from '@tanstack/react-router';
-import classes from './NotFound.module.css';
-import { Illustration } from './Illustration';
+import { Illustration } from './illustration';
+import classes from './not-found.module.css';
 
 export function NotFound() {
   return (

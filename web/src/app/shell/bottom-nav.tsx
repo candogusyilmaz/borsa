@@ -1,179 +1,30 @@
-import { Drawer } from '@mantine/core';
-import {
-  IconArrowsLeftRight,
-  IconFolderOpen,
-  IconHome,
-  IconListDetails,
-  IconLogout,
-  IconMoon,
-  IconSun,
-  IconUser
-} from '@tabler/icons-react';
-import { Link, useNavigate } from '@tanstack/react-router';
-import { useState } from 'react';
-import { $api } from '~/api/openapi';
-import { useAuthentication } from '~/features/auth/authentication-context';
-import { CreatePortfolioButton } from '~/features/portfolios';
-import { useThemeToggle } from '~/theme/use-theme-toggle';
-import classes from './bottom-nav.module.css';
-
-const NAV_TABS = [
-  {
-    id: 'dashboard',
-    label: 'Home',
-    icon: <IconHome size={18} strokeWidth={1.75} />,
-    to: '/dashboard'
-  },
-  {
-    id: 'positions',
-    label: 'Positions',
-    icon: <IconListDetails size={18} strokeWidth={1.75} />,
-    to: '/positions'
-  },
-  {
-    id: 'trades',
-    label: 'Trades',
-    icon: <IconArrowsLeftRight size={18} strokeWidth={1.75} />,
-    to: '/trades'
-  }
-] as const;
+import { RemoveScroll } from '@mantine/core';
+import { IconArrowsLeftRight, IconFolderOpen, IconHome, IconListDetails } from '@tabler/icons-react';
+import { Link, useLocation } from '@tanstack/react-router';
+import { PortfolioSelector } from '~/features/portfolios';
+import styles from './bottom-nav.module.css';
 
 export function BottomNav() {
-  const [portfolioSheetOpen, setPortfolioSheetOpen] = useState(false);
-  const [profileSheetOpen, setProfileSheetOpen] = useState(false);
-
-  const { colorScheme, toggleTheme } = useThemeToggle();
-  const { logout } = useAuthentication();
-  const navigate = useNavigate();
-
-  const { data: portfolios } = $api.useQuery('get', '/api/portfolios', {});
+  const onPortfolio = useLocation({ select: (location) => location.pathname.startsWith('/portfolios/') });
 
   return (
-    <>
-      <nav className={classes.nav} aria-label="Main navigation">
-        <div className={classes.inner}>
-          {/* Route-based tabs */}
-          {NAV_TABS.map((tab) => (
-            <Link key={tab.id} to={tab.to} className={classes.tab}>
-              {({ isActive }) => (
-                <>
-                  {isActive && <span className={classes.pip} />}
-                  <span className={`${classes.iconBox}${isActive ? ` ${classes.iconBoxActive}` : ''}`}>{tab.icon}</span>
-                  <span className={`${classes.label}${isActive ? ` ${classes.labelActive}` : ''}`}>{tab.label}</span>
-                </>
-              )}
-            </Link>
-          ))}
-
-          {/* Portfolios — opens bottom sheet */}
-          <button type="button" className={classes.tab} onClick={() => setPortfolioSheetOpen(true)}>
-            <span className={classes.iconBox}>
-              <IconFolderOpen size={18} strokeWidth={1.75} />
-            </span>
-            <span className={classes.label}>Portfolios</span>
-          </button>
-
-          {/* Profile — opens profile sheet */}
-          <button type="button" className={classes.tab} onClick={() => setProfileSheetOpen(true)}>
-            <span className={`${classes.avatar}${profileSheetOpen ? ` ${classes.avatarActive}` : ''}`}>
-              <IconUser size={15} strokeWidth={2} />
-            </span>
-            <span className={`${classes.label}${profileSheetOpen ? ` ${classes.labelActive}` : ''}`}>Profile</span>
-          </button>
-        </div>
-      </nav>
-
-      {/* ── Portfolio Sheet ──────────────────────────────── */}
-      <Drawer.Root
-        opened={portfolioSheetOpen}
-        onClose={() => setPortfolioSheetOpen(false)}
-        radius="md"
-        position="bottom"
-        size="80%"
-        offset={8}>
-        <Drawer.Overlay />
-        <Drawer.Content>
-          <div className={classes.sheetHeader}>
-            <p className={classes.sheetSectionLabel}>My Portfolios</p>
-            <CreatePortfolioButton />
-          </div>
-          <div className={classes.sheetBody}>
-            {portfolios?.map((portfolio) => (
-              <button
-                key={portfolio.id}
-                type="button"
-                className={classes.portfolioItem}
-                onClick={() => {
-                  navigate({ to: '/portfolios/$portfolioId', params: { portfolioId: portfolio.id } });
-                  setPortfolioSheetOpen(false);
-                }}>
-                <span className={classes.portfolioIconBox}>
-                  <IconFolderOpen size={18} strokeWidth={1.75} />
-                </span>
-                <p className={classes.portfolioName}>{portfolio.name}</p>
-              </button>
-            ))}
-          </div>
-        </Drawer.Content>
-      </Drawer.Root>
-
-      {/* ── Profile Sheet ─────────────────────────────────── */}
-      <Drawer.Root opened={profileSheetOpen} onClose={() => setProfileSheetOpen(false)} radius="md" position="bottom" size={350} offset={8}>
-        <Drawer.Overlay />
-        <Drawer.Content>
-          <div className={classes.profileHero}>
-            <div className={classes.profileAvatar}>
-              <IconUser size={20} strokeWidth={2} />
-            </div>
-            <div>
-              <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: 'var(--mantine-color-text)' }}>My Account</p>
-              <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--mantine-color-dimmed)' }}>Manage your settings</p>
-            </div>
-          </div>
-          <div className={classes.sheetBody}>
-            {/* Theme toggle */}
-            <button
-              type="button"
-              className={classes.profileRow}
-              onClick={() => {
-                toggleTheme();
-                setProfileSheetOpen(false);
-              }}>
-              <span
-                className={classes.profileRowIconBox}
-                style={{
-                  background: colorScheme === 'dark' ? 'rgba(250,204,21,0.12)' : 'rgba(71,85,105,0.1)',
-                  color: colorScheme === 'dark' ? '#facc15' : 'var(--mantine-color-dimmed)'
-                }}>
-                {colorScheme === 'dark' ? <IconSun size={17} strokeWidth={1.75} /> : <IconMoon size={17} strokeWidth={1.75} />}
-              </span>
-              <div>
-                <p className={classes.profileRowLabel}>{colorScheme === 'dark' ? 'Switch to Light' : 'Switch to Dark'}</p>
-                <p className={classes.profileRowSub}>Toggle appearance</p>
-              </div>
-            </button>
-
-            {/* Sign out */}
-            <button
-              type="button"
-              className={classes.profileRow}
-              onClick={() => {
-                setProfileSheetOpen(false);
-                logout().then(() => navigate({ to: '/login' }));
-              }}>
-              <span
-                className={classes.profileRowIconBox}
-                style={{ background: 'var(--app-finance-loss-bg)', color: 'var(--app-finance-loss)' }}>
-                <IconLogout size={17} strokeWidth={1.75} />
-              </span>
-              <div>
-                <p className={`${classes.profileRowLabel} ${classes.profileRowDangerLabel}`}>Sign Out</p>
-                <p className={classes.profileRowSub}>See you next time</p>
-              </div>
-            </button>
-          </div>
-        </Drawer.Content>
-      </Drawer.Root>
-    </>
+    <nav className={`${styles.nav} ${RemoveScroll.classNames.fullWidth}`} aria-label="Main navigation">
+      <Link to="/dashboard" className={styles.tab}>
+        <IconHome aria-hidden="true" />
+        Dashboard
+      </Link>
+      <PortfolioSelector className={styles.tab} active={onPortfolio}>
+        <IconFolderOpen aria-hidden="true" />
+        Portfolios
+      </PortfolioSelector>
+      <Link to="/positions" className={styles.tab}>
+        <IconListDetails aria-hidden="true" />
+        Positions
+      </Link>
+      <Link to="/trades" className={styles.tab}>
+        <IconArrowsLeftRight aria-hidden="true" />
+        Trades
+      </Link>
+    </nav>
   );
 }

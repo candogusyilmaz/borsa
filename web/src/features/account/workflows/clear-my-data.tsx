@@ -1,8 +1,9 @@
-import { Button, Modal, Stack, Text, TextInput } from '@mantine/core';
+import { Button, Stack, Text, TextInput } from '@mantine/core';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { create } from 'zustand';
 import { $api } from '~/api/openapi';
+import { ResponsiveOverlay } from '~/shared/components/responsive-overlay/responsive-overlay';
 import { alerts } from '~/shared/feedback/alerts';
 
 interface ClearMyDataModalState {
@@ -23,9 +24,9 @@ export function ClearMyDataModal() {
   const { opened, close } = useClearMyDataModal();
 
   return (
-    <Modal centered opened={opened} onClose={close} title="Clear My Data" transitionProps={{ transition: 'fade' }}>
+    <ResponsiveOverlay opened={opened} onClose={close} title="Clear my data">
       <ClearMyDataForm />
-    </Modal>
+    </ResponsiveOverlay>
   );
 }
 
