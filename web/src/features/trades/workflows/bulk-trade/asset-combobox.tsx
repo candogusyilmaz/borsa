@@ -1,3 +1,5 @@
+import { msg } from '@lingui/core/macro';
+import { Trans, useLingui } from '@lingui/react/macro';
 import { Combobox, ScrollArea, TextInput, useVirtualizedCombobox } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
 import { useVirtualizer } from '@tanstack/react-virtual';
@@ -13,7 +15,13 @@ const TAG_STYLE: Record<string, { bg: string; color: string; border: string }> =
   Bond: { bg: 'rgba(251,146,60,0.12)', color: '#fb923c', border: 'rgba(251,146,60,0.25)' }
 };
 
-function inferTag(currencies: string[]): string {
+const TAG_LABEL = {
+  Equity: msg({ comment: 'Asset category tag for stocks', message: 'Equity' }),
+  Crypto: msg({ comment: 'Asset category tag for cryptocurrency', message: 'Crypto' }),
+  FX: msg({ comment: 'Asset category tag for foreign exchange', message: 'FX' })
+};
+
+function inferTag(currencies: string[]): keyof typeof TAG_LABEL {
   if (currencies.includes('BTC') || currencies.includes('ETH') || currencies.some((c) => c.endsWith('-USD') && c.length > 5))
     return 'Crypto';
   if (currencies.length > 1) return 'FX';
@@ -29,6 +37,7 @@ interface AssetComboboxProps {
 const OPTION_HEIGHT = 44;
 
 export const AssetCombobox = memo(function AssetCombobox({ value, onChange, instruments }: AssetComboboxProps) {
+  const { t } = useLingui();
   const [search, setSearch] = useState('');
   const [opened, setOpened] = useState(false);
   const [selectedOptionIndex, setSelectedOptionIndex] = useState(-1);
@@ -110,8 +119,8 @@ export const AssetCombobox = memo(function AssetCombobox({ value, onChange, inst
             const resolved = instruments.find((i) => i.id === value);
             if (resolved) setSearch(resolved.symbol);
           }}
-          aria-label="Asset"
-          placeholder="Search symbol or name…"
+          aria-label={t`Asset`}
+          placeholder={t`Search symbol or name…`}
           leftSection={<IconSearch size={12} />}
           classNames={{ input: classes.assetInput }}
           autoComplete="off"
@@ -120,7 +129,9 @@ export const AssetCombobox = memo(function AssetCombobox({ value, onChange, inst
       <Combobox.Dropdown>
         <Combobox.Options>
           {filtered.length === 0 ? (
-            <Combobox.Empty>No matches found</Combobox.Empty>
+            <Combobox.Empty>
+              <Trans>No matches found</Trans>
+            </Combobox.Empty>
           ) : (
             <ScrollArea.Autosize
               mah={240}
@@ -152,7 +163,7 @@ export const AssetCombobox = memo(function AssetCombobox({ value, onChange, inst
                       <span className={classes.assetTicker}>{item.symbol}</span>
                       <span className={classes.assetName}>{item.name}</span>
                       <span className={classes.assetTag} style={{ background: ts.bg, color: ts.color, border: `1px solid ${ts.border}` }}>
-                        {tag}
+                        {t(TAG_LABEL[tag])}
                       </span>
                     </Combobox.Option>
                   );

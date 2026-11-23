@@ -1,14 +1,17 @@
+import { Trans, useLingui } from '@lingui/react/macro';
 import { Button, SegmentedControl, Select, Skeleton } from '@mantine/core';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 import { $api } from '~/api/openapi';
-import { format } from '~/shared/format/format';
+import { useFormat } from '~/shared/format/use-format';
 import styles from './earnings-overview.module.css';
 import { PeriodNavigator } from './period-navigator';
 
 type Period = 'monthly' | 'weekly';
 
 export function EarningsOverview({ portfolioId }: { portfolioId: number }) {
+  const { t } = useLingui();
+  const format = useFormat();
   const now = dayjs();
   const [period, setPeriod] = useState<Period>('monthly');
   const [year, setYear] = useState(now.year());
@@ -17,13 +20,15 @@ export function EarningsOverview({ portfolioId }: { portfolioId: number }) {
   const [selectedBar, selectBar] = useState<number>();
   const trades = $api.useQuery('get', '/api/trades', { params: { query: { portfolioId } } });
 
-  if (trades.isPending) return <Skeleton h={150} aria-label="Loading earnings" />;
+  if (trades.isPending) return <Skeleton h={150} aria-label={t`Loading earnings`} />;
   if (trades.isError)
     return (
       <div className={styles.state}>
-        <p role="alert">Could not load earnings.</p>
+        <p role="alert">
+          <Trans>Could not load earnings.</Trans>
+        </p>
         <Button variant="default" onClick={() => void trades.refetch()}>
-          Try again
+          <Trans>Try again</Trans>
         </Button>
       </div>
     );
@@ -33,7 +38,12 @@ export function EarningsOverview({ portfolioId }: { portfolioId: number }) {
   );
   const currencies = [...new Set(realized.map(({ currency }) => currency))].sort();
   const currency = currencies.find((value) => value === selectedCurrency) ?? currencies[0];
-  if (!currency) return <p className={styles.state}>Earnings will appear here after a sale with recorded P&L.</p>;
+  if (!currency)
+    return (
+      <p className={styles.state}>
+        <Trans>Earnings will appear here after a sale with recorded P&L.</Trans>
+      </p>
+    );
 
   const relevant = realized.filter((trade) => trade.currency === currency);
   const monthly = period === 'monthly';
@@ -51,7 +61,7 @@ export function EarningsOverview({ portfolioId }: { portfolioId: number }) {
   }
   const bars = Array.from({ length: monthly ? 12 : 7 }, (_, index) => ({
     index,
-    label: start.add(index, unit).format(monthly ? 'MMM' : 'ddd'),
+    label: format.date(start.add(index, unit).valueOf(), monthly ? { month: 'short' } : { weekday: 'short' }),
     profit: values.get(index)
   }));
   const total = [...values.values()].reduce((sum, profit) => sum + profit, 0);
@@ -59,7 +69,9 @@ export function EarningsOverview({ portfolioId }: { portfolioId: number }) {
   const change = previous !== 0 ? ((total - previous) / Math.abs(previous)) * 100 : undefined;
   const active = bars[selectedBar ?? -1];
   const earliest = relevant.reduce((earlier, { date }) => (date.isBefore(earlier) ? date : earlier), now);
-  const weekLabel = `${week.format('MMM D')} – ${week.add(6, 'day').format('MMM D')}`;
+  const weekStart = format.date(week.valueOf(), { month: 'short', day: 'numeric' });
+  const weekEnd = format.date(week.add(6, 'day').valueOf(), { month: 'short', day: 'numeric' });
+  const weekLabel = `${weekStart} – ${weekEnd}`;
   const money = (value: number) => format.toCurrency(value, false, currency);
 
   function shift(offset: number) {
@@ -72,14 +84,14 @@ export function EarningsOverview({ portfolioId }: { portfolioId: number }) {
     <div className={styles.view}>
       <div className={styles.controls}>
         <PeriodNavigator
-          label={monthly ? String(year) : weekLabel}
+          label={monthly ? format.number(year, { useGrouping: false }) : weekLabel}
           onPrev={() => shift(-1)}
           onNext={() => shift(1)}
           canPrev={monthly ? year > earliest.year() : week.isAfter(earliest.startOf('week'))}
           canNext={monthly ? year < now.year() : week.isBefore(now.startOf('week'))}
         />
         <SegmentedControl
-          aria-label="Earnings period"
+          aria-label={t`Earnings period`}
           size="xs"
           value={period}
           onChange={(value) => {
@@ -87,13 +99,13 @@ export function EarningsOverview({ portfolioId }: { portfolioId: number }) {
             selectBar(undefined);
           }}
           data={[
-            { label: 'Weekly', value: 'weekly' },
-            { label: 'Monthly', value: 'monthly' }
+            { label: t`Weekly`, value: 'weekly' },
+            { label: t`Monthly`, value: 'monthly' }
           ]}
         />
         {currencies.length > 1 && (
           <Select
-            aria-label="Earnings currency"
+            aria-label={t`Earnings currency`}
             value={currency}
             data={currencies}
             allowDeselect={false}
@@ -111,18 +123,17 @@ export function EarningsOverview({ portfolioId }: { portfolioId: number }) {
             <strong>{money(total)}</strong>
             {change != null && (
               <span className="finance-badge" data-tone={change > 0 ? 'profit' : change < 0 ? 'loss' : undefined}>
-                {change > 0 ? '+' : ''}
-                {format.toLocalePercentage(change, 1)} vs previous period
+                <Trans>{format.toLocalePercentage(change, 1, { signDisplay: 'exceptZero' })} vs previous period</Trans>
               </span>
             )}
           </div>
-          <fieldset className={styles.chart} data-monthly={monthly || undefined} aria-label="Realized profit and loss by period">
+          <fieldset className={styles.chart} data-monthly={monthly || undefined} aria-label={t`Realized profit and loss by period`}>
             {bars.map(({ index, label, profit }) => (
               <button
                 type="button"
                 key={label}
                 className={styles.column}
-                aria-label={`${label}, ${profit == null ? 'no recorded P&L' : money(profit)}`}
+                aria-label={`${label}, ${profit == null ? t`no recorded P&L` : money(profit)}`}
                 aria-pressed={index === selectedBar}
                 onPointerEnter={(event) => {
                   if (event.pointerType === 'mouse') selectBar(index);
@@ -144,12 +155,14 @@ export function EarningsOverview({ portfolioId }: { portfolioId: number }) {
           </fieldset>
           {active && (
             <p className={styles.detail}>
-              {active.label} · {active.profit == null ? 'No recorded P&L' : money(active.profit)}
+              {active.label} · {active.profit == null ? t`No recorded P&L` : money(active.profit)}
             </p>
           )}
         </>
       ) : (
-        <p className={styles.state}>No realized P&L in this period.</p>
+        <p className={styles.state}>
+          <Trans>No realized P&L in this period.</Trans>
+        </p>
       )}
     </div>
   );

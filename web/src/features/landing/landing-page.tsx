@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro';
 import {
   IconArrowRight,
   IconBrandLinkedin,
@@ -13,6 +14,8 @@ import { useNavigate } from '@tanstack/react-router';
 import { motion } from 'framer-motion';
 import { useRef, useState } from 'react';
 import { BrandLogo } from '~/shared/components/brand-logo';
+import { useFormat } from '~/shared/format/use-format';
+import { LanguageSelect } from '~/shared/i18n/language-select';
 import styles from './landing.module.css';
 
 // Floating background orb
@@ -176,6 +179,8 @@ const FeatureCard = ({
 
 // Mock Dashboard Preview
 const DashboardPreview = () => {
+  const { t } = useLingui();
+  const format = useFormat();
   const chartData = [35, 45, 30, 50, 40, 60, 55, 70, 65, 80, 75, 90];
 
   return (
@@ -187,17 +192,21 @@ const DashboardPreview = () => {
       {/* Dashboard Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
         <div>
-          <h4 style={{ color: 'var(--mantine-color-text)', fontWeight: 600, margin: 0 }}>Portfolio Overview</h4>
-          <p style={{ color: 'var(--mantine-color-dimmed)', fontSize: '0.875rem', margin: 0 }}>Your investment summary</p>
+          <h4 style={{ color: 'var(--mantine-color-text)', fontWeight: 600, margin: 0 }}>
+            <Trans>Portfolio Overview</Trans>
+          </h4>
+          <p style={{ color: 'var(--mantine-color-dimmed)', fontSize: '0.875rem', margin: 0 }}>
+            <Trans>Your investment summary</Trans>
+          </p>
         </div>
       </div>
 
       {/* Stats Row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
         {[
-          { label: 'Total Balance', value: '$124,532.00', change: '+2.4%', positive: true },
-          { label: "Today's P&L", value: '+$1,245.00', change: '+1.2%', positive: true },
-          { label: 'Monthly P&L', value: '+$8,432.00', change: '+7.2%', positive: true }
+          { label: t`Total Balance`, value: 124532, change: 2.4, positive: true },
+          { label: t`Today's P&L`, value: 1245, change: 1.2, positive: true },
+          { label: t`Monthly P&L`, value: 8432, change: 7.2, positive: true }
         ].map((stat, i) => (
           <motion.div
             key={stat.label}
@@ -207,14 +216,14 @@ const DashboardPreview = () => {
             transition={{ delay: 0.2 + i * 0.1 }}>
             <p style={{ color: 'var(--mantine-color-dimmed)', fontSize: '0.875rem', marginBottom: '0.25rem' }}>{stat.label}</p>
             <p style={{ color: 'var(--mantine-color-text)', fontWeight: 600, fontSize: '1.125rem', marginBottom: '0.25rem' }}>
-              {stat.value}
+              {format.toCurrency(stat.value, false, 'USD')}
             </p>
             <p
               style={{
                 fontSize: '0.875rem',
                 color: stat.positive ? 'var(--app-finance-profit)' : 'var(--app-finance-loss)'
               }}>
-              {stat.change}
+              {format.toLocalePercentage(stat.change, 1, { signDisplay: 'exceptZero' })}
             </p>
           </motion.div>
         ))}
@@ -242,10 +251,10 @@ const DashboardPreview = () => {
       {/* Portfolio Breakdown */}
       <div style={{ marginTop: '1.5rem', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
         {[
-          { name: 'Stocks', value: '45%', color: 'var(--mantine-color-brand-6)' },
-          { name: 'Crypto', value: '25%', color: 'var(--mantine-color-yellow-6)' },
-          { name: 'Forex', value: '20%', color: 'var(--mantine-color-violet-6)' },
-          { name: 'Metals', value: '10%', color: 'var(--mantine-color-pink-6)' }
+          { name: t`Stocks`, value: 45, color: 'var(--mantine-color-brand-6)' },
+          { name: t`Crypto`, value: 25, color: 'var(--mantine-color-yellow-6)' },
+          { name: t`Forex`, value: 20, color: 'var(--mantine-color-violet-6)' },
+          { name: t`Metals`, value: 10, color: 'var(--mantine-color-pink-6)' }
         ].map((item, i) => (
           <motion.div
             key={item.name}
@@ -257,7 +266,7 @@ const DashboardPreview = () => {
               <div style={{ width: '0.5rem', height: '0.5rem', borderRadius: '50%', background: item.color }} />
               <span style={{ color: 'var(--mantine-color-dimmed)', fontSize: '0.75rem' }}>{item.name}</span>
             </div>
-            <span style={{ color: 'var(--mantine-color-text)', fontWeight: 600 }}>{item.value}</span>
+            <span style={{ color: 'var(--mantine-color-text)', fontWeight: 600 }}>{format.toLocalePercentage(item.value, 0)}</span>
           </motion.div>
         ))}
       </div>
@@ -276,13 +285,15 @@ function PricingCard({
   delay
 }: {
   title: string;
-  price: string;
+  price?: number;
   description: string;
   features: string[];
   highlighted?: boolean;
   badge?: string;
   delay: number;
 }) {
+  const { t } = useLingui();
+  const format = useFormat();
   const navigate = useNavigate();
 
   function navigateToLogin() {
@@ -325,8 +336,14 @@ function PricingCard({
       <p style={{ color: 'var(--mantine-color-dimmed)', fontSize: '0.875rem', marginBottom: '1rem' }}>{description}</p>
 
       <div style={{ marginBottom: '1.5rem' }}>
-        <span style={{ fontSize: '2.25rem', fontWeight: 700, color: 'var(--mantine-color-text)' }}>{price}</span>
-        {price !== 'Free' && <span style={{ color: 'var(--mantine-color-dimmed)', fontSize: '0.875rem' }}>/month</span>}
+        <span style={{ fontSize: '2.25rem', fontWeight: 700, color: 'var(--mantine-color-text)' }}>
+          {price == null ? t`Free` : format.toCurrency(price, false, 'USD')}
+        </span>
+        {price != null && (
+          <span style={{ color: 'var(--mantine-color-dimmed)', fontSize: '0.875rem' }}>
+            <Trans>/month</Trans>
+          </span>
+        )}
       </div>
 
       <ul style={{ padding: 0, margin: '0 0 1.5rem 0', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -355,7 +372,7 @@ function PricingCard({
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         onClick={navigateToLogin}>
-        {price === 'Free' ? 'Get Started Free' : 'Coming Soon'}
+        {price == null ? t`Get Started Free` : t`Coming Soon`}
       </motion.button>
     </motion.div>
   );
@@ -363,6 +380,7 @@ function PricingCard({
 
 // Main Component
 export function LandingPage() {
+  const { t } = useLingui();
   const navigate = useNavigate();
 
   function navigateToLogin() {
@@ -372,30 +390,30 @@ export function LandingPage() {
   const features = [
     {
       icon: IconChartLine,
-      title: 'Trade Management',
-      description: 'Comprehensive tracking for all your trades across multiple portfolios.',
-      features: ['Buy/Sell tracking', 'Multi-portfolio support', 'Multi-currency support'],
+      title: t`Trade Management`,
+      description: t`Comprehensive tracking for all your trades across multiple portfolios.`,
+      features: [t`Buy/Sell tracking`, t`Multi-portfolio support`, t`Multi-currency support`],
       color: 'var(--mantine-color-brand-6)'
     },
     {
       icon: IconTrendingUp,
-      title: 'Advanced Analytics',
-      description: 'Deep insights into your portfolio performance with beautiful visualizations.',
-      features: ['Balance tracking', 'Daily P&L calculation', 'Cumulative performance charts'],
+      title: t`Advanced Analytics`,
+      description: t`Deep insights into your portfolio performance with beautiful visualizations.`,
+      features: [t`Balance tracking`, t`Daily P&L calculation`, t`Cumulative performance charts`],
       color: 'var(--mantine-color-violet-6)'
     },
     {
       icon: IconCoins,
-      title: 'Multiple Instruments',
-      description: 'Support for various asset types including stocks, crypto, forex, and more.',
-      features: ['Stocks & ETFs', 'Cryptocurrencies', 'Forex & Metals'],
+      title: t`Multiple Instruments`,
+      description: t`Support for various asset types including stocks, crypto, forex, and more.`,
+      features: [t`Stocks & ETFs`, t`Cryptocurrencies`, t`Forex & Metals`],
       color: 'var(--mantine-color-pink-6)'
     },
     {
       icon: IconPalette,
-      title: 'Beautiful UI',
-      description: 'Modern, responsive interface with customizable themes and smooth interactions.',
-      features: ['Light/Dark mode', 'Responsive design', 'Multiple dashboard views'],
+      title: t`Beautiful UI`,
+      description: t`Modern, responsive interface with customizable themes and smooth interactions.`,
+      features: [t`Light/Dark mode`, t`Responsive design`, t`Multiple dashboard views`],
       color: 'var(--mantine-color-blue-6)'
     }
   ];
@@ -425,22 +443,25 @@ export function LandingPage() {
               <BrandLogo />
             </motion.div>
 
-            <motion.button
-              style={{
-                padding: '0.625rem 1.25rem',
-                borderRadius: '0.75rem',
-                background: 'var(--mantine-primary-color-filled)',
-                color: 'var(--mantine-primary-color-contrast)',
-                fontSize: '0.875rem',
-                fontWeight: 500,
-                border: 'none',
-                cursor: 'pointer'
-              }}
-              whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(79, 70, 229, 0.4)' }}
-              whileTap={{ scale: 0.95 }}
-              onClick={navigateToLogin}>
-              Get Started
-            </motion.button>
+            <div className={styles.navActions}>
+              <LanguageSelect />
+              <motion.button
+                style={{
+                  padding: '0.625rem 1.25rem',
+                  borderRadius: '0.75rem',
+                  background: 'var(--mantine-primary-color-filled)',
+                  color: 'var(--mantine-primary-color-contrast)',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+                whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(79, 70, 229, 0.4)' }}
+                whileTap={{ scale: 0.95 }}
+                onClick={navigateToLogin}>
+                <Trans>Get Started</Trans>
+              </motion.button>
+            </div>
           </div>
         </motion.nav>
 
@@ -454,15 +475,18 @@ export function LandingPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3, duration: 0.6 }}>
-                Track Your <span className={styles['gradient-text']}>Portfolio</span>
-                <br />
-                Like Never Before
+                <Trans>
+                  Track Your <span className={styles['gradient-text']}>Portfolio</span>
+                  <br /> Like Never Before
+                </Trans>
               </motion.h1>
 
               {/* Subtitle */}
               <motion.p className={styles['hero-subtitle']} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
-                A powerful personal finance and investment tracking platform. Record trades, analyze performance, and gain insights across
-                multiple portfolios.
+                <Trans>
+                  A powerful personal finance and investment tracking platform. Record trades, analyze performance, and gain insights across
+                  multiple portfolios.
+                </Trans>
               </motion.p>
 
               {/* CTA Buttons */}
@@ -476,7 +500,7 @@ export function LandingPage() {
                   whileHover={{ scale: 1.05, boxShadow: '0 0 40px rgba(79, 70, 229, 0.4)' }}
                   whileTap={{ scale: 0.95 }}
                   onClick={navigateToLogin}>
-                  Start Free
+                  <Trans>Start Free</Trans>
                   <IconArrowRight size={20} />
                 </motion.button>
               </motion.div>
@@ -502,10 +526,12 @@ export function LandingPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}>
               <h2 style={{ fontSize: '2.25rem', fontWeight: 700, marginBottom: '1rem' }}>
-                Powerful <span style={{ color: 'var(--mantine-color-anchor)' }}>Features</span>
+                <Trans>
+                  Powerful <span style={{ color: 'var(--mantine-color-anchor)' }}>Features</span>
+                </Trans>
               </h2>
               <p style={{ color: 'var(--mantine-color-dimmed)', maxWidth: '42rem', margin: '0 auto' }}>
-                Everything you need to manage your investments and track your trading performance.
+                <Trans>Everything you need to manage your investments and track your trading performance.</Trans>
               </p>
             </motion.div>
 
@@ -526,39 +552,40 @@ export function LandingPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}>
               <h2 style={{ fontSize: '2.25rem', fontWeight: 700, marginBottom: '1rem' }}>
-                Simple <span style={{ color: 'var(--mantine-color-anchor)' }}>Pricing</span>
+                <Trans>
+                  Simple <span style={{ color: 'var(--mantine-color-anchor)' }}>Pricing</span>
+                </Trans>
               </h2>
               <p style={{ color: 'var(--mantine-color-dimmed)', maxWidth: '42rem', margin: '0 auto' }}>
-                Core features are completely free. AI-powered features available as optional add-ons.
+                <Trans>Core features are completely free. AI-powered features available as optional add-ons.</Trans>
               </p>
             </motion.div>
 
             <div className={styles['price-grid']}>
               <PricingCard
-                title="Free Forever"
-                price="Free"
-                description="All core features, no credit card required."
+                title={t`Free Forever`}
+                description={t`All core features, no credit card required.`}
                 features={[
-                  'Unlimited portfolios',
-                  'All trade management features',
-                  'Full analytics dashboard',
-                  'Multi-currency support',
-                  'Light/Dark mode'
+                  t`Unlimited portfolios`,
+                  t`All trade management features`,
+                  t`Full analytics dashboard`,
+                  t`Multi-currency support`,
+                  t`Light/Dark mode`
                 ]}
                 highlighted
-                badge="Most Popular"
+                badge={t`Most Popular`}
                 delay={0.1}
               />
               <PricingCard
-                title="AI Power Pack"
-                price="$4.99"
-                description="AI-enhanced features coming soon."
+                title={t`AI Power Pack`}
+                price={4.99}
+                description={t`AI-enhanced features coming soon.`}
                 features={[
-                  'Everything in Free',
-                  'AI trade insights',
-                  'Smart portfolio suggestions',
-                  'Automated risk analysis',
-                  'AI-assisted data enrichment'
+                  t`Everything in Free`,
+                  t`AI trade insights`,
+                  t`Smart portfolio suggestions`,
+                  t`Automated risk analysis`,
+                  t`AI-assisted data enrichment`
                 ]}
                 delay={0.2}
               />
@@ -575,7 +602,7 @@ export function LandingPage() {
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ delay: 0.4 }}>
-              Cancel anytime • No hidden fees
+              <Trans>Cancel anytime • No hidden fees</Trans>
             </motion.p>
           </div>
         </section>
@@ -588,7 +615,9 @@ export function LandingPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}>
             <h2 style={{ fontSize: '2.25rem', fontWeight: 700, marginBottom: '1.5rem' }}>
-              Ready to <span style={{ color: 'var(--mantine-color-anchor)' }}>Transform</span> Your Trading?
+              <Trans>
+                Ready to <span style={{ color: 'var(--mantine-color-anchor)' }}>Transform</span> Your Trading?
+              </Trans>
             </h2>
             <p
               style={{
@@ -598,7 +627,7 @@ export function LandingPage() {
                 maxWidth: '42rem',
                 margin: '0 auto 2rem auto'
               }}>
-              Start tracking your investments and gain valuable insights into your trading performance.
+              <Trans>Start tracking your investments and gain valuable insights into your trading performance.</Trans>
             </p>
             <motion.button
               style={{
@@ -614,7 +643,7 @@ export function LandingPage() {
               whileHover={{ scale: 1.05, boxShadow: '0 0 50px rgba(79, 70, 229, 0.5)' }}
               whileTap={{ scale: 0.95 }}
               onClick={navigateToLogin}>
-              Get Started Free
+              <Trans>Get Started Free</Trans>
             </motion.button>
           </motion.div>
         </section>
@@ -628,23 +657,23 @@ export function LandingPage() {
               <div>
                 <BrandLogo />
                 <p style={{ color: 'var(--mantine-color-dimmed)', fontSize: '0.875rem' }}>
-                  A personal portfolio and analytics platform for traders and investors.
+                  <Trans>A personal portfolio and analytics platform for traders and investors.</Trans>
                 </p>
               </div>
 
               {/* Links */}
               {[
                 {
-                  title: 'Product',
-                  links: ['Features', 'Pricing']
+                  title: t`Product`,
+                  links: [t`Features`, t`Pricing`]
                 },
                 {
-                  title: 'Resources',
-                  links: ['Documentation', 'API Reference']
+                  title: t`Resources`,
+                  links: [t`Documentation`, t`API Reference`]
                 },
                 {
-                  title: 'Legal',
-                  links: ['Privacy Policy', 'Terms of Service']
+                  title: t`Legal`,
+                  links: [t`Privacy Policy`, t`Terms of Service`]
                 }
               ].map((section) => (
                 <div key={section.title}>
@@ -681,7 +710,9 @@ export function LandingPage() {
                 alignItems: 'center',
                 justifyContent: 'space-between'
               }}>
-              <p style={{ color: 'var(--mantine-color-dimmed)', fontSize: '0.875rem' }}>© 2024 Portfolio Analytics. All rights reserved.</p>
+              <p style={{ color: 'var(--mantine-color-dimmed)', fontSize: '0.875rem' }}>
+                <Trans>© 2024 Portfolio Analytics. All rights reserved.</Trans>
+              </p>
               <div style={{ display: 'flex', gap: '1rem' }}>
                 {[
                   { icon: IconMail, href: 'mailto:candogusyilmaz@gmail.com' },

@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro';
 import { Button, Menu } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconCheck, IconChevronDown, IconPlus } from '@tabler/icons-react';
@@ -16,6 +17,7 @@ interface PortfolioSelectorProps {
 }
 
 export function PortfolioSelector({ children, className, active }: PortfolioSelectorProps) {
+  const { t } = useLingui();
   const isMobile = useIsMobile();
   const { portfolioId } = useParams({ strict: false });
   const [opened, picker] = useDisclosure();
@@ -47,7 +49,7 @@ export function PortfolioSelector({ children, className, active }: PortfolioSele
           aria-haspopup="dialog">
           {children}
         </button>
-        <ResponsiveOverlay opened={opened} onClose={picker.close} title="Portfolios">
+        <ResponsiveOverlay opened={opened} onClose={picker.close} title={t`Portfolios`}>
           {status}
           <ul className={styles.choices}>
             {choices?.map(({ id, name, count }) => (
@@ -59,7 +61,7 @@ export function PortfolioSelector({ children, className, active }: PortfolioSele
             ))}
           </ul>
           <Button variant="default" fullWidth leftSection={<IconPlus size={16} />} onClick={createPortfolio}>
-            Create portfolio
+            <Trans>Create portfolio</Trans>
           </Button>
         </ResponsiveOverlay>
         {modal}
@@ -86,7 +88,7 @@ export function PortfolioSelector({ children, className, active }: PortfolioSele
           </div>
           <Menu.Divider />
           <Menu.Item leftSection={<IconPlus size={16} />} onClick={createPortfolio}>
-            Create portfolio
+            <Trans>Create portfolio</Trans>
           </Menu.Item>
         </Menu.Dropdown>
       </Menu>
@@ -96,18 +98,29 @@ export function PortfolioSelector({ children, className, active }: PortfolioSele
 }
 
 function PortfolioStatus({ pending, error, empty }: { pending: boolean; error: boolean; empty: boolean }) {
-  if (pending) return <output className={styles.status}>Loading portfolios…</output>;
+  if (pending)
+    return (
+      <output className={styles.status}>
+        <Trans>Loading portfolios…</Trans>
+      </output>
+    );
   if (error)
     return (
       <p className={styles.status} role="alert">
-        Could not load portfolios.
+        <Trans>Could not load portfolios.</Trans>
       </p>
     );
-  if (empty) return <p className={styles.status}>No portfolios yet.</p>;
+  if (empty)
+    return (
+      <p className={styles.status}>
+        <Trans>No portfolios yet.</Trans>
+      </p>
+    );
   return null;
 }
 
 function Choice({ name, count, selected }: { name: string; count?: number; selected: boolean }) {
+  const { t } = useLingui();
   return (
     <span className={styles.choiceContent}>
       <span>
@@ -118,7 +131,7 @@ function Choice({ name, count, selected }: { name: string; count?: number; selec
           </small>
         )}
       </span>
-      {selected && <IconCheck size={17} aria-label="Current portfolio" />}
+      {selected && <IconCheck size={17} aria-label={t`Current portfolio`} />}
     </span>
   );
 }

@@ -5,9 +5,6 @@ export const Route = createFileRoute('/(auth)/register')({
   head: () => ({
     meta: [
       {
-        title: 'Register | Canverse'
-      },
-      {
         name: 'description',
         content: 'Create your Canverse account to connect and collaborate seamlessly.'
       },

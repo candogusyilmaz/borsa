@@ -1,11 +1,13 @@
-import { Button, Pagination, TextInput } from '@mantine/core';
+import { Plural, Trans, useLingui } from '@lingui/react/macro';
+import { Button, TextInput } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconChevronRight, IconSearch } from '@tabler/icons-react';
 import { type Position, type PositionsModel, usePositionsView } from '~/features/positions/hooks/use-positions-view';
 import { getPositionMetrics, isDataStale } from '~/features/positions/position-presentation';
+import { LocalizedPagination } from '~/shared/components/localized-pagination';
 import { ResponsiveOverlay } from '~/shared/components/responsive-overlay/responsive-overlay';
 import { TickerAvatar } from '~/shared/components/ticker-avatar/ticker-avatar';
-import { format } from '~/shared/format/format';
+import { useFormat } from '~/shared/format/use-format';
 import { useIsMobile } from '~/shared/hooks/use-is-mobile';
 import { PositionInspector } from './position-inspector';
 import styles from './positions-view.module.css';
@@ -44,19 +46,34 @@ interface LayoutProps {
 }
 
 function DesktopPositions({ model, showPortfolio, children }: LayoutProps) {
+  const { t } = useLingui();
   return (
     <div className={styles.view}>
       <PositionSearch model={model} />
       <PositionsState model={model}>
-        <table className={styles.table} aria-label="Active positions">
+        <table className={styles.table} aria-label={t`Active positions`}>
           <thead>
             <tr>
-              <th scope="col">Symbol</th>
-              {showPortfolio && <th scope="col">Portfolio</th>}
-              <th scope="col">Qty / Avg Cost</th>
-              <th scope="col">Price</th>
-              <th scope="col">Total Value</th>
-              <th scope="col">P/L</th>
+              <th scope="col">
+                <Trans>Symbol</Trans>
+              </th>
+              {showPortfolio && (
+                <th scope="col">
+                  <Trans>Portfolio</Trans>
+                </th>
+              )}
+              <th scope="col">
+                <Trans>Qty / Avg Cost</Trans>
+              </th>
+              <th scope="col">
+                <Trans comment="Unit price of a financial instrument">Price</Trans>
+              </th>
+              <th scope="col">
+                <Trans>Total Value</Trans>
+              </th>
+              <th scope="col">
+                <Trans>P/L</Trans>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -103,6 +120,7 @@ function DesktopPositions({ model, showPortfolio, children }: LayoutProps) {
 }
 
 function MobilePositions({ model, showPortfolio, children }: LayoutProps) {
+  const { t } = useLingui();
   const [opened, filter] = useDisclosure();
 
   return (
@@ -113,12 +131,12 @@ function MobilePositions({ model, showPortfolio, children }: LayoutProps) {
         className={styles.mobileSearch}
         onClick={filter.open}
         aria-haspopup="dialog">
-        {model.search ? `Search · ${model.search}` : 'Search positions'}
+        {model.search ? t`Search · ${model.search}` : t`Search positions`}
       </Button>
-      <ResponsiveOverlay opened={opened} onClose={filter.close} title="Search positions">
+      <ResponsiveOverlay opened={opened} onClose={filter.close} title={t`Search positions`}>
         <PositionSearch model={model} autoFocus />
         <Button fullWidth mt="md" onClick={filter.close}>
-          Show {model.filteredCount} positions
+          <Plural value={model.filteredCount} one="Show # position" other="Show # positions" />
         </Button>
       </ResponsiveOverlay>
       <PositionsState model={model}>
@@ -153,11 +171,12 @@ function MobilePositions({ model, showPortfolio, children }: LayoutProps) {
 }
 
 function PositionSearch({ model, autoFocus }: { model: PositionsModel; autoFocus?: boolean }) {
+  const { t } = useLingui();
   return (
     <TextInput
       className={styles.search}
-      aria-label="Search positions"
-      placeholder="Search positions"
+      aria-label={t`Search positions`}
+      placeholder={t`Search positions`}
       leftSection={<IconSearch size={16} />}
       value={model.search}
       data-autofocus={autoFocus || undefined}
@@ -167,48 +186,66 @@ function PositionSearch({ model, autoFocus }: { model: PositionsModel; autoFocus
 }
 
 function PositionsState({ model, children }: { model: PositionsModel; children: React.ReactNode }) {
-  if (model.query.isPending) return <output className={styles.state}>Loading positions…</output>;
+  const { t } = useLingui();
+  if (model.query.isPending)
+    return (
+      <output className={styles.state}>
+        <Trans>Loading positions…</Trans>
+      </output>
+    );
   if (model.query.isError) {
     return (
       <div className={styles.state}>
-        <p role="alert">Could not load positions.</p>
+        <p role="alert">
+          <Trans>Could not load positions.</Trans>
+        </p>
         <Button variant="default" onClick={() => void model.query.refetch()}>
-          Try again
+          <Trans>Try again</Trans>
         </Button>
       </div>
     );
   }
   if (!model.positions.length)
-    return <p className={styles.state}>{model.search.trim() ? 'No positions match this search.' : 'No open positions.'}</p>;
+    return <p className={styles.state}>{model.search.trim() ? t`No positions match this search.` : t`No open positions.`}</p>;
   return children;
 }
 
 function PositionPagination({ model }: { model: PositionsModel }) {
+  const { t } = useLingui();
   if (model.pages <= 1) return null;
-  return <Pagination aria-label="Positions pages" value={model.currentPage} total={model.pages} onChange={model.setPage} size="sm" />;
+  return (
+    <LocalizedPagination aria-label={t`Positions pages`} value={model.currentPage} total={model.pages} onChange={model.setPage} size="sm" />
+  );
 }
 
 function Quantity({ position, compact }: { position: Position; compact?: boolean }) {
-  const quantity = position.quantity.toLocaleString('tr-TR', { maximumFractionDigits: 20 });
+  const format = useFormat();
+  const quantity = format.number(position.quantity, { maximumFractionDigits: 20 });
   const average = format.toCurrency(position.avgCost, false, position.currencyCode);
   if (compact)
     return (
       <small>
-        {quantity} × {average} avg.
+        <Trans>
+          {quantity} × {average} avg.
+        </Trans>
       </small>
     );
   return (
     <>
       {quantity}
-      <small>{average} avg.</small>
+      <small>
+        <Trans>{average} avg.</Trans>
+      </small>
     </>
   );
 }
 
 function QuoteValue({ value, position }: { value?: number; position: Position }) {
+  const { t } = useLingui();
+  const format = useFormat();
   if (value == null)
     return (
-      <span className={styles.muted} role="img" aria-label="Unavailable">
+      <span className={styles.muted} role="img" aria-label={t`Unavailable`}>
         —
       </span>
     );
@@ -220,10 +257,12 @@ function QuoteValue({ value, position }: { value?: number; position: Position })
 }
 
 function PositionReturn({ position, compact }: { position: Position; compact?: boolean }) {
+  const { t } = useLingui();
+  const format = useFormat();
   const { profit, returnPercentage } = getPositionMetrics(position);
   if (profit == null)
     return (
-      <small role="img" aria-label="P/L unavailable">
+      <small role="img" aria-label={t`P/L unavailable`}>
         —
       </small>
     );

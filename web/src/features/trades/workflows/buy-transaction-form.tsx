@@ -1,12 +1,16 @@
+import { Trans, useLingui } from '@lingui/react/macro';
 import { Button, type ButtonProps, Group, NativeSelect, NumberInput, Select, SimpleGrid, Stack } from '@mantine/core';
-import { DateTimePicker } from '@mantine/dates';
 import { useForm } from '@mantine/form';
 import { useQueryClient } from '@tanstack/react-query';
 import { useParams } from '@tanstack/react-router';
 import { $api } from '~/api/openapi';
+import { LocalizedDateTimePicker } from '~/shared/components/localized-date-time-picker';
 import { alerts } from '~/shared/feedback/alerts';
 
 import { getCurrencySymbol } from '~/shared/format/currency';
+import { getNumberSeparators } from '~/shared/format/format';
+import { useFormat } from '~/shared/format/use-format';
+import { useLocale } from '~/shared/i18n/locale-context';
 
 type BuyTransactionFormProps = {
   stockId?: string;
@@ -16,6 +20,10 @@ type BuyTransactionFormProps = {
 };
 
 export function BuyTransactionForm({ stockId, portfolioId: selectedPortfolioId, close }: BuyTransactionFormProps) {
+  const { t } = useLingui();
+  const { formatLocale } = useLocale();
+  const format = useFormat();
+  const separators = getNumberSeparators(formatLocale);
   const { portfolioId: routePortfolioId } = useParams({ strict: false });
   const portfolioId = selectedPortfolioId ?? routePortfolioId;
 
@@ -46,19 +54,20 @@ export function BuyTransactionForm({ stockId, portfolioId: selectedPortfolioId, 
   const mutation = $api.useMutation('post', '/api/portfolios/{portfolioId}/trades/buy', {
     onSuccess: () => {
       close?.();
-      alerts.success(`Bought ${form.values.quantity} share(s) of ${selectedStock?.symbol} @ ${form.values.price}.`);
+      const quantity = format.number(form.values.quantity);
+      const symbol = selectedStock?.symbol;
+      const price = format.number(form.values.price, { minimumFractionDigits: 2 });
+      alerts.success(symbol ? t`Bought ${quantity} units of ${symbol} at ${price}.` : t`Trade recorded.`);
       client.invalidateQueries();
     },
-    onError: (res) => {
-      console.log(res);
-    }
+    onError: () => alerts.error(t`Could not record the purchase. Try again.`)
   });
 
   const selectedStock = data?.find((s) => s.id === form.values.stockId);
 
   const handleFormSubmit = form.onSubmit((values) => {
     if (!portfolioId) {
-      alerts.error('Portfolio ID is required to perform this action.');
+      alerts.error(t`Portfolio ID is required to perform this action.`);
       return;
     }
 
@@ -88,6 +97,7 @@ export function BuyTransactionForm({ stockId, portfolioId: selectedPortfolioId, 
 
   const currencySelect = selectedStock?.supportedCurrencies.length > 1 && (
     <NativeSelect
+      aria-label={t`Currency`}
       data={selectedStock.supportedCurrencies}
       rightSectionWidth={24}
       mr={4}
@@ -126,11 +136,12 @@ export function BuyTransactionForm({ stockId, portfolioId: selectedPortfolioId, 
     <form onSubmit={handleFormSubmit}>
       <Stack>
         <Select
-          label="Asset"
-          placeholder="Select an asset"
+          label={t`Asset`}
+          placeholder={t`Select an asset`}
           checkIconPosition="right"
           searchable
           clearable
+          clearButtonProps={{ 'aria-label': t`Clear selection` }}
           limit={5}
           data={selectOptions}
           {...form.getInputProps('stockId')}
@@ -140,35 +151,34 @@ export function BuyTransactionForm({ stockId, portfolioId: selectedPortfolioId, 
           <NumberInput
             disabled={!form.values.stockId}
             min={1}
-            label="Quantity"
+            label={t`Quantity`}
             inputMode="decimal"
             hideControls
             allowDecimal={false}
             {...form.getInputProps('quantity')}
           />
           <NumberInput
-            label="Price"
+            label={t({ comment: 'Unit price of a financial instrument', message: 'Price' })}
             inputMode="decimal"
             disabled={!form.values.stockId}
-            prefix={selectedStock ? getCurrencySymbol(form.values.currencyCode) : undefined}
+            prefix={selectedStock ? getCurrencySymbol(form.values.currencyCode, formatLocale) : undefined}
             hideControls
-            thousandSeparator="."
+            {...separators}
             fixedDecimalScale
             decimalScale={2}
-            decimalSeparator=","
             min={0}
             rightSection={currencySelect}
             rightSectionWidth={'72px'}
             {...form.getInputProps('price')}
           />
         </SimpleGrid>
-        <DateTimePicker label="Execution date" radius="md" {...form.getInputProps('actionDate')} />
+        <LocalizedDateTimePicker label={t`Execution date`} radius="md" {...form.getInputProps('actionDate')} />
         <Group grow mt="lg">
           <Button variant="default" onClick={close}>
-            Cancel
+            <Trans>Cancel</Trans>
           </Button>
           <Button type="submit" loading={mutation.isPending} disabled={!form.isValid() || mutation.isSuccess}>
-            Buy {selectedStock?.symbol}
+            {selectedStock ? t`Buy ${selectedStock.symbol}` : t`Buy`}
           </Button>
         </Group>
       </Stack>

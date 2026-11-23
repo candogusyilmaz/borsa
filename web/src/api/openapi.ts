@@ -1,5 +1,6 @@
 import createFetchClient from 'openapi-fetch';
 import createClient from 'openapi-react-query';
+import { getLocalePreferences } from '~/shared/i18n/i18n';
 import type { paths } from './schema';
 import { getToken } from './token';
 
@@ -9,6 +10,7 @@ const UNPROTECTED_ROUTES: (keyof paths)[] = ['/api/auth/token', '/api/auth/googl
 
 const authMiddleware = {
   onRequest({ schemaPath, request }) {
+    request.headers.set('Accept-Language', getLocalePreferences().language);
     const pathname = new URL(request.url).pathname;
     const requestPath = schemaPath ?? pathname;
 

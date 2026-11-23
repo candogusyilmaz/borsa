@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro';
 import { ActionIcon, Button, Divider, PasswordInput, Stack, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import type { CredentialResponse } from '@react-oauth/google';
@@ -6,10 +7,14 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import { useAuthentication } from '~/features/auth/authentication-context';
 import { GoogleSignInButton } from '~/features/auth/components/google-sign-in-button';
 import { alerts } from '~/shared/feedback/alerts';
+import { useFormat } from '~/shared/format/use-format';
+import { LanguageSelect } from '~/shared/i18n/language-select';
 import { useThemeToggle } from '~/theme/use-theme-toggle';
 import styles from './auth.module.css';
 
 export function LoginPage() {
+  const { t } = useLingui();
+  const format = useFormat();
   const navigate = useNavigate();
   const { login } = useAuthentication();
   const { colorScheme, toggleTheme } = useThemeToggle();
@@ -20,8 +25,8 @@ export function LoginPage() {
       password: ''
     },
     validate: {
-      username: (v) => !v,
-      password: (v) => !v
+      username: (v) => (v ? null : <Trans>Enter your email address</Trans>),
+      password: (v) => (v ? null : <Trans>Enter your password</Trans>)
     }
   });
 
@@ -45,15 +50,18 @@ export function LoginPage() {
 
   return (
     <div className={styles.pageWrapper}>
-      <ActionIcon
-        className={styles.themeToggle}
-        size="lg"
-        radius="md"
-        onClick={toggleTheme}
-        aria-label="Toggle color scheme"
-        title={colorScheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
-        {colorScheme === 'dark' ? <IconSun size={17} /> : <IconMoon size={17} />}
-      </ActionIcon>
+      <div className={styles.preferences}>
+        <LanguageSelect />
+        <ActionIcon
+          className={styles.themeToggle}
+          size="lg"
+          radius="md"
+          onClick={toggleTheme}
+          aria-label={t`Toggle color scheme`}
+          title={colorScheme === 'dark' ? t`Switch to light mode` : t`Switch to dark mode`}>
+          {colorScheme === 'dark' ? <IconSun size={17} /> : <IconMoon size={17} />}
+        </ActionIcon>
+      </div>
       {/* ── LEFT: brand hero panel ──────────────────────────────── */}
       <aside className={styles.heroPanel}>
         <div className={styles.heroAccent} />
@@ -69,12 +77,18 @@ export function LoginPage() {
         {/* Headline + features */}
         <div className={styles.heroCenter}>
           <div>
-            <p className={styles.heroTagline}>Portfolio Intelligence</p>
+            <p className={styles.heroTagline}>
+              <Trans>Portfolio Intelligence</Trans>
+            </p>
             <h1 className={styles.heroTitle}>
-              Track every trade. <span className={styles.heroTitleAccent}>Grow every portfolio.</span>
+              <Trans>
+                Track every trade. <span className={styles.heroTitleAccent}>Grow every portfolio.</span>
+              </Trans>
             </h1>
             <p className={styles.heroSubtext}>
-              Unified multi-portfolio management with real-time P&amp;L, trade history, and analytics built for serious traders.
+              <Trans>
+                Unified multi-portfolio management with real-time P&amp;L, trade history, and analytics built for serious traders.
+              </Trans>
             </p>
           </div>
 
@@ -83,19 +97,19 @@ export function LoginPage() {
               <span className={styles.featureDot}>
                 <CheckIcon />
               </span>
-              Real-time position tracking across all markets
+              <Trans>Real-time position tracking across all markets</Trans>
             </li>
             <li className={styles.featureItem}>
               <span className={styles.featureDot}>
                 <CheckIcon />
               </span>
-              Multi-portfolio management &amp; analytics
+              <Trans>Multi-portfolio management &amp; analytics</Trans>
             </li>
             <li className={styles.featureItem}>
               <span className={styles.featureDot}>
                 <CheckIcon />
               </span>
-              Complete trade history with performance insights
+              <Trans>Complete trade history with performance insights</Trans>
             </li>
           </ul>
         </div>
@@ -103,16 +117,24 @@ export function LoginPage() {
         {/* Stats */}
         <div className={styles.heroStats}>
           <div className={styles.heroStat}>
-            <div className={styles.heroStatValue}>10k+</div>
-            <div className={styles.heroStatLabel}>Portfolios</div>
+            <div className={styles.heroStatValue}>{format.number(10000, { notation: 'compact' })}+</div>
+            <div className={styles.heroStatLabel}>
+              <Trans>Portfolios</Trans>
+            </div>
           </div>
           <div className={styles.heroStat}>
-            <div className={styles.heroStatValue}>500k+</div>
-            <div className={styles.heroStatLabel}>Trades logged</div>
+            <div className={styles.heroStatValue}>{format.number(500000, { notation: 'compact' })}+</div>
+            <div className={styles.heroStatLabel}>
+              <Trans>Trades logged</Trans>
+            </div>
           </div>
           <div className={styles.heroStat}>
-            <div className={styles.heroStatValue}>Live</div>
-            <div className={styles.heroStatLabel}>P&amp;L data</div>
+            <div className={styles.heroStatValue}>
+              <Trans comment="Indicator that market data is live">Live</Trans>
+            </div>
+            <div className={styles.heroStatLabel}>
+              <Trans>P&amp;L data</Trans>
+            </div>
           </div>
         </div>
       </aside>
@@ -130,8 +152,12 @@ export function LoginPage() {
 
           {/* Heading */}
           <div className={styles.formHeading}>
-            <h2 className={styles.formTitle}>Welcome back</h2>
-            <p className={styles.formSubtitle}>Sign in to your account to continue</p>
+            <h2 className={styles.formTitle}>
+              <Trans>Welcome back</Trans>
+            </h2>
+            <p className={styles.formSubtitle}>
+              <Trans>Sign in to your account to continue</Trans>
+            </p>
           </div>
 
           {/* Custom Google button */}
@@ -141,7 +167,7 @@ export function LoginPage() {
 
           {/* Divider */}
           <div className={styles.formDivider}>
-            <Divider label="OR LOG IN WITH YOUR EMAIL" />
+            <Divider label={t`OR LOG IN WITH YOUR EMAIL`} />
           </div>
 
           {/* Email / password form */}
@@ -156,7 +182,7 @@ export function LoginPage() {
                   const res = error as unknown as { response?: { data?: unknown } };
                   const responseData = res.response?.data as { detail?: string };
 
-                  alerts.error(responseData?.detail || 'Invalid username or password', 'Error while logging in');
+                  alerts.error(responseData?.detail || t`Invalid username or password`, t`Error while logging in`);
                   form.reset();
                   form.getInputNode('username')?.focus();
                   form.validate();
@@ -164,19 +190,25 @@ export function LoginPage() {
               })
             )}>
             <Stack gap="md">
-              <TextInput label="Email" placeholder="me@canverse.com" {...form.getInputProps('username')} />
-              <PasswordInput label="Password" placeholder="••••••••" {...form.getInputProps('password')} />
+              <TextInput label={t`Email`} placeholder="me@canverse.com" {...form.getInputProps('username')} />
+              <PasswordInput
+                visibilityToggleFocusable
+                visibilityToggleButtonProps={{ 'aria-label': t`Toggle password visibility` }}
+                label={t`Password`}
+                placeholder="••••••••"
+                {...form.getInputProps('password')}
+              />
               <Button className={styles.submitButton} loading={login.isPending} type="submit" fullWidth>
-                Sign in
+                <Trans>Sign in</Trans>
               </Button>
             </Stack>
           </form>
 
           {/* Footer */}
           <div className={styles.formFooter}>
-            New to Canverse?{' '}
+            <Trans>New to Canverse?</Trans>{' '}
             <Link to="/register" className={styles.formLink}>
-              Create an account
+              <Trans>Create an account</Trans>
             </Link>
           </div>
         </div>

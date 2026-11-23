@@ -1,3 +1,4 @@
+import { msg } from '@lingui/core/macro';
 import dayjs from 'dayjs';
 import type { components } from '~/api/schema';
 
@@ -100,7 +101,10 @@ function summarizePortfolio(positions: PositionSummary[], currency: string) {
 function getMarketStatus(positions: PositionSummary[]) {
   // TODO(backend): Replace position timestamps and the generic label with the dashboard marketQuotes summary and exchange code.
   const latestQuote = positions.reduce((latest, { position }) => Math.max(latest, Date.parse(position.instrument.updatedAt ?? '') || 0), 0);
-  return { label: 'Market', updatedAt: latestQuote > 0 ? latestQuote : undefined };
+  return {
+    label: msg({ comment: 'Generic market label used when the exchange is unknown', message: 'Market' }),
+    updatedAt: latestQuote > 0 ? latestQuote : undefined
+  };
 }
 
 export function getDashboardDetails({

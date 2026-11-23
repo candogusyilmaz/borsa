@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro';
 import { Drawer, type MantineSize, Modal } from '@mantine/core';
 import { type ReactNode, useState } from 'react';
 import { useIsMobile } from '~/shared/hooks/use-is-mobile';
@@ -14,6 +15,8 @@ interface ResponsiveOverlayProps {
 }
 
 export function ResponsiveOverlay({ children, desktop = 'modal', size, ...props }: ResponsiveOverlayProps) {
+  const { t } = useLingui();
+  const closeButtonProps = { 'aria-label': t`Close` };
   const isMobile = useIsMobile();
 
   const [mobileAtOpen, setMobileAtOpen] = useState<boolean>();
@@ -24,6 +27,7 @@ export function ResponsiveOverlay({ children, desktop = 'modal', size, ...props 
     return (
       <Drawer
         {...props}
+        closeButtonProps={closeButtonProps}
         position="bottom"
         size="auto"
         classNames={{ content: styles.sheet, header: styles.sheetHeader, body: styles.sheetBody }}>
@@ -34,14 +38,19 @@ export function ResponsiveOverlay({ children, desktop = 'modal', size, ...props 
 
   if (desktop === 'drawer') {
     return (
-      <Drawer {...props} position="right" size={size ?? 'lg'} classNames={{ header: styles.drawerHeader }}>
+      <Drawer
+        {...props}
+        closeButtonProps={closeButtonProps}
+        position="right"
+        size={size ?? 'lg'}
+        classNames={{ header: styles.drawerHeader }}>
         {children}
       </Drawer>
     );
   }
 
   return (
-    <Modal {...props} centered size={size}>
+    <Modal {...props} closeButtonProps={closeButtonProps} centered size={size}>
       {children}
     </Modal>
   );

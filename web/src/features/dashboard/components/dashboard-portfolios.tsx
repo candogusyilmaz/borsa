@@ -1,10 +1,11 @@
+import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { PositionInspector } from '~/features/positions/components/positions-view/position-inspector';
 import { TickerAvatar } from '~/shared/components/ticker-avatar/ticker-avatar';
-import { format } from '~/shared/format/format';
+import { useFormat } from '~/shared/format/use-format';
 import type { DashboardDetails } from '../dashboard-placeholders';
-import { signedPercentage, tone } from '../dashboard-presentation';
+import { tone } from '../dashboard-presentation';
 import styles from '../pages/dashboard-page.module.css';
 
 export function DashboardPortfolios({
@@ -16,17 +17,25 @@ export function DashboardPortfolios({
   pending: boolean;
   unavailable: boolean;
 }) {
+  const { t } = useLingui();
+  const format = useFormat();
   const [positionId, selectPosition] = useState<string>();
   const position = details.topPositions.find(({ position }) => position.id === positionId)?.position;
   const { currency, weightEstimated, weightPartial } = details;
+
+  const rankingCurrency = details.rankingCurrency;
 
   return (
     <>
       <div className={styles.detailGrid}>
         <section aria-labelledby="dashboard-portfolios-title">
           <div className={styles.sectionHeading}>
-            <h2 id="dashboard-portfolios-title">Linked portfolios</h2>
-            <small>Weight &amp; total value</small>
+            <h2 id="dashboard-portfolios-title">
+              <Trans>Linked portfolios</Trans>
+            </h2>
+            <small>
+              <Trans>Weight &amp; total value</Trans>
+            </small>
           </div>
           {details.portfolios.length ? (
             <>
@@ -36,24 +45,38 @@ export function DashboardPortfolios({
                 ))}
               </ul>
               <p className={styles.listNote}>
-                From portfolios with recorded trades.
-                {weightPartial && ` Weights cover the ${currency} portion only.`}
-                {weightEstimated && ' Weights include estimated values.'}
+                <Trans>From portfolios with recorded trades.</Trans>
+                {weightPartial && (
+                  <>
+                    {' '}
+                    <Trans>Weights cover the {currency} portion only.</Trans>
+                  </>
+                )}
+                {weightEstimated && (
+                  <>
+                    {' '}
+                    <Trans>Weights include estimated values.</Trans>
+                  </>
+                )}
               </p>
             </>
           ) : (
-            <DetailsState pending={pending} unavailable={unavailable} empty="Linked portfolios with recorded trades will appear here." />
+            <DetailsState pending={pending} unavailable={unavailable} empty={t`Linked portfolios with recorded trades will appear here.`} />
           )}
         </section>
         <section aria-labelledby="dashboard-positions-title">
           <div className={styles.sectionHeading}>
-            <h2 id="dashboard-positions-title">Top positions</h2>
+            <h2 id="dashboard-positions-title">
+              <Trans>Top positions</Trans>
+            </h2>
             {details.topPositions.length > 0 ? (
               <Link to="/positions" className={styles.sectionLink}>
-                By value · {details.rankingCurrency}
+                <Trans>By value · {rankingCurrency}</Trans>
               </Link>
             ) : (
-              <small>Daily impact</small>
+              <small>
+                <Trans>Daily impact</Trans>
+              </small>
             )}
           </div>
           {details.topPositions.length ? (
@@ -73,15 +96,22 @@ export function DashboardPortfolios({
                     <span className={styles.detailValue}>
                       <strong>
                         {format.toCurrency(row.value, false, row.position.currencyCode)}
-                        {row.estimatedValue && <span className={styles.estimate}> Est.</span>}
+                        {row.estimatedValue && (
+                          <span className={styles.estimate}>
+                            {' '}
+                            <Trans comment="Compact badge next to an estimated financial value">Est.</Trans>
+                          </span>
+                        )}
                       </strong>
                       <small data-tone={tone(row.dailyAmount)}>
                         {format.currency(row.dailyAmount, { currency: row.position.currencyCode, signDisplay: 'exceptZero' })}
-                        {row.dailyPercentage == null ? ' (—)' : ` (${signedPercentage(row.dailyPercentage)})`}
+                        {row.dailyPercentage == null
+                          ? ' (—)'
+                          : ` (${format.toLocalePercentage(row.dailyPercentage, 2, { signDisplay: 'exceptZero' })})`}
                         {row.estimatedDaily && (
-                          <span className={styles.estimate} title="Flat daily impact estimate: no daily quote change">
+                          <span className={styles.estimate} title={t`Flat daily impact estimate: no daily quote change`}>
                             {' '}
-                            Est.
+                            <Trans comment="Compact badge next to an estimated financial value">Est.</Trans>
                           </span>
                         )}
                       </small>
@@ -91,7 +121,7 @@ export function DashboardPortfolios({
               ))}
             </ul>
           ) : (
-            <DetailsState pending={pending} unavailable={unavailable} empty="No open positions in recorded portfolios." />
+            <DetailsState pending={pending} unavailable={unavailable} empty={t`No open positions in recorded portfolios.`} />
           )}
         </section>
       </div>
@@ -101,8 +131,12 @@ export function DashboardPortfolios({
 }
 
 function PortfolioRow({ row, currency }: { row: DashboardDetails['portfolios'][number]; currency: string }) {
+  const { t } = useLingui();
+  const format = useFormat();
   const { name, id, summary, weight, realized } = row;
-  const weightLabel = weight == null ? '— weight' : `${format.toLocalePercentage(weight, 1)} weight`;
+  const weightText = weight == null ? '—' : format.toLocalePercentage(weight, 1);
+  const realizedAmount = realized == null ? '—' : format.currency(realized, { currency, signDisplay: 'exceptZero' });
+  const summaryCurrency = summary?.valueCurrency;
 
   return (
     <li>
@@ -110,7 +144,8 @@ function PortfolioRow({ row, currency }: { row: DashboardDetails['portfolios'][n
         <span className={styles.portfolioName}>
           <strong>{name}</strong>
           <small>
-            {summary?.assetCount ?? '—'} {summary?.assetCount === 1 ? 'asset' : 'assets'} · {weightLabel}
+            {summary ? <Plural value={summary.assetCount} one="# asset" other="# assets" /> : <Trans>Asset count unavailable</Trans>} ·{' '}
+            <Trans>{weightText} weight</Trans>
           </small>
           <span className={styles.weightTrack} aria-hidden="true">
             {weight != null && weight > 0 && <span style={{ width: `${weight}%` }} />}
@@ -120,20 +155,24 @@ function PortfolioRow({ row, currency }: { row: DashboardDetails['portfolios'][n
           <strong>
             {summary ? format.toCurrency(summary.value, false, summary.valueCurrency) : '—'}
             {summary?.estimated && (
-              <span className={styles.estimate} title="Cost basis used for missing quotes">
+              <span className={styles.estimate} title={t`Cost basis used for missing quotes`}>
                 {' '}
-                Est.
+                <Trans comment="Compact badge next to an estimated financial value">Est.</Trans>
               </span>
             )}
           </strong>
-          {summary?.partial && <small>{summary.valueCurrency} portion</small>}
+          {summary?.partial && (
+            <small>
+              <Trans>{summaryCurrency} portion</Trans>
+            </small>
+          )}
           {summary?.returnPercentage != null ? (
-            <small data-tone={tone(summary.returnPercentage)} title="Unrealized return on open positions">
-              {signedPercentage(summary.returnPercentage)}
+            <small data-tone={tone(summary.returnPercentage)} title={t`Unrealized return on open positions`}>
+              {format.toLocalePercentage(summary.returnPercentage, 2, { signDisplay: 'exceptZero' })}
             </small>
           ) : (
             <small data-tone={tone(realized)}>
-              {realized == null ? '—' : format.currency(realized, { currency, signDisplay: 'exceptZero' })} realized
+              <Trans>{realizedAmount} realized</Trans>
             </small>
           )}
         </span>
@@ -143,7 +182,17 @@ function PortfolioRow({ row, currency }: { row: DashboardDetails['portfolios'][n
 }
 
 function DetailsState({ pending, unavailable, empty }: { pending: boolean; unavailable: boolean; empty: string }) {
-  if (unavailable) return <p className={styles.state}>Dashboard details are temporarily unavailable.</p>;
-  if (pending) return <output className={styles.state}>Loading details…</output>;
+  if (unavailable)
+    return (
+      <p className={styles.state}>
+        <Trans>Dashboard details are temporarily unavailable.</Trans>
+      </p>
+    );
+  if (pending)
+    return (
+      <output className={styles.state}>
+        <Trans>Loading details…</Trans>
+      </output>
+    );
   return <p className={styles.state}>{empty}</p>;
 }

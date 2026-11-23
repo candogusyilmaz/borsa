@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro';
 import styles from './styles.module.css';
 
 export function NetworkError({ error }: { error: Error }) {
@@ -28,14 +29,20 @@ export function NetworkError({ error }: { error: Error }) {
             <line x1="12" y1="20" x2="12.01" y2="20" />
           </svg>
         </div>
-        <h1 className={styles.title}>Connection Lost</h1>
-        <p className={styles.description}>We can't seem to reach the server. Please check your internet connection and try again.</p>
+        <h1 className={styles.title}>
+          <Trans>Connection Lost</Trans>
+        </h1>
+        <p className={styles.description}>
+          <Trans>We can't seem to reach the server. Please check your internet connection and try again.</Trans>
+        </p>
         <button onClick={handleRetry} className={styles.button} type="button">
-          Retry Connection
+          <Trans>Retry Connection</Trans>
         </button>
         {error && (
           <details className={styles.errorDetails}>
-            <summary>Error Details</summary>
+            <summary>
+              <Trans>Error Details</Trans>
+            </summary>
             <div className={styles.errorContent}>
               <div>{error.message}</div>
               {error.stack && <div style={{ marginTop: '8px', opacity: 0.7 }}>{error.stack}</div>}

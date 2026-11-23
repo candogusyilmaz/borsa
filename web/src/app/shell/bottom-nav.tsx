@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro';
 import { RemoveScroll } from '@mantine/core';
 import { IconArrowsLeftRight, IconFolderOpen, IconHome, IconListDetails } from '@tabler/icons-react';
 import { Link, useLocation } from '@tanstack/react-router';
@@ -5,25 +6,26 @@ import { PortfolioSelector } from '~/features/portfolios';
 import styles from './bottom-nav.module.css';
 
 export function BottomNav() {
+  const { t } = useLingui();
   const onPortfolio = useLocation({ select: (location) => location.pathname.startsWith('/portfolios/') });
 
   return (
-    <nav className={`${styles.nav} ${RemoveScroll.classNames.fullWidth}`} aria-label="Main navigation">
+    <nav className={`${styles.nav} ${RemoveScroll.classNames.fullWidth}`} aria-label={t`Main navigation`}>
       <Link to="/dashboard" className={styles.tab}>
         <IconHome aria-hidden="true" />
-        Dashboard
+        <Trans>Dashboard</Trans>
       </Link>
       <PortfolioSelector className={styles.tab} active={onPortfolio}>
         <IconFolderOpen aria-hidden="true" />
-        Portfolios
+        <Trans>Portfolios</Trans>
       </PortfolioSelector>
       <Link to="/positions" className={styles.tab}>
         <IconListDetails aria-hidden="true" />
-        Positions
+        <Trans>Positions</Trans>
       </Link>
       <Link to="/trades" className={styles.tab}>
         <IconArrowsLeftRight aria-hidden="true" />
-        Trades
+        <Trans>Trades</Trans>
       </Link>
     </nav>
   );

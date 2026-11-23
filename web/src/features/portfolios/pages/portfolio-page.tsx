@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro';
 import { ActionIcon, Button, Group, Menu, Tabs } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconArchive, IconChevronDown, IconDots, IconListDetails, IconMinus, IconPlus } from '@tabler/icons-react';
@@ -21,6 +22,7 @@ export function PortfolioPage({ portfolioId }: { portfolioId: string }) {
 }
 
 function PortfolioContent({ portfolioId }: { portfolioId: string }) {
+  const { t } = useLingui();
   const model = usePortfolioView(portfolioId);
   const isMobile = useIsMobile();
 
@@ -29,7 +31,7 @@ function PortfolioContent({ portfolioId }: { portfolioId: string }) {
       <div className={styles.heading}>
         <h1>
           <PortfolioSelector className={styles.titleButton}>
-            {model.name || 'Portfolio'}
+            {model.name || t`Portfolio`}
             <IconChevronDown className={styles.mobileChevron} size={18} aria-hidden="true" />
           </PortfolioSelector>
         </h1>
@@ -68,6 +70,7 @@ function PortfolioSections({
   isMobile: boolean;
   portfolioId: string;
 }) {
+  const { t } = useLingui();
   const positions = <PositionsView portfolioId={Number(portfolioId)} onOpenPosition={model.openPosition} />;
   const earnings = <EarningsOverview portfolioId={Number(portfolioId)} />;
   const trades = <TradesList portfolioId={portfolioId} />;
@@ -79,10 +82,16 @@ function PortfolioSections({
         onChange={model.setTab}
         color="var(--app-weight-fill)"
         classNames={{ list: styles.tabs, tab: styles.tab, panel: styles.panel }}>
-        <Tabs.List aria-label="Portfolio sections" grow>
-          <Tabs.Tab value="positions">Positions</Tabs.Tab>
-          <Tabs.Tab value="earnings">Earnings</Tabs.Tab>
-          <Tabs.Tab value="trades">Trades</Tabs.Tab>
+        <Tabs.List aria-label={t`Portfolio sections`} grow>
+          <Tabs.Tab value="positions">
+            <Trans>Positions</Trans>
+          </Tabs.Tab>
+          <Tabs.Tab value="earnings">
+            <Trans>Earnings</Trans>
+          </Tabs.Tab>
+          <Tabs.Tab value="trades">
+            <Trans>Trades</Trans>
+          </Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="positions">{positions}</Tabs.Panel>
         <Tabs.Panel value="earnings">{earnings}</Tabs.Panel>
@@ -94,15 +103,21 @@ function PortfolioSections({
   return (
     <div className={styles.sections}>
       <section aria-labelledby="portfolio-positions-title">
-        <h2 id="portfolio-positions-title">Active positions</h2>
+        <h2 id="portfolio-positions-title">
+          <Trans>Active positions</Trans>
+        </h2>
         {positions}
       </section>
       <section aria-labelledby="portfolio-earnings-title">
-        <h2 id="portfolio-earnings-title">Earnings</h2>
+        <h2 id="portfolio-earnings-title">
+          <Trans>Earnings</Trans>
+        </h2>
         {earnings}
       </section>
       <section aria-labelledby="portfolio-trades-title">
-        <h2 id="portfolio-trades-title">Trades</h2>
+        <h2 id="portfolio-trades-title">
+          <Trans>Trades</Trans>
+        </h2>
         {trades}
       </section>
     </div>
@@ -110,19 +125,20 @@ function PortfolioSections({
 }
 
 function PortfolioMenu({ portfolioId }: { portfolioId: string }) {
+  const { t } = useLingui();
   const [opened, archive] = useDisclosure();
 
   return (
     <>
       <Menu position="bottom-end">
         <Menu.Target>
-          <ActionIcon variant="default" aria-label="Portfolio actions">
+          <ActionIcon variant="default" aria-label={t`Portfolio actions`}>
             <IconDots size={19} />
           </ActionIcon>
         </Menu.Target>
         <Menu.Dropdown>
           <Menu.Item color="loss" leftSection={<IconArchive size={16} />} onClick={archive.open}>
-            Archive portfolio
+            <Trans>Archive portfolio</Trans>
           </Menu.Item>
         </Menu.Dropdown>
       </Menu>
@@ -132,19 +148,20 @@ function PortfolioMenu({ portfolioId }: { portfolioId: string }) {
 }
 
 function PortfolioActions({ portfolioId }: { portfolioId: string }) {
+  const { t } = useLingui();
   const openTrade = useTransactionModalStore((state) => state.open);
   const openBulk = useBulkTradeModalStore((state) => state.open);
 
   return (
-    <Group gap="xs" aria-label="Portfolio trade actions">
+    <Group gap="xs" aria-label={t`Portfolio trade actions`}>
       <Button leftSection={<IconPlus size={16} />} onClick={() => openTrade('Buy', undefined, portfolioId)}>
-        Buy
+        <Trans comment="Button or filter for a purchase of an asset">Buy</Trans>
       </Button>
       <Button leftSection={<IconMinus size={16} />} variant="default" onClick={() => openTrade('Sell', undefined, portfolioId)}>
-        Sell
+        <Trans comment="Button or filter for a sale of an asset">Sell</Trans>
       </Button>
       <Button leftSection={<IconListDetails size={16} />} variant="subtle" onClick={() => openBulk(Number(portfolioId))}>
-        Bulk
+        <Trans comment="Short action to open the form for entering many trades">Bulk</Trans>
       </Button>
     </Group>
   );

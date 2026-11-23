@@ -1,3 +1,5 @@
+import { msg } from '@lingui/core/macro';
+import { Trans, useLingui } from '@lingui/react/macro';
 import { Button, Group, Stack, Text, TextInput, Title } from '@mantine/core';
 import { IconCheck, IconFolder } from '@tabler/icons-react';
 import type React from 'react';
@@ -11,15 +13,16 @@ interface PortfolioStepProps {
 }
 
 const COLORS = [
-  { name: 'Blue', hex: '#3b82f6' },
-  { name: 'Purple', hex: '#a855f7' },
-  { name: 'Emerald', hex: '#10b981' },
-  { name: 'Amber', hex: '#f59e0b' },
-  { name: 'Rose', hex: '#f43f5e' },
-  { name: 'Slate', hex: '#475569' }
+  { name: msg`Blue`, hex: '#3b82f6' },
+  { name: msg`Purple`, hex: '#a855f7' },
+  { name: msg`Emerald`, hex: '#10b981' },
+  { name: msg`Amber`, hex: '#f59e0b' },
+  { name: msg`Rose`, hex: '#f43f5e' },
+  { name: msg`Slate`, hex: '#475569' }
 ] as const;
 
 export function PortfolioStep({ onboardingRequest, setOnboardingRequest, onNext }: PortfolioStepProps) {
+  const { t } = useLingui();
   const [name, setName] = useState<string>(onboardingRequest.portfolio.name);
   const [color, setColor] = useState<string>(onboardingRequest.portfolio.color);
 
@@ -42,9 +45,11 @@ export function PortfolioStep({ onboardingRequest, setOnboardingRequest, onNext 
   return (
     <Stack>
       <Stack gap={2} ta="center">
-        <Title order={2}>Portfolio Settings</Title>
+        <Title order={2}>
+          <Trans>Portfolio Settings</Trans>
+        </Title>
         <Text c="dimmed" fz="sm">
-          Give your new portfolio a name and a visual brand.
+          <Trans>Give your new portfolio a name and a visual brand.</Trans>
         </Text>
       </Stack>
 
@@ -52,8 +57,8 @@ export function PortfolioStep({ onboardingRequest, setOnboardingRequest, onNext 
         <Stack gap={35}>
           <TextInput
             name="name"
-            label="PORTFOLIO NAME"
-            placeholder="e.g. Tech Fund"
+            label={t`PORTFOLIO NAME`}
+            placeholder={t`e.g. Tech Fund`}
             leftSection={<IconFolder size={18} />}
             leftSectionWidth={50}
             value={name}
@@ -77,10 +82,10 @@ export function PortfolioStep({ onboardingRequest, setOnboardingRequest, onNext 
           <Stack gap={10}>
             <Group justify="space-between">
               <Text fz={12} lts={-0.08} ml={2} fw={600} c="var(--mantine-color-dimmed)">
-                THEME COLOR
+                <Trans>THEME COLOR</Trans>
               </Text>
               <Text fz={10} c="var(--mantine-primary-color-filled)" fw={700}>
-                Visual Identity
+                <Trans>Visual Identity</Trans>
               </Text>
             </Group>
             <Group grow>
@@ -92,7 +97,7 @@ export function PortfolioStep({ onboardingRequest, setOnboardingRequest, onNext 
                     type="button"
                     key={s.hex}
                     onClick={() => setColor(s.hex)}
-                    aria-label={s.name}
+                    aria-label={t(s.name)}
                     aria-pressed={isSelected}
                     data-active={isSelected}
                     style={{
@@ -139,7 +144,7 @@ export function PortfolioStep({ onboardingRequest, setOnboardingRequest, onNext 
             h={40}
             color="var(--mantine-primary-color-filled)"
             disabled={name.trim().length === 0 || color.trim().length === 0}>
-            Define Portfolio
+            <Trans>Define Portfolio</Trans>
           </Button>
         </Stack>
       </form>

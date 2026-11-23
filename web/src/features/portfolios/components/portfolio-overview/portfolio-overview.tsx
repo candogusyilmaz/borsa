@@ -1,8 +1,9 @@
+import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { Button, Skeleton, Tooltip } from '@mantine/core';
 import type { usePositions } from '~/features/positions';
 import type { Position } from '~/features/positions/hooks/use-positions-view';
 import { getPositionMetrics } from '~/features/positions/position-presentation';
-import { format } from '~/shared/format/format';
+import { useFormat } from '~/shared/format/use-format';
 import styles from './portfolio-overview.module.css';
 
 interface OverviewProps {
@@ -11,18 +12,26 @@ interface OverviewProps {
 }
 
 export function PortfolioOverview({ query, onOpenPosition }: OverviewProps) {
-  if (query.isPending) return <Skeleton h={150} aria-label="Loading portfolio overview" />;
+  const { t } = useLingui();
+  if (query.isPending) return <Skeleton h={150} aria-label={t`Loading portfolio overview`} />;
   if (query.isError) {
     return (
       <div className={styles.state}>
-        <p role="alert">Could not load the portfolio balance.</p>
+        <p role="alert">
+          <Trans>Could not load the portfolio balance.</Trans>
+        </p>
         <Button variant="default" onClick={() => void query.refetch()}>
-          Try again
+          <Trans>Try again</Trans>
         </Button>
       </div>
     );
   }
-  if (!query.data.length) return <p className={styles.state}>Record a trade to see your balance and allocation.</p>;
+  if (!query.data.length)
+    return (
+      <p className={styles.state}>
+        <Trans>Record a trade to see your balance and allocation.</Trans>
+      </p>
+    );
 
   const groups = new Map<string, Position[]>();
   for (const position of query.data) {
@@ -32,7 +41,7 @@ export function PortfolioOverview({ query, onOpenPosition }: OverviewProps) {
   }
 
   return (
-    <section className={styles.hero} aria-label="Portfolio balance and allocation">
+    <section className={styles.hero} aria-label={t`Portfolio balance and allocation`}>
       {[...groups].map(([currency, positions]) => (
         <CurrencyBalance key={currency} currency={currency} positions={positions} onOpenPosition={onOpenPosition} />
       ))}
@@ -49,6 +58,8 @@ function CurrencyBalance({
   positions: Position[];
   onOpenPosition: OverviewProps['onOpenPosition'];
 }) {
+  const { t } = useLingui();
+  const format = useFormat();
   const priced = positions
     .flatMap((position) => {
       const { value, profit } = getPositionMetrics(position);
@@ -67,7 +78,7 @@ function CurrencyBalance({
       <div className={styles.balance}>
         <dl>
           <dt>
-            {partial ? 'Quoted balance' : 'Portfolio balance'} · {currency}
+            {partial ? t`Quoted balance` : t`Portfolio balance`} · {currency}
           </dt>
           <dd>{priced.length ? formatMoney(total) : '—'}</dd>
         </dl>
@@ -77,19 +88,27 @@ function CurrencyBalance({
               {format.currency(profit, { currency, signDisplay: 'exceptZero' })}
               {costBasis > 0 && ` · ${format.toLocalePercentage((profit / costBasis) * 100)}`}
             </span>
-            <small>Unrealized P&L</small>
+            <small>
+              <Trans>Unrealized P&L</Trans>
+            </small>
           </div>
         )}
       </div>
       {partial && (
         <p className={styles.state}>
-          {positions.length - priced.length} {positions.length - priced.length === 1 ? 'position has' : 'positions have'} no current quote.
+          <Plural
+            value={positions.length - priced.length}
+            one="# position has no current quote."
+            other="# positions have no current quote."
+          />
         </p>
       )}
       {total > 0 && segments.length > 0 && (
         <div className={styles.allocation}>
-          <p>Asset allocation</p>
-          <fieldset className={styles.allocationBar} aria-label={`${currency} allocation by quoted value`}>
+          <p>
+            <Trans>Asset allocation</Trans>
+          </p>
+          <fieldset className={styles.allocationBar} aria-label={t`${currency} allocation by quoted value`}>
             {segments.map(({ position, value }, index) => {
               const weight = format.toLocalePercentage((value / total) * 100, 1);
               const label = `${position.instrument.symbol} · ${weight} · ${formatMoney(value)}`;

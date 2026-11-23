@@ -1,20 +1,13 @@
-export function getCurrencySymbol(currencyCode: string) {
+export function getCurrencySymbol(currencyCode: string, locale: string) {
   try {
-    // Create a number format with the specified currency
-    const formatter = new Intl.NumberFormat('en-US', {
+    const parts = new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: currencyCode,
       currencyDisplay: 'narrowSymbol'
-    });
+    }).formatToParts(1);
 
-    // Extract the currency symbol from the formatted string
-    const parts = formatter.formatToParts(1);
-
-    const currencyPart = parts.find((part) => part.type === 'currency');
-
-    return currencyPart ? currencyPart.value : currencyCode;
-  } catch (error) {
-    console.error(`Error getting symbol for ${currencyCode}:`, error);
+    return parts.find((part) => part.type === 'currency')?.value ?? currencyCode;
+  } catch {
     return currencyCode;
   }
 }

@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro';
 import { Title } from '@mantine/core';
 import { createFileRoute } from '@tanstack/react-router';
 import { TradesList } from '~/features/trades/components/trades-list/trades-list';
@@ -11,7 +12,7 @@ function RouteComponent() {
   return (
     <>
       <Title order={1} mb="md" className="member-page-title">
-        Trades
+        <Trans>Trades</Trans>
       </Title>
       <TradesList />
     </>

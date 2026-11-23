@@ -1,3 +1,4 @@
+import { Trans } from '@lingui/react/macro';
 import { Stack, Text, ThemeIcon } from '@mantine/core';
 import { IconAlertTriangle } from '@tabler/icons-react';
 
@@ -8,7 +9,7 @@ export function ErrorView() {
         <IconAlertTriangle />
       </ThemeIcon>
       <Text c="red" size="xs" fw={600} ta="center">
-        An unknown error occurred.
+        <Trans>An unknown error occurred.</Trans>
       </Text>
     </Stack>
   );

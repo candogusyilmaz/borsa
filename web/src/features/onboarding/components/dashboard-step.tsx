@@ -1,3 +1,4 @@
+import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { Badge, Button, Flex, Group, Radio, SimpleGrid, Stack, Text, TextInput, ThemeIcon, Title } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import { IconCheck, IconLayoutDashboard } from '@tabler/icons-react';
@@ -6,6 +7,7 @@ import { useNavigate } from '@tanstack/react-router';
 import type React from 'react';
 import { useState } from 'react';
 import { $api } from '~/api/openapi';
+import { useLocale } from '~/shared/i18n/locale-context';
 import { sleep } from '~/shared/utils/sleep';
 import classes from '../pages/onboarding.module.css';
 import type { OnboardingRequest } from '../types';
@@ -17,12 +19,14 @@ interface DashboardStepProps {
 }
 
 export function DashboardStep({ onboardingRequest, onBack }: DashboardStepProps) {
+  const { t } = useLingui();
+  const { formatLocale, language } = useLocale();
   const { data: currencies } = $api.useQuery(
     'get',
     '/api/currencies',
     {},
     {
-      select: (v) => v.map((c) => getCurrencyInfo(c.label.slice(0, 3)))
+      select: (v) => v.map((c) => getCurrencyInfo(c.label.slice(0, 3), language, formatLocale))
     }
   );
   const navigate = useNavigate();
@@ -60,9 +64,11 @@ export function DashboardStep({ onboardingRequest, onBack }: DashboardStepProps)
   return (
     <Stack>
       <Stack gap={2} ta="center">
-        <Title order={2}>Dashboard View</Title>
+        <Title order={2}>
+          <Trans>Dashboard View</Trans>
+        </Title>
         <Text c="dimmed" fz="sm">
-          Create an aggregate view for your portfolios.
+          <Trans>Create an aggregate view for your portfolios.</Trans>
         </Text>
       </Stack>
 
@@ -70,8 +76,8 @@ export function DashboardStep({ onboardingRequest, onBack }: DashboardStepProps)
         <Stack gap={35}>
           <TextInput
             name="name"
-            label="DASHBOARD NAME"
-            placeholder="e.g. My Investments"
+            label={t`DASHBOARD NAME`}
+            placeholder={t`e.g. My Investments`}
             leftSection={<IconLayoutDashboard size={18} />}
             leftSectionWidth={50}
             value={name}
@@ -94,7 +100,7 @@ export function DashboardStep({ onboardingRequest, onBack }: DashboardStepProps)
 
           <Stack gap={4}>
             <Text fz="12" fw={600} c="var(--mantine-color-dimmed)" tt="uppercase">
-              Reporting Currency
+              <Trans>Reporting Currency</Trans>
             </Text>
             <Radio.Group value={currency} onChange={setCurrency} classNames={{ root: classes.currencyRadioRoot }}>
               <SimpleGrid spacing="xs" cols={{ base: smaller ? 1 : 2, xs: small ? 2 : 3 }}>
@@ -131,7 +137,7 @@ export function DashboardStep({ onboardingRequest, onBack }: DashboardStepProps)
 
           <Stack gap={4}>
             <Text fz="12" fw={600} c="var(--mantine-color-dimmed)" tt="uppercase">
-              Linked Portfolios
+              <Trans>Linked Portfolios</Trans>
             </Text>
             <Group
               gap={14}
@@ -154,7 +160,7 @@ export function DashboardStep({ onboardingRequest, onBack }: DashboardStepProps)
                   {onboardingRequest.portfolio.name}
                 </Text>
                 <Text fz="10" fw={500} lts={0.3} c="var(--mantine-color-dimmed)" tt="uppercase">
-                  {onboardingRequest.portfolio.trades.length} Positions
+                  <Plural value={onboardingRequest.portfolio.trades.length} one="# position" other="# positions" />
                 </Text>
               </Stack>
               <ThemeIcon size="sm" ml="auto" variant="filled" radius={'xl'} color={onboardingRequest.portfolio.color}>
@@ -174,7 +180,7 @@ export function DashboardStep({ onboardingRequest, onBack }: DashboardStepProps)
               variant="subtle"
               c="dimmed"
               onClick={onBack}>
-              Back
+              <Trans comment="Move to the previous onboarding step">Back</Trans>
             </Button>
             <Button
               flex={small ? undefined : 2}
@@ -185,7 +191,7 @@ export function DashboardStep({ onboardingRequest, onBack }: DashboardStepProps)
               h={40}
               color="var(--mantine-primary-color-filled)"
               disabled={name.trim().length === 0}>
-              Launch Workspace
+              <Trans>Launch Workspace</Trans>
             </Button>
           </Flex>
         </Stack>
@@ -194,8 +200,8 @@ export function DashboardStep({ onboardingRequest, onBack }: DashboardStepProps)
   );
 }
 
-function getCurrencyInfo(currency: string, locale = navigator.language) {
-  const name = new Intl.DisplayNames([locale], { type: 'currency' }).of(currency);
+function getCurrencyInfo(currency: string, language: string, locale: string) {
+  const name = new Intl.DisplayNames([language], { type: 'currency' }).of(currency);
 
   const symbol = new Intl.NumberFormat(locale, {
     style: 'currency',

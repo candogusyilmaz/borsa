@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro';
 import { create } from 'zustand';
 import { ResponsiveOverlay } from '~/shared/components/responsive-overlay/responsive-overlay';
 import { BuyTransactionForm } from './buy-transaction-form';
@@ -25,10 +26,11 @@ export const useTransactionModalStore = create<TransactionModalState>((set) => (
 }));
 
 export function TransactionModal() {
+  const { t } = useLingui();
   const { opened, type, stockId, portfolioId, close } = useTransactionModalStore();
 
   return (
-    <ResponsiveOverlay opened={opened} onClose={close} title={`${type} asset`} size={500}>
+    <ResponsiveOverlay opened={opened} onClose={close} title={type === 'Buy' ? t`Buy an asset` : t`Sell an asset`} size={500}>
       {type === 'Buy' && <BuyTransactionForm stockId={stockId} portfolioId={portfolioId} close={close} />}
       {type === 'Sell' && <SellTransactionForm stockId={stockId} portfolioId={portfolioId} close={close} />}
     </ResponsiveOverlay>

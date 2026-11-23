@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro';
 import { Button, Checkbox, Group, Select, SimpleGrid, Stack, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useQueryClient } from '@tanstack/react-query';
@@ -24,16 +25,18 @@ export const useCreateNewDashboardModalStore = create<CreateNewDashboardModalSta
 }));
 
 export function CreateNewDashboardModal() {
+  const { t } = useLingui();
   const { opened, close } = useCreateNewDashboardModalStore();
 
   return (
-    <ResponsiveOverlay title="New dashboard" opened={opened} onClose={close}>
+    <ResponsiveOverlay title={t`New dashboard`} opened={opened} onClose={close}>
       <CreateNewDashboardForm />
     </ResponsiveOverlay>
   );
 }
 
 function CreateNewDashboardForm() {
+  const { t } = useLingui();
   const { close } = useCreateNewDashboardModalStore();
   const { data: currencies } = $api.useQuery('get', '/api/currencies');
   const { data: portfolios } = $api.useQuery(
@@ -56,9 +59,15 @@ function CreateNewDashboardForm() {
     },
     validate(values) {
       return {
-        name: values.name ? (values.name.length < 3 ? 'Name must be at least 3 characters' : null) : 'Name is required',
-        currencyId: values.currencyId ? null : 'Currency is required',
-        portfolioIds: values.portfolioIds.length > 0 ? null : 'At least one portfolio is required'
+        name: values.name ? (
+          values.name.length < 3 ? (
+            <Trans>Name must be at least 3 characters</Trans>
+          ) : null
+        ) : (
+          <Trans>Name is required</Trans>
+        ),
+        currencyId: values.currencyId ? null : <Trans>Currency is required</Trans>,
+        portfolioIds: values.portfolioIds.length > 0 ? null : <Trans>At least one portfolio is required</Trans>
       };
     },
     transformValues(values) {
@@ -73,7 +82,8 @@ function CreateNewDashboardForm() {
   const mutation = $api.useMutation('post', '/api/dashboards', {
     onSuccess: () => {
       close();
-      alerts.success(`Dashboard ${form.getValues().name} created successfully.`);
+      const dashboardName = form.getValues().name;
+      alerts.success(t`Dashboard ${dashboardName} created successfully.`);
       client.invalidateQueries({
         queryKey: ['get', '/api/dashboards']
       });
@@ -91,16 +101,16 @@ function CreateNewDashboardForm() {
     <form onSubmit={handleFormSubmit}>
       <Stack gap={30} px={'sm'} pt={'md'} pb="md">
         <TextInput
-          label="Dashboard Name"
-          placeholder="Enter dashboard name"
+          label={t`Dashboard Name`}
+          placeholder={t`Enter dashboard name`}
           withAsterisk
           key={form.key('name')}
           {...form.getInputProps('name')}
         />
 
         <Select
-          label=" Currency"
-          placeholder="Select currency"
+          label={t`Currency`}
+          placeholder={t`Select currency`}
           data={currencies}
           key={form.key('currencyId')}
           withAsterisk
@@ -108,7 +118,7 @@ function CreateNewDashboardForm() {
         />
 
         <Checkbox.Group
-          label="Portfolios"
+          label={t`Portfolios`}
           key={form.key('portfolioIds')}
           withAsterisk
           {...form.getInputProps('portfolioIds')}
@@ -122,11 +132,11 @@ function CreateNewDashboardForm() {
 
         <Group justify="flex-end">
           <Button variant="subtle" color="gray" onClick={close} disabled={mutation.isPending}>
-            Cancel
+            <Trans>Cancel</Trans>
           </Button>
 
           <Button type="submit" loading={mutation.isPending} disabled={mutation.isSuccess}>
-            Create dashboard
+            <Trans>Create dashboard</Trans>
           </Button>
         </Group>
       </Stack>

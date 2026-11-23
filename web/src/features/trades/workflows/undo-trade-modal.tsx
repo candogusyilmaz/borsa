@@ -1,3 +1,4 @@
+import { useLingui } from '@lingui/react/macro';
 import { create } from 'zustand';
 import type { components } from '~/api/schema';
 import { ResponsiveOverlay } from '~/shared/components/responsive-overlay/responsive-overlay';
@@ -22,9 +23,10 @@ export const useUndoTradeModalStore = create<UndoTradeModalState>((set) => ({
 }));
 
 export function UndoTradeModal() {
+  const { t } = useLingui();
   const { opened, close } = useUndoTradeModalStore();
   return (
-    <ResponsiveOverlay opened={opened} onClose={close} title="Undo trade">
+    <ResponsiveOverlay opened={opened} onClose={close} title={t`Undo trade`}>
       <UndoTradeForm />
     </ResponsiveOverlay>
   );

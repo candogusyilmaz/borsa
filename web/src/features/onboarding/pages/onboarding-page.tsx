@@ -1,13 +1,18 @@
+import { Trans } from '@lingui/react/macro';
 import { IconTrendingUp } from '@tabler/icons-react';
 import { useState } from 'react';
+import { useFormat } from '~/shared/format/use-format';
+import { PublicLanguageSelect } from '~/shared/i18n/language-select';
 import { DashboardStep } from '../components/dashboard-step';
 import { PortfolioStep } from '../components/portfolio-step';
 import type { OnboardingRequest } from '../types';
 import styles from './onboarding.module.css';
 
 export function OnboardingPage() {
+  const format = useFormat();
   const [step, setStep] = useState(1);
   const totalSteps = 2;
+  const completion = format.toLocalePercentage((step / totalSteps) * 100, 0);
 
   const [onboardingRequest, setOnboardingRequest] = useState<OnboardingRequest>({
     portfolio: {
@@ -38,6 +43,7 @@ export function OnboardingPage() {
 
   return (
     <div className={styles.container}>
+      <PublicLanguageSelect />
       <div className={styles.card}>
         <div className={styles.header}>
           <div className={styles.headerMain}>
@@ -49,9 +55,13 @@ export function OnboardingPage() {
             </div>
             <div style={{ textAlign: 'right' }}>
               <span className={styles.stepLabel}>
-                Step {step} of {totalSteps}
+                <Trans>
+                  Step {step} of {totalSteps}
+                </Trans>
               </span>
-              <div className={styles.stepPercentage}>{Math.round((step / totalSteps) * 100)}% Complete</div>
+              <div className={styles.stepPercentage}>
+                <Trans>{completion} complete</Trans>
+              </div>
             </div>
           </div>
 

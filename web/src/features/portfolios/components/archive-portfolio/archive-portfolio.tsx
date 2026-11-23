@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro';
 import { Button, Group, Stack, TextInput } from '@mantine/core';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
@@ -7,14 +8,16 @@ import { ResponsiveOverlay } from '~/shared/components/responsive-overlay/respon
 import { usePortfolioName } from '../../hooks/use-portfolio-name';
 
 export function ArchivePortfolioModal({ opened, close, portfolioId }: { opened: boolean; close: () => void; portfolioId: string }) {
+  const { t } = useLingui();
   return (
-    <ResponsiveOverlay opened={opened} onClose={close} title="Archive portfolio">
+    <ResponsiveOverlay opened={opened} onClose={close} title={t`Archive portfolio`}>
       <ArchiveForm close={close} portfolioId={portfolioId} />
     </ResponsiveOverlay>
   );
 }
 
 function ArchiveForm({ close, portfolioId }: { close: () => void; portfolioId: string }) {
+  const { t } = useLingui();
   const client = useQueryClient();
   const navigate = useNavigate();
   const name = usePortfolioName(portfolioId);
@@ -36,20 +39,30 @@ function ArchiveForm({ close, portfolioId }: { close: () => void; portfolioId: s
   return (
     <form onSubmit={submit}>
       <Stack>
-        <p>Archiving {name || 'this portfolio'} hides it from active portfolios and keeps its trades.</p>
+        <p>
+          {name ? (
+            <Trans>Archiving {name} hides it from active portfolios and keeps its trades.</Trans>
+          ) : (
+            <Trans>Archiving this portfolio hides it from active portfolios and keeps its trades.</Trans>
+          )}
+        </p>
         <TextInput
-          label="Type ARCHIVE to confirm"
+          label={t({ comment: 'ARCHIVE is a literal confirmation code. Keep that word unchanged.', message: 'Type ARCHIVE to confirm' })}
           value={text}
           onChange={(event) => setText(event.currentTarget.value)}
           readOnly={mutation.isPending}
         />
-        {mutation.isError && <p role="alert">Could not archive the portfolio. Try again.</p>}
+        {mutation.isError && (
+          <p role="alert">
+            <Trans>Could not archive the portfolio. Try again.</Trans>
+          </p>
+        )}
         <Group justify="flex-end">
           <Button variant="default" onClick={close}>
-            Cancel
+            <Trans>Cancel</Trans>
           </Button>
           <Button type="submit" color="loss" disabled={text !== 'ARCHIVE'} loading={mutation.isPending}>
-            Archive portfolio
+            <Trans>Archive portfolio</Trans>
           </Button>
         </Group>
       </Stack>

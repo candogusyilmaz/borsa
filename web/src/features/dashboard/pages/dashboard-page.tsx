@@ -1,9 +1,10 @@
+import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { Button, Menu, Skeleton } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconCheck, IconChevronDown, IconPlus } from '@tabler/icons-react';
 import { isDataStale } from '~/features/positions';
 import { ResponsiveOverlay } from '~/shared/components/responsive-overlay/responsive-overlay';
-import { format } from '~/shared/format/format';
+import { useFormat } from '~/shared/format/use-format';
 import { useIsMobile } from '~/shared/hooks/use-is-mobile';
 import { DashboardPortfolios } from '../components/dashboard-portfolios';
 import { DashboardSummary } from '../components/dashboard-summary';
@@ -13,8 +14,10 @@ import { useCreateNewDashboardModalStore } from '../workflows/create-dashboard-m
 import styles from './dashboard-page.module.css';
 
 export function DashboardPage() {
+  const { t } = useLingui();
   const model = useDashboardView();
   const dashboard = model.dashboard.data;
+  const portfolioCount = model.details?.knownPortfolioCount;
 
   return (
     <div className={styles.page}>
@@ -23,20 +26,29 @@ export function DashboardPage() {
           <DashboardSelector model={model} />
           {model.selected && (
             <p className={styles.pageMeta}>
-              {model.details?.knownPortfolioCount ?? '—'} {model.details?.knownPortfolioCount === 1 ? 'portfolio' : 'portfolios'} with
-              recorded activity
+              {portfolioCount == null ? (
+                <Trans>Portfolios with recorded activity</Trans>
+              ) : (
+                <Plural value={portfolioCount} one="# portfolio with recorded activity" other="# portfolios with recorded activity" />
+              )}
             </p>
           )}
         </div>
         {model.details && <MarketStatus market={model.details.market} />}
       </header>
-      {!model.selected && <p className={styles.state}>Create a dashboard to track your balance and realized performance.</p>}
-      {model.selected && model.dashboard.isPending && <Skeleton h={154} aria-label="Loading dashboard" />}
+      {!model.selected && (
+        <p className={styles.state}>
+          <Trans>Create a dashboard to track your balance and realized performance.</Trans>
+        </p>
+      )}
+      {model.selected && model.dashboard.isPending && <Skeleton h={154} aria-label={t`Loading dashboard`} />}
       {model.selected && model.dashboard.isError && (
         <div className={styles.state}>
-          <p role="alert">Could not load this dashboard.</p>
+          <p role="alert">
+            <Trans>Could not load this dashboard.</Trans>
+          </p>
           <Button variant="default" onClick={() => void model.dashboard.refetch()}>
-            Try again
+            <Trans>Try again</Trans>
           </Button>
         </div>
       )}
@@ -59,10 +71,11 @@ export function DashboardPage() {
 }
 
 function DashboardSelector({ model }: { model: DashboardModel }) {
+  const { t } = useLingui();
   const isMobile = useIsMobile();
   const openCreate = useCreateNewDashboardModalStore((store) => store.open);
   const [opened, picker] = useDisclosure();
-  const title = model.selected?.name || 'Dashboard';
+  const title = model.selected?.name || t`Dashboard`;
 
   function create() {
     picker.close();
@@ -84,7 +97,7 @@ function DashboardSelector({ model }: { model: DashboardModel }) {
             <IconChevronDown size={16} stroke={1.6} aria-hidden="true" />
           </button>
         </h1>
-        <ResponsiveOverlay opened={opened} onClose={picker.close} title="Dashboards">
+        <ResponsiveOverlay opened={opened} onClose={picker.close} title={t`Dashboards`}>
           <ul className={styles.picker}>
             {choices.map(({ id, name }) => (
               <li key={id}>
@@ -96,7 +109,7 @@ function DashboardSelector({ model }: { model: DashboardModel }) {
             ))}
           </ul>
           <Button fullWidth variant="default" leftSection={<IconPlus size={16} />} onClick={create}>
-            New dashboard
+            <Trans>New dashboard</Trans>
           </Button>
         </ResponsiveOverlay>
       </>
@@ -124,7 +137,7 @@ function DashboardSelector({ model }: { model: DashboardModel }) {
           ))}
           {!!choices.length && <Menu.Divider />}
           <Menu.Item leftSection={<IconPlus size={16} />} onClick={create}>
-            New dashboard
+            <Trans>New dashboard</Trans>
           </Menu.Item>
         </Menu.Dropdown>
       </Menu>
@@ -133,13 +146,15 @@ function DashboardSelector({ model }: { model: DashboardModel }) {
 }
 
 function MarketStatus({ market }: { market: NonNullable<DashboardModel['details']>['market'] }) {
+  const { t } = useLingui();
+  const format = useFormat();
   const quote = market.updatedAt == null ? undefined : new Date(market.updatedAt);
   const fresh = quote != null && !isDataStale(quote);
-  const status = quote ? (fresh ? 'Prices updated' : 'Last quote') : 'Quotes pending';
+  const status = quote ? (fresh ? t`Prices updated` : t`Last quote`) : t`Quotes pending`;
 
   return (
     <p className={styles.market} data-fresh={fresh || undefined}>
-      {market.label} ·{' '}
+      {t(market.label)} ·{' '}
       {quote ? (
         <time dateTime={quote.toISOString()} title={format.toShortDateTime(quote)}>
           {status}

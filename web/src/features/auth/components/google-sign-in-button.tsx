@@ -1,4 +1,6 @@
+import { useLingui } from '@lingui/react/macro';
 import { type CredentialResponse, GoogleLogin } from '@react-oauth/google';
+
 import styles from './google-sign-in-button.module.css';
 
 interface GoogleSignInButtonProps {
@@ -10,6 +12,8 @@ interface GoogleSignInButtonProps {
 /** Custom "Continue with Google" button that preserves the original
  *  GoogleLogin credential (ID-token) flow via an invisible iframe overlay. */
 export function GoogleSignInButton({ onSuccess, onError, loading }: GoogleSignInButtonProps) {
+  const { t } = useLingui();
+
   return (
     <div className={styles.button}>
       {/* ── Visual layer ──────────────────────────────────────── */}
@@ -17,7 +21,7 @@ export function GoogleSignInButton({ onSuccess, onError, loading }: GoogleSignIn
         <span className={styles.iconWrap}>
           <GoogleIcon />
         </span>
-        <span className={styles.label}>{loading ? 'Signing in…' : 'Continue with Google'}</span>
+        <span className={styles.label}>{loading ? t`Signing in…` : t`Continue with Google`}</span>
       </div>
 
       {/* ── Invisible Google iframe (click target) ────────────── */}

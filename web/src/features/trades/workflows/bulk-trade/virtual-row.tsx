@@ -1,7 +1,10 @@
+import { useLingui } from '@lingui/react/macro';
 import { ActionIcon, NumberInput, Text } from '@mantine/core';
-import { DateTimePicker } from '@mantine/dates';
 import { IconTrash } from '@tabler/icons-react';
 import { memo, useState } from 'react';
+import { LocalizedDateTimePicker } from '~/shared/components/localized-date-time-picker';
+import { getNumberSeparators } from '~/shared/format/format';
+import { useLocale } from '~/shared/i18n/locale-context';
 import { AssetCombobox } from './asset-combobox';
 import styles from './bulk-trade-modal.module.css';
 import { TypePill } from './type-pill';
@@ -32,13 +35,14 @@ export const VirtualRow = memo(function VirtualRow({
   onUpdate,
   onRemove
 }: VirtualRowProps) {
+  const { t } = useLingui();
+  const { formatLocale } = useLocale();
+  const separators = getNumberSeparators(formatLocale);
   // string | number so Mantine NumberInput can hold partial values like "1."
   // without snapping to 0 mid-keystroke.
   const [price, setPrice] = useState<string | number>(row.price);
   const [quantity, setQuantity] = useState<string | number>(row.quantity);
   const [actionDate, setActionDate] = useState<Date | null>(row.actionDate);
-
-  const toNum = (v: string | number) => (typeof v === 'number' ? v : parseFloat(String(v).replace(/,/g, '')) || 0);
 
   return (
     <tr
@@ -61,15 +65,17 @@ export const VirtualRow = memo(function VirtualRow({
         <NumberInput
           prefix={currencyPrefix}
           hideControls
-          thousandSeparator=","
+          {...separators}
+          inputMode="decimal"
+          aria-label={t`Price`}
           decimalScale={2}
           fixedDecimalScale
           min={0}
           size="sm"
           value={price}
-          onChange={(v) => {
-            setPrice(v);
-            onUpdate(row.id, { price: toNum(v) });
+          onChange={setPrice}
+          onValueChange={({ floatValue }, { source }) => {
+            if (source !== 'prop') onUpdate(row.id, { price: floatValue ?? 0 });
           }}
         />
       </td>
@@ -77,19 +83,22 @@ export const VirtualRow = memo(function VirtualRow({
         <NumberInput
           hideControls
           min={0}
+          {...separators}
+          inputMode="decimal"
+          aria-label={t`Quantity`}
           decimalScale={6}
           size="sm"
           value={quantity}
-          onChange={(v) => {
-            setQuantity(v);
-            onUpdate(row.id, { quantity: toNum(v) });
+          onChange={setQuantity}
+          onValueChange={({ floatValue }, { source }) => {
+            if (source !== 'prop') onUpdate(row.id, { quantity: floatValue ?? 0 });
           }}
         />
       </td>
       <td className={styles.dateCell} style={{ padding: '6px 8px' }}>
-        <DateTimePicker
+        <LocalizedDateTimePicker
           radius="md"
-          valueFormat="MMM DD, YYYY HH:mm"
+          aria-label={t`Execution date`}
           size="sm"
           value={actionDate}
           onChange={(v) => {
@@ -100,7 +109,7 @@ export const VirtualRow = memo(function VirtualRow({
         />
       </td>
       <td className={styles.removeCell} style={{ textAlign: 'center', padding: '6px 8px' }}>
-        <ActionIcon variant="subtle" color="loss" aria-label="Remove trade row" onClick={() => onRemove(row.id)}>
+        <ActionIcon variant="subtle" color="loss" aria-label={t`Remove trade row`} onClick={() => onRemove(row.id)}>
           <IconTrash size={14} />
         </ActionIcon>
       </td>

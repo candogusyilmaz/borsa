@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro';
 import { Button, Group, Stack, TextInput } from '@mantine/core';
 import { useQueryClient } from '@tanstack/react-query';
 import type { FormEvent } from 'react';
@@ -6,11 +7,12 @@ import { ResponsiveOverlay } from '~/shared/components/responsive-overlay/respon
 import { alerts } from '~/shared/feedback/alerts';
 
 export function CreatePortfolioModal({ opened, close }: { opened: boolean; close: () => void }) {
+  const { t } = useLingui();
   const client = useQueryClient();
   const mutation = $api.useMutation('post', '/api/portfolios', {
     onSuccess: () => {
       close();
-      alerts.success('Portfolio created successfully');
+      alerts.success(t`Portfolio created successfully`);
       void client.invalidateQueries();
     }
   });
@@ -23,24 +25,28 @@ export function CreatePortfolioModal({ opened, close }: { opened: boolean; close
   }
 
   return (
-    <ResponsiveOverlay opened={opened} onClose={close} title="Create portfolio">
+    <ResponsiveOverlay opened={opened} onClose={close} title={t`Create portfolio`}>
       <form onSubmit={submit}>
         <Stack>
           <TextInput
             name="name"
-            label="Portfolio name"
-            placeholder="e.g. Tech Fund"
+            label={t`Portfolio name`}
+            placeholder={t`e.g. Tech Fund`}
             required
             data-autofocus
             readOnly={mutation.isPending}
           />
-          {mutation.isError && <p role="alert">Could not create the portfolio. Try again.</p>}
+          {mutation.isError && (
+            <p role="alert">
+              <Trans>Could not create the portfolio. Try again.</Trans>
+            </p>
+          )}
           <Group justify="flex-end">
             <Button variant="default" onClick={close}>
-              Cancel
+              <Trans>Cancel</Trans>
             </Button>
             <Button type="submit" loading={mutation.isPending}>
-              Create portfolio
+              <Trans>Create portfolio</Trans>
             </Button>
           </Group>
         </Stack>

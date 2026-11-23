@@ -155,3 +155,7 @@
     padding-bottom: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom) + 1.5rem);
   }
 }
+
+.language {
+  padding: 0.3rem 0.75rem;
+}

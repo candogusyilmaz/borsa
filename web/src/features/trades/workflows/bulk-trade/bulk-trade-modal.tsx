@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro';
 import { Button, Group, Text } from '@mantine/core';
 import { IconArrowNarrowRight, IconCirclePlus, IconFile, IconTrash, IconUpload } from '@tabler/icons-react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -8,6 +9,7 @@ import { ResponsiveOverlay } from '~/shared/components/responsive-overlay/respon
 import { alerts } from '~/shared/feedback/alerts';
 import { getCurrencySymbol } from '~/shared/format/currency';
 import { useIsMobile } from '~/shared/hooks/use-is-mobile';
+import { useLocale } from '~/shared/i18n/locale-context';
 import classes from './bulk-trade-modal.module.css';
 import { useBulkTradeModalStore } from './store';
 import type { TradeRow } from './types';
@@ -16,10 +18,11 @@ import { VirtualRow } from './virtual-row';
 // ── Modal wrapper ─────────────────────────────────────────────────────────────
 
 export function BulkTradeModal() {
+  const { t } = useLingui();
   const { opened, close, portfolioId } = useBulkTradeModalStore();
 
   return (
-    <ResponsiveOverlay opened={opened} onClose={close} title="Bulk trade import" size={980} closeOnClickOutside={false}>
+    <ResponsiveOverlay opened={opened} onClose={close} title={t`Bulk trade import`} size={980} closeOnClickOutside={false}>
       <BulkTradeForm portfolioId={portfolioId} close={close} />
     </ResponsiveOverlay>
   );
@@ -28,6 +31,8 @@ export function BulkTradeModal() {
 // ── Main form ─────────────────────────────────────────────────────────────────
 
 function BulkTradeForm({ portfolioId, close }: { portfolioId: number; close: () => void }) {
+  const { t } = useLingui();
+  const { formatLocale } = useLocale();
   const queryClient = useQueryClient();
   const tableRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -65,9 +70,9 @@ function BulkTradeForm({ portfolioId, close }: { portfolioId: number; close: () 
     (stockId: string) => {
       const inst = instrumentMap.get(stockId);
       const currency = inst?.supportedCurrencies[0];
-      return currency ? getCurrencySymbol(currency) : '';
+      return currency ? getCurrencySymbol(currency, formatLocale) : '';
     },
-    [instrumentMap]
+    [instrumentMap, formatLocale]
   );
 
   // ── Virtualizer ────────────────────────────────────────────
@@ -103,9 +108,10 @@ function BulkTradeForm({ portfolioId, close }: { portfolioId: number; close: () 
         }))
       ]);
       if (fileInputRef.current) fileInputRef.current.value = '';
-      alerts.success(`Imported ${res.length} trade${res.length !== 1 ? 's' : ''} from file.`);
+      const count = res.length;
+      alerts.success(t`Trades imported from file: ${count}.`);
     },
-    onError: () => alerts.error('Could not process the file. Please check the format.')
+    onError: () => alerts.error(t`Could not process the file. Please check the format.`)
   });
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -118,9 +124,10 @@ function BulkTradeForm({ portfolioId, close }: { portfolioId: number; close: () 
       queryClient.invalidateQueries();
       setRows([]);
       close();
-      alerts.success(`${rows.length} trade${rows.length !== 1 ? 's' : ''} submitted successfully.`);
+      const count = rows.length;
+      alerts.success(t`Trades submitted: ${count}.`);
     },
-    onError: () => alerts.error('Failed to submit trades. Please try again.')
+    onError: () => alerts.error(t`Failed to submit trades. Please try again.`)
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -154,7 +161,7 @@ function BulkTradeForm({ portfolioId, close }: { portfolioId: number; close: () 
               leftSection={<IconCirclePlus size={15} />}
               onClick={addRow}
               disabled={importMutation.isPending || saveMutation.isPending}>
-              Add row
+              <Trans>Add row</Trans>
             </Button>
 
             <Button
@@ -164,7 +171,7 @@ function BulkTradeForm({ portfolioId, close }: { portfolioId: number; close: () 
               loading={importMutation.isPending}
               onClick={() => fileInputRef.current?.click()}
               disabled={importMutation.isPending || saveMutation.isPending}>
-              Import file
+              <Trans>Import file</Trans>
             </Button>
             <input
               ref={fileInputRef}
@@ -181,7 +188,7 @@ function BulkTradeForm({ portfolioId, close }: { portfolioId: number; close: () 
             leftSection={<IconTrash size={15} />}
             onClick={() => setRows([])}
             disabled={rows.length === 0 || saveMutation.isPending}>
-            Clear all
+            <Trans>Clear all</Trans>
           </Button>
         </div>
 
@@ -191,19 +198,29 @@ function BulkTradeForm({ portfolioId, close }: { portfolioId: number; close: () 
             <div className={classes.emptyState}>
               <IconFile size={32} stroke={1} style={{ opacity: 0.3, display: 'block', margin: '0 auto 8px' }} />
               <Text size="sm" c="dimmed">
-                No trades yet — add a row or import a file
+                <Trans>No trades yet — add a row or import a file</Trans>
               </Text>
             </div>
           ) : (
-            <table className={classes.table} aria-label="Bulk trades">
+            <table className={classes.table} aria-label={t`Bulk trades`}>
               <thead className={classes.tableHead}>
                 <tr>
                   <th style={{ width: 44, textAlign: 'center' }}>#</th>
-                  <th style={{ width: 110 }}>Type</th>
-                  <th>Asset</th>
-                  <th style={{ width: 135 }}>Price</th>
-                  <th style={{ width: 120 }}>Quantity</th>
-                  <th style={{ width: 180 }}>Execution date</th>
+                  <th style={{ width: 110 }}>
+                    <Trans comment="Bulk trade column for purchase or sale">Type</Trans>
+                  </th>
+                  <th>
+                    <Trans>Asset</Trans>
+                  </th>
+                  <th style={{ width: 135 }}>
+                    <Trans comment="Unit price of a financial instrument">Price</Trans>
+                  </th>
+                  <th style={{ width: 120 }}>
+                    <Trans>Quantity</Trans>
+                  </th>
+                  <th style={{ width: 180 }}>
+                    <Trans>Execution date</Trans>
+                  </th>
                   <th style={{ width: 50 }} />
                 </tr>
               </thead>
@@ -249,14 +266,14 @@ function BulkTradeForm({ portfolioId, close }: { portfolioId: number; close: () 
           </Text>
           <Group gap="xs">
             <Button variant="default" onClick={close} disabled={saveMutation.isPending}>
-              Cancel
+              <Trans>Cancel</Trans>
             </Button>
             <Button
               type="submit"
               disabled={rows.length === 0}
               loading={saveMutation.isPending}
               rightSection={<IconArrowNarrowRight size={16} />}>
-              Submit trades
+              <Trans>Submit trades</Trans>
             </Button>
           </Group>
         </div>

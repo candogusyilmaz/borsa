@@ -1,3 +1,4 @@
+import { Trans, useLingui } from '@lingui/react/macro';
 import { ActionIcon, Button, Divider, Group, PasswordInput, Stack, TextInput } from '@mantine/core';
 import { hasLength, isEmail, useForm } from '@mantine/form';
 import type { CredentialResponse } from '@react-oauth/google';
@@ -6,10 +7,14 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import { useAuthentication } from '~/features/auth/authentication-context';
 import { GoogleSignInButton } from '~/features/auth/components/google-sign-in-button';
 import { alerts } from '~/shared/feedback/alerts';
+import { useFormat } from '~/shared/format/use-format';
+import { LanguageSelect } from '~/shared/i18n/language-select';
 import { useThemeToggle } from '~/theme/use-theme-toggle';
 import styles from './auth.module.css';
 
 export function RegisterPage() {
+  const { t } = useLingui();
+  const format = useFormat();
   const navigate = useNavigate();
   const { login, register } = useAuthentication();
   const { colorScheme, toggleTheme } = useThemeToggle();
@@ -23,11 +28,11 @@ export function RegisterPage() {
       confirmPassword: ''
     },
     validate: {
-      firstName: hasLength({ min: 2, max: 50 }, 'First name must be between 2 and 50 characters'),
-      lastName: hasLength({ min: 2, max: 50 }, 'Last name must be between 2 and 50 characters'),
-      email: isEmail('Email is not valid'),
-      password: hasLength({ min: 8, max: 20 }, 'Password must be between 8 and 50 characters'),
-      confirmPassword: (value, values) => (value !== values.password ? 'Passwords do not match' : null)
+      firstName: hasLength({ min: 2, max: 50 }, <Trans>First name must be between 2 and 50 characters</Trans>),
+      lastName: hasLength({ min: 2, max: 50 }, <Trans>Last name must be between 2 and 50 characters</Trans>),
+      email: isEmail(<Trans>Email is not valid</Trans>),
+      password: hasLength({ min: 8, max: 20 }, <Trans>Password must be between 8 and 20 characters</Trans>),
+      confirmPassword: (value, values) => (value !== values.password ? <Trans>Passwords do not match</Trans> : null)
     }
   });
 
@@ -78,7 +83,7 @@ export function RegisterPage() {
               }
             }
           } else {
-            alerts.error(responseData?.detail || 'An unknown error occurred while creating your account', 'Error while creating account');
+            alerts.error(responseData?.detail || t`An unknown error occurred while creating your account`, t`Error while creating account`);
           }
         }
       }
@@ -87,15 +92,18 @@ export function RegisterPage() {
 
   return (
     <div className={styles.pageWrapper}>
-      <ActionIcon
-        className={styles.themeToggle}
-        size="lg"
-        radius="md"
-        onClick={toggleTheme}
-        aria-label="Toggle color scheme"
-        title={colorScheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
-        {colorScheme === 'dark' ? <IconSun size={17} /> : <IconMoon size={17} />}
-      </ActionIcon>
+      <div className={styles.preferences}>
+        <LanguageSelect />
+        <ActionIcon
+          className={styles.themeToggle}
+          size="lg"
+          radius="md"
+          onClick={toggleTheme}
+          aria-label={t`Toggle color scheme`}
+          title={colorScheme === 'dark' ? t`Switch to light mode` : t`Switch to dark mode`}>
+          {colorScheme === 'dark' ? <IconSun size={17} /> : <IconMoon size={17} />}
+        </ActionIcon>
+      </div>
 
       {/* ── LEFT: brand hero panel ──────────────────────────────── */}
       <aside className={styles.heroPanel}>
@@ -112,13 +120,19 @@ export function RegisterPage() {
         {/* Headline + features */}
         <div className={styles.heroCenter}>
           <div>
-            <p className={styles.heroTagline}>Start your journey</p>
+            <p className={styles.heroTagline}>
+              <Trans>Start your journey</Trans>
+            </p>
             <h1 className={styles.heroTitle}>
-              Your portfolio, <span className={styles.heroTitleAccent}>your edge.</span>
+              <Trans>
+                Your portfolio, <span className={styles.heroTitleAccent}>your edge.</span>
+              </Trans>
             </h1>
             <p className={styles.heroSubtext}>
-              Join thousands of traders who use Canverse to track positions, review every trade, and build a clear picture of their
-              performance.
+              <Trans>
+                Join thousands of traders who use Canverse to track positions, review every trade, and build a clear picture of their
+                performance.
+              </Trans>
             </p>
           </div>
 
@@ -127,19 +141,19 @@ export function RegisterPage() {
               <span className={styles.featureDot}>
                 <CheckIcon />
               </span>
-              Free account — no credit card required
+              <Trans>Free account — no credit card required</Trans>
             </li>
             <li className={styles.featureItem}>
               <span className={styles.featureDot}>
                 <CheckIcon />
               </span>
-              Unlimited portfolios &amp; trade entries
+              <Trans>Unlimited portfolios &amp; trade entries</Trans>
             </li>
             <li className={styles.featureItem}>
               <span className={styles.featureDot}>
                 <CheckIcon />
               </span>
-              Secure, private &amp; always up to date
+              <Trans>Secure, private &amp; always up to date</Trans>
             </li>
           </ul>
         </div>
@@ -147,16 +161,24 @@ export function RegisterPage() {
         {/* Stats */}
         <div className={styles.heroStats}>
           <div className={styles.heroStat}>
-            <div className={styles.heroStatValue}>10k+</div>
-            <div className={styles.heroStatLabel}>Portfolios</div>
+            <div className={styles.heroStatValue}>{format.number(10000, { notation: 'compact' })}+</div>
+            <div className={styles.heroStatLabel}>
+              <Trans>Portfolios</Trans>
+            </div>
           </div>
           <div className={styles.heroStat}>
-            <div className={styles.heroStatValue}>500k+</div>
-            <div className={styles.heroStatLabel}>Trades logged</div>
+            <div className={styles.heroStatValue}>{format.number(500000, { notation: 'compact' })}+</div>
+            <div className={styles.heroStatLabel}>
+              <Trans>Trades logged</Trans>
+            </div>
           </div>
           <div className={styles.heroStat}>
-            <div className={styles.heroStatValue}>Live</div>
-            <div className={styles.heroStatLabel}>P&amp;L data</div>
+            <div className={styles.heroStatValue}>
+              <Trans comment="Indicator that market data is live">Live</Trans>
+            </div>
+            <div className={styles.heroStatLabel}>
+              <Trans>P&amp;L data</Trans>
+            </div>
           </div>
         </div>
       </aside>
@@ -174,8 +196,12 @@ export function RegisterPage() {
 
           {/* Heading */}
           <div className={styles.formHeading}>
-            <h2 className={styles.formTitle}>Create your account</h2>
-            <p className={styles.formSubtitle}>Free forever. Set up in under a minute.</p>
+            <h2 className={styles.formTitle}>
+              <Trans>Create your account</Trans>
+            </h2>
+            <p className={styles.formSubtitle}>
+              <Trans>Free forever. Set up in under a minute.</Trans>
+            </p>
           </div>
 
           {/* Custom Google button */}
@@ -185,35 +211,49 @@ export function RegisterPage() {
 
           {/* Divider */}
           <div className={styles.formDivider}>
-            <Divider label="OR SIGN UP WITH YOUR EMAIL" />
+            <Divider label={t`OR SIGN UP WITH YOUR EMAIL`} />
           </div>
 
           {/* Registration form */}
           <form className={styles.formFields} onSubmit={form.onSubmit(handleSubmit)}>
             <Stack gap="md">
               <Group grow align="flex-start">
-                <TextInput label="First name" placeholder="John" withAsterisk {...form.getInputProps('firstName')} />
-                <TextInput label="Last name" placeholder="Doe" withAsterisk {...form.getInputProps('lastName')} />
+                <TextInput label={t`First name`} autoComplete="given-name" withAsterisk {...form.getInputProps('firstName')} />
+                <TextInput label={t`Last name`} autoComplete="family-name" withAsterisk {...form.getInputProps('lastName')} />
               </Group>
-              <TextInput label="Email" placeholder="me@canverse.com" withAsterisk {...form.getInputProps('email')} />
-              <PasswordInput label="Password" placeholder="••••••••" withAsterisk {...form.getInputProps('password')} />
-              <PasswordInput label="Confirm password" placeholder="••••••••" withAsterisk {...form.getInputProps('confirmPassword')} />
+              <TextInput label={t`Email`} placeholder="me@canverse.com" withAsterisk {...form.getInputProps('email')} />
+              <PasswordInput
+                visibilityToggleFocusable
+                visibilityToggleButtonProps={{ 'aria-label': t`Toggle password visibility` }}
+                label={t`Password`}
+                placeholder="••••••••"
+                withAsterisk
+                {...form.getInputProps('password')}
+              />
+              <PasswordInput
+                visibilityToggleFocusable
+                visibilityToggleButtonProps={{ 'aria-label': t`Toggle password visibility` }}
+                label={t`Confirm password`}
+                placeholder="••••••••"
+                withAsterisk
+                {...form.getInputProps('confirmPassword')}
+              />
               <Button
                 className={styles.submitButton}
                 loading={login.isPending || register.isPending}
                 type="submit"
                 fullWidth
                 disabled={login.isPending}>
-                Create account
+                <Trans>Create account</Trans>
               </Button>
             </Stack>
           </form>
 
           {/* Footer */}
           <div className={styles.formFooter}>
-            Already have an account?{' '}
+            <Trans>Already have an account?</Trans>{' '}
             <Link to="/login" className={styles.formLink}>
-              Sign in
+              <Trans>Sign in</Trans>
             </Link>
           </div>
         </div>
