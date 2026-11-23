@@ -25,7 +25,7 @@ Extend `DashboardController.getDashboard` and `getDefaultDashboard` through `Das
 }
 ```
 
-**Adapter removal** — Replace the transaction-derived `ids` and `linked` construction in `getDashboardDetails`. [Membership fallback](../../web/src/features/dashboard/dashboard-placeholders.ts#L117)
+**Adapter removal** — Replace the transaction-derived `ids` and `linked` construction in `getDashboardDetails`. [Membership fallback](../../web/src/features/dashboard/dashboard-placeholders.ts#L165)
 
 ## 2. Per-portfolio values and weights
 
@@ -48,7 +48,7 @@ Extend the new `LinkedPortfolioView` in `DashboardView`. Add a grouped query to 
 }
 ```
 
-**Adapter removal** — Replace `summarizePortfolio` and the same-currency `denominator` / `weighted` calculations in `getDashboardDetails`. The current value uses cost basis when a quote is missing, and the UI marks the estimate. Cross-currency weights currently cover only the dashboard-currency portion. [Portfolio aggregation fallback](../../web/src/features/dashboard/dashboard-placeholders.ts#L89) · [Weight fallback](../../web/src/features/dashboard/dashboard-placeholders.ts#L140)
+**Adapter removal** — Replace `summarizePortfolio` and the same-currency `denominator` / `weighted` calculations in `getDashboardDetails`. The current value uses cost basis when a quote is missing, and the UI marks the estimate. Cross-currency weights currently cover only the dashboard-currency portion. [Portfolio aggregation fallback](../../web/src/features/dashboard/dashboard-placeholders.ts#L134) · [Weight fallback](../../web/src/features/dashboard/dashboard-placeholders.ts#L188)
 
 ## 3. Top positions and day change
 
@@ -74,7 +74,7 @@ Add `topPositions` to `DashboardView` via `DashboardController.getDashboard` and
 }
 ```
 
-**Adapter removal** — In `describePosition`, replace the native valuation, cost-basis estimate, `dailyAmount` and `dailyPercentage`; then remove the fallback `rankingCurrency` and sort in `getDashboardDetails`. The current zero impact is labeled as an estimate when the feed supplies no daily price change. [Position value fallback](../../web/src/features/dashboard/dashboard-placeholders.ts#L62) · [Daily impact fallback](../../web/src/features/dashboard/dashboard-placeholders.ts#L67) · [Ranking fallback](../../web/src/features/dashboard/dashboard-placeholders.ts#L140)
+**Adapter removal** — In `describePosition`, replace the native valuation, cost-basis estimate, `dailyAmount` and `dailyPercentage`; then remove the fallback `rankingCurrency` and sort in `getDashboardDetails`. The current zero impact is labeled as an estimate when the feed supplies no daily price change. [Position value fallback](../../web/src/features/dashboard/dashboard-placeholders.ts#L107) · [Daily impact fallback](../../web/src/features/dashboard/dashboard-placeholders.ts#L112) · [Ranking fallback](../../web/src/features/dashboard/dashboard-placeholders.ts#L188)
 
 ## 4. All-time realized P&L and win rate
 
@@ -93,11 +93,11 @@ Extend `RealizedGains` under `DashboardView`. Use `StatisticsRepository` from `D
 }
 ```
 
-**Adapter removal** — Bind the summary to the new fields and remove the fallback total, coverage and win-rate calculations in `getRealizedHistory`. Keep any client trade parsing needed until the chart endpoint is available. [Realized history fallback](../../web/src/features/dashboard/dashboard-placeholders.ts#L15)
+**Adapter removal** — Bind the summary to the new fields and remove the fallback total, coverage and win-rate calculations in `getRealizedHistory`. Keep any client trade parsing needed until the chart endpoint is available. [Realized history fallback](../../web/src/features/dashboard/dashboard-placeholders.ts#L22)
 
-## 5. Performance ranges and daily chart
+## 5. Performance ranges and chart modes
 
-Add `DashboardController.getDashboardPerformance` at `GET /api/dashboards/{dashboardId}/performance?range=3M|6M|ALL`. Implement aggregation in `DashboardService` with `StatisticsRepository` and a new `DashboardPerformanceView` DTO. Resolve the dashboard for the authenticated owner. Group eligible sales by execution date in an explicit reporting time zone. Use calendar month windows, sort ascending by date and label currency at the response level. For each day, return `dailyPnl: BigDecimal`, `cumulativePnl: BigDecimal` and `transactionCount: Long`. Cumulative totals start at the selected range boundary and the returned count describes that same range. The Daily bars switch is local presentation state.
+Add `DashboardController.getDashboardPerformance` at `GET /api/dashboards/{dashboardId}/performance?range=3M|6M|ALL`. Implement aggregation in `DashboardService` with `StatisticsRepository` and a new `DashboardPerformanceView` DTO. Resolve the dashboard for the authenticated owner. Group eligible sales by execution date in an explicit reporting time zone. Use calendar month windows, sort ascending by date and label currency at the response level. For each day, return `dailyPnl: BigDecimal`, `cumulativePnl: BigDecimal` and `transactionCount: Long`. Cumulative totals start at the selected range boundary and the returned count describes that same range. The chart view is a local selection. The cumulative view plots only observed sales dates. The periodic view aggregates the daily records into calendar months for 6M and All, or Monday-based weeks for 3M when at least six trading days have records.
 
 ```json
 {
@@ -114,7 +114,7 @@ Add `DashboardController.getDashboardPerformance` at `GET /api/dashboards/{dashb
 }
 ```
 
-**Adapter removal** — Replace `getPerformanceSeries` with the range query keyed by dashboard ID and range. The current grouping uses the browser calendar and returns observed sales dates only. [Performance range fallback](../../web/src/features/dashboard/dashboard-placeholders.ts#L27)
+**Adapter removal** — Replace `getPerformanceSeries` with the range query keyed by dashboard ID and range. Keep the client-side chart view and localized labels. Use the response reporting zone to group the daily records. [Performance range fallback](../../web/src/features/dashboard/dashboard-placeholders.ts#L39)
 
 ## 6. Market freshness
 
@@ -126,7 +126,7 @@ Extend `DashboardView` through `DashboardService.getDashboard`. Use exchange met
 }
 ```
 
-**Adapter removal** — Replace `getMarketStatus` and the generic “Market” or “Quotes pending” labels with the response. [Market status fallback](../../web/src/features/dashboard/dashboard-placeholders.ts#L101)
+**Adapter removal** — Replace `getMarketStatus` and the generic “Market” or “Quotes pending” labels with the response. [Market status fallback](../../web/src/features/dashboard/dashboard-placeholders.ts#L146)
 
 ## 7. Short instrument names
 
@@ -136,4 +136,4 @@ Add a nullable `shortName` to `PositionInfo.InstrumentView` and map it through `
 { "instrument": { "id": "86", "symbol": "AKBNK", "name": "Akbank T.A.Ş.", "shortName": "Akbank" } }
 ```
 
-**Adapter removal** — Replace the `company` full-name fallback in `describePosition` with the short name from the API, allowing the full name when the field is null. [Company name fallback](../../web/src/features/dashboard/dashboard-placeholders.ts#L65)
+**Adapter removal** — Replace the `company` full-name fallback in `describePosition` with the short name from the API, allowing the full name when the field is null. [Company name fallback](../../web/src/features/dashboard/dashboard-placeholders.ts#L110)

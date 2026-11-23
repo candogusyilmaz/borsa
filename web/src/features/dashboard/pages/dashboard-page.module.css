@@ -59,7 +59,8 @@
 .detailList small,
 .listNote,
 .estimate,
-.tooltip time {
+.tooltip time,
+.tooltipCount {
   color: var(--mantine-color-dimmed);
   font-size: 0.75rem;
   font-weight: 400;
@@ -135,7 +136,7 @@
 }
 
 .period label,
-.range label {
+.chartControls label {
   font-size: 0.71875rem;
   font-weight: 500;
 }
@@ -161,6 +162,11 @@
   margin-block-start: 0.3rem;
 }
 
+.chartTotal {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
 .chartSurface {
   min-width: 0;
   padding: 1.25rem 1.375rem;
@@ -180,11 +186,6 @@
   gap: 0.45rem 0.9rem;
 }
 
-.dailySwitch label {
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
 .chart {
   height: clamp(14rem, 29vw, 19.5rem);
   min-width: 0;
@@ -202,18 +203,31 @@
 }
 
 .tooltip {
+  display: block;
+  max-inline-size: min(16rem, calc(100vw - 4rem));
   padding: 0.625rem 0.75rem;
   border: 1px solid var(--app-border-subtle);
   border-radius: 8px;
   background: var(--mantine-color-default);
   font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
 }
 
-.tooltip div {
+.tooltipRow {
   display: flex;
   justify-content: space-between;
   gap: 0.75rem;
   margin-top: 0.25rem;
+}
+
+.tooltipRow strong {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.tooltipCount {
+  display: block;
+  margin-block-start: 0.35rem;
 }
 
 .detailGrid {
@@ -429,8 +443,7 @@
 
 @media (pointer: coarse) {
   .titleButton,
-  .range label,
-  .dailySwitch label,
+  .chartControls label,
   .period label,
   .sectionLink {
     min-height: 44px;

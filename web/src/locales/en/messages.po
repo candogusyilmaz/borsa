@@ -27,7 +27,9 @@ msgid "{0, plural, one {# position} other {# positions}}"
 msgstr "{0, plural, one {# position} other {# positions}}"
 
 #. placeholder {0}: chart.count
-#: src/features/dashboard/components/transactions-chart.tsx:28
+#. placeholder {0}: point.tradeCount
+#: src/features/dashboard/components/transactions-chart.tsx:36
+#: src/features/dashboard/components/transactions-chart.tsx:256
 msgid "{0, plural, one {# transaction} other {# transactions}}"
 msgstr "{0, plural, one {# transaction} other {# transactions}}"
 
@@ -57,10 +59,6 @@ msgstr "{completion} complete"
 #: src/features/dashboard/components/dashboard-summary.tsx:82
 msgid "{count, plural, one {# recorded sale} other {# recorded sales}}"
 msgstr "{count, plural, one {# recorded sale} other {# recorded sales}}"
-
-#: src/features/dashboard/components/transactions-chart.tsx:32
-msgid "{cumulative} cumulative"
-msgstr "{cumulative} cumulative"
 
 #: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:111
 msgid "{currency} allocation by quoted value"
@@ -98,11 +96,16 @@ msgstr "/month"
 msgid "© 2024 Portfolio Analytics. All rights reserved."
 msgstr "© 2024 Portfolio Analytics. All rights reserved."
 
-#: src/features/dashboard/components/transactions-chart.tsx:46
+#. Chart summary. The highlighted amount is the cumulative realized profit or loss in the selected range.
+#: src/features/dashboard/components/transactions-chart.tsx:40
+msgid "<bold>{cumulative}</bold> cumulative"
+msgstr "<bold>{cumulative}</bold> cumulative"
+
+#: src/features/dashboard/components/transactions-chart.tsx:58
 msgid "3M"
 msgstr "3M"
 
-#: src/features/dashboard/components/transactions-chart.tsx:47
+#: src/features/dashboard/components/transactions-chart.tsx:59
 msgid "6M"
 msgstr "6M"
 
@@ -162,7 +165,7 @@ msgstr "AI-assisted data enrichment"
 msgid "AI-enhanced features coming soon."
 msgstr "AI-enhanced features coming soon."
 
-#: src/features/dashboard/components/transactions-chart.tsx:48
+#: src/features/dashboard/components/transactions-chart.tsx:60
 msgid "All"
 msgstr "All"
 
@@ -339,6 +342,10 @@ msgstr "Cancel anytime • No hidden fees"
 msgid "Canverse dashboard"
 msgstr "Canverse dashboard"
 
+#: src/features/dashboard/components/transactions-chart.tsx:65
+msgid "Chart view"
+msgstr "Chart view"
+
 #: src/app/shell/member-shell.tsx:125
 msgid "Choose a portfolio"
 msgstr "Choose a portfolio"
@@ -446,7 +453,7 @@ msgstr "Could not load portfolios."
 msgid "Could not load positions."
 msgstr "Could not load positions."
 
-#: src/features/dashboard/components/transactions-chart.tsx:65
+#: src/features/dashboard/components/transactions-chart.tsx:79
 msgid "Could not load realized performance."
 msgstr "Could not load realized performance."
 
@@ -528,14 +535,22 @@ msgstr "Crypto"
 msgid "Cryptocurrencies"
 msgstr "Cryptocurrencies"
 
-#: src/features/dashboard/components/transactions-chart.tsx:139
-#: src/features/dashboard/components/transactions-chart.tsx:156
+#: src/features/dashboard/components/transactions-chart.tsx:69
+#: src/features/dashboard/components/transactions-chart.tsx:194
 msgid "Cumulative"
 msgstr "Cumulative"
+
+#: src/features/dashboard/components/transactions-chart.tsx:251
+msgid "Cumulative P&L"
+msgstr "Cumulative P&L"
 
 #: src/features/landing/landing-page.tsx:402
 msgid "Cumulative performance charts"
 msgstr "Cumulative performance charts"
+
+#: src/features/dashboard/components/transactions-chart.tsx:128
+msgid "Cumulative realized profit and loss"
+msgstr "Cumulative realized profit and loss"
 
 #: src/features/dashboard/workflows/create-dashboard-modal.tsx:112
 #: src/features/trades/workflows/buy-transaction-form.tsx:100
@@ -550,14 +565,6 @@ msgstr "Currency is required"
 msgid "Current portfolio"
 msgstr "Current portfolio"
 
-#: src/features/dashboard/components/transactions-chart.tsx:95
-msgid "Daily and cumulative realized profit and loss. Use arrow keys to browse dates."
-msgstr "Daily and cumulative realized profit and loss. Use arrow keys to browse dates."
-
-#: src/features/dashboard/components/transactions-chart.tsx:55
-msgid "Daily bars"
-msgstr "Daily bars"
-
 #: src/features/dashboard/components/dashboard-summary.tsx:42
 #: src/features/positions/components/positions-view/position-inspector.tsx:71
 msgid "Daily change"
@@ -566,11 +573,6 @@ msgstr "Daily change"
 #: src/features/dashboard/components/dashboard-portfolios.tsx:78
 msgid "Daily impact"
 msgstr "Daily impact"
-
-#: src/features/dashboard/components/transactions-chart.tsx:145
-#: src/features/dashboard/components/transactions-chart.tsx:169
-msgid "Daily P&L"
-msgstr "Daily P&L"
 
 #: src/features/landing/landing-page.tsx:402
 msgid "Daily P&L calculation"
@@ -886,7 +888,7 @@ msgstr "Loading details…"
 msgid "Loading earnings"
 msgstr "Loading earnings"
 
-#: src/features/dashboard/components/transactions-chart.tsx:61
+#: src/features/dashboard/components/transactions-chart.tsx:75
 msgid "Loading performance chart"
 msgstr "Loading performance chart"
 
@@ -917,7 +919,7 @@ msgid "Main navigation"
 msgstr "Main navigation"
 
 #. Generic market label used when the exchange is unknown
-#: src/features/dashboard/dashboard-placeholders.ts:105
+#: src/features/dashboard/dashboard-placeholders.ts:149
 msgid "Market"
 msgstr "Market"
 
@@ -933,6 +935,7 @@ msgstr "Minutes"
 msgid "Modern, responsive interface with customizable themes and smooth interactions."
 msgstr "Modern, responsive interface with customizable themes and smooth interactions."
 
+#: src/features/dashboard/components/transactions-chart.tsx:25
 #: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:103
 msgid "Monthly"
 msgstr "Monthly"
@@ -1032,7 +1035,7 @@ msgstr "No positions match this search."
 msgid "No realized P&L in this period."
 msgstr "No realized P&L in this period."
 
-#: src/features/dashboard/components/transactions-chart.tsx:77
+#: src/features/dashboard/components/transactions-chart.tsx:91
 msgid "No realized sales in this period."
 msgstr "No realized sales in this period."
 
@@ -1107,9 +1110,18 @@ msgstr "Password must be between 8 and 20 characters"
 msgid "Passwords do not match"
 msgstr "Passwords do not match"
 
-#: src/features/dashboard/components/transactions-chart.tsx:42
+#: src/features/dashboard/components/transactions-chart.tsx:54
 msgid "Performance period"
 msgstr "Performance period"
+
+#: src/features/dashboard/components/transactions-chart.tsx:207
+#: src/features/dashboard/components/transactions-chart.tsx:245
+msgid "Period P&L"
+msgstr "Period P&L"
+
+#: src/features/dashboard/components/transactions-chart.tsx:25
+msgid "Periodic"
+msgstr "Periodic"
 
 #: src/shared/components/localized-date-time-picker.tsx:19
 msgid "Pick a month"
@@ -1311,10 +1323,11 @@ msgstr "Real-time position tracking across all markets"
 msgid "Realized P&L"
 msgstr "Realized P&L"
 
-#: src/features/dashboard/components/transactions-chart.tsx:24
+#: src/features/dashboard/components/transactions-chart.tsx:32
 msgid "Realized performance"
 msgstr "Realized performance"
 
+#: src/features/dashboard/components/transactions-chart.tsx:128
 #: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:130
 msgid "Realized profit and loss by period"
 msgstr "Realized profit and loss by period"
@@ -1649,7 +1662,7 @@ msgstr "Trades per page"
 msgid "Trades submitted: {count}."
 msgstr "Trades submitted: {count}."
 
-#: src/features/dashboard/components/transactions-chart.tsx:68
+#: src/features/dashboard/components/transactions-chart.tsx:82
 #: src/features/dashboard/pages/dashboard-page.tsx:51
 #: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:31
 #: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:24
@@ -1714,6 +1727,10 @@ msgstr "Unrealized P&L"
 msgid "Unrealized return on open positions"
 msgstr "Unrealized return on open positions"
 
+#: src/features/dashboard/components/transactions-chart.tsx:133
+msgid "Use the left and right arrow keys to browse chart values."
+msgstr "Use the left and right arrow keys to browse chart values."
+
 #: src/features/onboarding/components/portfolio-step.tsx:88
 msgid "Visual Identity"
 msgstr "Visual Identity"
@@ -1731,6 +1748,11 @@ msgstr "Warning"
 msgid "We can't seem to reach the server. Please check your internet connection and try again."
 msgstr "We can't seem to reach the server. Please check your internet connection and try again."
 
+#: src/features/dashboard/components/transactions-chart.tsx:238
+msgid "Week of {date}"
+msgstr "Week of {date}"
+
+#: src/features/dashboard/components/transactions-chart.tsx:25
 #: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:102
 msgid "Weekly"
 msgstr "Weekly"

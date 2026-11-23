@@ -27,7 +27,9 @@ msgid "{0, plural, one {# position} other {# positions}}"
 msgstr "{0, plural, other {# pozisyon}}"
 
 #. placeholder {0}: chart.count
-#: src/features/dashboard/components/transactions-chart.tsx:28
+#. placeholder {0}: point.tradeCount
+#: src/features/dashboard/components/transactions-chart.tsx:36
+#: src/features/dashboard/components/transactions-chart.tsx:256
 msgid "{0, plural, one {# transaction} other {# transactions}}"
 msgstr "{0, plural, other {# işlem}}"
 
@@ -57,10 +59,6 @@ msgstr "{completion} tamamlandı"
 #: src/features/dashboard/components/dashboard-summary.tsx:82
 msgid "{count, plural, one {# recorded sale} other {# recorded sales}}"
 msgstr "{count, plural, other {# kayıtlı satış}}"
-
-#: src/features/dashboard/components/transactions-chart.tsx:32
-msgid "{cumulative} cumulative"
-msgstr "birikimli {cumulative}"
 
 #: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:111
 msgid "{currency} allocation by quoted value"
@@ -98,11 +96,16 @@ msgstr "/ay"
 msgid "© 2024 Portfolio Analytics. All rights reserved."
 msgstr "© 2024 Portfolio Analytics. Tüm hakları saklıdır."
 
-#: src/features/dashboard/components/transactions-chart.tsx:46
+#. Chart summary. The highlighted amount is the cumulative realized profit or loss in the selected range.
+#: src/features/dashboard/components/transactions-chart.tsx:40
+msgid "<bold>{cumulative}</bold> cumulative"
+msgstr "kümülatif <bold>{cumulative}</bold>"
+
+#: src/features/dashboard/components/transactions-chart.tsx:58
 msgid "3M"
 msgstr "3 Ay"
 
-#: src/features/dashboard/components/transactions-chart.tsx:47
+#: src/features/dashboard/components/transactions-chart.tsx:59
 msgid "6M"
 msgstr "6 Ay"
 
@@ -162,7 +165,7 @@ msgstr "Yapay zekâ ile veri zenginleştirme"
 msgid "AI-enhanced features coming soon."
 msgstr "Yapay zekâ destekli özellikler yakında geliyor."
 
-#: src/features/dashboard/components/transactions-chart.tsx:48
+#: src/features/dashboard/components/transactions-chart.tsx:60
 msgid "All"
 msgstr "Tümü"
 
@@ -339,6 +342,10 @@ msgstr "İstediğiniz zaman iptal edin · Gizli ücret yok"
 msgid "Canverse dashboard"
 msgstr "Canverse gösterge paneli"
 
+#: src/features/dashboard/components/transactions-chart.tsx:65
+msgid "Chart view"
+msgstr "Grafik görünümü"
+
 #: src/app/shell/member-shell.tsx:125
 msgid "Choose a portfolio"
 msgstr "Portföy seçin"
@@ -446,7 +453,7 @@ msgstr "Portföyler yüklenemedi."
 msgid "Could not load positions."
 msgstr "Pozisyonlar yüklenemedi."
 
-#: src/features/dashboard/components/transactions-chart.tsx:65
+#: src/features/dashboard/components/transactions-chart.tsx:79
 msgid "Could not load realized performance."
 msgstr "Gerçekleşen performans yüklenemedi."
 
@@ -528,14 +535,22 @@ msgstr "Kripto"
 msgid "Cryptocurrencies"
 msgstr "Kripto paralar"
 
-#: src/features/dashboard/components/transactions-chart.tsx:139
-#: src/features/dashboard/components/transactions-chart.tsx:156
+#: src/features/dashboard/components/transactions-chart.tsx:69
+#: src/features/dashboard/components/transactions-chart.tsx:194
 msgid "Cumulative"
-msgstr "Birikimli"
+msgstr "Kümülatif"
+
+#: src/features/dashboard/components/transactions-chart.tsx:251
+msgid "Cumulative P&L"
+msgstr "Kümülatif K/Z"
 
 #: src/features/landing/landing-page.tsx:402
 msgid "Cumulative performance charts"
 msgstr "Birikimli performans grafikleri"
+
+#: src/features/dashboard/components/transactions-chart.tsx:128
+msgid "Cumulative realized profit and loss"
+msgstr "Kümülatif gerçekleşen kâr ve zarar"
 
 #: src/features/dashboard/workflows/create-dashboard-modal.tsx:112
 #: src/features/trades/workflows/buy-transaction-form.tsx:100
@@ -550,14 +565,6 @@ msgstr "Para birimi seçin"
 msgid "Current portfolio"
 msgstr "Geçerli portföy"
 
-#: src/features/dashboard/components/transactions-chart.tsx:95
-msgid "Daily and cumulative realized profit and loss. Use arrow keys to browse dates."
-msgstr "Günlük ve birikimli gerçekleşen kâr ve zarar. Tarihler arasında ok tuşlarıyla gezinin."
-
-#: src/features/dashboard/components/transactions-chart.tsx:55
-msgid "Daily bars"
-msgstr "Günlük çubuklar"
-
 #: src/features/dashboard/components/dashboard-summary.tsx:42
 #: src/features/positions/components/positions-view/position-inspector.tsx:71
 msgid "Daily change"
@@ -566,11 +573,6 @@ msgstr "Günlük Değişim"
 #: src/features/dashboard/components/dashboard-portfolios.tsx:78
 msgid "Daily impact"
 msgstr "Günlük etki"
-
-#: src/features/dashboard/components/transactions-chart.tsx:145
-#: src/features/dashboard/components/transactions-chart.tsx:169
-msgid "Daily P&L"
-msgstr "Günlük K/Z"
 
 #: src/features/landing/landing-page.tsx:402
 msgid "Daily P&L calculation"
@@ -886,7 +888,7 @@ msgstr "Ayrıntılar yükleniyor…"
 msgid "Loading earnings"
 msgstr "Kazançlar yükleniyor"
 
-#: src/features/dashboard/components/transactions-chart.tsx:61
+#: src/features/dashboard/components/transactions-chart.tsx:75
 msgid "Loading performance chart"
 msgstr "Performans grafiği yükleniyor"
 
@@ -917,7 +919,7 @@ msgid "Main navigation"
 msgstr "Ana gezinme"
 
 #. Generic market label used when the exchange is unknown
-#: src/features/dashboard/dashboard-placeholders.ts:105
+#: src/features/dashboard/dashboard-placeholders.ts:149
 msgid "Market"
 msgstr "Piyasa"
 
@@ -933,6 +935,7 @@ msgstr "Dakika"
 msgid "Modern, responsive interface with customizable themes and smooth interactions."
 msgstr "Özelleştirilebilir temaları ve akıcı etkileşimleriyle her ekrana uyum sağlayan arayüz."
 
+#: src/features/dashboard/components/transactions-chart.tsx:25
 #: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:103
 msgid "Monthly"
 msgstr "Aylık"
@@ -1032,7 +1035,7 @@ msgstr "Aramanıza uyan pozisyon bulunamadı."
 msgid "No realized P&L in this period."
 msgstr "Bu dönemde gerçekleşen kâr veya zarar yok."
 
-#: src/features/dashboard/components/transactions-chart.tsx:77
+#: src/features/dashboard/components/transactions-chart.tsx:91
 msgid "No realized sales in this period."
 msgstr "Bu dönemde gerçekleşen satış yok."
 
@@ -1107,9 +1110,18 @@ msgstr "Şifreniz 8 ile 20 karakter arasında olmalı"
 msgid "Passwords do not match"
 msgstr "Şifreler eşleşmiyor"
 
-#: src/features/dashboard/components/transactions-chart.tsx:42
+#: src/features/dashboard/components/transactions-chart.tsx:54
 msgid "Performance period"
 msgstr "Performans dönemi"
+
+#: src/features/dashboard/components/transactions-chart.tsx:207
+#: src/features/dashboard/components/transactions-chart.tsx:245
+msgid "Period P&L"
+msgstr "Dönem K/Z"
+
+#: src/features/dashboard/components/transactions-chart.tsx:25
+msgid "Periodic"
+msgstr "Dönemsel"
 
 #: src/shared/components/localized-date-time-picker.tsx:19
 msgid "Pick a month"
@@ -1311,10 +1323,11 @@ msgstr "Tüm piyasalarda anlık pozisyon takibi"
 msgid "Realized P&L"
 msgstr "Gerçekleşen K/Z"
 
-#: src/features/dashboard/components/transactions-chart.tsx:24
+#: src/features/dashboard/components/transactions-chart.tsx:32
 msgid "Realized performance"
 msgstr "Gerçekleşen Performans"
 
+#: src/features/dashboard/components/transactions-chart.tsx:128
 #: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:130
 msgid "Realized profit and loss by period"
 msgstr "Döneme göre gerçekleşen kâr ve zarar"
@@ -1649,7 +1662,7 @@ msgstr "Sayfa başına işlem"
 msgid "Trades submitted: {count}."
 msgstr "{count} işlem gönderildi."
 
-#: src/features/dashboard/components/transactions-chart.tsx:68
+#: src/features/dashboard/components/transactions-chart.tsx:82
 #: src/features/dashboard/pages/dashboard-page.tsx:51
 #: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:31
 #: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:24
@@ -1714,6 +1727,10 @@ msgstr "Gerçekleşmemiş K/Z"
 msgid "Unrealized return on open positions"
 msgstr "Açık pozisyonların gerçekleşmemiş getirisi"
 
+#: src/features/dashboard/components/transactions-chart.tsx:133
+msgid "Use the left and right arrow keys to browse chart values."
+msgstr "Grafik değerleri arasında sol ve sağ ok tuşlarıyla gezinin."
+
 #: src/features/onboarding/components/portfolio-step.tsx:88
 msgid "Visual Identity"
 msgstr "Görünüm"
@@ -1731,6 +1748,11 @@ msgstr "Uyarı"
 msgid "We can't seem to reach the server. Please check your internet connection and try again."
 msgstr "Sunucuya ulaşılamıyor. İnternet bağlantınızı kontrol edip tekrar deneyin."
 
+#: src/features/dashboard/components/transactions-chart.tsx:238
+msgid "Week of {date}"
+msgstr "{date} haftası"
+
+#: src/features/dashboard/components/transactions-chart.tsx:25
 #: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:102
 msgid "Weekly"
 msgstr "Haftalık"

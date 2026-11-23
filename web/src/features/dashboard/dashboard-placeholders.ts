@@ -1,12 +1,18 @@
 import { msg } from '@lingui/core/macro';
 import dayjs from 'dayjs';
 import type { components } from '~/api/schema';
+import type { createFormat } from '~/shared/format/format';
 
 type Trade = components['schemas']['TransactionInfo'];
 type Portfolio = components['schemas']['BasicPortfolioView'];
 type Position = components['schemas']['PositionInfo'];
 
 export type ChartRange = '3M' | '6M' | 'All';
+export type PerformanceGrouping = 'day' | 'week' | 'month';
+
+type DateFormatter = ReturnType<typeof createFormat>['date'];
+type PerformanceValues = { date: number; periodPnl: number; tradeCount: number; cumulative: number };
+export type PerformancePoint = PerformanceValues & { tickLabel: string };
 
 export function getRealizedHistory(trades?: Trade[]) {
   const sales = trades?.filter(({ type }) => type === 'SELL');
@@ -24,38 +30,76 @@ export function getRealizedHistory(trades?: Trade[]) {
   };
 }
 
-export function getPerformanceSeries(recorded: ReturnType<typeof getRealizedHistory>['recorded'], range: ChartRange, now = dayjs()) {
+export function getPerformanceSeries(
+  recorded: ReturnType<typeof getRealizedHistory>['recorded'],
+  selectedRange: ChartRange | undefined,
+  formatDate: DateFormatter,
+  now = dayjs()
+) {
   // TODO(backend): Replace client-side date windowing and aggregation with the range-aware performance endpoint.
-  const firstDay =
-    range === 'All'
-      ? -Infinity
-      : now
-          .subtract(range === '3M' ? 3 : 6, 'month')
-          .startOf('day')
-          .valueOf();
-  const lastDay = range === 'All' ? Infinity : now.endOf('day').valueOf();
-  const days = new Map<number, { daily: number; count: number }>();
-  let count = 0;
+  const sixMonthsAgo = now.subtract(6, 'month').startOf('day').valueOf();
+  const today = now.endOf('day').valueOf();
+  const days = new Map<number, { periodPnl: number; tradeCount: number }>();
 
   for (const sale of recorded) {
     const date = dayjs(sale.actionDate).startOf('day').valueOf();
-    if (!Number.isFinite(date) || date < firstDay || date > lastDay) continue;
-    const day = days.get(date) ?? { daily: 0, count: 0 };
-    day.daily += sale.profit;
-    day.count += 1;
-    count += 1;
+    if (!Number.isFinite(date)) continue;
+    const day = days.get(date) ?? { periodPnl: 0, tradeCount: 0 };
+    day.periodPnl += sale.profit;
+    day.tradeCount += 1;
     days.set(date, day);
   }
 
+  const ordered = [...days].sort(([a], [b]) => a - b);
+  const range = selectedRange ?? (ordered.some(([date]) => date >= sixMonthsAgo && date <= today) ? '6M' : 'All');
+  const firstDay = range === '3M' ? now.subtract(3, 'month').startOf('day').valueOf() : sixMonthsAgo;
+  const inRange = range === 'All' ? ordered : ordered.filter(([date]) => date >= firstDay && date <= today);
+  const periodicGrouping: PerformanceGrouping = range !== '3M' ? 'month' : inRange.length < 6 ? 'day' : 'week';
+  const buckets = new Map<string, PerformanceValues & { key: string }>();
+  let count = 0;
   let cumulative = 0;
-  const points = [...days]
-    .sort(([a], [b]) => a - b)
-    .map(([date, day]) => {
-      cumulative += day.daily;
-      return { date, ...day, cumulative };
-    });
+  const daily = inRange.map(([date, day]) => {
+    cumulative += day.periodPnl;
+    count += day.tradeCount;
+    const start = periodStart(date, periodicGrouping);
+    const key = start.format(periodicGrouping === 'month' ? 'YYYY-MM' : 'YYYY-MM-DD');
+    const bucket = buckets.get(key) ?? { key, date: start.valueOf(), periodPnl: 0, tradeCount: 0, cumulative: 0 };
+    bucket.periodPnl += day.periodPnl;
+    bucket.tradeCount += day.tradeCount;
+    bucket.cumulative = cumulative;
+    buckets.set(key, bucket);
+    return { date, ...day, cumulative };
+  });
 
-  return { points, count, cumulative };
+  return {
+    range,
+    count,
+    cumulative,
+    cumulativePoints: labelPoints(daily, 'day', formatDate),
+    periodicPoints: labelPoints([...buckets.values()], periodicGrouping, formatDate),
+    periodicGrouping
+  };
+}
+
+function periodStart(date: number, grouping: PerformanceGrouping) {
+  const day = dayjs(date);
+  if (grouping === 'month') return day.startOf('month');
+  // Monday-to-Sunday buckets stay stable when the interface language changes.
+  if (grouping === 'week') return day.subtract((day.day() + 6) % 7, 'day').startOf('day');
+  return day;
+}
+
+function labelPoints<T extends PerformanceValues>(points: T[], grouping: PerformanceGrouping, formatDate: DateFormatter) {
+  const first = points[0];
+  const last = points[points.length - 1];
+  const spansMultipleYears = first && last && new Date(first.date).getFullYear() !== new Date(last.date).getFullYear();
+  const options: Intl.DateTimeFormatOptions = { month: 'short', day: grouping === 'month' ? undefined : 'numeric' };
+
+  return points.map((point) => {
+    const label = formatDate(point.date, options);
+    const tickLabel = spansMultipleYears ? `${label} ’${formatDate(point.date, { year: '2-digit' })}` : label;
+    return { ...point, tickLabel };
+  });
 }
 
 function describePosition(position: Position) {

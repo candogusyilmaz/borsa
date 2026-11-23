@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { $api } from '~/api/openapi';
 import { usePositions } from '~/features/positions';
+import { useFormat } from '~/shared/format/use-format';
 import { type ChartRange, getDashboardDetails, getPerformanceSeries, getRealizedHistory } from '../dashboard-placeholders';
 
 export function useDashboardView() {
   const { data: dashboards } = $api.useSuspenseQuery('get', '/api/dashboards');
   const [selectedId, setSelectedId] = useState<string>();
-  const [chartRange, setChartRange] = useState<ChartRange>('All');
+  const [selectedRange, setChartRange] = useState<ChartRange>();
+  const format = useFormat();
   const selectable = dashboards.filter(({ id }) => !!id);
   const selected = selectable.find(({ id }) => id === selectedId) ?? selectable.find(({ isDefault }) => isDefault) ?? selectable[0];
   const params = { path: { dashboardId: Number(selected?.id) } };
@@ -16,6 +18,7 @@ export function useDashboardView() {
   const positions = usePositions();
   const currency = dashboard.data?.currencyCode;
   const realized = getRealizedHistory(trades.data);
+  const chart = getPerformanceSeries(realized.recorded, selectedRange, format.date);
   const details = currency
     ? getDashboardDetails({ trades: trades.data, portfolios: portfolios.data, positions: positions.data, currency })
     : undefined;
@@ -30,9 +33,8 @@ export function useDashboardView() {
     portfolios,
     realized,
     details,
-    chartRange,
     setChartRange,
-    chart: getPerformanceSeries(realized.recorded, chartRange)
+    chart
   };
 }
 
