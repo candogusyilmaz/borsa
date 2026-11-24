@@ -11,9 +11,7 @@ export const Route = createRootRouteWithContext<{
 }>()({
   component: RootComponent,
   notFoundComponent: () => <NotFound />,
-  errorComponent: ({ error, reset }) => (
-    <ErrorView error={error} reset={reset} variant="page" />
-  ),
+  errorComponent: ({ error, reset }) => <ErrorView error={error} reset={reset} variant="page" />
 });
 
 function RootComponent() {

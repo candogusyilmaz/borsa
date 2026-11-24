@@ -2,6 +2,12 @@ rsa:
   private-key: classpath:certs/private.pem # TODO: need to move to env in production
   public-key: classpath:certs/public.pem
 
+google:
+  oauth:
+    client-id: ${GOOGLE_CLIENT_ID:google_client_id_here}
+    client-secret: ${GOOGLE_CLIENT_SECRET:google_client_secret_here}
+            
+
 app:
   forex-rate-api:
     base-url: 'https://api.forexrateapi.com'
@@ -70,20 +76,13 @@ spring:
     out-of-order: false
     validate-on-migrate: true
     clean-disabled: true
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_CLIENT_ID:google_client_id_here}
-            client-secret: ${GOOGLE_CLIENT_SECRET:google_client_secret_here}
-            scope:
-              - email
+
   batch:
     jdbc:
       initialize-schema: always
     job:
       enabled: false
+
   task:
     scheduling:
       pool:

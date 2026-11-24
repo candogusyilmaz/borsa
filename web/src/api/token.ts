@@ -2,17 +2,14 @@ import type { paths } from './schema';
 
 export type AuthSession = paths['/api/auth/token']['post']['responses']['200']['content']['*/*'];
 
-export type SessionEvent =
-  | { type: 'UPDATED'; session: AuthSession }
-  | { type: 'CLEARED' };
+export type SessionEvent = { type: 'UPDATED'; session: AuthSession } | { type: 'CLEARED' };
 
 const STORAGE_KEY = 'user';
 const CHANNEL_NAME = 'canverse_auth_sync';
 const DEFAULT_BUFFER_MS = 60_000;
 
 const listeners = new Set<(event: SessionEvent) => void>();
-const channel =
-  typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(CHANNEL_NAME) : null;
+const channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(CHANNEL_NAME) : null;
 
 channel?.addEventListener('message', (event: MessageEvent<SessionEvent>) => {
   notifyLocal(event.data);
@@ -89,5 +86,5 @@ export const sessionStore = {
     return () => {
       listeners.delete(listener);
     };
-  },
+  }
 };

@@ -22,10 +22,7 @@ export function classifyError(error: unknown): AppErrorKind {
     return 'server';
   }
 
-  if (
-    error instanceof TypeError &&
-    /failed to fetch|networkerror|load failed|fetch failed/i.test(error.message)
-  ) {
+  if (error instanceof TypeError && /failed to fetch|networkerror|load failed|fetch failed/i.test(error.message)) {
     return 'network';
   }
 

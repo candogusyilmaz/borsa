@@ -1,6 +1,7 @@
 package dev.canverse.stocks.rest.account;
 
 import dev.canverse.stocks.domain.entity.account.User;
+import dev.canverse.stocks.service.account.GoogleAuthService;
 import dev.canverse.stocks.service.account.TokenService;
 import dev.canverse.stocks.service.account.UserService;
 import dev.canverse.stocks.service.account.model.GoogleTokenRequest;
@@ -17,10 +18,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtException;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -31,9 +34,8 @@ import java.util.UUID;
 public class TokenController {
     private final TokenService tokenService;
     private final UserService userService;
+    private final GoogleAuthService googleAuthService;
     private final AuthenticationManager authenticationManager;
-    private final JwtDecoder jwtDecoder =
-            NimbusJwtDecoder.withJwkSetUri("https://www.googleapis.com/oauth2/v3/certs").build();
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/register")
@@ -70,30 +72,22 @@ public class TokenController {
 
     @PostMapping("/google")
     public ResponseEntity<@NotNull TokenCreateResponse> googleLogin(
-            @RequestBody GoogleTokenRequest request) {
-        var idToken = request.token();
+            @Valid @RequestBody GoogleTokenRequest request) {
+        var googleUser = googleAuthService.verifyAuthorizationCode(request.code());
 
-        try {
-            var decodedToken = jwtDecoder.decode(idToken);
-            var email = decodedToken.getClaimAsString("email");
-            var name = decodedToken.getClaimAsString("name");
+        var user =
+                userService
+                        .loadUserByEmail(googleUser.email())
+                        .orElseGet(
+                                () ->
+                                        userService.register(
+                                                new UserRegistrationRequest(
+                                                        googleUser.name(),
+                                                        googleUser.email(),
+                                                        UUID.randomUUID().toString())));
 
-            var user =
-                    userService
-                            .loadUserByEmail(email)
-                            .orElseGet(
-                                    () ->
-                                            userService.register(
-                                                    new UserRegistrationRequest(
-                                                            name,
-                                                            email,
-                                                            UUID.randomUUID().toString())));
+        userService.updateLastLogin(user.getId());
 
-            userService.updateLastLogin(user.getId());
-
-            return tokenService.create(user);
-        } catch (JwtException e) {
-            throw new RuntimeException("Invalid Google token");
-        }
+        return tokenService.create(user);
     }
 }

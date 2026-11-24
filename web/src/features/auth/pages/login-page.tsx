@@ -1,7 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { ActionIcon, Button, Divider, PasswordInput, Stack, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import type { CredentialResponse } from '@react-oauth/google';
 import { IconMoon, IconSun } from '@tabler/icons-react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useAuthentication } from '~/features/auth/authentication-context';
@@ -30,19 +29,15 @@ export function LoginPage() {
     }
   });
 
-  const handleSuccess = async (response: CredentialResponse) => {
-    const idToken = response.credential;
-
-    if (!idToken) {
-      console.log('idToken not found');
-      return;
-    }
-
+  const handleGoogleCode = (code: string) => {
     login.mutate(
-      { token: idToken },
+      { code },
       {
         onSuccess: () => {
           navigate({ to: '/dashboard' });
+        },
+        onError: () => {
+          alerts.error(t`Could not sign in with Google. Please try again.`, t`Google sign-in failed`);
         }
       }
     );
@@ -161,9 +156,11 @@ export function LoginPage() {
           </div>
 
           {/* Custom Google button */}
-          <div className={styles.googleSection}>
-            <GoogleSignInButton onSuccess={handleSuccess} loading={login.isPending} />
-          </div>
+          <GoogleSignInButton
+            onCode={handleGoogleCode}
+            onError={() => alerts.error(t`Google sign-in failed`, t`Authentication error`)}
+            loading={login.isPending}
+          />
 
           {/* Divider */}
           <div className={styles.formDivider}>
@@ -179,8 +176,12 @@ export function LoginPage() {
                   navigate({ to: '/dashboard' });
                 },
                 onError: (error) => {
-                  const res = error as unknown as { response?: { data?: unknown } };
-                  const responseData = res.response?.data as { detail?: string };
+                  const res = error as unknown as {
+                    response?: { data?: unknown };
+                  };
+                  const responseData = res.response?.data as {
+                    detail?: string;
+                  };
 
                   alerts.error(responseData?.detail || t`Invalid username or password`, t`Error while logging in`);
                   form.reset();
@@ -193,7 +194,9 @@ export function LoginPage() {
               <TextInput label={t`Email`} placeholder="me@canverse.com" {...form.getInputProps('username')} />
               <PasswordInput
                 visibilityToggleFocusable
-                visibilityToggleButtonProps={{ 'aria-label': t`Toggle password visibility` }}
+                visibilityToggleButtonProps={{
+                  'aria-label': t`Toggle password visibility`
+                }}
                 label={t`Password`}
                 placeholder="••••••••"
                 {...form.getInputProps('password')}

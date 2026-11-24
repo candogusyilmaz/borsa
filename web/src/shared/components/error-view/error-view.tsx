@@ -1,12 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import {
-  IconAlertTriangle,
-  IconArrowLeft,
-  IconChevronDown,
-  IconRefresh,
-  IconServerOff,
-  IconWifiOff,
-} from '@tabler/icons-react';
+import { IconAlertTriangle, IconArrowLeft, IconChevronDown, IconRefresh, IconServerOff, IconWifiOff } from '@tabler/icons-react';
 import { classifyError, getErrorStatus } from './classify-error';
 import styles from './error-view.module.css';
 
@@ -18,19 +11,12 @@ export interface ErrorViewProps {
   homeHref?: string;
 }
 
-export function ErrorView({
-  error,
-  reset,
-  variant = 'page',
-  title,
-  homeHref = '/dashboard',
-}: ErrorViewProps) {
+export function ErrorView({ error, reset, variant = 'page', title, homeHref = '/dashboard' }: ErrorViewProps) {
   const { t } = useLingui();
   const kind = classifyError(error);
   const status = getErrorStatus(error);
   const errorInstance = error instanceof Error ? error : undefined;
-  const message =
-    errorInstance?.message || (typeof error === 'string' ? error : undefined);
+  const message = errorInstance?.message || (typeof error === 'string' ? error : undefined);
 
   const handleRetry = () => {
     if (reset) {
@@ -40,12 +26,7 @@ export function ErrorView({
     window.location.reload();
   };
 
-  const Icon =
-    kind === 'network'
-      ? IconWifiOff
-      : kind === 'server'
-        ? IconServerOff
-        : IconAlertTriangle;
+  const Icon = kind === 'network' ? IconWifiOff : kind === 'server' ? IconServerOff : IconAlertTriangle;
 
   const heading = title ? (
     title
@@ -59,25 +40,15 @@ export function ErrorView({
 
   const description =
     kind === 'network' ? (
-      <Trans>
-        Could not reach the server. Check your internet connection and try again.
-      </Trans>
+      <Trans>Could not reach the server. Check your internet connection and try again.</Trans>
     ) : kind === 'server' ? (
-      <Trans>
-        The service responded with an error. Please try again in a moment.
-      </Trans>
+      <Trans>The service responded with an error. Please try again in a moment.</Trans>
     ) : (
-      <Trans>
-        An unexpected error interrupted this view. You can retry or return to the
-        dashboard.
-      </Trans>
+      <Trans>An unexpected error interrupted this view. You can retry or return to the dashboard.</Trans>
     );
 
   return (
-    <div
-      className={variant === 'page' ? styles.page : styles.section}
-      role="alert"
-    >
+    <div className={variant === 'page' ? styles.page : styles.section} role="alert">
       <div className={styles.inner}>
         <div className={styles.iconBox} data-kind={kind} aria-hidden="true">
           <Icon size={20} stroke={1.75} />
@@ -87,19 +58,9 @@ export function ErrorView({
         <p className={styles.description}>{description}</p>
 
         <div className={styles.actions}>
-          <button
-            type="button"
-            className={styles.primaryButton}
-            onClick={handleRetry}
-          >
+          <button type="button" className={styles.primaryButton} onClick={handleRetry}>
             <IconRefresh size={15} stroke={1.9} />
-            <span>
-              {kind === 'network' ? (
-                <Trans>Reconnect</Trans>
-              ) : (
-                <Trans>Try again</Trans>
-              )}
-            </span>
+            <span>{kind === 'network' ? <Trans>Reconnect</Trans> : <Trans>Try again</Trans>}</span>
           </button>
 
           {variant === 'page' && (
@@ -123,9 +84,7 @@ export function ErrorView({
             <pre className={styles.code}>
               {status ? `${t`Status`}: ${status}\n` : ''}
               {message ?? t`Unknown error`}
-              {import.meta.env.DEV && errorInstance?.stack
-                ? `\n\n${errorInstance.stack}`
-                : ''}
+              {import.meta.env.DEV && errorInstance?.stack ? `\n\n${errorInstance.stack}` : ''}
             </pre>
           </details>
         )}

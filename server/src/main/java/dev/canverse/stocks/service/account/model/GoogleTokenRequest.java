@@ -1,3 +1,5 @@
 package dev.canverse.stocks.service.account.model;
 
-public record GoogleTokenRequest(String token) {}
+import jakarta.validation.constraints.NotBlank;
+
+public record GoogleTokenRequest(@NotBlank String code) {}

@@ -1,51 +1,50 @@
 import { useLingui } from '@lingui/react/macro';
-import { type CredentialResponse, GoogleLogin } from '@react-oauth/google';
+import { Loader } from '@mantine/core';
+import { useGoogleLogin } from '@react-oauth/google';
 
 import styles from './google-sign-in-button.module.css';
 
 interface GoogleSignInButtonProps {
-  onSuccess: (response: CredentialResponse) => void;
+  onCode: (code: string) => void;
   onError?: () => void;
   loading?: boolean;
+  disabled?: boolean;
 }
 
-/** Custom "Continue with Google" button that preserves the original
- *  GoogleLogin credential (ID-token) flow via an invisible iframe overlay. */
-export function GoogleSignInButton({ onSuccess, onError, loading }: GoogleSignInButtonProps) {
+export function GoogleSignInButton({ onCode, onError, loading, disabled }: GoogleSignInButtonProps) {
   const { t } = useLingui();
 
-  return (
-    <div className={styles.button}>
-      {/* ── Visual layer ──────────────────────────────────────── */}
-      <div className={styles.face}>
-        <span className={styles.iconWrap}>
-          <GoogleIcon />
-        </span>
-        <span className={styles.label}>{loading ? t`Signing in…` : t`Continue with Google`}</span>
-      </div>
+  const triggerGoogleLogin = useGoogleLogin({
+    flow: 'auth-code',
+    onSuccess: (response) => {
+      if (response.code) {
+        onCode(response.code);
+      } else {
+        onError?.();
+      }
+    },
+    onError: () => {
+      onError?.();
+    }
+  });
 
-      {/* ── Invisible Google iframe (click target) ────────────── */}
-      <div className={styles.overlay}>
-        <GoogleLogin
-          width="800"
-          size="large"
-          theme="filled_black"
-          onSuccess={onSuccess}
-          onError={onError}
-          useOneTap={false}
-          auto_select={false}
-          context="signin"
-          text="signin_with"
-          ux_mode="popup"
-          itp_support={false}
-          logo_alignment="left"
-        />
-      </div>
-    </div>
+  const isDisabled = Boolean(loading || disabled);
+
+  return (
+    <button
+      type="button"
+      className={styles.button}
+      disabled={isDisabled}
+      aria-busy={loading || undefined}
+      onClick={() => triggerGoogleLogin()}>
+      <span className={styles.iconWrap} aria-hidden="true">
+        {loading ? <Loader size={16} color="currentColor" /> : <GoogleIcon />}
+      </span>
+      <span className={styles.label}>{loading ? t`Signing in…` : t`Continue with Google`}</span>
+    </button>
   );
 }
 
-/** Official Google "G" multicolor icon */
 function GoogleIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">

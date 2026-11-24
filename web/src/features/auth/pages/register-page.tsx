@@ -1,7 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { ActionIcon, Button, Divider, Group, PasswordInput, Stack, TextInput } from '@mantine/core';
 import { hasLength, isEmail, useForm } from '@mantine/form';
-import type { CredentialResponse } from '@react-oauth/google';
 import { IconMoon, IconSun } from '@tabler/icons-react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useAuthentication } from '~/features/auth/authentication-context';
@@ -35,24 +34,6 @@ export function RegisterPage() {
       confirmPassword: (value, values) => (value !== values.password ? <Trans>Passwords do not match</Trans> : null)
     }
   });
-
-  const handleSuccess = async (response: CredentialResponse) => {
-    const idToken = response.credential;
-
-    if (!idToken) {
-      console.log('idToken not found');
-      return;
-    }
-
-    login.mutate(
-      { token: idToken },
-      {
-        onSuccess: () => {
-          navigate({ to: '/dashboard' });
-        }
-      }
-    );
-  };
 
   function handleSubmit(data: { firstName: string; lastName: string; email: string; password: string; confirmPassword: string }): void {
     register.mutate(
@@ -89,6 +70,20 @@ export function RegisterPage() {
       }
     );
   }
+
+  const handleGoogleCode = (code: string) => {
+    login.mutate(
+      { code },
+      {
+        onSuccess: () => {
+          navigate({ to: '/dashboard' });
+        },
+        onError: () => {
+          alerts.error(t`Could not sign in with Google. Please try again.`, t`Google sign-in failed`);
+        }
+      }
+    );
+  };
 
   return (
     <div className={styles.pageWrapper}>
@@ -205,9 +200,12 @@ export function RegisterPage() {
           </div>
 
           {/* Custom Google button */}
-          <div className={styles.googleSection}>
-            <GoogleSignInButton onSuccess={handleSuccess} loading={login.isPending} />
-          </div>
+          <GoogleSignInButton
+            onCode={handleGoogleCode}
+            onError={() => alerts.error(t`Google sign-in failed`, t`Authentication error`)}
+            loading={login.isPending}
+            disabled={register.isPending}
+          />
 
           {/* Divider */}
           <div className={styles.formDivider}>
@@ -224,7 +222,9 @@ export function RegisterPage() {
               <TextInput label={t`Email`} placeholder="me@canverse.com" withAsterisk {...form.getInputProps('email')} />
               <PasswordInput
                 visibilityToggleFocusable
-                visibilityToggleButtonProps={{ 'aria-label': t`Toggle password visibility` }}
+                visibilityToggleButtonProps={{
+                  'aria-label': t`Toggle password visibility`
+                }}
                 label={t`Password`}
                 placeholder="••••••••"
                 withAsterisk
@@ -232,7 +232,9 @@ export function RegisterPage() {
               />
               <PasswordInput
                 visibilityToggleFocusable
-                visibilityToggleButtonProps={{ 'aria-label': t`Toggle password visibility` }}
+                visibilityToggleButtonProps={{
+                  'aria-label': t`Toggle password visibility`
+                }}
                 label={t`Confirm password`}
                 placeholder="••••••••"
                 withAsterisk

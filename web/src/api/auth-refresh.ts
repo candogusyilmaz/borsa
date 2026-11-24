@@ -51,9 +51,9 @@ export async function refreshAccessToken(failedToken: string | null): Promise<st
       method: 'POST',
       credentials: 'include',
       headers: {
-        'Accept-Language': getLocalePreferences().language,
+        'Accept-Language': getLocalePreferences().language
       },
-      signal: AbortSignal.timeout(REFRESH_TIMEOUT_MS),
+      signal: AbortSignal.timeout(REFRESH_TIMEOUT_MS)
     });
 
     if (res.status === 401 || res.status === 403) {

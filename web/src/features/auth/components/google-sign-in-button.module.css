@@ -1,90 +1,56 @@
-/* GoogleSignInButton — custom Google auth trigger button     *
- * Uses an invisible-overlay technique: the real GoogleLogin  *
- * component (iframe) sits on top with opacity:0 so the token *
- * flow is unchanged; the user sees our styled button below.  */
-
 .button {
-  position: relative;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.625rem;
   width: 100%;
-  height: 48px;
+  height: 44px;
+  padding: 0 1rem;
   border-radius: 0.75rem;
   border: 1px solid var(--app-border-subtle);
   background: var(--mantine-color-default);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  color: var(--mantine-color-text);
+  font-family: var(--mantine-font-family);
   cursor: pointer;
-  overflow: hidden;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
   transition:
-    background 0.2s ease,
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.15s ease;
-  /* Ensure the iframe overlay receives all pointer events */
-  pointer-events: none;
+    background-color 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 100ms ease;
 }
 
-.button:hover {
-  border-color: rgba(99, 102, 241, 0.35);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-  transform: translateY(-1px);
+.button:hover:not(:disabled) {
+  background: var(--mantine-color-default-hover);
+  border-color: var(--app-border-strong);
 }
 
-.button:active {
-  transform: translateY(0);
+.button:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
-/* ── Visual face (non-interactive layer) ────────────────────── */
-.face {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  padding: 0 1.25rem;
+.button:focus-visible {
+  outline: none;
+  border-color: var(--app-border-strong);
+  box-shadow: 0 0 0 3px var(--app-focus-ring);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .iconWrap {
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
 
 .label {
-  font-family: var(--mantine-font-family);
-  font-size: 0.9rem;
-  font-weight: 600;
-  letter-spacing: 0.015em;
-  color: var(--mantine-color-text);
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
   white-space: nowrap;
-}
-
-/* ── Invisible Google iframe overlay ────────────────────────── *
- * Sits above our visual button. The GoogleLogin component      *
- * renders inside here. We scale its child div up so the whole  *
- * button area is a valid click-target for the iframe.          */
-.overlay {
-  position: absolute;
-  inset: 0 0 0 -2px; /* extend 2px left so no edge is missed */
-  overflow: hidden;
-  opacity: 0.001; /* near-zero = invisible but pointer events work */
-  z-index: 10;
-  pointer-events: all;
-  cursor: pointer;
-  /* Force light color-scheme so Google renders without dark flicker */
-  color-scheme: light;
-}
-
-/* Scale up the GoogleLogin root div 4× from the top-left origin.
- * Original Google button ≈ 200 × 40px → appears 800 × 160px after
- * scale, which more than covers any reasonable button width/height.
- * Clicks within our button map back to valid iframe coordinates.  */
-.overlay > :global(div) {
-  transform: scale(4);
-  transform-origin: top left;
 }
