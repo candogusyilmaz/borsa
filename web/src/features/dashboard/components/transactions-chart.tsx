@@ -19,49 +19,54 @@ export function TransactionsChart({ model, currency }: { model: DashboardModel; 
   const format = useFormat();
   const [mode, setMode] = useState<ChartMode>('cumulative');
   const { chart, trades } = model;
-  const cumulative = format.toCurrency(chart.cumulative, false, currency);
+  const cumulative = format.currency(chart.cumulative, {
+    currency,
+    currencyDisplay: currency === 'TRY' ? 'narrowSymbol' : undefined
+  });
+  const rangeLabel = chart.range === 'All' ? t`Cumulative total` : chart.range === '6M' ? t`Last 6 months` : t`Last 3 months`;
   const points = mode === 'cumulative' ? chart.cumulativePoints : chart.periodicPoints;
   const grouping = mode === 'cumulative' ? 'day' : chart.periodicGrouping;
   const periodicLabel = chart.periodicGrouping === 'month' ? t`Monthly` : chart.periodicGrouping === 'week' ? t`Weekly` : t`Periodic`;
 
   return (
-    <section className={styles.chartSurface} aria-labelledby="performance-title">
+    <section className={styles.performance} aria-labelledby="performance-title">
       <div className={styles.chartHeader}>
         <div className={styles.sectionTitle}>
-          <h2 id="performance-title">
-            <Trans>Realized performance</Trans>
-          </h2>
-          {trades.isSuccess && (
-            <output>
-              <Plural value={chart.count} one="# transaction" other="# transactions" />
-              {chart.count > 0 && (
-                <>
-                  {' · '}
-                  <Trans comment="Chart summary. The highlighted amount is the cumulative realized profit or loss in the selected range.">
-                    <strong className={styles.chartTotal} data-tone={tone(chart.cumulative)}>
-                      {cumulative}
-                    </strong>{' '}
-                    cumulative
-                  </Trans>
-                </>
-              )}
+          <div className={styles.chartTitle}>
+            <h2 id="performance-title">
+              <Trans>Realized performance</Trans>
+            </h2>
+            {trades.isSuccess && (
+              <span>
+                · <Plural value={chart.count} one="# transaction" other="# transactions" />
+              </span>
+            )}
+          </div>
+          {trades.isSuccess && chart.count > 0 && (
+            <output className={styles.chartSummary}>
+              <strong className={styles.chartTotal} data-tone={tone(chart.cumulative)}>
+                {cumulative}
+              </strong>
+              {rangeLabel}
             </output>
           )}
         </div>
         <div className={styles.chartControls}>
           <SegmentedControl<ChartRange>
             size="xs"
+            className={styles.chartRange}
             aria-label={t`Performance period`}
             value={chart.range}
             onChange={model.setChartRange}
             data={[
-              { value: '3M', label: t`3M` },
-              { value: '6M', label: t`6M` },
+              { value: '3M', label: t({ message: '3M', comment: 'Compact chart filter for the last three months' }) },
+              { value: '6M', label: t({ message: '6M', comment: 'Compact chart filter for the last six months' }) },
               { value: 'All', label: t`All` }
             ]}
           />
           <SegmentedControl<ChartMode>
             size="xs"
+            className={styles.chartMode}
             aria-label={t`Chart view`}
             value={mode}
             onChange={setMode}
@@ -72,25 +77,27 @@ export function TransactionsChart({ model, currency }: { model: DashboardModel; 
           />
         </div>
       </div>
-      {trades.isPending && <Skeleton h={224} aria-label={t`Loading performance chart`} />}
-      {trades.isError && (
-        <div className={styles.state}>
-          <p role="alert">
-            <Trans>Could not load realized performance.</Trans>
-          </p>
-          <Button variant="default" onClick={() => void trades.refetch()}>
-            <Trans>Try again</Trans>
-          </Button>
-        </div>
-      )}
-      {trades.isSuccess &&
-        (points.length > 0 ? (
-          <PerformancePlot points={points} currency={currency} mode={mode} grouping={grouping} />
-        ) : (
-          <p className={styles.chartEmpty}>
-            <Trans>No realized sales in this period.</Trans>
-          </p>
-        ))}
+      <div className={styles.chartSurface}>
+        {trades.isPending && <Skeleton className={styles.chart} aria-label={t`Loading performance chart`} />}
+        {trades.isError && (
+          <div className={styles.state}>
+            <p role="alert">
+              <Trans>Could not load realized performance.</Trans>
+            </p>
+            <Button variant="default" onClick={() => void trades.refetch()}>
+              <Trans>Try again</Trans>
+            </Button>
+          </div>
+        )}
+        {trades.isSuccess &&
+          (points.length > 0 ? (
+            <PerformancePlot points={points} currency={currency} mode={mode} grouping={grouping} />
+          ) : (
+            <p className={styles.chartEmpty}>
+              <Trans>No realized sales in this period.</Trans>
+            </p>
+          ))}
+      </div>
     </section>
   );
 }
@@ -138,7 +145,7 @@ function PerformancePlot({
           aria-describedby={helpId}
           accessibilityLayer
           data={points}
-          margin={{ top: 8, right: 6, bottom: 0, left: 0 }}>
+          margin={{ top: 8, right: 12, bottom: 0, left: 5 }}>
           {isCumulative && (
             <defs>
               {mixed && (
@@ -164,8 +171,8 @@ function PerformancePlot({
             scale={isCumulative ? 'point' : 'band'}
             interval="preserveStartEnd"
             minTickGap={36}
-            padding={{ left: 8, right: 8 }}
-            tick={{ fill: 'var(--mantine-color-dimmed)', fontSize: 12 }}
+            padding={{ left: 8, right: 14 }}
+            tick={{ fill: 'var(--mantine-color-dimmed)', fontSize: 11 }}
             tickLine={false}
             axisLine={false}
           />

@@ -1,5 +1,4 @@
-.view,
-.inspector {
+.view {
   display: grid;
   gap: 0.9rem;
   min-width: 0;
@@ -11,54 +10,115 @@
 
 .table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   table-layout: fixed;
+  font-variant-numeric: tabular-nums;
+}
+
+.instrumentColumn {
+  width: 36%;
+}
+
+.table[data-portfolios] .instrumentColumn {
+  width: 27%;
+}
+
+.portfolioColumn {
+  width: 17%;
 }
 
 .table th,
 .table td {
-  padding: 0.8rem 0.65rem;
+  padding-inline: 0.75rem;
   border-bottom: 1px solid var(--app-border-subtle);
-  font-size: 0.84375rem;
   text-align: end;
   overflow-wrap: anywhere;
 }
 
-.table th:first-child,
-.table td:first-child {
-  padding-inline-start: 0;
+.table tr > :first-child {
+  padding-inline-start: 0.5rem;
   text-align: start;
 }
 
-.table th:last-child,
-.table td:last-child {
-  padding-inline-end: 0;
+.table tr > :last-child {
+  padding-inline-end: 0.5rem;
 }
 
-.table th {
+.table[data-portfolios] tr > :nth-child(2) {
+  text-align: start;
+}
+
+.table thead th {
+  padding-block: 0.75rem;
   color: var(--mantine-color-dimmed);
+  font-size: 0.6875rem;
   font-weight: 500;
+  line-height: 1rem;
 }
 
-.table tr {
+.table tbody tr {
   position: relative;
 }
 
-.table tbody tr:hover,
-.table tbody tr:focus-within,
+.table tbody tr > * {
+  padding-block: 1rem;
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.25rem;
+}
+
+.table tbody tr > :first-child {
+  border-radius: 12px 0 0 12px;
+}
+
+.table tbody tr > :last-child {
+  border-radius: 0 12px 12px 0;
+}
+
+.table tbody tr:hover > *,
+.table tbody tr:focus-within > *,
 .mobileRow:hover {
   background: var(--mantine-color-default-hover);
 }
 
-.symbolIdentity {
+.table tbody tr[data-highlighted] > *,
+.mobileRow[data-highlighted] {
+  background: var(--app-surface-selected);
+}
+
+.symbolIdentity,
+.symbolLabel {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
   min-width: 0;
+}
+
+.symbolIdentity {
+  gap: 0.75rem;
+}
+
+.symbolIdentity > :first-child {
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  border-radius: 50%;
 }
 
 .symbolIdentity > :last-child {
   min-width: 0;
+}
+
+.symbolLabel {
+  gap: 0.4rem;
+  letter-spacing: -0.015em;
+}
+
+.dot {
+  flex: none;
+  inline-size: 0.375rem;
+  block-size: 0.375rem;
+  border-radius: 50%;
+  background: var(--allocation-color);
 }
 
 .rowTrigger {
@@ -80,22 +140,35 @@
 .table small,
 .mobileRow small {
   display: block;
-  font-size: 0.75rem;
   color: var(--mantine-color-dimmed);
+  font-size: 0.6875rem;
+  line-height: 1rem;
+}
+
+.table .instrumentName {
+  overflow: hidden;
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quantity,
+.return {
+  font-weight: 500;
 }
 
 .muted,
 .state,
-[data-stale='true'] {
+.view [data-stale='true'] {
   color: var(--mantine-color-dimmed);
 }
 
-.return[data-tone='profit'],
+.view [data-tone='profit'],
 .return[data-tone='profit'] small {
   color: var(--app-finance-profit);
 }
 
-.return[data-tone='loss'],
+.view [data-tone='loss'],
 .return[data-tone='loss'] small {
   color: var(--app-finance-loss);
 }
@@ -120,57 +193,195 @@
 .mobileRow {
   display: grid;
   width: 100%;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
-  gap: 0.45rem;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 0.625rem;
   align-items: center;
-  min-height: 3.75rem;
-  padding: 0.65rem 0;
+  min-height: 4rem;
+  padding: 0.875rem 0;
   border: 0;
   border-bottom: 1px solid var(--app-border-subtle);
   background: transparent;
   color: inherit;
   font: inherit;
-  font-size: 0.84375rem;
+  font-size: 0.875rem;
   text-align: start;
   overflow-wrap: anywhere;
   cursor: pointer;
 }
 
-.mobileRow > svg {
+.mobileRow .symbolIdentity {
+  gap: clamp(0.5rem, 2.5vw, 0.75rem);
+}
+
+.mobileRow small {
+  margin-top: 0.125rem;
+  font-size: 0.75rem;
+}
+
+.mobileValues {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mobileValues svg {
   color: var(--mantine-color-dimmed);
+  opacity: 0.65;
 }
 
 .end {
   text-align: end;
 }
 
-.inspector p {
+.marketTable .instrumentColumn {
+  width: 30%;
+}
+
+.marketTable .quantityColumn {
+  width: 16%;
+}
+
+.marketTable .priceColumn {
+  width: 14%;
+}
+
+.marketTable .valueColumn {
+  width: 19%;
+}
+
+.marketTable .returnColumn {
+  width: 21%;
+}
+
+.marketTable th,
+.marketTable td {
+  padding-inline: clamp(0.3125rem, 0.8vw, 0.75rem);
+  border-color: var(--positions-border);
+}
+
+.marketTable tbody tr > * {
+  padding-block: 0.875rem;
+}
+
+.marketTable thead th,
+.marketTable small,
+.marketTable .muted,
+.marketList small,
+.marketList .muted {
+  color: var(--positions-muted);
+}
+
+.marketTable .instrumentName,
+.marketList .symbolIdentity > span > small,
+.marketTable [data-stale='true'],
+.marketList [data-stale='true'] {
+  color: var(--positions-secondary);
+}
+
+.marketTable .symbolIdentity,
+.marketList .symbolIdentity {
+  gap: clamp(0.5rem, 1vw, 0.75rem);
+}
+
+.marketTable .symbolIdentity > :first-child,
+.marketList .symbolIdentity > :first-child {
+  border-color: var(--positions-border);
+  background: var(--positions-avatar);
+  color: var(--positions-avatar-text);
+  font-family: inherit;
+  letter-spacing: -0.02em;
+}
+
+.marketTable .portfolioName,
+.marketList .portfolioName {
+  min-inline-size: 0;
   margin: 0;
+  font-size: 0.6875rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.inspector h3 {
-  margin: 1rem 0 0.75rem;
-  font-size: 1rem;
+.marketTable .rowTrigger {
+  flex: none;
+  white-space: nowrap;
 }
 
-.metrics {
-  padding: 0;
-  margin: 0;
+.marketTable .quote,
+.marketTable .quantity,
+.marketTable .returnAmount {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.metrics > div {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  padding-block: 0.55rem;
-  border-bottom: 1px solid var(--app-border-subtle);
+.marketTable .return small {
+  white-space: nowrap;
 }
 
-.metrics dt {
-  color: var(--mantine-color-dimmed);
+.marketTable tbody tr:hover > *,
+.marketTable tbody tr:focus-within > *,
+.marketList .mobileRow:hover {
+  background: var(--positions-hover);
 }
 
-.metrics dd {
-  margin: 0;
-  text-align: end;
+.marketTable tbody tr[data-selected] > * {
+  background: var(--positions-selected);
+}
+
+.marketTable [data-tone='profit'],
+.marketTable [data-tone='profit'] small,
+.marketList [data-tone='profit'] {
+  color: var(--positions-profit);
+}
+
+.marketTable [data-tone='loss'],
+.marketTable [data-tone='loss'] small,
+.marketList [data-tone='loss'] {
+  color: var(--positions-loss);
+}
+
+.marketList {
+  border: 0;
+  margin-inline: calc(-1 * var(--member-inset-start)) calc(-1 * var(--member-inset-end));
+}
+
+.marketList .mobileRow {
+  min-height: 4rem;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 0.5rem;
+  padding-block: 0.875rem;
+  padding-inline: var(--member-inset-start) var(--member-inset-end);
+  border-color: var(--positions-border);
+  line-height: 1.25rem;
+}
+
+.marketList .symbolLabel strong {
+  flex: none;
+}
+
+.marketList .mobileValues {
+  gap: clamp(0.125rem, 1vw, 0.5rem);
+}
+
+.marketList .mobileValues svg {
+  color: var(--positions-muted);
+}
+
+.marketList .mobileRow:focus-visible {
+  outline-offset: -2px;
+}
+
+.marketEmpty {
+  padding: 4rem 1.25rem;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.marketEmpty p {
+  margin: 0.25rem 0 0;
+  color: var(--positions-muted);
+  font-size: 0.75rem;
 }

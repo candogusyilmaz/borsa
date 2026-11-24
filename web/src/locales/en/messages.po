@@ -7,19 +7,14 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
 
-#: src/features/dashboard/components/dashboard-summary.tsx:82
-msgid "— recorded sales"
-msgstr "— recorded sales"
-
+#. placeholder {0}: model.openPositionCount
+#. placeholder {0}: segments.length
 #. placeholder {0}: summary.assetCount
-#: src/features/dashboard/components/dashboard-portfolios.tsx:147
+#: src/features/dashboard/components/dashboard-portfolios.tsx:171
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:148
+#: src/features/portfolios/pages/portfolio-page.tsx:164
 msgid "{0, plural, one {# asset} other {# assets}}"
 msgstr "{0, plural, one {# asset} other {# assets}}"
-
-#. placeholder {0}: positions.length - priced.length
-#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:99
-msgid "{0, plural, one {# position has no current quote.} other {# positions have no current quote.}}"
-msgstr "{0, plural, one {# position has no current quote.} other {# positions have no current quote.}}"
 
 #. placeholder {0}: onboardingRequest.portfolio.trades.length
 #: src/features/onboarding/components/dashboard-step.tsx:163
@@ -28,65 +23,122 @@ msgstr "{0, plural, one {# position} other {# positions}}"
 
 #. placeholder {0}: chart.count
 #. placeholder {0}: point.tradeCount
-#: src/features/dashboard/components/transactions-chart.tsx:36
-#: src/features/dashboard/components/transactions-chart.tsx:256
+#: src/features/dashboard/components/transactions-chart.tsx:41
+#: src/features/dashboard/components/transactions-chart.tsx:263
 msgid "{0, plural, one {# transaction} other {# transactions}}"
 msgstr "{0, plural, one {# transaction} other {# transactions}}"
 
 #. placeholder {0}: model.filteredCount
-#: src/features/positions/components/positions-view/positions-view.tsx:139
+#: src/features/positions/components/positions-view/positions-view.tsx:199
 msgid "{0, plural, one {Show # position} other {Show # positions}}"
 msgstr "{0, plural, one {Show # position} other {Show # positions}}"
 
 #. placeholder {0}: model.filteredCount
-#: src/features/trades/components/trades-list/trades-list.tsx:61
+#: src/features/trades/components/trades-list/trades-list.tsx:70
 msgid "{0, plural, one {Show # trade} other {Show # trades}}"
 msgstr "{0, plural, one {Show # trade} other {Show # trades}}"
 
 #. placeholder {0}: format.toLocalePercentage(change, 1, { signDisplay: 'exceptZero' })
-#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:126
+#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:98
 msgid "{0} vs previous period"
 msgstr "{0} vs previous period"
 
-#: src/features/positions/components/positions-view/positions-view.tsx:237
-msgid "{average} avg."
-msgstr "{average} avg."
+#: src/features/positions/components/positions-view/positions-view.tsx:358
+msgid "{change} daily"
+msgstr "{change} daily"
+
+#: src/features/positions/components/positions-view/positions-view.tsx:358
+msgid "{change} today"
+msgstr "{change} today"
 
 #: src/features/onboarding/pages/onboarding-page.tsx:63
 msgid "{completion} complete"
 msgstr "{completion} complete"
 
-#: src/features/dashboard/components/dashboard-summary.tsx:82
-msgid "{count, plural, one {# recorded sale} other {# recorded sales}}"
-msgstr "{count, plural, one {# recorded sale} other {# recorded sales}}"
+#. Share of recorded sales that closed with a profit. The winning number is the numerator.
+#: src/features/dashboard/components/dashboard-summary.tsx:126
+msgid "{count, plural, =0 {No recorded sales} one {{winning} / # profitable sale} other {{winning} / # profitable sales}}"
+msgstr "{count, plural, =0 {No recorded sales} one {{winning} / # profitable sale} other {{winning} / # profitable sales}}"
 
-#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:111
+#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:143
+msgid "{count, plural, one {# asset} other {# assets}}"
+msgstr "{count, plural, one {# asset} other {# assets}}"
+
+#: src/features/positions/pages/positions-page.tsx:138
+msgid "{count, plural, one {# position} other {# positions}}"
+msgstr "{count, plural, one {# position} other {# positions}}"
+
+#: src/features/trades/components/trades-list/trades-list.tsx:89
+#: src/features/trades/components/trades-list/trades-list.tsx:283
+msgid "{count, plural, one {# record} other {# records}}"
+msgstr "{count, plural, one {# record} other {# records}}"
+
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:151
 msgid "{currency} allocation by quoted value"
 msgstr "{currency} allocation by quoted value"
 
-#: src/features/dashboard/pages/dashboard-page.tsx:32
-msgid "{portfolioCount, plural, one {# portfolio with recorded activity} other {# portfolios with recorded activity}}"
-msgstr "{portfolioCount, plural, one {# portfolio with recorded activity} other {# portfolios with recorded activity}}"
+#. Total cost basis of the quoted positions
+#: src/features/positions/pages/positions-page.tsx:191
+msgid "{formattedCost} cost basis"
+msgstr "{formattedCost} cost basis"
 
-#: src/features/positions/components/positions-view/positions-view.tsx:228
-msgid "{quantity} × {average} avg."
-msgstr "{quantity} × {average} avg."
+#: src/features/positions/pages/positions-page.tsx:212
+msgid "{missing, plural, one {# position without a price} other {# positions without a price}}"
+msgstr "{missing, plural, one {# position without a price} other {# positions without a price}}"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:175
+#: src/features/positions/components/positions-view/positions-view.tsx:366
+msgid "{percentage} weight"
+msgstr "{percentage} weight"
+
+#. Number of units held in the position
+#: src/features/positions/components/positions-view/position-inspector.tsx:123
+#: src/features/trades/components/trades-list/trade-details.tsx:75
+#: src/features/trades/components/trades-list/trades-list.tsx:434
+msgid "{quantity} units"
+msgstr "{quantity} units"
+
+#: src/features/positions/components/positions-view/positions-view.tsx:332
+msgid "{quantity} units · {average}"
+msgstr "{quantity} units · {average}"
+
+#: src/features/positions/pages/positions-page.tsx:186
+msgid "{quoted, plural, one {# priced position} other {# priced positions}}"
+msgstr "{quoted, plural, one {# priced position} other {# priced positions}}"
+
+#: src/features/dashboard/components/dashboard-portfolios.tsx:206
 msgid "{realizedAmount} realized"
 msgstr "{realizedAmount} realized"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:107
+#. Signed amount and percentage of unrealized return
+#: src/features/positions/pages/positions-page.tsx:158
+msgid "{signed} ({percentage})"
+msgstr "{signed} ({percentage})"
+
+#: src/features/trades/components/trades-list/trades-list.tsx:193
 msgid "{size} per page"
 msgstr "{size} per page"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:166
+#: src/features/dashboard/components/dashboard-portfolios.tsx:197
 msgid "{summaryCurrency} portion"
 msgstr "{summaryCurrency} portion"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:148
+#. The number of units and price of one trade
+#: src/features/trades/components/trades-list/trades-list.tsx:309
+msgid "{units} units × {unitPrice}"
+msgstr "{units} units × {unitPrice}"
+
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:91
+msgid "{unquoted, plural, one {# position has no current quote.} other {# positions have no current quote.}}"
+msgstr "{unquoted, plural, one {# position has no current quote.} other {# positions have no current quote.}}"
+
+#: src/features/dashboard/components/dashboard-portfolios.tsx:172
 msgid "{weightText} weight"
 msgstr "{weightText} weight"
+
+#. The unit price paid or received for the trade
+#: src/features/trades/components/trades-list/trades-list.tsx:437
+msgid "@ {unitPrice}"
+msgstr "@ {unitPrice}"
 
 #: src/features/landing/landing-page.tsx:344
 msgid "/month"
@@ -96,16 +148,13 @@ msgstr "/month"
 msgid "© 2024 Portfolio Analytics. All rights reserved."
 msgstr "© 2024 Portfolio Analytics. All rights reserved."
 
-#. Chart summary. The highlighted amount is the cumulative realized profit or loss in the selected range.
-#: src/features/dashboard/components/transactions-chart.tsx:40
-msgid "<bold>{cumulative}</bold> cumulative"
-msgstr "<bold>{cumulative}</bold> cumulative"
-
-#: src/features/dashboard/components/transactions-chart.tsx:58
+#. Compact chart filter for the last three months
+#: src/features/dashboard/components/transactions-chart.tsx:62
 msgid "3M"
 msgstr "3M"
 
-#: src/features/dashboard/components/transactions-chart.tsx:59
+#. Compact chart filter for the last six months
+#: src/features/dashboard/components/transactions-chart.tsx:63
 msgid "6M"
 msgstr "6M"
 
@@ -117,37 +166,41 @@ msgstr "A personal portfolio and analytics platform for traders and investors."
 msgid "A powerful personal finance and investment tracking platform. Record trades, analyze performance, and gain insights across multiple portfolios."
 msgstr "A powerful personal finance and investment tracking platform. Record trades, analyze performance, and gain insights across multiple portfolios."
 
-#: src/app/shell/member-shell.tsx:173
-#: src/app/shell/member-shell.tsx:204
+#: src/app/shell/account-menu.tsx:31
+#: src/app/shell/account-menu.tsx:62
 msgid "Account menu"
 msgstr "Account menu"
 
-#: src/features/portfolios/pages/portfolio-page.tsx:107
-#: src/features/positions/components/positions-view/positions-view.tsx:54
+#: src/features/portfolios/pages/portfolio-page.tsx:160
+#: src/features/positions/components/positions-view/positions-view.tsx:92
 msgid "Active positions"
 msgstr "Active positions"
+
+#: src/features/positions/components/positions-view/position-inspector.tsx:102
+msgid "Add purchase"
+msgstr "Add purchase"
 
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:164
 msgid "Add row"
 msgstr "Add row"
 
+#: src/features/positions/components/positions-view/position-inspector.tsx:105
+msgid "Add sale"
+msgstr "Add sale"
+
 #. Accessible label of the compact action to record a buy or sell
-#: src/app/shell/member-shell.tsx:116
+#: src/features/trades/components/add-trade-button/add-trade-button.tsx:34
 msgid "Add trade"
 msgstr "Add trade"
 
 #. Primary action to record a new buy or sell transaction
-#: src/app/shell/member-shell.tsx:122
+#: src/features/trades/components/add-trade-button/add-trade-button.tsx:40
 msgid "Add Trade"
 msgstr "Add Trade"
 
 #: src/features/landing/landing-page.tsx:400
 msgid "Advanced Analytics"
 msgstr "Advanced Analytics"
-
-#: src/features/trades/components/trades-list/trades-list.tsx:216
-msgid "After trade · {remainingQuantity} units · {remainingTotal}"
-msgstr "After trade · {remainingQuantity} units · {remainingTotal}"
 
 #: src/features/landing/landing-page.tsx:580
 msgid "AI Power Pack"
@@ -165,7 +218,10 @@ msgstr "AI-assisted data enrichment"
 msgid "AI-enhanced features coming soon."
 msgstr "AI-enhanced features coming soon."
 
-#: src/features/dashboard/components/transactions-chart.tsx:60
+#: src/features/dashboard/components/dashboard-portfolios.tsx:92
+#: src/features/dashboard/components/transactions-chart.tsx:64
+#: src/features/positions/pages/positions-page.tsx:234
+#: src/features/trades/components/trades-list/trades-list.tsx:103
 msgid "All"
 msgstr "All"
 
@@ -173,15 +229,15 @@ msgstr "All"
 msgid "All core features, no credit card required."
 msgstr "All core features, no credit card required."
 
-#: src/features/trades/components/trades-list/trades-list.tsx:84
+#: src/features/trades/components/trades-list/trades-list.tsx:159
 msgid "All portfolios"
 msgstr "All portfolios"
 
-#: src/features/dashboard/components/dashboard-summary.tsx:38
+#: src/features/dashboard/components/dashboard-summary.tsx:66
 msgid "all time"
 msgstr "all time"
 
-#: src/features/dashboard/components/dashboard-summary.tsx:70
+#: src/features/dashboard/components/dashboard-summary.tsx:48
 msgid "All time"
 msgstr "All time"
 
@@ -189,9 +245,14 @@ msgstr "All time"
 msgid "All trade management features"
 msgstr "All trade management features"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:94
+#: src/features/trades/components/trades-list/trades-list.tsx:168
 msgid "All types"
 msgstr "All types"
+
+#. Sort positions by ticker symbol
+#: src/features/positions/pages/positions-page.tsx:21
+msgid "Alphabetical (A–Z)"
+msgstr "Alphabetical (A–Z)"
 
 #: src/features/auth/pages/register-page.tsx:254
 msgid "Already have an account?"
@@ -215,7 +276,8 @@ msgstr "API Reference"
 
 #: src/features/portfolios/components/archive-portfolio/archive-portfolio.tsx:13
 #: src/features/portfolios/components/archive-portfolio/archive-portfolio.tsx:65
-#: src/features/portfolios/pages/portfolio-page.tsx:141
+#: src/features/portfolios/pages/portfolio-page.tsx:209
+#: src/features/portfolios/pages/portfolio-page.tsx:227
 msgid "Archive portfolio"
 msgstr "Archive portfolio"
 
@@ -227,6 +289,7 @@ msgstr "Archiving {name} hides it from active portfolios and keeps its trades."
 msgid "Archiving this portfolio hides it from active portfolios and keeps its trades."
 msgstr "Archiving this portfolio hides it from active portfolios and keeps its trades."
 
+#: src/features/positions/components/positions-view/positions-view.tsx:104
 #: src/features/trades/workflows/bulk-trade/asset-combobox.tsx:122
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:213
 #: src/features/trades/workflows/buy-transaction-form.tsx:139
@@ -234,11 +297,11 @@ msgstr "Archiving this portfolio hides it from active portfolios and keeps its t
 msgid "Asset"
 msgstr "Asset"
 
-#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:109
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:145
 msgid "Asset allocation"
 msgstr "Asset allocation"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:147
+#: src/features/dashboard/components/dashboard-portfolios.tsx:171
 msgid "Asset count unavailable"
 msgstr "Asset count unavailable"
 
@@ -250,9 +313,17 @@ msgstr "At least one portfolio is required"
 msgid "Automated risk analysis"
 msgstr "Automated risk analysis"
 
-#: src/features/positions/components/positions-view/position-inspector.tsx:62
+#: src/features/positions/components/positions-view/position-inspector.tsx:124
 msgid "Average cost"
 msgstr "Average cost"
+
+#: src/features/positions/components/positions-view/positions-view.tsx:343
+msgid "Avg. {average}"
+msgstr "Avg. {average}"
+
+#: src/features/positions/components/positions-view/position-inspector.tsx:152
+msgid "Awaiting price"
+msgstr "Awaiting price"
 
 #. Move to the previous onboarding step
 #: src/features/onboarding/components/dashboard-step.tsx:183
@@ -276,7 +347,7 @@ msgid "Bought {quantity} units of {symbol} at {price}."
 msgstr "Bought {quantity} units of {symbol} at {price}."
 
 #. Short action to open the form for entering many trades
-#: src/features/portfolios/pages/portfolio-page.tsx:164
+#: src/features/portfolios/pages/portfolio-page.tsx:250
 msgid "Bulk"
 msgstr "Bulk"
 
@@ -290,10 +361,8 @@ msgstr "Bulk trades"
 
 #. Button or filter for a purchase of an asset
 #. Button or filter for a purchase of an asset
-#. Button or filter for a purchase of an asset
-#: src/features/portfolios/pages/portfolio-page.tsx:158
-#: src/features/positions/components/positions-view/position-inspector.tsx:37
-#: src/features/trades/components/trades-list/trades-list.tsx:96
+#: src/features/portfolios/pages/portfolio-page.tsx:244
+#: src/features/trades/components/trades-list/trades-list.tsx:149
 #: src/features/trades/workflows/buy-transaction-form.tsx:181
 msgid "Buy"
 msgstr "Buy"
@@ -301,7 +370,7 @@ msgstr "Buy"
 #. Short label on a purchase transaction badge
 #. Short label on a purchase transaction badge
 #. Short label on a purchase transaction badge
-#: src/features/trades/components/trades-list/trades-list.tsx:200
+#: src/features/trades/components/trades-list/trade-details.tsx:14
 #: src/features/trades/workflows/bulk-trade/type-pill.tsx:18
 #: src/features/trades/workflows/bulk-trade/type-pill.tsx:27
 msgid "BUY"
@@ -320,10 +389,11 @@ msgstr "Buy an asset"
 msgid "Buy/Sell tracking"
 msgstr "Buy/Sell tracking"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:74
+#: src/features/dashboard/components/dashboard-portfolios.tsx:87
 msgid "By value · {rankingCurrency}"
 msgstr "By value · {rankingCurrency}"
 
+#: src/features/dashboard/pages/dashboard-page.tsx:211
 #: src/features/dashboard/workflows/create-dashboard-modal.tsx:135
 #: src/features/portfolios/components/archive-portfolio/archive-portfolio.tsx:62
 #: src/features/portfolios/workflows/create-portfolio-button.tsx:46
@@ -338,20 +408,20 @@ msgstr "Cancel"
 msgid "Cancel anytime • No hidden fees"
 msgstr "Cancel anytime • No hidden fees"
 
-#: src/app/shell/member-shell.tsx:68
+#: src/app/shell/member-shell.tsx:55
 msgid "Canverse dashboard"
 msgstr "Canverse dashboard"
 
-#: src/features/dashboard/components/transactions-chart.tsx:65
+#: src/features/dashboard/components/transactions-chart.tsx:70
 msgid "Chart view"
 msgstr "Chart view"
 
-#: src/app/shell/member-shell.tsx:125
+#: src/features/trades/components/add-trade-button/add-trade-button.tsx:43
 msgid "Choose a portfolio"
 msgstr "Choose a portfolio"
 
 #. Reset the currently applied trade filters
-#: src/features/trades/components/trades-list/trades-list.tsx:115
+#: src/features/trades/components/trades-list/trades-list.tsx:178
 msgid "Clear"
 msgstr "Clear"
 
@@ -359,8 +429,8 @@ msgstr "Clear"
 msgid "Clear all"
 msgstr "Clear all"
 
-#: src/app/shell/member-shell.tsx:190
-#: src/app/shell/member-shell.tsx:217
+#: src/app/shell/account-menu.tsx:48
+#: src/app/shell/account-menu.tsx:75
 #: src/features/account/workflows/clear-my-data.tsx:29
 msgid "Clear my data"
 msgstr "Clear my data"
@@ -369,16 +439,29 @@ msgstr "Clear my data"
 msgid "Clear My Data"
 msgstr "Clear My Data"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:89
-#: src/features/trades/components/trades-list/trades-list.tsx:102
+#: src/features/positions/pages/positions-page.tsx:275
+#: src/features/trades/components/trades-list/trades-list.tsx:131
+msgid "Clear search"
+msgstr "Clear search"
+
+#: src/features/trades/components/trades-list/trades-list.tsx:164
+#: src/features/trades/components/trades-list/trades-list.tsx:173
 #: src/features/trades/workflows/buy-transaction-form.tsx:144
 #: src/features/trades/workflows/sell-transaction-form.tsx:126
 msgid "Clear selection"
 msgstr "Clear selection"
 
-#: src/shared/components/responsive-overlay/responsive-overlay.tsx:19
+#: src/features/portfolios/pages/portfolio-page.tsx:169
+msgid "Click a row for details"
+msgstr "Click a row for details"
+
+#: src/shared/components/responsive-overlay/responsive-overlay.tsx:21
 msgid "Close"
 msgstr "Close"
+
+#: src/features/positions/components/positions-view/position-inspector.tsx:60
+msgid "Close position details"
+msgstr "Close position details"
 
 #: src/features/landing/landing-page.tsx:375
 msgid "Coming Soon"
@@ -420,11 +503,12 @@ msgstr "Continue with Google"
 msgid "Core features are completely free. AI-powered features available as optional add-ons."
 msgstr "Core features are completely free. AI-powered features available as optional add-ons."
 
-#: src/features/positions/components/positions-view/position-inspector.tsx:63
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:84
+#: src/features/positions/components/positions-view/position-inspector.tsx:136
 msgid "Cost basis"
 msgstr "Cost basis"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:158
+#: src/features/dashboard/components/dashboard-portfolios.tsx:189
 msgid "Cost basis used for missing quotes"
 msgstr "Cost basis used for missing quotes"
 
@@ -440,32 +524,36 @@ msgstr "Could not clear your data. Try again."
 msgid "Could not create the portfolio. Try again."
 msgstr "Could not create the portfolio. Try again."
 
+#: src/features/dashboard/pages/dashboard-page.tsx:206
+msgid "Could not delete the dashboard. Try again."
+msgstr "Could not delete the dashboard. Try again."
+
 #: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:28
 msgid "Could not load earnings."
 msgstr "Could not load earnings."
 
-#: src/app/shell/member-shell.tsx:133
-#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:110
+#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:118
+#: src/features/trades/components/add-trade-button/add-trade-button.tsx:51
 msgid "Could not load portfolios."
 msgstr "Could not load portfolios."
 
-#: src/features/positions/components/positions-view/positions-view.tsx:200
+#: src/features/positions/components/positions-view/positions-view.tsx:288
 msgid "Could not load positions."
 msgstr "Could not load positions."
 
-#: src/features/dashboard/components/transactions-chart.tsx:79
+#: src/features/dashboard/components/transactions-chart.tsx:85
 msgid "Could not load realized performance."
 msgstr "Could not load realized performance."
 
-#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:21
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:25
 msgid "Could not load the portfolio balance."
 msgstr "Could not load the portfolio balance."
 
-#: src/features/dashboard/pages/dashboard-page.tsx:48
+#: src/features/dashboard/pages/dashboard-page.tsx:44
 msgid "Could not load this dashboard."
 msgstr "Could not load this dashboard."
 
-#: src/features/trades/components/trades-list/trades-list.tsx:152
+#: src/features/trades/components/trades-list/trades-list.tsx:258
 msgid "Could not load trades."
 msgstr "Could not load trades."
 
@@ -489,11 +577,11 @@ msgstr "Could not switch languages. Try again."
 msgid "Could not undo the trade. Try again."
 msgstr "Could not undo the trade. Try again."
 
-#: src/features/dashboard/pages/dashboard-page.tsx:41
+#: src/features/dashboard/pages/dashboard-page.tsx:37
 msgid "Create a dashboard to track your balance and realized performance."
 msgstr "Create a dashboard to track your balance and realized performance."
 
-#: src/app/shell/member-shell.tsx:138
+#: src/features/trades/components/add-trade-button/add-trade-button.tsx:56
 msgid "Create a portfolio from the Portfolios menu to start trading."
 msgstr "Create a portfolio from the Portfolios menu to start trading."
 
@@ -514,8 +602,8 @@ msgstr "Create an aggregate view for your portfolios."
 msgid "Create dashboard"
 msgstr "Create dashboard"
 
-#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:64
-#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:91
+#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:72
+#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:99
 #: src/features/portfolios/workflows/create-portfolio-button.tsx:28
 #: src/features/portfolios/workflows/create-portfolio-button.tsx:49
 msgid "Create portfolio"
@@ -535,12 +623,12 @@ msgstr "Crypto"
 msgid "Cryptocurrencies"
 msgstr "Cryptocurrencies"
 
-#: src/features/dashboard/components/transactions-chart.tsx:69
-#: src/features/dashboard/components/transactions-chart.tsx:194
+#: src/features/dashboard/components/transactions-chart.tsx:74
+#: src/features/dashboard/components/transactions-chart.tsx:201
 msgid "Cumulative"
 msgstr "Cumulative"
 
-#: src/features/dashboard/components/transactions-chart.tsx:251
+#: src/features/dashboard/components/transactions-chart.tsx:258
 msgid "Cumulative P&L"
 msgstr "Cumulative P&L"
 
@@ -548,9 +636,13 @@ msgstr "Cumulative P&L"
 msgid "Cumulative performance charts"
 msgstr "Cumulative performance charts"
 
-#: src/features/dashboard/components/transactions-chart.tsx:128
+#: src/features/dashboard/components/transactions-chart.tsx:135
 msgid "Cumulative realized profit and loss"
 msgstr "Cumulative realized profit and loss"
+
+#: src/features/dashboard/components/transactions-chart.tsx:26
+msgid "Cumulative total"
+msgstr "Cumulative total"
 
 #: src/features/dashboard/workflows/create-dashboard-modal.tsx:112
 #: src/features/trades/workflows/buy-transaction-form.tsx:100
@@ -561,18 +653,18 @@ msgstr "Currency"
 msgid "Currency is required"
 msgstr "Currency is required"
 
-#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:134
+#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:139
 msgid "Current portfolio"
 msgstr "Current portfolio"
 
-#: src/features/dashboard/components/dashboard-summary.tsx:42
-#: src/features/positions/components/positions-view/position-inspector.tsx:71
+#: src/features/positions/components/positions-view/position-inspector.tsx:125
+msgid "Current price"
+msgstr "Current price"
+
+#: src/features/dashboard/components/dashboard-summary.tsx:82
+#: src/features/positions/components/positions-view/position-inspector.tsx:127
 msgid "Daily change"
 msgstr "Daily change"
-
-#: src/features/dashboard/components/dashboard-portfolios.tsx:78
-msgid "Daily impact"
-msgstr "Daily impact"
 
 #: src/features/landing/landing-page.tsx:402
 msgid "Daily P&L calculation"
@@ -580,9 +672,9 @@ msgstr "Daily P&L calculation"
 
 #: src/app/document-title.tsx:12
 #: src/app/shell/bottom-nav.tsx:16
-#: src/app/shell/member-shell.tsx:51
-#: src/app/shell/member-shell.tsx:73
-#: src/features/dashboard/pages/dashboard-page.tsx:78
+#: src/app/shell/member-shell.tsx:60
+#: src/features/dashboard/pages/dashboard-page.tsx:31
+#: src/features/dashboard/pages/dashboard-page.tsx:73
 msgid "Dashboard"
 msgstr "Dashboard"
 
@@ -590,7 +682,7 @@ msgstr "Dashboard"
 msgid "Dashboard {dashboardName} created successfully."
 msgstr "Dashboard {dashboardName} created successfully."
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:188
+#: src/features/dashboard/components/dashboard-portfolios.tsx:220
 msgid "Dashboard details are temporarily unavailable."
 msgstr "Dashboard details are temporarily unavailable."
 
@@ -602,7 +694,11 @@ msgstr "Dashboard Name"
 msgid "DASHBOARD NAME"
 msgstr "DASHBOARD NAME"
 
-#: src/features/dashboard/components/dashboard-summary.tsx:32
+#: src/features/dashboard/pages/dashboard-page.tsx:184
+msgid "Dashboard options"
+msgstr "Dashboard options"
+
+#: src/features/dashboard/components/dashboard-summary.tsx:52
 msgid "Dashboard summary"
 msgstr "Dashboard summary"
 
@@ -610,10 +706,12 @@ msgstr "Dashboard summary"
 msgid "Dashboard View"
 msgstr "Dashboard View"
 
-#: src/features/dashboard/pages/dashboard-page.tsx:100
+#: src/features/dashboard/pages/dashboard-page.tsx:112
+#: src/features/dashboard/pages/dashboard-page.tsx:142
 msgid "Dashboards"
 msgstr "Dashboards"
 
+#: src/features/trades/components/trades-list/trade-details.tsx:74
 #: src/features/trades/workflows/undo-trade-form.tsx:72
 msgid "Date"
 msgstr "Date"
@@ -625,6 +723,16 @@ msgstr "Deep insights into your portfolio performance with beautiful visualizati
 #: src/features/onboarding/components/portfolio-step.tsx:147
 msgid "Define Portfolio"
 msgstr "Define Portfolio"
+
+#: src/features/dashboard/pages/dashboard-page.tsx:190
+#: src/features/dashboard/pages/dashboard-page.tsx:200
+#: src/features/dashboard/pages/dashboard-page.tsx:217
+msgid "Delete dashboard"
+msgstr "Delete dashboard"
+
+#: src/features/dashboard/pages/dashboard-page.tsx:202
+msgid "Delete the “{name}” dashboard? Its portfolios and transactions will be kept."
+msgstr "Delete the “{name}” dashboard? Its portfolios and transactions will be kept."
 
 #: src/features/landing/landing-page.tsx:672
 msgid "Documentation"
@@ -639,16 +747,16 @@ msgstr "e.g. My Investments"
 msgid "e.g. Tech Fund"
 msgstr "e.g. Tech Fund"
 
-#: src/features/portfolios/pages/portfolio-page.tsx:90
-#: src/features/portfolios/pages/portfolio-page.tsx:113
+#: src/features/portfolios/pages/portfolio-page.tsx:137
+#: src/features/portfolios/pages/portfolio-page.tsx:177
 msgid "Earnings"
 msgstr "Earnings"
 
-#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:108
+#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:126
 msgid "Earnings currency"
 msgstr "Earnings currency"
 
-#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:94
+#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:112
 msgid "Earnings period"
 msgstr "Earnings period"
 
@@ -701,9 +809,9 @@ msgstr "Error while logging in"
 #. Compact badge next to an estimated financial value
 #. Compact badge next to an estimated financial value
 #. Compact badge next to an estimated financial value
-#: src/features/dashboard/components/dashboard-portfolios.tsx:102
-#: src/features/dashboard/components/dashboard-portfolios.tsx:114
-#: src/features/dashboard/components/dashboard-portfolios.tsx:160
+#: src/features/dashboard/components/dashboard-portfolios.tsx:125
+#: src/features/dashboard/components/dashboard-portfolios.tsx:136
+#: src/features/dashboard/components/dashboard-portfolios.tsx:191
 msgid "Est."
 msgstr "Est."
 
@@ -730,11 +838,16 @@ msgstr "Failed to submit trades. Please try again."
 msgid "Features"
 msgstr "Features"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:56
+#: src/features/trades/components/trades-list/trades-list.tsx:65
 msgid "Filter"
 msgstr "Filter"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:58
+#. Label for the row of position filter buttons
+#: src/features/positions/pages/positions-page.tsx:232
+msgid "Filter by portfolio"
+msgstr "Filter by portfolio"
+
+#: src/features/trades/components/trades-list/trades-list.tsx:67
 msgid "Filter trades"
 msgstr "Filter trades"
 
@@ -750,7 +863,7 @@ msgstr "First name must be between 2 and 50 characters"
 msgid "First page"
 msgstr "First page"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:112
+#: src/features/dashboard/components/dashboard-portfolios.tsx:134
 msgid "Flat daily impact estimate: no daily quote change"
 msgstr "Flat daily impact estimate: no daily quote change"
 
@@ -778,7 +891,7 @@ msgstr "Free Forever"
 msgid "Free forever. Set up in under a minute."
 msgstr "Free forever. Set up in under a minute."
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:48
+#: src/features/dashboard/components/dashboard-portfolios.tsx:60
 msgid "From portfolios with recorded trades."
 msgstr "From portfolios with recorded trades."
 
@@ -804,6 +917,26 @@ msgstr "Get Started Free"
 msgid "Give your new portfolio a name and a visual brand."
 msgstr "Give your new portfolio a name and a visual brand."
 
+#. Sort by unrealized profit amount in the position currency
+#: src/features/positions/pages/positions-page.tsx:22
+msgid "Highest profit"
+msgstr "Highest profit"
+
+#. Sort by unrealized percentage return, largest first
+#: src/features/positions/pages/positions-page.tsx:23
+msgid "Highest return (%)"
+msgstr "Highest return (%)"
+
+#. Sort by current market value, largest holding first
+#: src/features/positions/pages/positions-page.tsx:20
+msgid "Highest value"
+msgstr "Highest value"
+
+#. Positions table column for quantity held and average cost
+#: src/features/positions/components/positions-view/positions-view.tsx:113
+msgid "Holding"
+msgstr "Holding"
+
 #: src/shared/components/localized-date-time-picker.tsx:23
 msgid "Hours"
 msgstr "Hours"
@@ -828,6 +961,14 @@ msgstr "Join thousands of traders who use Canverse to track positions, review ev
 msgid "Language"
 msgstr "Language"
 
+#: src/features/dashboard/components/transactions-chart.tsx:26
+msgid "Last 3 months"
+msgstr "Last 3 months"
+
+#: src/features/dashboard/components/transactions-chart.tsx:26
+msgid "Last 6 months"
+msgstr "Last 6 months"
+
 #: src/features/auth/pages/register-page.tsx:222
 msgid "Last name"
 msgstr "Last name"
@@ -840,7 +981,7 @@ msgstr "Last name must be between 2 and 50 characters"
 msgid "Last page"
 msgstr "Last page"
 
-#: src/features/dashboard/pages/dashboard-page.tsx:153
+#: src/features/dashboard/pages/dashboard-page.tsx:230
 msgid "Last quote"
 msgstr "Last quote"
 
@@ -857,7 +998,7 @@ msgstr "Legal"
 msgid "Light/Dark mode"
 msgstr "Light/Dark mode"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:34
+#: src/features/dashboard/components/dashboard-portfolios.tsx:41
 msgid "Linked portfolios"
 msgstr "Linked portfolios"
 
@@ -865,7 +1006,7 @@ msgstr "Linked portfolios"
 msgid "Linked Portfolios"
 msgstr "Linked Portfolios"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:64
+#: src/features/dashboard/components/dashboard-portfolios.tsx:76
 msgid "Linked portfolios with recorded trades will appear here."
 msgstr "Linked portfolios with recorded trades will appear here."
 
@@ -876,11 +1017,11 @@ msgstr "Linked portfolios with recorded trades will appear here."
 msgid "Live"
 msgstr "Live"
 
-#: src/features/dashboard/pages/dashboard-page.tsx:44
+#: src/features/dashboard/pages/dashboard-page.tsx:40
 msgid "Loading dashboard"
 msgstr "Loading dashboard"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:194
+#: src/features/dashboard/components/dashboard-portfolios.tsx:226
 msgid "Loading details…"
 msgstr "Loading details…"
 
@@ -888,24 +1029,24 @@ msgstr "Loading details…"
 msgid "Loading earnings"
 msgstr "Loading earnings"
 
-#: src/features/dashboard/components/transactions-chart.tsx:75
+#: src/features/dashboard/components/transactions-chart.tsx:81
 msgid "Loading performance chart"
 msgstr "Loading performance chart"
 
-#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:16
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:20
 msgid "Loading portfolio overview"
 msgstr "Loading portfolio overview"
 
-#: src/app/shell/member-shell.tsx:128
-#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:104
+#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:112
+#: src/features/trades/components/add-trade-button/add-trade-button.tsx:46
 msgid "Loading portfolios…"
 msgstr "Loading portfolios…"
 
-#: src/features/positions/components/positions-view/positions-view.tsx:193
+#: src/features/positions/components/positions-view/positions-view.tsx:281
 msgid "Loading positions…"
 msgstr "Loading positions…"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:145
+#: src/features/trades/components/trades-list/trades-list.tsx:251
 msgid "Loading trades…"
 msgstr "Loading trades…"
 
@@ -913,15 +1054,24 @@ msgstr "Loading trades…"
 msgid "Loading…"
 msgstr "Loading…"
 
+#. Sort by unrealized percentage return, smallest first
+#: src/features/positions/pages/positions-page.tsx:24
+msgid "Lowest return (%)"
+msgstr "Lowest return (%)"
+
 #: src/app/shell/bottom-nav.tsx:13
-#: src/app/shell/member-shell.tsx:71
+#: src/app/shell/member-shell.tsx:58
 msgid "Main navigation"
 msgstr "Main navigation"
 
 #. Generic market label used when the exchange is unknown
-#: src/features/dashboard/dashboard-placeholders.ts:149
+#: src/features/dashboard/dashboard-placeholders.ts:151
 msgid "Market"
 msgstr "Market"
+
+#: src/features/positions/components/positions-view/position-inspector.tsx:157
+msgid "Market data is unavailable for this symbol."
+msgstr "Market data is unavailable for this symbol."
 
 #: src/features/landing/landing-page.tsx:257
 msgid "Metals"
@@ -935,8 +1085,8 @@ msgstr "Minutes"
 msgid "Modern, responsive interface with customizable themes and smooth interactions."
 msgstr "Modern, responsive interface with customizable themes and smooth interactions."
 
-#: src/features/dashboard/components/transactions-chart.tsx:25
-#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:103
+#: src/features/dashboard/components/transactions-chart.tsx:29
+#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:121
 msgid "Monthly"
 msgstr "Monthly"
 
@@ -969,7 +1119,7 @@ msgstr "Multiple dashboard views"
 msgid "Multiple Instruments"
 msgstr "Multiple Instruments"
 
-#: src/app/shell/member-shell.tsx:166
+#: src/app/shell/account-menu.tsx:24
 msgid "My account"
 msgstr "My account"
 
@@ -981,11 +1131,16 @@ msgstr "Name is required"
 msgid "Name must be at least 3 characters"
 msgstr "Name must be at least 3 characters"
 
-#: src/features/dashboard/pages/dashboard-page.tsx:112
-#: src/features/dashboard/pages/dashboard-page.tsx:140
+#: src/features/dashboard/pages/dashboard-page.tsx:124
+#: src/features/dashboard/pages/dashboard-page.tsx:156
 #: src/features/dashboard/workflows/create-dashboard-modal.tsx:32
 msgid "New dashboard"
 msgstr "New dashboard"
+
+#. Opens a form to create a portfolio, with no automatic link to the current dashboard
+#: src/features/dashboard/components/dashboard-portfolios.tsx:48
+msgid "New portfolio"
+msgstr "New portfolio"
 
 #: src/features/auth/pages/login-page.tsx:209
 msgid "New to Canverse?"
@@ -999,6 +1154,7 @@ msgstr "Next decade"
 msgid "Next month"
 msgstr "Next month"
 
+#: src/features/trades/components/trades-list/trades-list.tsx:227
 #: src/shared/components/localized-pagination.tsx:9
 msgid "Next page"
 msgstr "Next page"
@@ -1015,39 +1171,49 @@ msgstr "Next year"
 msgid "No matches found"
 msgstr "No matches found"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:124
+#: src/features/dashboard/components/dashboard-portfolios.tsx:147
 msgid "No open positions in recorded portfolios."
 msgstr "No open positions in recorded portfolios."
 
-#: src/features/positions/components/positions-view/positions-view.tsx:209
+#: src/features/positions/components/positions-view/positions-view.tsx:309
 msgid "No open positions."
 msgstr "No open positions."
 
-#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:116
+#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:124
 msgid "No portfolios yet."
 msgstr "No portfolios yet."
 
-#: src/features/positions/components/positions-view/positions-view.tsx:209
+#: src/features/positions/components/positions-view/positions-view.tsx:300
+msgid "No positions found"
+msgstr "No positions found"
+
+#: src/features/positions/components/positions-view/positions-view.tsx:309
 msgid "No positions match this search."
 msgstr "No positions match this search."
 
-#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:164
+#. Missing quote in the positions list
+#: src/features/positions/components/positions-view/position-inspector.tsx:125
+#: src/features/positions/components/positions-view/positions-view.tsx:397
+msgid "No price"
+msgstr "No price"
+
+#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:181
 msgid "No realized P&L in this period."
 msgstr "No realized P&L in this period."
 
-#: src/features/dashboard/components/transactions-chart.tsx:91
+#: src/features/dashboard/components/transactions-chart.tsx:97
 msgid "No realized sales in this period."
 msgstr "No realized sales in this period."
 
-#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:136
+#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:147
 msgid "no recorded P&L"
 msgstr "no recorded P&L"
 
-#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:158
+#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:174
 msgid "No recorded P&L"
 msgstr "No recorded P&L"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:161
+#: src/features/trades/components/trades-list/trades-list.tsx:267
 msgid "No trades match these filters."
 msgstr "No trades match these filters."
 
@@ -1055,7 +1221,7 @@ msgstr "No trades match these filters."
 msgid "No trades yet — add a row or import a file"
 msgstr "No trades yet — add a row or import a file"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:161
+#: src/features/trades/components/trades-list/trades-list.tsx:267
 msgid "No trades yet."
 msgstr "No trades yet."
 
@@ -1063,9 +1229,17 @@ msgstr "No trades yet."
 msgid "Nothing to see here"
 msgstr "Nothing to see here"
 
-#: src/features/dashboard/components/dashboard-summary.tsx:38
+#: src/features/positions/pages/positions-page.tsx:148
+msgid "Open positions"
+msgstr "Open positions"
+
+#: src/features/dashboard/components/dashboard-summary.tsx:60
 msgid "Open positions versus cost basis"
 msgstr "Open positions versus cost basis"
+
+#: src/features/trades/components/trades-list/trades-list.tsx:279
+msgid "Open trade history"
+msgstr "Open trade history"
 
 #: src/features/auth/pages/login-page.tsx:170
 msgid "OR LOG IN WITH YOUR EMAIL"
@@ -1075,11 +1249,7 @@ msgstr "OR LOG IN WITH YOUR EMAIL"
 msgid "OR SIGN UP WITH YOUR EMAIL"
 msgstr "OR SIGN UP WITH YOUR EMAIL"
 
-#: src/features/positions/components/positions-view/positions-view.tsx:75
-msgid "P/L"
-msgstr "P/L"
-
-#: src/features/positions/components/positions-view/positions-view.tsx:265
+#: src/features/positions/components/positions-view/positions-view.tsx:396
 msgid "P/L unavailable"
 msgstr "P/L unavailable"
 
@@ -1093,7 +1263,7 @@ msgid "Page you are trying to open does not exist. You may have mistyped the add
 msgstr "Page you are trying to open does not exist. You may have mistyped the address, or the page has been moved to another URL. If you think this is an error contact support."
 
 #. Realized profit and loss total includes only sales with reported values
-#: src/features/dashboard/components/dashboard-summary.tsx:58
+#: src/features/dashboard/components/dashboard-summary.tsx:101
 msgid "Partial"
 msgstr "Partial"
 
@@ -1110,16 +1280,16 @@ msgstr "Password must be between 8 and 20 characters"
 msgid "Passwords do not match"
 msgstr "Passwords do not match"
 
-#: src/features/dashboard/components/transactions-chart.tsx:54
+#: src/features/dashboard/components/transactions-chart.tsx:58
 msgid "Performance period"
 msgstr "Performance period"
 
-#: src/features/dashboard/components/transactions-chart.tsx:207
-#: src/features/dashboard/components/transactions-chart.tsx:245
+#: src/features/dashboard/components/transactions-chart.tsx:214
+#: src/features/dashboard/components/transactions-chart.tsx:252
 msgid "Period P&L"
 msgstr "Period P&L"
 
-#: src/features/dashboard/components/transactions-chart.tsx:25
+#: src/features/dashboard/components/transactions-chart.tsx:29
 msgid "Periodic"
 msgstr "Periodic"
 
@@ -1131,22 +1301,25 @@ msgstr "Pick a month"
 msgid "Pick a year"
 msgstr "Pick a year"
 
+#. Short label for the portfolio switcher in the mobile tab bar
 #: src/app/document-title.tsx:16
+#: src/app/shell/bottom-nav.tsx:20
 #: src/features/portfolios/pages/portfolio-page.tsx:34
-#: src/features/positions/components/positions-view/positions-view.tsx:62
-#: src/features/trades/components/trades-list/trades-list.tsx:83
+#: src/features/positions/components/positions-view/positions-view.tsx:108
+#: src/features/trades/components/trades-list/trades-list.tsx:158
 msgid "Portfolio"
 msgstr "Portfolio"
 
-#: src/features/portfolios/pages/portfolio-page.tsx:135
+#: src/features/portfolios/pages/portfolio-page.tsx:190
 msgid "Portfolio actions"
 msgstr "Portfolio actions"
 
-#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:81
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:41
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:63
 msgid "Portfolio balance"
 msgstr "Portfolio balance"
 
-#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:44
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:41
 msgid "Portfolio balance and allocation"
 msgstr "Portfolio balance and allocation"
 
@@ -1176,7 +1349,7 @@ msgstr "PORTFOLIO NAME"
 msgid "Portfolio Overview"
 msgstr "Portfolio Overview"
 
-#: src/features/portfolios/pages/portfolio-page.tsx:85
+#: src/features/portfolios/pages/portfolio-page.tsx:132
 msgid "Portfolio sections"
 msgstr "Portfolio sections"
 
@@ -1184,44 +1357,42 @@ msgstr "Portfolio sections"
 msgid "Portfolio Settings"
 msgstr "Portfolio Settings"
 
-#: src/features/portfolios/pages/portfolio-page.tsx:156
+#: src/features/portfolios/pages/portfolio-page.tsx:242
 msgid "Portfolio trade actions"
 msgstr "Portfolio trade actions"
 
-#: src/app/shell/bottom-nav.tsx:20
-#: src/app/shell/member-shell.tsx:46
-#: src/app/shell/member-shell.tsx:76
+#: src/features/positions/components/positions-view/position-inspector.tsx:140
+msgid "Portfolio weight"
+msgstr "Portfolio weight"
+
+#: src/app/shell/member-shell.tsx:42
+#: src/app/shell/member-shell.tsx:63
 #: src/features/auth/pages/login-page.tsx:122
 #: src/features/auth/pages/register-page.tsx:166
 #: src/features/dashboard/workflows/create-dashboard-modal.tsx:121
-#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:52
+#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:60
 msgid "Portfolios"
 msgstr "Portfolios"
 
-#: src/features/dashboard/pages/dashboard-page.tsx:30
-msgid "Portfolios with recorded activity"
-msgstr "Portfolios with recorded activity"
-
 #. Fallback title for the details of a holding
-#: src/features/positions/components/positions-view/position-inspector.tsx:26
+#. Short label for the list of holdings in the mobile tab bar
+#: src/app/shell/bottom-nav.tsx:24
+#: src/features/positions/components/positions-view/position-inspector.tsx:32
 msgid "Position"
 msgstr "Position"
 
-#: src/features/positions/components/positions-view/position-inspector.tsx:43
-#: src/features/positions/components/positions-view/position-inspector.tsx:45
-msgid "Position trade history"
-msgstr "Position trade history"
+#: src/features/positions/components/positions-view/position-inspector.tsx:150
+msgid "Position value"
+msgstr "Position value"
 
 #: src/app/document-title.tsx:13
-#: src/app/shell/bottom-nav.tsx:24
-#: src/app/shell/member-shell.tsx:48
-#: src/app/shell/member-shell.tsx:79
-#: src/features/portfolios/pages/portfolio-page.tsx:87
-#: src/routes/_authenticated/_member/positions/route.tsx:15
+#: src/app/shell/member-shell.tsx:66
+#: src/features/portfolios/pages/portfolio-page.tsx:134
+#: src/features/positions/pages/positions-page.tsx:336
 msgid "Positions"
 msgstr "Positions"
 
-#: src/features/positions/components/positions-view/positions-view.tsx:217
+#: src/features/positions/components/positions-view/positions-view.tsx:317
 msgid "Positions pages"
 msgstr "Positions pages"
 
@@ -1237,6 +1408,7 @@ msgstr "Previous decade"
 msgid "Previous month"
 msgstr "Previous month"
 
+#: src/features/trades/components/trades-list/trades-list.tsx:216
 #: src/shared/components/localized-pagination.tsx:8
 msgid "Previous page"
 msgstr "Previous page"
@@ -1254,9 +1426,7 @@ msgstr "Previous year"
 #. Unit price of a financial instrument
 #. Unit price of a financial instrument
 #. Unit price of a financial instrument
-#. Unit price of a financial instrument
-#: src/features/positions/components/positions-view/position-inspector.tsx:64
-#: src/features/positions/components/positions-view/positions-view.tsx:69
+#: src/features/positions/components/positions-view/positions-view.tsx:119
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:216
 #: src/features/trades/workflows/bulk-trade/virtual-row.tsx:70
 #: src/features/trades/workflows/buy-transaction-form.tsx:161
@@ -1266,11 +1436,11 @@ msgid "Price"
 msgstr "Price"
 
 #. placeholder {0}: format.toShortDateTime(new Date(position.instrument.updatedAt))
-#: src/features/positions/components/positions-view/position-inspector.tsx:89
+#: src/features/positions/components/positions-view/position-inspector.tsx:185
 msgid "Price as of {0}"
 msgstr "Price as of {0}"
 
-#: src/features/dashboard/pages/dashboard-page.tsx:153
+#: src/features/dashboard/pages/dashboard-page.tsx:230
 msgid "Prices updated"
 msgstr "Prices updated"
 
@@ -1286,15 +1456,24 @@ msgstr "Privacy Policy"
 msgid "Product"
 msgstr "Product"
 
+#. Buy action in the footer of the position drawer
+#. Trade history entry for a purchase
+#: src/features/positions/components/positions-view/position-inspector.tsx:102
+#: src/features/trades/components/trades-list/trades-list.tsx:104
+#: src/features/trades/components/trades-list/trades-list.tsx:301
+msgid "Purchase"
+msgstr "Purchase"
+
 #: src/features/onboarding/components/portfolio-step.tsx:17
 msgid "Purple"
 msgstr "Purple"
 
-#: src/features/positions/components/positions-view/positions-view.tsx:66
-msgid "Qty / Avg Cost"
-msgstr "Qty / Avg Cost"
+#: src/features/positions/components/positions-view/positions-view.tsx:115
+msgid "Qty / Cost"
+msgstr "Qty / Cost"
 
-#: src/features/positions/components/positions-view/position-inspector.tsx:61
+#: src/features/positions/components/positions-view/position-inspector.tsx:123
+#: src/features/trades/components/trades-list/trade-details.tsx:75
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:219
 #: src/features/trades/workflows/bulk-trade/virtual-row.tsx:88
 #: src/features/trades/workflows/buy-transaction-form.tsx:154
@@ -1303,11 +1482,11 @@ msgstr "Qty / Avg Cost"
 msgid "Quantity"
 msgstr "Quantity"
 
-#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:81
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:63
 msgid "Quoted balance"
 msgstr "Quoted balance"
 
-#: src/features/dashboard/pages/dashboard-page.tsx:153
+#: src/features/dashboard/pages/dashboard-page.tsx:230
 msgid "Quotes pending"
 msgstr "Quotes pending"
 
@@ -1319,24 +1498,22 @@ msgstr "Ready to <0>Transform</0> Your Trading?"
 msgid "Real-time position tracking across all markets"
 msgstr "Real-time position tracking across all markets"
 
-#: src/features/dashboard/components/dashboard-summary.tsx:51
+#: src/features/dashboard/components/dashboard-summary.tsx:94
+#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:93
+#: src/features/trades/components/trades-list/trade-details.tsx:97
 msgid "Realized P&L"
 msgstr "Realized P&L"
 
-#: src/features/dashboard/components/transactions-chart.tsx:32
+#: src/features/dashboard/components/transactions-chart.tsx:37
 msgid "Realized performance"
 msgstr "Realized performance"
 
-#: src/features/dashboard/components/transactions-chart.tsx:128
-#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:130
+#: src/features/dashboard/components/transactions-chart.tsx:135
+#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:141
 msgid "Realized profit and loss by period"
 msgstr "Realized profit and loss by period"
 
-#: src/features/dashboard/components/dashboard-summary.tsx:66
-msgid "Realized profit and loss period"
-msgstr "Realized profit and loss period"
-
-#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:32
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:36
 msgid "Record a trade to see your balance and allocation."
 msgstr "Record a trade to see your balance and allocation."
 
@@ -1361,7 +1538,7 @@ msgid "Retry Connection"
 msgstr "Retry Connection"
 
 #. Percentage investment gain or loss, not a navigation action
-#: src/features/positions/components/positions-view/position-inspector.tsx:68
+#: src/features/positions/components/positions-view/positions-view.tsx:125
 msgid "Return"
 msgstr "Return"
 
@@ -1369,28 +1546,50 @@ msgstr "Return"
 msgid "Rose"
 msgstr "Rose"
 
+#. Sell action in the footer of the position drawer
+#. Trade history entry for a sale
+#: src/features/positions/components/positions-view/position-inspector.tsx:105
+#: src/features/trades/components/trades-list/trades-list.tsx:105
+#: src/features/trades/components/trades-list/trades-list.tsx:303
+msgid "Sale"
+msgstr "Sale"
+
 #: src/shared/components/localized-date-time-picker.tsx:27
 msgid "Save time"
 msgstr "Save time"
 
 #. placeholder {0}: model.search
-#: src/features/positions/components/positions-view/positions-view.tsx:134
+#: src/features/positions/components/positions-view/positions-view.tsx:194
 msgid "Search · {0}"
 msgstr "Search · {0}"
 
-#: src/features/positions/components/positions-view/positions-view.tsx:134
-#: src/features/positions/components/positions-view/positions-view.tsx:136
-#: src/features/positions/components/positions-view/positions-view.tsx:178
-#: src/features/positions/components/positions-view/positions-view.tsx:179
+#: src/features/positions/components/positions-view/positions-view.tsx:194
+#: src/features/positions/components/positions-view/positions-view.tsx:196
+#: src/features/positions/components/positions-view/positions-view.tsx:258
+#: src/features/positions/components/positions-view/positions-view.tsx:259
+#: src/features/positions/pages/positions-page.tsx:268
+#: src/features/positions/pages/positions-page.tsx:342
 msgid "Search positions"
 msgstr "Search positions"
+
+#: src/features/positions/pages/positions-page.tsx:269
+msgid "Search stocks or portfolios…"
+msgstr "Search stocks or portfolios…"
+
+#: src/features/positions/pages/positions-page.tsx:269
+msgid "Search stocks…"
+msgstr "Search stocks…"
 
 #: src/features/trades/workflows/bulk-trade/asset-combobox.tsx:123
 msgid "Search symbol or name…"
 msgstr "Search symbol or name…"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:75
-#: src/features/trades/components/trades-list/trades-list.tsx:76
+#: src/features/trades/components/trades-list/trades-list.tsx:123
+msgid "Search symbol…"
+msgstr "Search symbol…"
+
+#: src/features/trades/components/trades-list/trades-list.tsx:122
+#: src/features/trades/components/trades-list/trades-list.tsx:123
 msgid "Search trades"
 msgstr "Search trades"
 
@@ -1413,10 +1612,8 @@ msgstr "Select currency"
 
 #. Button or filter for a sale of an asset
 #. Button or filter for a sale of an asset
-#. Button or filter for a sale of an asset
-#: src/features/portfolios/pages/portfolio-page.tsx:161
-#: src/features/positions/components/positions-view/position-inspector.tsx:40
-#: src/features/trades/components/trades-list/trades-list.tsx:97
+#: src/features/portfolios/pages/portfolio-page.tsx:247
+#: src/features/trades/components/trades-list/trades-list.tsx:150
 #: src/features/trades/workflows/sell-transaction-form.tsx:164
 msgid "Sell"
 msgstr "Sell"
@@ -1424,7 +1621,7 @@ msgstr "Sell"
 #. Short label on a sale transaction badge
 #. Short label on a sale transaction badge
 #. Short label on a sale transaction badge
-#: src/features/trades/components/trades-list/trades-list.tsx:202
+#: src/features/trades/components/trades-list/trade-details.tsx:16
 #: src/features/trades/workflows/bulk-trade/type-pill.tsx:20
 #: src/features/trades/workflows/bulk-trade/type-pill.tsx:30
 msgid "SELL"
@@ -1443,6 +1640,22 @@ msgstr "Sell an asset"
 msgid "Set up your account"
 msgstr "Set up your account"
 
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:197
+msgid "Show all assets"
+msgstr "Show all assets"
+
+#: src/features/dashboard/components/dashboard-summary.tsx:49
+msgid "Show all time"
+msgstr "Show all time"
+
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:197
+msgid "Show fewer assets"
+msgstr "Show fewer assets"
+
+#: src/features/dashboard/components/dashboard-summary.tsx:49
+msgid "Show this month"
+msgstr "Show this month"
+
 #: src/app/document-title.tsx:9
 #: src/features/auth/pages/login-page.tsx:202
 #: src/features/auth/pages/register-page.tsx:256
@@ -1453,8 +1666,8 @@ msgstr "Sign in"
 msgid "Sign in to your account to continue"
 msgstr "Sign in to your account to continue"
 
-#: src/app/shell/member-shell.tsx:193
-#: src/app/shell/member-shell.tsx:221
+#: src/app/shell/account-menu.tsx:51
+#: src/app/shell/account-menu.tsx:79
 msgid "Sign out"
 msgstr "Sign out"
 
@@ -1466,7 +1679,7 @@ msgstr "Signing in…"
 msgid "Simple <0>Pricing</0>"
 msgstr "Simple <0>Pricing</0>"
 
-#: src/app/shell/member-shell.tsx:26
+#: src/app/shell/member-shell.tsx:21
 msgid "Skip to main content"
 msgstr "Skip to main content"
 
@@ -1481,6 +1694,16 @@ msgstr "Smart portfolio suggestions"
 #: src/features/trades/workflows/sell-transaction-form.tsx:61
 msgid "Sold {quantity} units of {symbol} at {price}."
 msgstr "Sold {quantity} units of {symbol} at {price}."
+
+#. Title of the mobile positions sort options sheet
+#: src/features/positions/pages/positions-page.tsx:370
+msgid "Sort by"
+msgstr "Sort by"
+
+#: src/features/positions/pages/positions-page.tsx:301
+#: src/features/positions/pages/positions-page.tsx:355
+msgid "Sort positions"
+msgstr "Sort positions"
 
 #: src/features/landing/landing-page.tsx:503
 msgid "Start Free"
@@ -1518,21 +1741,17 @@ msgstr "Successfully cleared all of your data."
 msgid "Support for various asset types including stocks, crypto, forex, and more."
 msgstr "Support for various asset types including stocks, crypto, forex, and more."
 
-#: src/app/shell/member-shell.tsx:164
+#: src/app/shell/account-menu.tsx:22
 #: src/features/auth/pages/login-page.tsx:61
 #: src/features/auth/pages/register-page.tsx:103
 msgid "Switch to dark mode"
 msgstr "Switch to dark mode"
 
-#: src/app/shell/member-shell.tsx:164
+#: src/app/shell/account-menu.tsx:22
 #: src/features/auth/pages/login-page.tsx:61
 #: src/features/auth/pages/register-page.tsx:103
 msgid "Switch to light mode"
 msgstr "Switch to light mode"
-
-#: src/features/positions/components/positions-view/positions-view.tsx:58
-msgid "Symbol"
-msgstr "Symbol"
 
 #: src/shared/components/not-found/not-found.tsx:23
 msgid "Take me back to home page"
@@ -1551,13 +1770,18 @@ msgstr "THEME COLOR"
 msgid "This action cannot be undone. Please type <bold>{confirmText}</bold> to confirm that you want to clear all of your data."
 msgstr "This action cannot be undone. Please type <bold>{confirmText}</bold> to confirm that you want to clear all of your data."
 
-#: src/features/dashboard/components/dashboard-summary.tsx:71
+#: src/features/dashboard/components/dashboard-summary.tsx:48
 msgid "This month"
 msgstr "This month"
 
 #: src/features/trades/workflows/undo-trade-form.tsx:86
 msgid "This will permanently remove this trade record. This action cannot be reversed. Daily portfolio snapshots will not be retroactively modified."
 msgstr "This will permanently remove this trade record. This action cannot be reversed. Daily portfolio snapshots will not be retroactively modified."
+
+#. Time label for the daily change in open position value
+#: src/features/dashboard/components/dashboard-summary.tsx:47
+msgid "today"
+msgstr "today"
 
 #: src/features/landing/landing-page.tsx:208
 msgid "Today's P&L"
@@ -1574,7 +1798,7 @@ msgstr "Toggle color scheme"
 msgid "Toggle password visibility"
 msgstr "Toggle password visibility"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:70
+#: src/features/dashboard/components/dashboard-portfolios.tsx:83
 msgid "Top positions"
 msgstr "Top positions"
 
@@ -1582,7 +1806,11 @@ msgstr "Top positions"
 msgid "Total"
 msgstr "Total"
 
-#: src/features/dashboard/components/dashboard-summary.tsx:35
+#: src/features/trades/components/trades-list/trade-details.tsx:77
+msgid "Total amount"
+msgstr "Total amount"
+
+#: src/features/dashboard/components/dashboard-summary.tsx:55
 msgid "Total balance"
 msgstr "Total balance"
 
@@ -1590,11 +1818,8 @@ msgstr "Total balance"
 msgid "Total Balance"
 msgstr "Total Balance"
 
-#: src/features/positions/components/positions-view/position-inspector.tsx:65
-msgid "Total value"
-msgstr "Total value"
-
-#: src/features/positions/components/positions-view/positions-view.tsx:72
+#: src/features/positions/components/positions-view/positions-view.tsx:122
+#: src/features/positions/pages/positions-page.tsx:144
 msgid "Total Value"
 msgstr "Total Value"
 
@@ -1606,7 +1831,17 @@ msgstr "Track every trade. <0>Grow every portfolio.</0>"
 msgid "Track Your <0>Portfolio</0><1/> Like Never Before"
 msgstr "Track Your <0>Portfolio</0><1/> Like Never Before"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:73
+#: src/features/trades/components/trades-list/trade-details.tsx:43
+#: src/features/trades/components/trades-list/trade-details.tsx:48
+msgid "Trade details"
+msgstr "Trade details"
+
+#: src/features/trades/components/trades-list/trades-list.tsx:418
+msgid "Trade details for {symbol}"
+msgstr "Trade details for {symbol}"
+
+#: src/features/trades/components/trades-list/trades-list.tsx:94
+#: src/features/trades/components/trades-list/trades-list.tsx:155
 msgid "Trade filters"
 msgstr "Trade filters"
 
@@ -1623,7 +1858,8 @@ msgstr "Trade recorded."
 msgid "Trade Summary"
 msgstr "Trade Summary"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:93
+#: src/features/trades/components/trades-list/trades-list.tsx:98
+#: src/features/trades/components/trades-list/trades-list.tsx:167
 msgid "Trade type"
 msgstr "Trade type"
 
@@ -1633,10 +1869,10 @@ msgstr "Trade undone for {symbol}."
 
 #: src/app/document-title.tsx:14
 #: src/app/shell/bottom-nav.tsx:28
-#: src/app/shell/member-shell.tsx:50
-#: src/app/shell/member-shell.tsx:82
-#: src/features/portfolios/pages/portfolio-page.tsx:93
-#: src/features/portfolios/pages/portfolio-page.tsx:119
+#: src/app/shell/member-shell.tsx:42
+#: src/app/shell/member-shell.tsx:69
+#: src/features/portfolios/pages/portfolio-page.tsx:140
+#: src/features/trades/components/trades-list/trades-list.tsx:85
 #: src/routes/_authenticated/_member/trades/route.tsx:15
 msgid "Trades"
 msgstr "Trades"
@@ -1650,11 +1886,12 @@ msgstr "Trades imported from file: {count}."
 msgid "Trades logged"
 msgstr "Trades logged"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:126
+#: src/features/trades/components/trades-list/trades-list.tsx:212
+#: src/features/trades/components/trades-list/trades-list.tsx:242
 msgid "Trades pages"
 msgstr "Trades pages"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:105
+#: src/features/trades/components/trades-list/trades-list.tsx:189
 msgid "Trades per page"
 msgstr "Trades per page"
 
@@ -1662,14 +1899,18 @@ msgstr "Trades per page"
 msgid "Trades submitted: {count}."
 msgstr "Trades submitted: {count}."
 
-#: src/features/dashboard/components/transactions-chart.tsx:82
-#: src/features/dashboard/pages/dashboard-page.tsx:51
+#: src/features/dashboard/components/transactions-chart.tsx:88
+#: src/features/dashboard/pages/dashboard-page.tsx:47
 #: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:31
-#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:24
-#: src/features/positions/components/positions-view/positions-view.tsx:203
-#: src/features/trades/components/trades-list/trades-list.tsx:155
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:28
+#: src/features/positions/components/positions-view/positions-view.tsx:291
+#: src/features/trades/components/trades-list/trades-list.tsx:261
 msgid "Try again"
 msgstr "Try again"
+
+#: src/features/positions/components/positions-view/positions-view.tsx:303
+msgid "Try another search or choose a different portfolio."
+msgstr "Try another search or choose a different portfolio."
 
 #. Bulk trade column for purchase or sale
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:210
@@ -1681,19 +1922,23 @@ msgstr "Type"
 msgid "Type ARCHIVE to confirm"
 msgstr "Type ARCHIVE to confirm"
 
-#: src/features/positions/components/positions-view/positions-view.tsx:248
+#: src/features/positions/components/positions-view/positions-view.tsx:374
 msgid "Unavailable"
 msgstr "Unavailable"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:235
+#: src/features/trades/components/trades-list/trades-list.tsx:474
 msgid "Undo {symbol} purchase"
 msgstr "Undo {symbol} purchase"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:235
+#: src/features/trades/components/trades-list/trades-list.tsx:474
 msgid "Undo {symbol} sale"
 msgstr "Undo {symbol} sale"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:232
+#: src/features/trades/components/trades-list/trade-details.tsx:114
+msgid "Undo this trade"
+msgstr "Undo this trade"
+
+#: src/features/trades/components/trades-list/trades-list.tsx:470
 #: src/features/trades/workflows/undo-trade-modal.tsx:29
 msgid "Undo trade"
 msgstr "Undo trade"
@@ -1707,6 +1952,10 @@ msgstr "Undo trade for <bold>{0}</bold>"
 msgid "Unified multi-portfolio management with real-time P&L, trade history, and analytics built for serious traders."
 msgstr "Unified multi-portfolio management with real-time P&L, trade history, and analytics built for serious traders."
 
+#: src/features/trades/components/trades-list/trade-details.tsx:76
+msgid "Unit price"
+msgstr "Unit price"
+
 #: src/features/landing/landing-page.tsx:569
 msgid "Unlimited portfolios"
 msgstr "Unlimited portfolios"
@@ -1715,27 +1964,32 @@ msgstr "Unlimited portfolios"
 msgid "Unlimited portfolios & trade entries"
 msgstr "Unlimited portfolios & trade entries"
 
-#: src/features/positions/components/positions-view/position-inspector.tsx:66
+#: src/features/positions/components/positions-view/position-inspector.tsx:163
 msgid "Unrealized P/L"
 msgstr "Unrealized P/L"
 
-#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:92
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:70
 msgid "Unrealized P&L"
 msgstr "Unrealized P&L"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:170
+#: src/features/dashboard/components/dashboard-portfolios.tsx:201
 msgid "Unrealized return on open positions"
 msgstr "Unrealized return on open positions"
 
-#: src/features/dashboard/components/transactions-chart.tsx:133
+#: src/features/dashboard/components/transactions-chart.tsx:140
 msgid "Use the left and right arrow keys to browse chart values."
 msgstr "Use the left and right arrow keys to browse chart values."
+
+#. Positions table column for current market value
+#: src/features/positions/components/positions-view/positions-view.tsx:122
+msgid "Value"
+msgstr "Value"
 
 #: src/features/onboarding/components/portfolio-step.tsx:88
 msgid "Visual Identity"
 msgstr "Visual Identity"
 
-#: src/features/dashboard/components/dashboard-summary.tsx:47
+#: src/features/dashboard/components/dashboard-summary.tsx:87
 msgid "vs. previous close"
 msgstr "vs. previous close"
 
@@ -1748,24 +2002,25 @@ msgstr "Warning"
 msgid "We can't seem to reach the server. Please check your internet connection and try again."
 msgstr "We can't seem to reach the server. Please check your internet connection and try again."
 
-#: src/features/dashboard/components/transactions-chart.tsx:238
+#: src/features/dashboard/components/transactions-chart.tsx:245
 msgid "Week of {date}"
 msgstr "Week of {date}"
 
-#: src/features/dashboard/components/transactions-chart.tsx:25
-#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:102
+#: src/features/dashboard/components/transactions-chart.tsx:29
+#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:120
 msgid "Weekly"
 msgstr "Weekly"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:37
-msgid "Weight & total value"
-msgstr "Weight & total value"
+#. Position share of the market value shown in the filtered positions list
+#: src/features/positions/components/positions-view/position-inspector.tsx:139
+msgid "Weight in view"
+msgstr "Weight in view"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:52
+#: src/features/dashboard/components/dashboard-portfolios.tsx:64
 msgid "Weights cover the {currency} portion only."
 msgstr "Weights cover the {currency} portion only."
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:58
+#: src/features/dashboard/components/dashboard-portfolios.tsx:70
 msgid "Weights include estimated values."
 msgstr "Weights include estimated values."
 
@@ -1773,7 +2028,7 @@ msgstr "Weights include estimated values."
 msgid "Welcome back"
 msgstr "Welcome back"
 
-#: src/features/dashboard/components/dashboard-summary.tsx:78
+#: src/features/dashboard/components/dashboard-summary.tsx:119
 msgid "Win rate"
 msgstr "Win rate"
 

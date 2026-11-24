@@ -1,4 +1,4 @@
-import { Trans, useLingui } from '@lingui/react/macro';
+import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { Button, Menu } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconCheck, IconChevronDown, IconPlus } from '@tabler/icons-react';
@@ -6,8 +6,10 @@ import { Link, useParams } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { $api } from '~/api/openapi';
 import { ResponsiveOverlay } from '~/shared/components/responsive-overlay/responsive-overlay';
+import { useFormat } from '~/shared/format/use-format';
 import { useIsMobile } from '~/shared/hooks/use-is-mobile';
 import { CreatePortfolioModal } from '../../workflows/create-portfolio-button';
+import { getPortfolioBalances, type PortfolioBalance } from '../portfolio-overview/portfolio-balances';
 import styles from './portfolio-selector.module.css';
 
 interface PortfolioSelectorProps {
@@ -24,10 +26,15 @@ export function PortfolioSelector({ children, className, active }: PortfolioSele
   const [creating, creation] = useDisclosure();
   const portfolios = $api.useQuery('get', '/api/portfolios', {}, { enabled: opened });
   const positions = $api.useQuery('get', '/api/positions', { params: { query: {} } }, { enabled: opened });
-  const choices = portfolios.data?.map((portfolio) => ({
-    ...portfolio,
-    count: positions.data?.filter((position) => position.portfolio.id === portfolio.id && position.quantity > 0).length
-  }));
+  const choices = portfolios.data?.map((portfolio) => {
+    const openPositions = positions.data?.filter((position) => position.portfolio.id === portfolio.id && position.quantity > 0);
+    const [balance, otherCurrency] = getPortfolioBalances(openPositions ?? []);
+    return {
+      ...portfolio,
+      count: openPositions?.length,
+      balance: !otherCurrency && balance?.unquoted === 0 ? balance : undefined
+    };
+  });
 
   function createPortfolio() {
     picker.close();
@@ -46,16 +53,17 @@ export function PortfolioSelector({ children, className, active }: PortfolioSele
           data-active={active || undefined}
           aria-current={active ? 'page' : undefined}
           onClick={picker.open}
+          aria-expanded={opened}
           aria-haspopup="dialog">
           {children}
         </button>
         <ResponsiveOverlay opened={opened} onClose={picker.close} title={t`Portfolios`}>
           {status}
           <ul className={styles.choices}>
-            {choices?.map(({ id, name, count }) => (
+            {choices?.map(({ id, name, count, balance }) => (
               <li key={id}>
                 <Link to="/portfolios/$portfolioId" params={{ portfolioId: id }} className={styles.choice} onClick={picker.close}>
-                  <Choice name={name} count={count} selected={id === portfolioId} />
+                  <Choice name={name} count={count} balance={balance} selected={id === portfolioId} />
                 </Link>
               </li>
             ))}
@@ -71,7 +79,7 @@ export function PortfolioSelector({ children, className, active }: PortfolioSele
 
   return (
     <>
-      <Menu opened={opened} onChange={picker.set} position="bottom-start" width={260}>
+      <Menu opened={opened} onChange={picker.set} position="bottom-start" width={300}>
         <Menu.Target>
           <button type="button" className={className} data-active={active || undefined} aria-current={active ? 'page' : undefined}>
             {children} <IconChevronDown size={15} aria-hidden="true" />
@@ -80,9 +88,9 @@ export function PortfolioSelector({ children, className, active }: PortfolioSele
         <Menu.Dropdown>
           {status}
           <div className={styles.menuChoices}>
-            {choices?.map(({ id, name, count }) => (
+            {choices?.map(({ id, name, count, balance }) => (
               <Menu.Item key={id} renderRoot={(props) => <Link {...props} to="/portfolios/$portfolioId" params={{ portfolioId: id }} />}>
-                <Choice name={name} count={count} selected={id === portfolioId} />
+                <Choice name={name} count={count} balance={balance} selected={id === portfolioId} />
               </Menu.Item>
             ))}
           </div>
@@ -119,19 +127,33 @@ function PortfolioStatus({ pending, error, empty }: { pending: boolean; error: b
   return null;
 }
 
-function Choice({ name, count, selected }: { name: string; count?: number; selected: boolean }) {
+function Choice({ name, count, balance, selected }: { name: string; count?: number; balance?: PortfolioBalance; selected: boolean }) {
   const { t } = useLingui();
+  const format = useFormat();
+  const percentage = balance?.returnPercentage;
   return (
     <span className={styles.choiceContent}>
       <span>
-        <strong>{name}</strong>
+        <span className={styles.choiceName}>
+          <strong>{name}</strong>
+          {selected && <IconCheck size={15} aria-label={t`Current portfolio`} />}
+        </span>
         {count != null && (
           <small>
-            {count} {count === 1 ? 'position' : 'positions'}
+            <Plural value={count} one="# asset" other="# assets" />
           </small>
         )}
       </span>
-      {selected && <IconCheck size={17} aria-label={t`Current portfolio`} />}
+      {balance && (
+        <span className={styles.choiceValue}>
+          <strong>{format.toCurrency(balance.total, false, balance.currency)}</strong>
+          {percentage != null && (
+            <small data-tone={percentage > 0 ? 'profit' : percentage < 0 ? 'loss' : undefined}>
+              {format.toLocalePercentage(percentage, 2, { signDisplay: 'exceptZero' })}
+            </small>
+          )}
+        </span>
+      )}
     </span>
   );
 }

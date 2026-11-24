@@ -161,7 +161,7 @@ export function BuyTransactionForm({ stockId, portfolioId: selectedPortfolioId, 
             label={t({ comment: 'Unit price of a financial instrument', message: 'Price' })}
             inputMode="decimal"
             disabled={!form.values.stockId}
-            prefix={selectedStock ? getCurrencySymbol(form.values.currencyCode, formatLocale) : undefined}
+            prefix={form.values.currencyCode ? getCurrencySymbol(form.values.currencyCode, formatLocale) : undefined}
             hideControls
             {...separators}
             fixedDecimalScale

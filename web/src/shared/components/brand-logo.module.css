@@ -18,3 +18,16 @@
   border-radius: 8px;
   background: var(--app-surface-secondary);
 }
+
+.brand[data-variant='member'] {
+  gap: 0.625rem;
+  font-size: 0.875rem;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.brand[data-variant='member'] .mark {
+  border-color: transparent;
+  background: #4f46e5;
+  color: #fff;
+}

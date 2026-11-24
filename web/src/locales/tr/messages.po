@@ -7,19 +7,14 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: tr\n"
 
-#: src/features/dashboard/components/dashboard-summary.tsx:82
-msgid "— recorded sales"
-msgstr "Kayıtlı satış sayısı bilinmiyor"
-
+#. placeholder {0}: model.openPositionCount
+#. placeholder {0}: segments.length
 #. placeholder {0}: summary.assetCount
-#: src/features/dashboard/components/dashboard-portfolios.tsx:147
+#: src/features/dashboard/components/dashboard-portfolios.tsx:171
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:148
+#: src/features/portfolios/pages/portfolio-page.tsx:164
 msgid "{0, plural, one {# asset} other {# assets}}"
 msgstr "{0, plural, other {# varlık}}"
-
-#. placeholder {0}: positions.length - priced.length
-#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:99
-msgid "{0, plural, one {# position has no current quote.} other {# positions have no current quote.}}"
-msgstr "{0, plural, other {# pozisyon için güncel fiyat yok.}}"
 
 #. placeholder {0}: onboardingRequest.portfolio.trades.length
 #: src/features/onboarding/components/dashboard-step.tsx:163
@@ -28,65 +23,122 @@ msgstr "{0, plural, other {# pozisyon}}"
 
 #. placeholder {0}: chart.count
 #. placeholder {0}: point.tradeCount
-#: src/features/dashboard/components/transactions-chart.tsx:36
-#: src/features/dashboard/components/transactions-chart.tsx:256
+#: src/features/dashboard/components/transactions-chart.tsx:41
+#: src/features/dashboard/components/transactions-chart.tsx:263
 msgid "{0, plural, one {# transaction} other {# transactions}}"
 msgstr "{0, plural, other {# işlem}}"
 
 #. placeholder {0}: model.filteredCount
-#: src/features/positions/components/positions-view/positions-view.tsx:139
+#: src/features/positions/components/positions-view/positions-view.tsx:199
 msgid "{0, plural, one {Show # position} other {Show # positions}}"
 msgstr "{0, plural, other {# pozisyon göster}}"
 
 #. placeholder {0}: model.filteredCount
-#: src/features/trades/components/trades-list/trades-list.tsx:61
+#: src/features/trades/components/trades-list/trades-list.tsx:70
 msgid "{0, plural, one {Show # trade} other {Show # trades}}"
 msgstr "{0, plural, other {# işlem göster}}"
 
 #. placeholder {0}: format.toLocalePercentage(change, 1, { signDisplay: 'exceptZero' })
-#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:126
+#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:98
 msgid "{0} vs previous period"
 msgstr "önceki döneme göre {0}"
 
-#: src/features/positions/components/positions-view/positions-view.tsx:237
-msgid "{average} avg."
-msgstr "ort. {average}"
+#: src/features/positions/components/positions-view/positions-view.tsx:358
+msgid "{change} daily"
+msgstr "{change} günlük"
+
+#: src/features/positions/components/positions-view/positions-view.tsx:358
+msgid "{change} today"
+msgstr "{change} bugün"
 
 #: src/features/onboarding/pages/onboarding-page.tsx:63
 msgid "{completion} complete"
 msgstr "{completion} tamamlandı"
 
-#: src/features/dashboard/components/dashboard-summary.tsx:82
-msgid "{count, plural, one {# recorded sale} other {# recorded sales}}"
-msgstr "{count, plural, other {# kayıtlı satış}}"
+#. Share of recorded sales that closed with a profit. The winning number is the numerator.
+#: src/features/dashboard/components/dashboard-summary.tsx:126
+msgid "{count, plural, =0 {No recorded sales} one {{winning} / # profitable sale} other {{winning} / # profitable sales}}"
+msgstr "{count, plural, =0 {Kayıtlı satış yok} other {{winning} / # kârlı satış}}"
 
-#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:111
+#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:143
+msgid "{count, plural, one {# asset} other {# assets}}"
+msgstr "{count, plural, one {# varlık} other {# varlık}}"
+
+#: src/features/positions/pages/positions-page.tsx:138
+msgid "{count, plural, one {# position} other {# positions}}"
+msgstr "{count, plural, one {# pozisyon} other {# pozisyon}}"
+
+#: src/features/trades/components/trades-list/trades-list.tsx:89
+#: src/features/trades/components/trades-list/trades-list.tsx:283
+msgid "{count, plural, one {# record} other {# records}}"
+msgstr "{count, plural, one {# kayıt} other {# kayıt}}"
+
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:151
 msgid "{currency} allocation by quoted value"
 msgstr "Fiyatlanan varlıkların {currency} cinsinden dağılımı"
 
-#: src/features/dashboard/pages/dashboard-page.tsx:32
-msgid "{portfolioCount, plural, one {# portfolio with recorded activity} other {# portfolios with recorded activity}}"
-msgstr "{portfolioCount, plural, other {İşlem kaydı olan # portföy}}"
+#. Total cost basis of the quoted positions
+#: src/features/positions/pages/positions-page.tsx:191
+msgid "{formattedCost} cost basis"
+msgstr "Maliyet {formattedCost}"
 
-#: src/features/positions/components/positions-view/positions-view.tsx:228
-msgid "{quantity} × {average} avg."
-msgstr "{quantity} × ort. {average}"
+#: src/features/positions/pages/positions-page.tsx:212
+msgid "{missing, plural, one {# position without a price} other {# positions without a price}}"
+msgstr "{missing, plural, one {# pozisyonun fiyatı yok} other {# pozisyonun fiyatı yok}}"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:175
+#: src/features/positions/components/positions-view/positions-view.tsx:366
+msgid "{percentage} weight"
+msgstr "{percentage} ağırlık"
+
+#. Number of units held in the position
+#: src/features/positions/components/positions-view/position-inspector.tsx:123
+#: src/features/trades/components/trades-list/trade-details.tsx:75
+#: src/features/trades/components/trades-list/trades-list.tsx:434
+msgid "{quantity} units"
+msgstr "{quantity} lot"
+
+#: src/features/positions/components/positions-view/positions-view.tsx:332
+msgid "{quantity} units · {average}"
+msgstr "{quantity} lot · {average}"
+
+#: src/features/positions/pages/positions-page.tsx:186
+msgid "{quoted, plural, one {# priced position} other {# priced positions}}"
+msgstr "{quoted, plural, one {# fiyatı olan pozisyon} other {# fiyatı olan pozisyon}}"
+
+#: src/features/dashboard/components/dashboard-portfolios.tsx:206
 msgid "{realizedAmount} realized"
 msgstr "Gerçekleşen {realizedAmount}"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:107
+#. Signed amount and percentage of unrealized return
+#: src/features/positions/pages/positions-page.tsx:158
+msgid "{signed} ({percentage})"
+msgstr "{signed} ({percentage})"
+
+#: src/features/trades/components/trades-list/trades-list.tsx:193
 msgid "{size} per page"
 msgstr "Sayfa başına {size}"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:166
+#: src/features/dashboard/components/dashboard-portfolios.tsx:197
 msgid "{summaryCurrency} portion"
 msgstr "{summaryCurrency} cinsinden kısım"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:148
+#. The number of units and price of one trade
+#: src/features/trades/components/trades-list/trades-list.tsx:309
+msgid "{units} units × {unitPrice}"
+msgstr "{units} lot × {unitPrice}"
+
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:91
+msgid "{unquoted, plural, one {# position has no current quote.} other {# positions have no current quote.}}"
+msgstr "{unquoted, plural, one {# pozisyon için güncel fiyat yok.} other {# pozisyon için güncel fiyat yok.}}"
+
+#: src/features/dashboard/components/dashboard-portfolios.tsx:172
 msgid "{weightText} weight"
 msgstr "{weightText} ağırlık"
+
+#. The unit price paid or received for the trade
+#: src/features/trades/components/trades-list/trades-list.tsx:437
+msgid "@ {unitPrice}"
+msgstr "@ {unitPrice}"
 
 #: src/features/landing/landing-page.tsx:344
 msgid "/month"
@@ -96,18 +148,15 @@ msgstr "/ay"
 msgid "© 2024 Portfolio Analytics. All rights reserved."
 msgstr "© 2024 Portfolio Analytics. Tüm hakları saklıdır."
 
-#. Chart summary. The highlighted amount is the cumulative realized profit or loss in the selected range.
-#: src/features/dashboard/components/transactions-chart.tsx:40
-msgid "<bold>{cumulative}</bold> cumulative"
-msgstr "kümülatif <bold>{cumulative}</bold>"
-
-#: src/features/dashboard/components/transactions-chart.tsx:58
+#. Compact chart filter for the last three months
+#: src/features/dashboard/components/transactions-chart.tsx:62
 msgid "3M"
-msgstr "3 Ay"
+msgstr "3A"
 
-#: src/features/dashboard/components/transactions-chart.tsx:59
+#. Compact chart filter for the last six months
+#: src/features/dashboard/components/transactions-chart.tsx:63
 msgid "6M"
-msgstr "6 Ay"
+msgstr "6A"
 
 #: src/features/landing/landing-page.tsx:660
 msgid "A personal portfolio and analytics platform for traders and investors."
@@ -117,37 +166,41 @@ msgstr "Yatırımcılar için kişisel portföy yönetimi ve analiz platformu."
 msgid "A powerful personal finance and investment tracking platform. Record trades, analyze performance, and gain insights across multiple portfolios."
 msgstr "Yatırımlarınızı tek bir yerden izleyin. İşlemleri kaydedin, performansınızı analiz edin ve portföylerinizin durumunu görün."
 
-#: src/app/shell/member-shell.tsx:173
-#: src/app/shell/member-shell.tsx:204
+#: src/app/shell/account-menu.tsx:31
+#: src/app/shell/account-menu.tsx:62
 msgid "Account menu"
 msgstr "Hesap menüsü"
 
-#: src/features/portfolios/pages/portfolio-page.tsx:107
-#: src/features/positions/components/positions-view/positions-view.tsx:54
+#: src/features/portfolios/pages/portfolio-page.tsx:160
+#: src/features/positions/components/positions-view/positions-view.tsx:92
 msgid "Active positions"
 msgstr "Açık pozisyonlar"
+
+#: src/features/positions/components/positions-view/position-inspector.tsx:102
+msgid "Add purchase"
+msgstr "Alım Ekle"
 
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:164
 msgid "Add row"
 msgstr "Satır ekle"
 
+#: src/features/positions/components/positions-view/position-inspector.tsx:105
+msgid "Add sale"
+msgstr "Satış Ekle"
+
 #. Accessible label of the compact action to record a buy or sell
-#: src/app/shell/member-shell.tsx:116
+#: src/features/trades/components/add-trade-button/add-trade-button.tsx:34
 msgid "Add trade"
 msgstr "İşlem Ekle"
 
 #. Primary action to record a new buy or sell transaction
-#: src/app/shell/member-shell.tsx:122
+#: src/features/trades/components/add-trade-button/add-trade-button.tsx:40
 msgid "Add Trade"
 msgstr "İşlem Ekle"
 
 #: src/features/landing/landing-page.tsx:400
 msgid "Advanced Analytics"
 msgstr "Gelişmiş Analizler"
-
-#: src/features/trades/components/trades-list/trades-list.tsx:216
-msgid "After trade · {remainingQuantity} units · {remainingTotal}"
-msgstr "İşlem sonrası · {remainingQuantity} adet · {remainingTotal}"
 
 #: src/features/landing/landing-page.tsx:580
 msgid "AI Power Pack"
@@ -165,7 +218,10 @@ msgstr "Yapay zekâ ile veri zenginleştirme"
 msgid "AI-enhanced features coming soon."
 msgstr "Yapay zekâ destekli özellikler yakında geliyor."
 
-#: src/features/dashboard/components/transactions-chart.tsx:60
+#: src/features/dashboard/components/dashboard-portfolios.tsx:92
+#: src/features/dashboard/components/transactions-chart.tsx:64
+#: src/features/positions/pages/positions-page.tsx:234
+#: src/features/trades/components/trades-list/trades-list.tsx:103
 msgid "All"
 msgstr "Tümü"
 
@@ -173,15 +229,15 @@ msgstr "Tümü"
 msgid "All core features, no credit card required."
 msgstr "Tüm temel özellikler dahil, kredi kartı gerekmez."
 
-#: src/features/trades/components/trades-list/trades-list.tsx:84
+#: src/features/trades/components/trades-list/trades-list.tsx:159
 msgid "All portfolios"
 msgstr "Tüm portföyler"
 
-#: src/features/dashboard/components/dashboard-summary.tsx:38
+#: src/features/dashboard/components/dashboard-summary.tsx:66
 msgid "all time"
 msgstr "tüm zamanlar"
 
-#: src/features/dashboard/components/dashboard-summary.tsx:70
+#: src/features/dashboard/components/dashboard-summary.tsx:48
 msgid "All time"
 msgstr "Tüm zamanlar"
 
@@ -189,9 +245,14 @@ msgstr "Tüm zamanlar"
 msgid "All trade management features"
 msgstr "Tüm işlem yönetimi özellikleri"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:94
+#: src/features/trades/components/trades-list/trades-list.tsx:168
 msgid "All types"
 msgstr "Tüm türler"
+
+#. Sort positions by ticker symbol
+#: src/features/positions/pages/positions-page.tsx:21
+msgid "Alphabetical (A–Z)"
+msgstr "Alfabetik (A–Z)"
 
 #: src/features/auth/pages/register-page.tsx:254
 msgid "Already have an account?"
@@ -215,7 +276,8 @@ msgstr "API Referansı"
 
 #: src/features/portfolios/components/archive-portfolio/archive-portfolio.tsx:13
 #: src/features/portfolios/components/archive-portfolio/archive-portfolio.tsx:65
-#: src/features/portfolios/pages/portfolio-page.tsx:141
+#: src/features/portfolios/pages/portfolio-page.tsx:209
+#: src/features/portfolios/pages/portfolio-page.tsx:227
 msgid "Archive portfolio"
 msgstr "Portföyü arşivle"
 
@@ -227,6 +289,7 @@ msgstr "{name} arşivlendiğinde aktif portföyler listesinden kalkar. İşlem g
 msgid "Archiving this portfolio hides it from active portfolios and keeps its trades."
 msgstr "Arşivlenen portföy aktif portföyler listesinden kalkar. İşlem geçmişi korunur."
 
+#: src/features/positions/components/positions-view/positions-view.tsx:104
 #: src/features/trades/workflows/bulk-trade/asset-combobox.tsx:122
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:213
 #: src/features/trades/workflows/buy-transaction-form.tsx:139
@@ -234,11 +297,11 @@ msgstr "Arşivlenen portföy aktif portföyler listesinden kalkar. İşlem geçm
 msgid "Asset"
 msgstr "Varlık"
 
-#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:109
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:145
 msgid "Asset allocation"
 msgstr "Varlık dağılımı"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:147
+#: src/features/dashboard/components/dashboard-portfolios.tsx:171
 msgid "Asset count unavailable"
 msgstr "Varlık sayısı bilinmiyor"
 
@@ -250,9 +313,17 @@ msgstr "En az bir portföy seçin"
 msgid "Automated risk analysis"
 msgstr "Otomatik risk analizi"
 
-#: src/features/positions/components/positions-view/position-inspector.tsx:62
+#: src/features/positions/components/positions-view/position-inspector.tsx:124
 msgid "Average cost"
 msgstr "Ort. Maliyet"
+
+#: src/features/positions/components/positions-view/positions-view.tsx:343
+msgid "Avg. {average}"
+msgstr "Ort. {average}"
+
+#: src/features/positions/components/positions-view/position-inspector.tsx:152
+msgid "Awaiting price"
+msgstr "Fiyat bekleniyor"
 
 #. Move to the previous onboarding step
 #: src/features/onboarding/components/dashboard-step.tsx:183
@@ -276,7 +347,7 @@ msgid "Bought {quantity} units of {symbol} at {price}."
 msgstr "{quantity} adet {symbol}, {price} fiyattan alındı."
 
 #. Short action to open the form for entering many trades
-#: src/features/portfolios/pages/portfolio-page.tsx:164
+#: src/features/portfolios/pages/portfolio-page.tsx:250
 msgid "Bulk"
 msgstr "Toplu işlem"
 
@@ -290,10 +361,8 @@ msgstr "Toplu işlemler"
 
 #. Button or filter for a purchase of an asset
 #. Button or filter for a purchase of an asset
-#. Button or filter for a purchase of an asset
-#: src/features/portfolios/pages/portfolio-page.tsx:158
-#: src/features/positions/components/positions-view/position-inspector.tsx:37
-#: src/features/trades/components/trades-list/trades-list.tsx:96
+#: src/features/portfolios/pages/portfolio-page.tsx:244
+#: src/features/trades/components/trades-list/trades-list.tsx:149
 #: src/features/trades/workflows/buy-transaction-form.tsx:181
 msgid "Buy"
 msgstr "Al"
@@ -301,11 +370,11 @@ msgstr "Al"
 #. Short label on a purchase transaction badge
 #. Short label on a purchase transaction badge
 #. Short label on a purchase transaction badge
-#: src/features/trades/components/trades-list/trades-list.tsx:200
+#: src/features/trades/components/trades-list/trade-details.tsx:14
 #: src/features/trades/workflows/bulk-trade/type-pill.tsx:18
 #: src/features/trades/workflows/bulk-trade/type-pill.tsx:27
 msgid "BUY"
-msgstr "ALIŞ"
+msgstr "ALIM"
 
 #. placeholder {0}: selectedStock.symbol
 #: src/features/trades/workflows/buy-transaction-form.tsx:181
@@ -320,10 +389,11 @@ msgstr "Varlık al"
 msgid "Buy/Sell tracking"
 msgstr "Alış ve satış takibi"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:74
+#: src/features/dashboard/components/dashboard-portfolios.tsx:87
 msgid "By value · {rankingCurrency}"
 msgstr "Değere göre · {rankingCurrency}"
 
+#: src/features/dashboard/pages/dashboard-page.tsx:211
 #: src/features/dashboard/workflows/create-dashboard-modal.tsx:135
 #: src/features/portfolios/components/archive-portfolio/archive-portfolio.tsx:62
 #: src/features/portfolios/workflows/create-portfolio-button.tsx:46
@@ -338,20 +408,20 @@ msgstr "İptal"
 msgid "Cancel anytime • No hidden fees"
 msgstr "İstediğiniz zaman iptal edin · Gizli ücret yok"
 
-#: src/app/shell/member-shell.tsx:68
+#: src/app/shell/member-shell.tsx:55
 msgid "Canverse dashboard"
-msgstr "Canverse gösterge paneli"
+msgstr "Canverse özet sayfası"
 
-#: src/features/dashboard/components/transactions-chart.tsx:65
+#: src/features/dashboard/components/transactions-chart.tsx:70
 msgid "Chart view"
 msgstr "Grafik görünümü"
 
-#: src/app/shell/member-shell.tsx:125
+#: src/features/trades/components/add-trade-button/add-trade-button.tsx:43
 msgid "Choose a portfolio"
 msgstr "Portföy seçin"
 
 #. Reset the currently applied trade filters
-#: src/features/trades/components/trades-list/trades-list.tsx:115
+#: src/features/trades/components/trades-list/trades-list.tsx:178
 msgid "Clear"
 msgstr "Temizle"
 
@@ -359,8 +429,8 @@ msgstr "Temizle"
 msgid "Clear all"
 msgstr "Tümünü temizle"
 
-#: src/app/shell/member-shell.tsx:190
-#: src/app/shell/member-shell.tsx:217
+#: src/app/shell/account-menu.tsx:48
+#: src/app/shell/account-menu.tsx:75
 #: src/features/account/workflows/clear-my-data.tsx:29
 msgid "Clear my data"
 msgstr "Verilerimi sil"
@@ -369,16 +439,29 @@ msgstr "Verilerimi sil"
 msgid "Clear My Data"
 msgstr "Verilerimi sil"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:89
-#: src/features/trades/components/trades-list/trades-list.tsx:102
+#: src/features/positions/pages/positions-page.tsx:275
+#: src/features/trades/components/trades-list/trades-list.tsx:131
+msgid "Clear search"
+msgstr "Aramayı temizle"
+
+#: src/features/trades/components/trades-list/trades-list.tsx:164
+#: src/features/trades/components/trades-list/trades-list.tsx:173
 #: src/features/trades/workflows/buy-transaction-form.tsx:144
 #: src/features/trades/workflows/sell-transaction-form.tsx:126
 msgid "Clear selection"
 msgstr "Seçimi temizle"
 
-#: src/shared/components/responsive-overlay/responsive-overlay.tsx:19
+#: src/features/portfolios/pages/portfolio-page.tsx:169
+msgid "Click a row for details"
+msgstr "Detay için satıra tıklayın"
+
+#: src/shared/components/responsive-overlay/responsive-overlay.tsx:21
 msgid "Close"
 msgstr "Kapat"
+
+#: src/features/positions/components/positions-view/position-inspector.tsx:60
+msgid "Close position details"
+msgstr "Pozisyon detayını kapat"
 
 #: src/features/landing/landing-page.tsx:375
 msgid "Coming Soon"
@@ -420,11 +503,12 @@ msgstr "Google ile devam et"
 msgid "Core features are completely free. AI-powered features available as optional add-ons."
 msgstr "Temel özellikler tamamen ücretsiz. Yapay zekâ araçları isteğe bağlı ek paket olarak sunulur."
 
-#: src/features/positions/components/positions-view/position-inspector.tsx:63
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:84
+#: src/features/positions/components/positions-view/position-inspector.tsx:136
 msgid "Cost basis"
 msgstr "Toplam maliyet"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:158
+#: src/features/dashboard/components/dashboard-portfolios.tsx:189
 msgid "Cost basis used for missing quotes"
 msgstr "Güncel fiyatı bulunmayan varlıklarda maliyet esas alındı"
 
@@ -440,32 +524,36 @@ msgstr "Verileriniz silinemedi. Tekrar deneyin."
 msgid "Could not create the portfolio. Try again."
 msgstr "Portföy oluşturulamadı. Tekrar deneyin."
 
+#: src/features/dashboard/pages/dashboard-page.tsx:206
+msgid "Could not delete the dashboard. Try again."
+msgstr "Özet silinemedi. Tekrar deneyin."
+
 #: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:28
 msgid "Could not load earnings."
 msgstr "Kazançlar yüklenemedi."
 
-#: src/app/shell/member-shell.tsx:133
-#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:110
+#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:118
+#: src/features/trades/components/add-trade-button/add-trade-button.tsx:51
 msgid "Could not load portfolios."
 msgstr "Portföyler yüklenemedi."
 
-#: src/features/positions/components/positions-view/positions-view.tsx:200
+#: src/features/positions/components/positions-view/positions-view.tsx:288
 msgid "Could not load positions."
 msgstr "Pozisyonlar yüklenemedi."
 
-#: src/features/dashboard/components/transactions-chart.tsx:79
+#: src/features/dashboard/components/transactions-chart.tsx:85
 msgid "Could not load realized performance."
 msgstr "Gerçekleşen performans yüklenemedi."
 
-#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:21
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:25
 msgid "Could not load the portfolio balance."
 msgstr "Portföy bakiyesi yüklenemedi."
 
-#: src/features/dashboard/pages/dashboard-page.tsx:48
+#: src/features/dashboard/pages/dashboard-page.tsx:44
 msgid "Could not load this dashboard."
-msgstr "Bu gösterge paneli yüklenemedi."
+msgstr "Bu özet yüklenemedi."
 
-#: src/features/trades/components/trades-list/trades-list.tsx:152
+#: src/features/trades/components/trades-list/trades-list.tsx:258
 msgid "Could not load trades."
 msgstr "İşlemler yüklenemedi."
 
@@ -489,11 +577,11 @@ msgstr "Dil değiştirilemedi. Tekrar deneyin."
 msgid "Could not undo the trade. Try again."
 msgstr "İşlem geri alınamadı. Tekrar deneyin."
 
-#: src/features/dashboard/pages/dashboard-page.tsx:41
+#: src/features/dashboard/pages/dashboard-page.tsx:37
 msgid "Create a dashboard to track your balance and realized performance."
-msgstr "Bakiyenizi ve gerçekleşen performansınızı takip etmek için bir gösterge paneli oluşturun."
+msgstr "Bakiyenizi ve gerçekleşen performansınızı takip etmek için bir özet oluşturun."
 
-#: src/app/shell/member-shell.tsx:138
+#: src/features/trades/components/add-trade-button/add-trade-button.tsx:56
 msgid "Create a portfolio from the Portfolios menu to start trading."
 msgstr "İşlem kaydetmek için Portföyler menüsünden bir portföy oluşturun."
 
@@ -512,10 +600,10 @@ msgstr "Portföylerinizi tek bir panelde bir araya getirin."
 
 #: src/features/dashboard/workflows/create-dashboard-modal.tsx:139
 msgid "Create dashboard"
-msgstr "Gösterge paneli oluştur"
+msgstr "Özet oluştur"
 
-#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:64
-#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:91
+#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:72
+#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:99
 #: src/features/portfolios/workflows/create-portfolio-button.tsx:28
 #: src/features/portfolios/workflows/create-portfolio-button.tsx:49
 msgid "Create portfolio"
@@ -535,12 +623,12 @@ msgstr "Kripto"
 msgid "Cryptocurrencies"
 msgstr "Kripto paralar"
 
-#: src/features/dashboard/components/transactions-chart.tsx:69
-#: src/features/dashboard/components/transactions-chart.tsx:194
+#: src/features/dashboard/components/transactions-chart.tsx:74
+#: src/features/dashboard/components/transactions-chart.tsx:201
 msgid "Cumulative"
 msgstr "Kümülatif"
 
-#: src/features/dashboard/components/transactions-chart.tsx:251
+#: src/features/dashboard/components/transactions-chart.tsx:258
 msgid "Cumulative P&L"
 msgstr "Kümülatif K/Z"
 
@@ -548,9 +636,13 @@ msgstr "Kümülatif K/Z"
 msgid "Cumulative performance charts"
 msgstr "Birikimli performans grafikleri"
 
-#: src/features/dashboard/components/transactions-chart.tsx:128
+#: src/features/dashboard/components/transactions-chart.tsx:135
 msgid "Cumulative realized profit and loss"
 msgstr "Kümülatif gerçekleşen kâr ve zarar"
+
+#: src/features/dashboard/components/transactions-chart.tsx:26
+msgid "Cumulative total"
+msgstr "kümülatif toplam"
 
 #: src/features/dashboard/workflows/create-dashboard-modal.tsx:112
 #: src/features/trades/workflows/buy-transaction-form.tsx:100
@@ -561,18 +653,18 @@ msgstr "Para birimi"
 msgid "Currency is required"
 msgstr "Para birimi seçin"
 
-#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:134
+#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:139
 msgid "Current portfolio"
 msgstr "Geçerli portföy"
 
-#: src/features/dashboard/components/dashboard-summary.tsx:42
-#: src/features/positions/components/positions-view/position-inspector.tsx:71
+#: src/features/positions/components/positions-view/position-inspector.tsx:125
+msgid "Current price"
+msgstr "Güncel Fiyat"
+
+#: src/features/dashboard/components/dashboard-summary.tsx:82
+#: src/features/positions/components/positions-view/position-inspector.tsx:127
 msgid "Daily change"
 msgstr "Günlük Değişim"
-
-#: src/features/dashboard/components/dashboard-portfolios.tsx:78
-msgid "Daily impact"
-msgstr "Günlük etki"
 
 #: src/features/landing/landing-page.tsx:402
 msgid "Daily P&L calculation"
@@ -580,40 +672,46 @@ msgstr "Günlük kâr ve zarar hesabı"
 
 #: src/app/document-title.tsx:12
 #: src/app/shell/bottom-nav.tsx:16
-#: src/app/shell/member-shell.tsx:51
-#: src/app/shell/member-shell.tsx:73
-#: src/features/dashboard/pages/dashboard-page.tsx:78
+#: src/app/shell/member-shell.tsx:60
+#: src/features/dashboard/pages/dashboard-page.tsx:31
+#: src/features/dashboard/pages/dashboard-page.tsx:73
 msgid "Dashboard"
-msgstr "Gösterge Paneli"
+msgstr "Özet"
 
 #: src/features/dashboard/workflows/create-dashboard-modal.tsx:86
 msgid "Dashboard {dashboardName} created successfully."
-msgstr "{dashboardName} gösterge paneli oluşturuldu."
+msgstr "“{dashboardName}” özeti oluşturuldu."
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:188
+#: src/features/dashboard/components/dashboard-portfolios.tsx:220
 msgid "Dashboard details are temporarily unavailable."
-msgstr "Gösterge paneli ayrıntıları geçici olarak kullanılamıyor."
+msgstr "Özet ayrıntıları geçici olarak kullanılamıyor."
 
 #: src/features/dashboard/workflows/create-dashboard-modal.tsx:104
 msgid "Dashboard Name"
-msgstr "Gösterge paneli adı"
+msgstr "Özet adı"
 
 #: src/features/onboarding/components/dashboard-step.tsx:79
 msgid "DASHBOARD NAME"
-msgstr "GÖSTERGE PANELİ ADI"
+msgstr "ÖZET ADI"
 
-#: src/features/dashboard/components/dashboard-summary.tsx:32
+#: src/features/dashboard/pages/dashboard-page.tsx:184
+msgid "Dashboard options"
+msgstr "Özet seçenekleri"
+
+#: src/features/dashboard/components/dashboard-summary.tsx:52
 msgid "Dashboard summary"
-msgstr "Gösterge paneli özeti"
+msgstr "Finansal özet"
 
 #: src/features/onboarding/components/dashboard-step.tsx:68
 msgid "Dashboard View"
-msgstr "Gösterge Paneli"
+msgstr "Özet"
 
-#: src/features/dashboard/pages/dashboard-page.tsx:100
+#: src/features/dashboard/pages/dashboard-page.tsx:112
+#: src/features/dashboard/pages/dashboard-page.tsx:142
 msgid "Dashboards"
-msgstr "Gösterge Panelleri"
+msgstr "Özetler"
 
+#: src/features/trades/components/trades-list/trade-details.tsx:74
 #: src/features/trades/workflows/undo-trade-form.tsx:72
 msgid "Date"
 msgstr "Tarih"
@@ -625,6 +723,16 @@ msgstr "Portföyünüzün performansını anlaşılır grafiklerle ayrıntılı 
 #: src/features/onboarding/components/portfolio-step.tsx:147
 msgid "Define Portfolio"
 msgstr "Portföyü tanımla"
+
+#: src/features/dashboard/pages/dashboard-page.tsx:190
+#: src/features/dashboard/pages/dashboard-page.tsx:200
+#: src/features/dashboard/pages/dashboard-page.tsx:217
+msgid "Delete dashboard"
+msgstr "Özeti sil"
+
+#: src/features/dashboard/pages/dashboard-page.tsx:202
+msgid "Delete the “{name}” dashboard? Its portfolios and transactions will be kept."
+msgstr "“{name}” özeti silinsin mi? Portföyleri ve işlemleri korunacak."
 
 #: src/features/landing/landing-page.tsx:672
 msgid "Documentation"
@@ -639,16 +747,16 @@ msgstr "Örn. Yatırımlarım"
 msgid "e.g. Tech Fund"
 msgstr "Örn. Teknoloji Fonu"
 
-#: src/features/portfolios/pages/portfolio-page.tsx:90
-#: src/features/portfolios/pages/portfolio-page.tsx:113
+#: src/features/portfolios/pages/portfolio-page.tsx:137
+#: src/features/portfolios/pages/portfolio-page.tsx:177
 msgid "Earnings"
 msgstr "Kazançlar"
 
-#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:108
+#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:126
 msgid "Earnings currency"
 msgstr "Kazanç para birimi"
 
-#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:94
+#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:112
 msgid "Earnings period"
 msgstr "Kazanç dönemi"
 
@@ -671,7 +779,7 @@ msgstr "Zümrüt"
 
 #: src/features/dashboard/workflows/create-dashboard-modal.tsx:105
 msgid "Enter dashboard name"
-msgstr "Gösterge paneli adını girin"
+msgstr "Özet adını girin"
 
 #: src/features/auth/pages/login-page.tsx:28
 msgid "Enter your email address"
@@ -701,9 +809,9 @@ msgstr "Giriş yapılamadı"
 #. Compact badge next to an estimated financial value
 #. Compact badge next to an estimated financial value
 #. Compact badge next to an estimated financial value
-#: src/features/dashboard/components/dashboard-portfolios.tsx:102
-#: src/features/dashboard/components/dashboard-portfolios.tsx:114
-#: src/features/dashboard/components/dashboard-portfolios.tsx:160
+#: src/features/dashboard/components/dashboard-portfolios.tsx:125
+#: src/features/dashboard/components/dashboard-portfolios.tsx:136
+#: src/features/dashboard/components/dashboard-portfolios.tsx:191
 msgid "Est."
 msgstr "Tahm."
 
@@ -730,11 +838,16 @@ msgstr "İşlemler gönderilemedi. Tekrar deneyin."
 msgid "Features"
 msgstr "Özellikler"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:56
+#: src/features/trades/components/trades-list/trades-list.tsx:65
 msgid "Filter"
 msgstr "Filtre"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:58
+#. Label for the row of position filter buttons
+#: src/features/positions/pages/positions-page.tsx:232
+msgid "Filter by portfolio"
+msgstr "Portföye göre filtrele"
+
+#: src/features/trades/components/trades-list/trades-list.tsx:67
 msgid "Filter trades"
 msgstr "İşlemleri filtrele"
 
@@ -750,7 +863,7 @@ msgstr "Adınız 2 ile 50 karakter arasında olmalı"
 msgid "First page"
 msgstr "İlk sayfa"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:112
+#: src/features/dashboard/components/dashboard-portfolios.tsx:134
 msgid "Flat daily impact estimate: no daily quote change"
 msgstr "Günlük fiyat değişimi verisi olmadığından etki sıfır varsayıldı"
 
@@ -778,7 +891,7 @@ msgstr "Her Zaman Ücretsiz"
 msgid "Free forever. Set up in under a minute."
 msgstr "Her zaman ücretsiz. Bir dakikadan kısa sürede hazır."
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:48
+#: src/features/dashboard/components/dashboard-portfolios.tsx:60
 msgid "From portfolios with recorded trades."
 msgstr "İşlem kaydı olan portföyler dahil edilir."
 
@@ -804,6 +917,26 @@ msgstr "Ücretsiz başlayın"
 msgid "Give your new portfolio a name and a visual brand."
 msgstr "Yeni portföyünüze bir ad ve renk seçin."
 
+#. Sort by unrealized profit amount in the position currency
+#: src/features/positions/pages/positions-page.tsx:22
+msgid "Highest profit"
+msgstr "En Çok Kazandıran"
+
+#. Sort by unrealized percentage return, largest first
+#: src/features/positions/pages/positions-page.tsx:23
+msgid "Highest return (%)"
+msgstr "En Yüksek Getiri (%)"
+
+#. Sort by current market value, largest holding first
+#: src/features/positions/pages/positions-page.tsx:20
+msgid "Highest value"
+msgstr "En Yüksek Değer"
+
+#. Positions table column for quantity held and average cost
+#: src/features/positions/components/positions-view/positions-view.tsx:113
+msgid "Holding"
+msgstr "Pozisyon"
+
 #: src/shared/components/localized-date-time-picker.tsx:23
 msgid "Hours"
 msgstr "Saat"
@@ -828,6 +961,14 @@ msgstr "Pozisyonlarını izlemek, işlemlerini incelemek ve performanslarını a
 msgid "Language"
 msgstr "Dil"
 
+#: src/features/dashboard/components/transactions-chart.tsx:26
+msgid "Last 3 months"
+msgstr "son 3 ay"
+
+#: src/features/dashboard/components/transactions-chart.tsx:26
+msgid "Last 6 months"
+msgstr "son 6 ay"
+
 #: src/features/auth/pages/register-page.tsx:222
 msgid "Last name"
 msgstr "Soyad"
@@ -840,7 +981,7 @@ msgstr "Soyadınız 2 ile 50 karakter arasında olmalı"
 msgid "Last page"
 msgstr "Son sayfa"
 
-#: src/features/dashboard/pages/dashboard-page.tsx:153
+#: src/features/dashboard/pages/dashboard-page.tsx:230
 msgid "Last quote"
 msgstr "Son fiyat"
 
@@ -857,7 +998,7 @@ msgstr "Yasal"
 msgid "Light/Dark mode"
 msgstr "Açık ve koyu tema"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:34
+#: src/features/dashboard/components/dashboard-portfolios.tsx:41
 msgid "Linked portfolios"
 msgstr "Bağlı Portföyler"
 
@@ -865,7 +1006,7 @@ msgstr "Bağlı Portföyler"
 msgid "Linked Portfolios"
 msgstr "Bağlı Portföyler"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:64
+#: src/features/dashboard/components/dashboard-portfolios.tsx:76
 msgid "Linked portfolios with recorded trades will appear here."
 msgstr "İşlem kaydı olan bağlı portföyler burada görünür."
 
@@ -876,11 +1017,11 @@ msgstr "İşlem kaydı olan bağlı portföyler burada görünür."
 msgid "Live"
 msgstr "Canlı"
 
-#: src/features/dashboard/pages/dashboard-page.tsx:44
+#: src/features/dashboard/pages/dashboard-page.tsx:40
 msgid "Loading dashboard"
-msgstr "Gösterge paneli yükleniyor"
+msgstr "Özet yükleniyor"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:194
+#: src/features/dashboard/components/dashboard-portfolios.tsx:226
 msgid "Loading details…"
 msgstr "Ayrıntılar yükleniyor…"
 
@@ -888,24 +1029,24 @@ msgstr "Ayrıntılar yükleniyor…"
 msgid "Loading earnings"
 msgstr "Kazançlar yükleniyor"
 
-#: src/features/dashboard/components/transactions-chart.tsx:75
+#: src/features/dashboard/components/transactions-chart.tsx:81
 msgid "Loading performance chart"
 msgstr "Performans grafiği yükleniyor"
 
-#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:16
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:20
 msgid "Loading portfolio overview"
 msgstr "Portföy özeti yükleniyor"
 
-#: src/app/shell/member-shell.tsx:128
-#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:104
+#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:112
+#: src/features/trades/components/add-trade-button/add-trade-button.tsx:46
 msgid "Loading portfolios…"
 msgstr "Portföyler yükleniyor…"
 
-#: src/features/positions/components/positions-view/positions-view.tsx:193
+#: src/features/positions/components/positions-view/positions-view.tsx:281
 msgid "Loading positions…"
 msgstr "Pozisyonlar yükleniyor…"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:145
+#: src/features/trades/components/trades-list/trades-list.tsx:251
 msgid "Loading trades…"
 msgstr "İşlemler yükleniyor…"
 
@@ -913,15 +1054,24 @@ msgstr "İşlemler yükleniyor…"
 msgid "Loading…"
 msgstr "Yükleniyor…"
 
+#. Sort by unrealized percentage return, smallest first
+#: src/features/positions/pages/positions-page.tsx:24
+msgid "Lowest return (%)"
+msgstr "En Düşük Getiri (%)"
+
 #: src/app/shell/bottom-nav.tsx:13
-#: src/app/shell/member-shell.tsx:71
+#: src/app/shell/member-shell.tsx:58
 msgid "Main navigation"
 msgstr "Ana gezinme"
 
 #. Generic market label used when the exchange is unknown
-#: src/features/dashboard/dashboard-placeholders.ts:149
+#: src/features/dashboard/dashboard-placeholders.ts:151
 msgid "Market"
 msgstr "Piyasa"
+
+#: src/features/positions/components/positions-view/position-inspector.tsx:157
+msgid "Market data is unavailable for this symbol."
+msgstr "Bu sembol için güncel piyasa verisi bulunamadı."
 
 #: src/features/landing/landing-page.tsx:257
 msgid "Metals"
@@ -935,8 +1085,8 @@ msgstr "Dakika"
 msgid "Modern, responsive interface with customizable themes and smooth interactions."
 msgstr "Özelleştirilebilir temaları ve akıcı etkileşimleriyle her ekrana uyum sağlayan arayüz."
 
-#: src/features/dashboard/components/transactions-chart.tsx:25
-#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:103
+#: src/features/dashboard/components/transactions-chart.tsx:29
+#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:121
 msgid "Monthly"
 msgstr "Aylık"
 
@@ -963,13 +1113,13 @@ msgstr "Birden fazla portföy"
 
 #: src/features/landing/landing-page.tsx:416
 msgid "Multiple dashboard views"
-msgstr "Birden fazla gösterge paneli"
+msgstr "Birden fazla özet görünümü"
 
 #: src/features/landing/landing-page.tsx:407
 msgid "Multiple Instruments"
 msgstr "Farklı Varlık Türleri"
 
-#: src/app/shell/member-shell.tsx:166
+#: src/app/shell/account-menu.tsx:24
 msgid "My account"
 msgstr "Hesabım"
 
@@ -981,11 +1131,16 @@ msgstr "Ad girin"
 msgid "Name must be at least 3 characters"
 msgstr "Ad en az 3 karakter olmalı"
 
-#: src/features/dashboard/pages/dashboard-page.tsx:112
-#: src/features/dashboard/pages/dashboard-page.tsx:140
+#: src/features/dashboard/pages/dashboard-page.tsx:124
+#: src/features/dashboard/pages/dashboard-page.tsx:156
 #: src/features/dashboard/workflows/create-dashboard-modal.tsx:32
 msgid "New dashboard"
-msgstr "Yeni gösterge paneli"
+msgstr "Yeni özet"
+
+#. Opens a form to create a portfolio, with no automatic link to the current dashboard
+#: src/features/dashboard/components/dashboard-portfolios.tsx:48
+msgid "New portfolio"
+msgstr "Yeni portföy"
 
 #: src/features/auth/pages/login-page.tsx:209
 msgid "New to Canverse?"
@@ -999,6 +1154,7 @@ msgstr "Sonraki 10 yıl"
 msgid "Next month"
 msgstr "Sonraki ay"
 
+#: src/features/trades/components/trades-list/trades-list.tsx:227
 #: src/shared/components/localized-pagination.tsx:9
 msgid "Next page"
 msgstr "Sonraki sayfa"
@@ -1015,39 +1171,49 @@ msgstr "Sonraki yıl"
 msgid "No matches found"
 msgstr "Sonuç bulunamadı"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:124
+#: src/features/dashboard/components/dashboard-portfolios.tsx:147
 msgid "No open positions in recorded portfolios."
 msgstr "İşlem kaydı olan portföylerde açık pozisyon yok."
 
-#: src/features/positions/components/positions-view/positions-view.tsx:209
+#: src/features/positions/components/positions-view/positions-view.tsx:309
 msgid "No open positions."
 msgstr "Açık pozisyon yok."
 
-#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:116
+#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:124
 msgid "No portfolios yet."
 msgstr "Henüz portföy yok."
 
-#: src/features/positions/components/positions-view/positions-view.tsx:209
+#: src/features/positions/components/positions-view/positions-view.tsx:300
+msgid "No positions found"
+msgstr "Pozisyon bulunamadı"
+
+#: src/features/positions/components/positions-view/positions-view.tsx:309
 msgid "No positions match this search."
 msgstr "Aramanıza uyan pozisyon bulunamadı."
 
-#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:164
+#. Missing quote in the positions list
+#: src/features/positions/components/positions-view/position-inspector.tsx:125
+#: src/features/positions/components/positions-view/positions-view.tsx:397
+msgid "No price"
+msgstr "Fiyat yok"
+
+#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:181
 msgid "No realized P&L in this period."
 msgstr "Bu dönemde gerçekleşen kâr veya zarar yok."
 
-#: src/features/dashboard/components/transactions-chart.tsx:91
+#: src/features/dashboard/components/transactions-chart.tsx:97
 msgid "No realized sales in this period."
 msgstr "Bu dönemde gerçekleşen satış yok."
 
-#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:136
+#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:147
 msgid "no recorded P&L"
 msgstr "kayıtlı K/Z yok"
 
-#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:158
+#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:174
 msgid "No recorded P&L"
 msgstr "Kayıtlı K/Z yok"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:161
+#: src/features/trades/components/trades-list/trades-list.tsx:267
 msgid "No trades match these filters."
 msgstr "Filtrelere uyan işlem bulunamadı."
 
@@ -1055,7 +1221,7 @@ msgstr "Filtrelere uyan işlem bulunamadı."
 msgid "No trades yet — add a row or import a file"
 msgstr "Henüz işlem yok. Satır ekleyin veya dosya içe aktarın."
 
-#: src/features/trades/components/trades-list/trades-list.tsx:161
+#: src/features/trades/components/trades-list/trades-list.tsx:267
 msgid "No trades yet."
 msgstr "Henüz işlem yok."
 
@@ -1063,9 +1229,17 @@ msgstr "Henüz işlem yok."
 msgid "Nothing to see here"
 msgstr "Sayfa bulunamadı"
 
-#: src/features/dashboard/components/dashboard-summary.tsx:38
+#: src/features/positions/pages/positions-page.tsx:148
+msgid "Open positions"
+msgstr "Açık Pozisyonlar"
+
+#: src/features/dashboard/components/dashboard-summary.tsx:60
 msgid "Open positions versus cost basis"
 msgstr "Açık pozisyonların maliyete göre getirisi"
+
+#: src/features/trades/components/trades-list/trades-list.tsx:279
+msgid "Open trade history"
+msgstr "Açık İşlem Geçmişi"
 
 #: src/features/auth/pages/login-page.tsx:170
 msgid "OR LOG IN WITH YOUR EMAIL"
@@ -1075,11 +1249,7 @@ msgstr "VEYA E-POSTAYLA GİRİŞ YAPIN"
 msgid "OR SIGN UP WITH YOUR EMAIL"
 msgstr "VEYA E-POSTAYLA KAYDOLUN"
 
-#: src/features/positions/components/positions-view/positions-view.tsx:75
-msgid "P/L"
-msgstr "K/Z"
-
-#: src/features/positions/components/positions-view/positions-view.tsx:265
+#: src/features/positions/components/positions-view/positions-view.tsx:396
 msgid "P/L unavailable"
 msgstr "Kâr ve zarar verisi yok"
 
@@ -1093,7 +1263,7 @@ msgid "Page you are trying to open does not exist. You may have mistyped the add
 msgstr "Aradığınız sayfa bulunamadı. Adresi kontrol edin. Sorun devam ederse destek ekibine ulaşın."
 
 #. Realized profit and loss total includes only sales with reported values
-#: src/features/dashboard/components/dashboard-summary.tsx:58
+#: src/features/dashboard/components/dashboard-summary.tsx:101
 msgid "Partial"
 msgstr "Kısmi"
 
@@ -1110,16 +1280,16 @@ msgstr "Şifreniz 8 ile 20 karakter arasında olmalı"
 msgid "Passwords do not match"
 msgstr "Şifreler eşleşmiyor"
 
-#: src/features/dashboard/components/transactions-chart.tsx:54
+#: src/features/dashboard/components/transactions-chart.tsx:58
 msgid "Performance period"
 msgstr "Performans dönemi"
 
-#: src/features/dashboard/components/transactions-chart.tsx:207
-#: src/features/dashboard/components/transactions-chart.tsx:245
+#: src/features/dashboard/components/transactions-chart.tsx:214
+#: src/features/dashboard/components/transactions-chart.tsx:252
 msgid "Period P&L"
 msgstr "Dönem K/Z"
 
-#: src/features/dashboard/components/transactions-chart.tsx:25
+#: src/features/dashboard/components/transactions-chart.tsx:29
 msgid "Periodic"
 msgstr "Dönemsel"
 
@@ -1131,22 +1301,25 @@ msgstr "Ay seçin"
 msgid "Pick a year"
 msgstr "Yıl seçin"
 
+#. Short label for the portfolio switcher in the mobile tab bar
 #: src/app/document-title.tsx:16
+#: src/app/shell/bottom-nav.tsx:20
 #: src/features/portfolios/pages/portfolio-page.tsx:34
-#: src/features/positions/components/positions-view/positions-view.tsx:62
-#: src/features/trades/components/trades-list/trades-list.tsx:83
+#: src/features/positions/components/positions-view/positions-view.tsx:108
+#: src/features/trades/components/trades-list/trades-list.tsx:158
 msgid "Portfolio"
 msgstr "Portföy"
 
-#: src/features/portfolios/pages/portfolio-page.tsx:135
+#: src/features/portfolios/pages/portfolio-page.tsx:190
 msgid "Portfolio actions"
 msgstr "Portföy işlemleri"
 
-#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:81
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:41
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:63
 msgid "Portfolio balance"
 msgstr "Portföy bakiyesi"
 
-#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:44
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:41
 msgid "Portfolio balance and allocation"
 msgstr "Portföy bakiyesi ve dağılımı"
 
@@ -1176,7 +1349,7 @@ msgstr "PORTFÖY ADI"
 msgid "Portfolio Overview"
 msgstr "Portföy Özeti"
 
-#: src/features/portfolios/pages/portfolio-page.tsx:85
+#: src/features/portfolios/pages/portfolio-page.tsx:132
 msgid "Portfolio sections"
 msgstr "Portföy bölümleri"
 
@@ -1184,44 +1357,42 @@ msgstr "Portföy bölümleri"
 msgid "Portfolio Settings"
 msgstr "Portföy Ayarları"
 
-#: src/features/portfolios/pages/portfolio-page.tsx:156
+#: src/features/portfolios/pages/portfolio-page.tsx:242
 msgid "Portfolio trade actions"
 msgstr "Portföy alım-satım işlemleri"
 
-#: src/app/shell/bottom-nav.tsx:20
-#: src/app/shell/member-shell.tsx:46
-#: src/app/shell/member-shell.tsx:76
+#: src/features/positions/components/positions-view/position-inspector.tsx:140
+msgid "Portfolio weight"
+msgstr "Portföy ağırlığı"
+
+#: src/app/shell/member-shell.tsx:42
+#: src/app/shell/member-shell.tsx:63
 #: src/features/auth/pages/login-page.tsx:122
 #: src/features/auth/pages/register-page.tsx:166
 #: src/features/dashboard/workflows/create-dashboard-modal.tsx:121
-#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:52
+#: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:60
 msgid "Portfolios"
 msgstr "Portföyler"
 
-#: src/features/dashboard/pages/dashboard-page.tsx:30
-msgid "Portfolios with recorded activity"
-msgstr "İşlem kaydı olan portföyler"
-
 #. Fallback title for the details of a holding
-#: src/features/positions/components/positions-view/position-inspector.tsx:26
+#. Short label for the list of holdings in the mobile tab bar
+#: src/app/shell/bottom-nav.tsx:24
+#: src/features/positions/components/positions-view/position-inspector.tsx:32
 msgid "Position"
 msgstr "Pozisyon"
 
-#: src/features/positions/components/positions-view/position-inspector.tsx:43
-#: src/features/positions/components/positions-view/position-inspector.tsx:45
-msgid "Position trade history"
-msgstr "Pozisyonun işlem geçmişi"
+#: src/features/positions/components/positions-view/position-inspector.tsx:150
+msgid "Position value"
+msgstr "Pozisyon Değeri"
 
 #: src/app/document-title.tsx:13
-#: src/app/shell/bottom-nav.tsx:24
-#: src/app/shell/member-shell.tsx:48
-#: src/app/shell/member-shell.tsx:79
-#: src/features/portfolios/pages/portfolio-page.tsx:87
-#: src/routes/_authenticated/_member/positions/route.tsx:15
+#: src/app/shell/member-shell.tsx:66
+#: src/features/portfolios/pages/portfolio-page.tsx:134
+#: src/features/positions/pages/positions-page.tsx:336
 msgid "Positions"
 msgstr "Pozisyonlar"
 
-#: src/features/positions/components/positions-view/positions-view.tsx:217
+#: src/features/positions/components/positions-view/positions-view.tsx:317
 msgid "Positions pages"
 msgstr "Pozisyon sayfaları"
 
@@ -1237,6 +1408,7 @@ msgstr "Önceki 10 yıl"
 msgid "Previous month"
 msgstr "Önceki ay"
 
+#: src/features/trades/components/trades-list/trades-list.tsx:216
 #: src/shared/components/localized-pagination.tsx:8
 msgid "Previous page"
 msgstr "Önceki sayfa"
@@ -1254,9 +1426,7 @@ msgstr "Önceki yıl"
 #. Unit price of a financial instrument
 #. Unit price of a financial instrument
 #. Unit price of a financial instrument
-#. Unit price of a financial instrument
-#: src/features/positions/components/positions-view/position-inspector.tsx:64
-#: src/features/positions/components/positions-view/positions-view.tsx:69
+#: src/features/positions/components/positions-view/positions-view.tsx:119
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:216
 #: src/features/trades/workflows/bulk-trade/virtual-row.tsx:70
 #: src/features/trades/workflows/buy-transaction-form.tsx:161
@@ -1266,11 +1436,11 @@ msgid "Price"
 msgstr "Fiyat"
 
 #. placeholder {0}: format.toShortDateTime(new Date(position.instrument.updatedAt))
-#: src/features/positions/components/positions-view/position-inspector.tsx:89
+#: src/features/positions/components/positions-view/position-inspector.tsx:185
 msgid "Price as of {0}"
 msgstr "Son fiyat zamanı: {0}"
 
-#: src/features/dashboard/pages/dashboard-page.tsx:153
+#: src/features/dashboard/pages/dashboard-page.tsx:230
 msgid "Prices updated"
 msgstr "Fiyatlar güncellendi"
 
@@ -1286,15 +1456,24 @@ msgstr "Gizlilik Politikası"
 msgid "Product"
 msgstr "Ürün"
 
+#. Buy action in the footer of the position drawer
+#. Trade history entry for a purchase
+#: src/features/positions/components/positions-view/position-inspector.tsx:102
+#: src/features/trades/components/trades-list/trades-list.tsx:104
+#: src/features/trades/components/trades-list/trades-list.tsx:301
+msgid "Purchase"
+msgstr "Alım"
+
 #: src/features/onboarding/components/portfolio-step.tsx:17
 msgid "Purple"
 msgstr "Mor"
 
-#: src/features/positions/components/positions-view/positions-view.tsx:66
-msgid "Qty / Avg Cost"
-msgstr "Adet / Ort. Maliyet"
+#: src/features/positions/components/positions-view/positions-view.tsx:115
+msgid "Qty / Cost"
+msgstr "Adet / Maliyet"
 
-#: src/features/positions/components/positions-view/position-inspector.tsx:61
+#: src/features/positions/components/positions-view/position-inspector.tsx:123
+#: src/features/trades/components/trades-list/trade-details.tsx:75
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:219
 #: src/features/trades/workflows/bulk-trade/virtual-row.tsx:88
 #: src/features/trades/workflows/buy-transaction-form.tsx:154
@@ -1303,11 +1482,11 @@ msgstr "Adet / Ort. Maliyet"
 msgid "Quantity"
 msgstr "Adet"
 
-#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:81
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:63
 msgid "Quoted balance"
 msgstr "Fiyatlanan varlıkların bakiyesi"
 
-#: src/features/dashboard/pages/dashboard-page.tsx:153
+#: src/features/dashboard/pages/dashboard-page.tsx:230
 msgid "Quotes pending"
 msgstr "Fiyatlar bekleniyor"
 
@@ -1319,24 +1498,22 @@ msgstr "İşlem takibinizi <0>geliştirmeye</0> hazır mısınız?"
 msgid "Real-time position tracking across all markets"
 msgstr "Tüm piyasalarda anlık pozisyon takibi"
 
-#: src/features/dashboard/components/dashboard-summary.tsx:51
+#: src/features/dashboard/components/dashboard-summary.tsx:94
+#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:93
+#: src/features/trades/components/trades-list/trade-details.tsx:97
 msgid "Realized P&L"
 msgstr "Gerçekleşen K/Z"
 
-#: src/features/dashboard/components/transactions-chart.tsx:32
+#: src/features/dashboard/components/transactions-chart.tsx:37
 msgid "Realized performance"
 msgstr "Gerçekleşen Performans"
 
-#: src/features/dashboard/components/transactions-chart.tsx:128
-#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:130
+#: src/features/dashboard/components/transactions-chart.tsx:135
+#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:141
 msgid "Realized profit and loss by period"
 msgstr "Döneme göre gerçekleşen kâr ve zarar"
 
-#: src/features/dashboard/components/dashboard-summary.tsx:66
-msgid "Realized profit and loss period"
-msgstr "Gerçekleşen kâr ve zarar dönemi"
-
-#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:32
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:36
 msgid "Record a trade to see your balance and allocation."
 msgstr "Bakiyenizi ve varlık dağılımınızı görmek için bir işlem kaydedin."
 
@@ -1361,7 +1538,7 @@ msgid "Retry Connection"
 msgstr "Yeniden bağlan"
 
 #. Percentage investment gain or loss, not a navigation action
-#: src/features/positions/components/positions-view/position-inspector.tsx:68
+#: src/features/positions/components/positions-view/positions-view.tsx:125
 msgid "Return"
 msgstr "Getiri"
 
@@ -1369,28 +1546,50 @@ msgstr "Getiri"
 msgid "Rose"
 msgstr "Gül pembesi"
 
+#. Sell action in the footer of the position drawer
+#. Trade history entry for a sale
+#: src/features/positions/components/positions-view/position-inspector.tsx:105
+#: src/features/trades/components/trades-list/trades-list.tsx:105
+#: src/features/trades/components/trades-list/trades-list.tsx:303
+msgid "Sale"
+msgstr "Satış"
+
 #: src/shared/components/localized-date-time-picker.tsx:27
 msgid "Save time"
 msgstr "Saati kaydet"
 
 #. placeholder {0}: model.search
-#: src/features/positions/components/positions-view/positions-view.tsx:134
+#: src/features/positions/components/positions-view/positions-view.tsx:194
 msgid "Search · {0}"
 msgstr "Ara · {0}"
 
-#: src/features/positions/components/positions-view/positions-view.tsx:134
-#: src/features/positions/components/positions-view/positions-view.tsx:136
-#: src/features/positions/components/positions-view/positions-view.tsx:178
-#: src/features/positions/components/positions-view/positions-view.tsx:179
+#: src/features/positions/components/positions-view/positions-view.tsx:194
+#: src/features/positions/components/positions-view/positions-view.tsx:196
+#: src/features/positions/components/positions-view/positions-view.tsx:258
+#: src/features/positions/components/positions-view/positions-view.tsx:259
+#: src/features/positions/pages/positions-page.tsx:268
+#: src/features/positions/pages/positions-page.tsx:342
 msgid "Search positions"
 msgstr "Pozisyonlarda ara"
+
+#: src/features/positions/pages/positions-page.tsx:269
+msgid "Search stocks or portfolios…"
+msgstr "Hisse veya portföy ara…"
+
+#: src/features/positions/pages/positions-page.tsx:269
+msgid "Search stocks…"
+msgstr "Hisse ara…"
 
 #: src/features/trades/workflows/bulk-trade/asset-combobox.tsx:123
 msgid "Search symbol or name…"
 msgstr "Sembol veya ad ara…"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:75
-#: src/features/trades/components/trades-list/trades-list.tsx:76
+#: src/features/trades/components/trades-list/trades-list.tsx:123
+msgid "Search symbol…"
+msgstr "Sembol ara…"
+
+#: src/features/trades/components/trades-list/trades-list.tsx:122
+#: src/features/trades/components/trades-list/trades-list.tsx:123
 msgid "Search trades"
 msgstr "İşlemlerde ara"
 
@@ -1413,10 +1612,8 @@ msgstr "Para birimi seçin"
 
 #. Button or filter for a sale of an asset
 #. Button or filter for a sale of an asset
-#. Button or filter for a sale of an asset
-#: src/features/portfolios/pages/portfolio-page.tsx:161
-#: src/features/positions/components/positions-view/position-inspector.tsx:40
-#: src/features/trades/components/trades-list/trades-list.tsx:97
+#: src/features/portfolios/pages/portfolio-page.tsx:247
+#: src/features/trades/components/trades-list/trades-list.tsx:150
 #: src/features/trades/workflows/sell-transaction-form.tsx:164
 msgid "Sell"
 msgstr "Sat"
@@ -1424,7 +1621,7 @@ msgstr "Sat"
 #. Short label on a sale transaction badge
 #. Short label on a sale transaction badge
 #. Short label on a sale transaction badge
-#: src/features/trades/components/trades-list/trades-list.tsx:202
+#: src/features/trades/components/trades-list/trade-details.tsx:16
 #: src/features/trades/workflows/bulk-trade/type-pill.tsx:20
 #: src/features/trades/workflows/bulk-trade/type-pill.tsx:30
 msgid "SELL"
@@ -1443,6 +1640,22 @@ msgstr "Varlık sat"
 msgid "Set up your account"
 msgstr "Hesabınızı kurun"
 
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:197
+msgid "Show all assets"
+msgstr "Tüm varlıkları göster"
+
+#: src/features/dashboard/components/dashboard-summary.tsx:49
+msgid "Show all time"
+msgstr "Tüm zamanları göster"
+
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:197
+msgid "Show fewer assets"
+msgstr "Daha az varlık göster"
+
+#: src/features/dashboard/components/dashboard-summary.tsx:49
+msgid "Show this month"
+msgstr "Bu ayı göster"
+
 #: src/app/document-title.tsx:9
 #: src/features/auth/pages/login-page.tsx:202
 #: src/features/auth/pages/register-page.tsx:256
@@ -1453,8 +1666,8 @@ msgstr "Giriş yap"
 msgid "Sign in to your account to continue"
 msgstr "Devam etmek için hesabınıza giriş yapın"
 
-#: src/app/shell/member-shell.tsx:193
-#: src/app/shell/member-shell.tsx:221
+#: src/app/shell/account-menu.tsx:51
+#: src/app/shell/account-menu.tsx:79
 msgid "Sign out"
 msgstr "Çıkış yap"
 
@@ -1466,7 +1679,7 @@ msgstr "Giriş yapılıyor…"
 msgid "Simple <0>Pricing</0>"
 msgstr "Sade <0>Fiyatlandırma</0>"
 
-#: src/app/shell/member-shell.tsx:26
+#: src/app/shell/member-shell.tsx:21
 msgid "Skip to main content"
 msgstr "Ana içeriğe geç"
 
@@ -1481,6 +1694,16 @@ msgstr "Akıllı portföy önerileri"
 #: src/features/trades/workflows/sell-transaction-form.tsx:61
 msgid "Sold {quantity} units of {symbol} at {price}."
 msgstr "{quantity} adet {symbol}, {price} fiyattan satıldı."
+
+#. Title of the mobile positions sort options sheet
+#: src/features/positions/pages/positions-page.tsx:370
+msgid "Sort by"
+msgstr "Sıralama"
+
+#: src/features/positions/pages/positions-page.tsx:301
+#: src/features/positions/pages/positions-page.tsx:355
+msgid "Sort positions"
+msgstr "Pozisyonları sırala"
 
 #: src/features/landing/landing-page.tsx:503
 msgid "Start Free"
@@ -1518,21 +1741,17 @@ msgstr "Tüm verileriniz silindi."
 msgid "Support for various asset types including stocks, crypto, forex, and more."
 msgstr "Hisse, kripto, döviz ve diğer varlık türlerini takip edin."
 
-#: src/app/shell/member-shell.tsx:164
+#: src/app/shell/account-menu.tsx:22
 #: src/features/auth/pages/login-page.tsx:61
 #: src/features/auth/pages/register-page.tsx:103
 msgid "Switch to dark mode"
 msgstr "Koyu temaya geç"
 
-#: src/app/shell/member-shell.tsx:164
+#: src/app/shell/account-menu.tsx:22
 #: src/features/auth/pages/login-page.tsx:61
 #: src/features/auth/pages/register-page.tsx:103
 msgid "Switch to light mode"
 msgstr "Açık temaya geç"
-
-#: src/features/positions/components/positions-view/positions-view.tsx:58
-msgid "Symbol"
-msgstr "Sembol"
 
 #: src/shared/components/not-found/not-found.tsx:23
 msgid "Take me back to home page"
@@ -1551,13 +1770,18 @@ msgstr "TEMA RENGİ"
 msgid "This action cannot be undone. Please type <bold>{confirmText}</bold> to confirm that you want to clear all of your data."
 msgstr "Bu işlem geri alınamaz. Tüm verilerinizi silmeyi onaylamak için <bold>{confirmText}</bold> yazın."
 
-#: src/features/dashboard/components/dashboard-summary.tsx:71
+#: src/features/dashboard/components/dashboard-summary.tsx:48
 msgid "This month"
 msgstr "Bu ay"
 
 #: src/features/trades/workflows/undo-trade-form.tsx:86
 msgid "This will permanently remove this trade record. This action cannot be reversed. Daily portfolio snapshots will not be retroactively modified."
 msgstr "Bu işlem kaydı kalıcı olarak silinir ve geri getirilemez. Portföyün geçmiş günlük değerleri geriye dönük değişmez."
+
+#. Time label for the daily change in open position value
+#: src/features/dashboard/components/dashboard-summary.tsx:47
+msgid "today"
+msgstr "bugün"
 
 #: src/features/landing/landing-page.tsx:208
 msgid "Today's P&L"
@@ -1574,7 +1798,7 @@ msgstr "Temayı değiştir"
 msgid "Toggle password visibility"
 msgstr "Şifre görünürlüğünü değiştir"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:70
+#: src/features/dashboard/components/dashboard-portfolios.tsx:83
 msgid "Top positions"
 msgstr "Öne Çıkan Pozisyonlar"
 
@@ -1582,7 +1806,11 @@ msgstr "Öne Çıkan Pozisyonlar"
 msgid "Total"
 msgstr "Toplam"
 
-#: src/features/dashboard/components/dashboard-summary.tsx:35
+#: src/features/trades/components/trades-list/trade-details.tsx:77
+msgid "Total amount"
+msgstr "Toplam tutar"
+
+#: src/features/dashboard/components/dashboard-summary.tsx:55
 msgid "Total balance"
 msgstr "Toplam Bakiye"
 
@@ -1590,11 +1818,8 @@ msgstr "Toplam Bakiye"
 msgid "Total Balance"
 msgstr "Toplam Bakiye"
 
-#: src/features/positions/components/positions-view/position-inspector.tsx:65
-msgid "Total value"
-msgstr "Toplam değer"
-
-#: src/features/positions/components/positions-view/positions-view.tsx:72
+#: src/features/positions/components/positions-view/positions-view.tsx:122
+#: src/features/positions/pages/positions-page.tsx:144
 msgid "Total Value"
 msgstr "Toplam değer"
 
@@ -1606,7 +1831,17 @@ msgstr "Her işlemi takip edin. <0>Portföylerinizi büyütün.</0>"
 msgid "Track Your <0>Portfolio</0><1/> Like Never Before"
 msgstr "<0>Portföyünüzü</0><1/> yeni bir bakışla izleyin"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:73
+#: src/features/trades/components/trades-list/trade-details.tsx:43
+#: src/features/trades/components/trades-list/trade-details.tsx:48
+msgid "Trade details"
+msgstr "İşlem detayı"
+
+#: src/features/trades/components/trades-list/trades-list.tsx:418
+msgid "Trade details for {symbol}"
+msgstr "{symbol} işlem detayı"
+
+#: src/features/trades/components/trades-list/trades-list.tsx:94
+#: src/features/trades/components/trades-list/trades-list.tsx:155
 msgid "Trade filters"
 msgstr "İşlem filtreleri"
 
@@ -1623,7 +1858,8 @@ msgstr "İşlem kaydedildi."
 msgid "Trade Summary"
 msgstr "İşlem Özeti"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:93
+#: src/features/trades/components/trades-list/trades-list.tsx:98
+#: src/features/trades/components/trades-list/trades-list.tsx:167
 msgid "Trade type"
 msgstr "İşlem türü"
 
@@ -1633,10 +1869,10 @@ msgstr "{symbol} işlemi geri alındı."
 
 #: src/app/document-title.tsx:14
 #: src/app/shell/bottom-nav.tsx:28
-#: src/app/shell/member-shell.tsx:50
-#: src/app/shell/member-shell.tsx:82
-#: src/features/portfolios/pages/portfolio-page.tsx:93
-#: src/features/portfolios/pages/portfolio-page.tsx:119
+#: src/app/shell/member-shell.tsx:42
+#: src/app/shell/member-shell.tsx:69
+#: src/features/portfolios/pages/portfolio-page.tsx:140
+#: src/features/trades/components/trades-list/trades-list.tsx:85
 #: src/routes/_authenticated/_member/trades/route.tsx:15
 msgid "Trades"
 msgstr "İşlemler"
@@ -1650,11 +1886,12 @@ msgstr "Dosyadan {count} işlem aktarıldı."
 msgid "Trades logged"
 msgstr "Kayıtlı işlemler"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:126
+#: src/features/trades/components/trades-list/trades-list.tsx:212
+#: src/features/trades/components/trades-list/trades-list.tsx:242
 msgid "Trades pages"
 msgstr "İşlem sayfaları"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:105
+#: src/features/trades/components/trades-list/trades-list.tsx:189
 msgid "Trades per page"
 msgstr "Sayfa başına işlem"
 
@@ -1662,14 +1899,18 @@ msgstr "Sayfa başına işlem"
 msgid "Trades submitted: {count}."
 msgstr "{count} işlem gönderildi."
 
-#: src/features/dashboard/components/transactions-chart.tsx:82
-#: src/features/dashboard/pages/dashboard-page.tsx:51
+#: src/features/dashboard/components/transactions-chart.tsx:88
+#: src/features/dashboard/pages/dashboard-page.tsx:47
 #: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:31
-#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:24
-#: src/features/positions/components/positions-view/positions-view.tsx:203
-#: src/features/trades/components/trades-list/trades-list.tsx:155
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:28
+#: src/features/positions/components/positions-view/positions-view.tsx:291
+#: src/features/trades/components/trades-list/trades-list.tsx:261
 msgid "Try again"
 msgstr "Tekrar dene"
+
+#: src/features/positions/components/positions-view/positions-view.tsx:303
+msgid "Try another search or choose a different portfolio."
+msgstr "Arama kelimesini veya seçili portföyü değiştirmeyi deneyin."
 
 #. Bulk trade column for purchase or sale
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:210
@@ -1681,19 +1922,23 @@ msgstr "Tür"
 msgid "Type ARCHIVE to confirm"
 msgstr "Onaylamak için ARCHIVE yazın"
 
-#: src/features/positions/components/positions-view/positions-view.tsx:248
+#: src/features/positions/components/positions-view/positions-view.tsx:374
 msgid "Unavailable"
 msgstr "Kullanılamıyor"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:235
+#: src/features/trades/components/trades-list/trades-list.tsx:474
 msgid "Undo {symbol} purchase"
 msgstr "{symbol} alışını geri al"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:235
+#: src/features/trades/components/trades-list/trades-list.tsx:474
 msgid "Undo {symbol} sale"
 msgstr "{symbol} satışını geri al"
 
-#: src/features/trades/components/trades-list/trades-list.tsx:232
+#: src/features/trades/components/trades-list/trade-details.tsx:114
+msgid "Undo this trade"
+msgstr "Bu işlemi geri al"
+
+#: src/features/trades/components/trades-list/trades-list.tsx:470
 #: src/features/trades/workflows/undo-trade-modal.tsx:29
 msgid "Undo trade"
 msgstr "İşlemi geri al"
@@ -1707,6 +1952,10 @@ msgstr "<bold>{0}</bold> işlemini geri al"
 msgid "Unified multi-portfolio management with real-time P&L, trade history, and analytics built for serious traders."
 msgstr "Canlı kâr ve zarar, işlem geçmişi ve ayrıntılı analizlerle tüm portföylerinizi tek yerden yönetin."
 
+#: src/features/trades/components/trades-list/trade-details.tsx:76
+msgid "Unit price"
+msgstr "Birim fiyat"
+
 #: src/features/landing/landing-page.tsx:569
 msgid "Unlimited portfolios"
 msgstr "Sınırsız portföy"
@@ -1715,27 +1964,32 @@ msgstr "Sınırsız portföy"
 msgid "Unlimited portfolios & trade entries"
 msgstr "Sınırsız portföy ve işlem kaydı"
 
-#: src/features/positions/components/positions-view/position-inspector.tsx:66
+#: src/features/positions/components/positions-view/position-inspector.tsx:163
 msgid "Unrealized P/L"
 msgstr "Gerçekleşmemiş K/Z"
 
-#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:92
+#: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:70
 msgid "Unrealized P&L"
 msgstr "Gerçekleşmemiş K/Z"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:170
+#: src/features/dashboard/components/dashboard-portfolios.tsx:201
 msgid "Unrealized return on open positions"
 msgstr "Açık pozisyonların gerçekleşmemiş getirisi"
 
-#: src/features/dashboard/components/transactions-chart.tsx:133
+#: src/features/dashboard/components/transactions-chart.tsx:140
 msgid "Use the left and right arrow keys to browse chart values."
 msgstr "Grafik değerleri arasında sol ve sağ ok tuşlarıyla gezinin."
+
+#. Positions table column for current market value
+#: src/features/positions/components/positions-view/positions-view.tsx:122
+msgid "Value"
+msgstr "Değer"
 
 #: src/features/onboarding/components/portfolio-step.tsx:88
 msgid "Visual Identity"
 msgstr "Görünüm"
 
-#: src/features/dashboard/components/dashboard-summary.tsx:47
+#: src/features/dashboard/components/dashboard-summary.tsx:87
 msgid "vs. previous close"
 msgstr "önceki kapanışa göre"
 
@@ -1748,24 +2002,25 @@ msgstr "Uyarı"
 msgid "We can't seem to reach the server. Please check your internet connection and try again."
 msgstr "Sunucuya ulaşılamıyor. İnternet bağlantınızı kontrol edip tekrar deneyin."
 
-#: src/features/dashboard/components/transactions-chart.tsx:238
+#: src/features/dashboard/components/transactions-chart.tsx:245
 msgid "Week of {date}"
 msgstr "{date} haftası"
 
-#: src/features/dashboard/components/transactions-chart.tsx:25
-#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:102
+#: src/features/dashboard/components/transactions-chart.tsx:29
+#: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:120
 msgid "Weekly"
 msgstr "Haftalık"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:37
-msgid "Weight & total value"
-msgstr "Ağırlık ve toplam değer"
+#. Position share of the market value shown in the filtered positions list
+#: src/features/positions/components/positions-view/position-inspector.tsx:139
+msgid "Weight in view"
+msgstr "Ağırlık"
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:52
+#: src/features/dashboard/components/dashboard-portfolios.tsx:64
 msgid "Weights cover the {currency} portion only."
 msgstr "Ağırlıklar yalnızca {currency} cinsinden varlıkları kapsar."
 
-#: src/features/dashboard/components/dashboard-portfolios.tsx:58
+#: src/features/dashboard/components/dashboard-portfolios.tsx:70
 msgid "Weights include estimated values."
 msgstr "Ağırlıklara tahmini değerler dahildir."
 
@@ -1773,7 +2028,7 @@ msgstr "Ağırlıklara tahmini değerler dahildir."
 msgid "Welcome back"
 msgstr "Tekrar hoş geldiniz"
 
-#: src/features/dashboard/components/dashboard-summary.tsx:78
+#: src/features/dashboard/components/dashboard-summary.tsx:119
 msgid "Win rate"
 msgstr "Kazanma Oranı"
 

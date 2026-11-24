@@ -1,5 +1,5 @@
-import { Trans, useLingui } from '@lingui/react/macro';
-import { ActionIcon, Button, Group, Menu, Tabs } from '@mantine/core';
+import { Plural, Trans, useLingui } from '@lingui/react/macro';
+import { ActionIcon, Button, Menu, Tabs } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconArchive, IconChevronDown, IconDots, IconListDetails, IconMinus, IconPlus } from '@tabler/icons-react';
 import { useState } from 'react';
@@ -10,10 +10,12 @@ import { PositionsView } from '~/features/positions/components/positions-view/po
 import type { Position } from '~/features/positions/hooks/use-positions-view';
 import { useBulkTradeModalStore, useTransactionModalStore } from '~/features/trades';
 import { TradesList } from '~/features/trades/components/trades-list/trades-list';
+import { ResponsiveOverlay } from '~/shared/components/responsive-overlay/responsive-overlay';
 import { useIsMobile } from '~/shared/hooks/use-is-mobile';
 import { ArchivePortfolioModal } from '../components/archive-portfolio/archive-portfolio';
 import { EarningsOverview } from '../components/earnings-overview/earnings-overview';
-import { PortfolioOverview } from '../components/portfolio-overview/portfolio-overview';
+import { getPortfolioBalances } from '../components/portfolio-overview/portfolio-balances';
+import { PortfolioAllocation, PortfolioOverview } from '../components/portfolio-overview/portfolio-overview';
 import { usePortfolioName } from '../hooks/use-portfolio-name';
 import styles from './portfolio-page.module.css';
 
@@ -25,22 +27,46 @@ function PortfolioContent({ portfolioId }: { portfolioId: string }) {
   const { t } = useLingui();
   const model = usePortfolioView(portfolioId);
   const isMobile = useIsMobile();
+  const heading = (
+    <div className={styles.titleGroup}>
+      <h1>
+        <PortfolioSelector className={styles.titleButton}>
+          {model.name || t`Portfolio`}
+          <IconChevronDown className={styles.mobileChevron} size={16} aria-hidden="true" />
+        </PortfolioSelector>
+      </h1>
+      <PortfolioMenu portfolioId={portfolioId} isMobile={isMobile} />
+    </div>
+  );
+  const actions = <PortfolioActions portfolioId={portfolioId} />;
+  const inspector = <PositionInspector position={model.selectedPosition} onClose={model.closePosition} weight={model.selectedWeight} />;
+
+  if (isMobile) {
+    return (
+      <div className={styles.page}>
+        {heading}
+        <PortfolioOverview query={model.positions} balances={model.balances} />
+        {actions}
+        <PortfolioSections model={model} isMobile portfolioId={portfolioId} />
+        {inspector}
+      </div>
+    );
+  }
 
   return (
     <div className={styles.page}>
       <div className={styles.heading}>
-        <h1>
-          <PortfolioSelector className={styles.titleButton}>
-            {model.name || t`Portfolio`}
-            <IconChevronDown className={styles.mobileChevron} size={18} aria-hidden="true" />
-          </PortfolioSelector>
-        </h1>
-        <PortfolioMenu portfolioId={portfolioId} />
+        {heading}
+        {actions}
       </div>
-      <PortfolioOverview query={model.positions} onOpenPosition={model.openPosition} />
-      <PortfolioActions portfolioId={portfolioId} />
-      <PortfolioSections model={model} isMobile={isMobile} portfolioId={portfolioId} />
-      <PositionInspector position={model.selectedPosition} onClose={model.closePosition} />
+      <PortfolioOverview
+        query={model.positions}
+        balances={model.balances}
+        onOpenPosition={model.openPosition}
+        highlight={model.highlight}
+      />
+      <PortfolioSections model={model} isMobile={false} portfolioId={portfolioId} />
+      {inspector}
     </div>
   );
 }
@@ -49,13 +75,27 @@ function usePortfolioView(portfolioId: string) {
   const name = usePortfolioName(portfolioId);
   const positions = usePositions(Number(portfolioId));
   const [selectedId, setSelectedId] = useState<string>();
+  const [hoveredId, setHoveredId] = useState<string>();
+  const [focusedId, setFocusedId] = useState<string>();
   const [tab, setTab] = useState<string | null>('positions');
+  const openPositions = positions.data?.filter(({ quantity }) => quantity > 0);
+  const balances = getPortfolioBalances(openPositions ?? []);
+  const selectedPosition = openPositions?.find(({ id }) => id === selectedId);
+  const allocations = new Map(
+    balances.flatMap(({ segments }) => segments.map(({ position, weight, colorIndex }) => [position.id, { weight, colorIndex }] as const))
+  );
+
   return {
     name,
     positions,
+    openPositionCount: openPositions?.length,
+    balances,
+    allocations,
+    highlight: { id: hoveredId ?? focusedId, onHover: setHoveredId, onFocus: setFocusedId },
     tab,
     setTab,
-    selectedPosition: positions.data?.find(({ id }) => id === selectedId),
+    selectedPosition,
+    selectedWeight: selectedPosition ? allocations.get(selectedPosition.id)?.weight : undefined,
     openPosition: ({ id }: Position) => setSelectedId(id),
     closePosition: () => setSelectedId(undefined)
   };
@@ -71,16 +111,23 @@ function PortfolioSections({
   portfolioId: string;
 }) {
   const { t } = useLingui();
-  const positions = <PositionsView portfolioId={Number(portfolioId)} onOpenPosition={model.openPosition} />;
+  const positions = (
+    <PositionsView
+      portfolioId={Number(portfolioId)}
+      onOpenPosition={model.openPosition}
+      allocations={model.allocations}
+      highlight={model.highlight}
+    />
+  );
   const earnings = <EarningsOverview portfolioId={Number(portfolioId)} />;
-  const trades = <TradesList portfolioId={portfolioId} />;
+  const trades = <TradesList portfolioId={portfolioId} headingId={isMobile ? undefined : 'portfolio-trades-title'} />;
 
   if (isMobile) {
     return (
       <Tabs
         value={model.tab}
         onChange={model.setTab}
-        color="var(--app-weight-fill)"
+        variant="unstyled"
         classNames={{ list: styles.tabs, tab: styles.tab, panel: styles.panel }}>
         <Tabs.List aria-label={t`Portfolio sections`} grow>
           <Tabs.Tab value="positions">
@@ -93,7 +140,12 @@ function PortfolioSections({
             <Trans>Trades</Trans>
           </Tabs.Tab>
         </Tabs.List>
-        <Tabs.Panel value="positions">{positions}</Tabs.Panel>
+        <Tabs.Panel value="positions">
+          <div className={styles.mobilePositions}>
+            <PortfolioAllocation balances={model.balances} onOpenPosition={model.openPosition} highlight={model.highlight} />
+            {positions}
+          </div>
+        </Tabs.Panel>
         <Tabs.Panel value="earnings">{earnings}</Tabs.Panel>
         <Tabs.Panel value="trades">{trades}</Tabs.Panel>
       </Tabs>
@@ -103,9 +155,21 @@ function PortfolioSections({
   return (
     <div className={styles.sections}>
       <section aria-labelledby="portfolio-positions-title">
-        <h2 id="portfolio-positions-title">
-          <Trans>Active positions</Trans>
-        </h2>
+        <div className={styles.sectionHeading}>
+          <h2 id="portfolio-positions-title">
+            <Trans>Active positions</Trans>
+          </h2>
+          {model.openPositionCount != null && (
+            <span>
+              <Plural value={model.openPositionCount} one="# asset" other="# assets" />
+            </span>
+          )}
+          {!!model.openPositionCount && (
+            <span className={styles.positionHint}>
+              <Trans>Click a row for details</Trans>
+            </span>
+          )}
+        </div>
         {positions}
       </section>
       <section aria-labelledby="portfolio-earnings-title">
@@ -114,26 +178,48 @@ function PortfolioSections({
         </h2>
         {earnings}
       </section>
-      <section aria-labelledby="portfolio-trades-title">
-        <h2 id="portfolio-trades-title">
-          <Trans>Trades</Trans>
-        </h2>
-        {trades}
-      </section>
+      <section aria-labelledby="portfolio-trades-title">{trades}</section>
     </div>
   );
 }
 
-function PortfolioMenu({ portfolioId }: { portfolioId: string }) {
+function PortfolioMenu({ portfolioId, isMobile }: { portfolioId: string; isMobile: boolean }) {
   const { t } = useLingui();
   const [opened, archive] = useDisclosure();
+  const [mobileMenuOpen, mobileMenu] = useDisclosure();
+  const label = t`Portfolio actions`;
+  const modal = <ArchivePortfolioModal opened={opened} close={archive.close} portfolioId={portfolioId} />;
+
+  if (isMobile) {
+    return (
+      <>
+        <ActionIcon variant="subtle" className={styles.menuButton} aria-label={label} aria-haspopup="dialog" onClick={mobileMenu.open}>
+          <IconDots size={19} aria-hidden="true" />
+        </ActionIcon>
+        <ResponsiveOverlay opened={mobileMenuOpen} onClose={mobileMenu.close} title={label}>
+          <Button
+            fullWidth
+            color="loss"
+            variant="subtle"
+            leftSection={<IconArchive size={16} />}
+            onClick={() => {
+              mobileMenu.close();
+              archive.open();
+            }}>
+            <Trans>Archive portfolio</Trans>
+          </Button>
+        </ResponsiveOverlay>
+        {modal}
+      </>
+    );
+  }
 
   return (
     <>
-      <Menu position="bottom-end">
+      <Menu position="bottom-start">
         <Menu.Target>
-          <ActionIcon variant="default" aria-label={t`Portfolio actions`}>
-            <IconDots size={19} />
+          <ActionIcon variant="subtle" className={styles.menuButton} aria-label={label}>
+            <IconDots size={19} aria-hidden="true" />
           </ActionIcon>
         </Menu.Target>
         <Menu.Dropdown>
@@ -142,7 +228,7 @@ function PortfolioMenu({ portfolioId }: { portfolioId: string }) {
           </Menu.Item>
         </Menu.Dropdown>
       </Menu>
-      <ArchivePortfolioModal opened={opened} close={archive.close} portfolioId={portfolioId} />
+      {modal}
     </>
   );
 }
@@ -153,16 +239,16 @@ function PortfolioActions({ portfolioId }: { portfolioId: string }) {
   const openBulk = useBulkTradeModalStore((state) => state.open);
 
   return (
-    <Group gap="xs" aria-label={t`Portfolio trade actions`}>
+    <fieldset className={styles.actions} aria-label={t`Portfolio trade actions`}>
       <Button leftSection={<IconPlus size={16} />} onClick={() => openTrade('Buy', undefined, portfolioId)}>
         <Trans comment="Button or filter for a purchase of an asset">Buy</Trans>
       </Button>
       <Button leftSection={<IconMinus size={16} />} variant="default" onClick={() => openTrade('Sell', undefined, portfolioId)}>
         <Trans comment="Button or filter for a sale of an asset">Sell</Trans>
       </Button>
-      <Button leftSection={<IconListDetails size={16} />} variant="subtle" onClick={() => openBulk(Number(portfolioId))}>
+      <Button leftSection={<IconListDetails size={16} />} variant="default" onClick={() => openBulk(Number(portfolioId))}>
         <Trans comment="Short action to open the form for entering many trades">Bulk</Trans>
       </Button>
-    </Group>
+    </fieldset>
   );
 }

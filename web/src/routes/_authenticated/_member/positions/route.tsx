@@ -1,20 +1,7 @@
-import { Trans } from '@lingui/react/macro';
-import { Title } from '@mantine/core';
 import { createFileRoute } from '@tanstack/react-router';
-import { PositionsView } from '~/features/positions/components/positions-view/positions-view';
+import { PositionsPage } from '~/features/positions/pages/positions-page';
 
 export const Route = createFileRoute('/_authenticated/_member/positions')({
-  component: RouteComponent,
+  component: PositionsPage,
   validateSearch: () => ({}) as { page?: number; portfolioId?: number; q?: string }
 });
-
-function RouteComponent() {
-  return (
-    <>
-      <Title order={1} mb="md" className="member-page-title">
-        <Trans>Positions</Trans>
-      </Title>
-      <PositionsView />
-    </>
-  );
-}

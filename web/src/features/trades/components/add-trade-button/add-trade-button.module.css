@@ -1,0 +1,30 @@
+.addTrade {
+  --button-height-sm: 2.125rem;
+  --button-padding-x-sm: 0.75rem;
+  font-size: 0.8125rem;
+  --button-radius: 8px;
+  font-weight: 500;
+}
+
+.portfolioOptions {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.portfolioOptions button {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.75rem 0.25rem;
+  border: 0;
+  border-bottom: 1px solid var(--app-border-subtle);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.portfolioOptions button:hover {
+  color: var(--app-accent);
+}

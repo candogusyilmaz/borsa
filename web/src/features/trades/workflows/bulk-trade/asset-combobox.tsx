@@ -133,12 +133,7 @@ export const AssetCombobox = memo(function AssetCombobox({ value, onChange, inst
               <Trans>No matches found</Trans>
             </Combobox.Empty>
           ) : (
-            <ScrollArea.Autosize
-              mah={240}
-              type="scroll"
-              scrollbarSize={4}
-              viewportRef={setScrollParent}
-              onMouseDown={(e) => e.preventDefault()}>
+            <ScrollArea.Autosize mah={240} type="scroll" viewportRef={setScrollParent} onMouseDown={(e) => e.preventDefault()}>
               <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
                 {virtualizer.getVirtualItems().map((vi) => {
                   const item = filtered[vi.index];

@@ -1,9 +1,13 @@
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
+import { useDisclosure } from '@mantine/hooks';
+import { IconArrowRight, IconChevronRight, IconPlus } from '@tabler/icons-react';
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
+import { CreatePortfolioModal } from '~/features/portfolios/workflows/create-portfolio-button';
 import { PositionInspector } from '~/features/positions/components/positions-view/position-inspector';
 import { TickerAvatar } from '~/shared/components/ticker-avatar/ticker-avatar';
 import { useFormat } from '~/shared/format/use-format';
+import { useIsMobile } from '~/shared/hooks/use-is-mobile';
 import type { DashboardDetails } from '../dashboard-placeholders';
 import { tone } from '../dashboard-presentation';
 import styles from '../pages/dashboard-page.module.css';
@@ -19,6 +23,8 @@ export function DashboardPortfolios({
 }) {
   const { t } = useLingui();
   const format = useFormat();
+  const isMobile = useIsMobile();
+  const [creating, creation] = useDisclosure();
   const [positionId, selectPosition] = useState<string>();
   const position = details.topPositions.find(({ position }) => position.id === positionId)?.position;
   const { currency, weightEstimated, weightPartial } = details;
@@ -30,18 +36,24 @@ export function DashboardPortfolios({
       <div className={styles.detailGrid}>
         <section aria-labelledby="dashboard-portfolios-title">
           <div className={styles.sectionHeading}>
-            <h2 id="dashboard-portfolios-title">
-              <Trans>Linked portfolios</Trans>
-            </h2>
-            <small>
-              <Trans>Weight &amp; total value</Trans>
-            </small>
+            <div>
+              <h2 id="dashboard-portfolios-title">
+                <Trans>Linked portfolios</Trans>
+              </h2>
+              {details.knownPortfolioCount != null && <small>{format.number(details.knownPortfolioCount)}</small>}
+            </div>
+            {isMobile && (
+              <button type="button" className={styles.sectionLink} onClick={creation.open}>
+                <IconPlus size={13} aria-hidden="true" />
+                <Trans comment="Opens a form to create a portfolio, with no automatic link to the current dashboard">New portfolio</Trans>
+              </button>
+            )}
           </div>
           {details.portfolios.length ? (
             <>
               <ul className={styles.detailList}>
                 {details.portfolios.map((row) => (
-                  <PortfolioRow row={row} key={row.id} currency={currency} />
+                  <PortfolioRow row={row} key={row.id} currency={currency} compact={isMobile} />
                 ))}
               </ul>
               <p className={styles.listNote}>
@@ -66,71 +78,83 @@ export function DashboardPortfolios({
         </section>
         <section aria-labelledby="dashboard-positions-title">
           <div className={styles.sectionHeading}>
-            <h2 id="dashboard-positions-title">
-              <Trans>Top positions</Trans>
-            </h2>
-            {details.topPositions.length > 0 ? (
-              <Link to="/positions" className={styles.sectionLink}>
-                <Trans>By value · {rankingCurrency}</Trans>
-              </Link>
-            ) : (
-              <small>
-                <Trans>Daily impact</Trans>
-              </small>
-            )}
+            <div>
+              <h2 id="dashboard-positions-title">
+                <Trans>Top positions</Trans>
+              </h2>
+              {details.topPositions.length > 0 && (
+                <small>
+                  <Trans>By value · {rankingCurrency}</Trans>
+                </small>
+              )}
+            </div>
+            <Link to="/positions" className={styles.sectionLink} aria-describedby="dashboard-positions-title">
+              <Trans>All</Trans>
+              <IconArrowRight size={13} aria-hidden="true" />
+            </Link>
           </div>
           {details.topPositions.length ? (
             <ul className={styles.detailList}>
-              {details.topPositions.map((row) => (
-                <li key={row.position.id}>
-                  <button type="button" className={styles.detailRow} aria-haspopup="dialog" onClick={() => selectPosition(row.position.id)}>
-                    <span className={styles.positionName}>
-                      <TickerAvatar symbol={row.position.instrument.symbol} size="md" />
-                      <span>
-                        <strong>{row.position.instrument.symbol}</strong>
-                        <small>
-                          {row.company} · {row.position.portfolio.name}
+              {details.topPositions.map((row) => {
+                const currency = row.position.currencyCode;
+                const currencyDisplay = currency === 'TRY' ? 'narrowSymbol' : undefined;
+                const fullValue = format.currency(row.value, { currency, currencyDisplay });
+                const dailyAmount = format.currency(row.dailyAmount, { currency, currencyDisplay, signDisplay: 'exceptZero' });
+                return (
+                  <li key={row.position.id}>
+                    <button
+                      type="button"
+                      className={styles.detailRow}
+                      aria-haspopup="dialog"
+                      onClick={() => selectPosition(row.position.id)}>
+                      <span className={styles.positionName}>
+                        <TickerAvatar symbol={row.position.instrument.symbol} size="md" />
+                        <span className={styles.positionIdentity}>
+                          <strong>{row.position.instrument.symbol}</strong>
+                          <small>
+                            {row.company} · {row.position.portfolio.name}
+                          </small>
+                        </span>
+                      </span>
+                      <span className={styles.detailValue}>
+                        <strong title={fullValue}>
+                          {format.currency(row.value, { currency, currencyDisplay, notation: 'compact', maximumFractionDigits: 2 })}
+                          {row.estimatedValue && (
+                            <span className={styles.estimate}>
+                              {' '}
+                              <Trans comment="Compact badge next to an estimated financial value">Est.</Trans>
+                            </span>
+                          )}
+                        </strong>
+                        <small data-tone={tone(row.dailyAmount)} title={dailyAmount}>
+                          {row.dailyPercentage == null
+                            ? dailyAmount
+                            : format.toLocalePercentage(row.dailyPercentage, 2, { signDisplay: 'exceptZero' })}
+                          {row.estimatedDaily && (
+                            <span className={styles.estimate} title={t`Flat daily impact estimate: no daily quote change`}>
+                              {' '}
+                              <Trans comment="Compact badge next to an estimated financial value">Est.</Trans>
+                            </span>
+                          )}
                         </small>
                       </span>
-                    </span>
-                    <span className={styles.detailValue}>
-                      <strong>
-                        {format.toCurrency(row.value, false, row.position.currencyCode)}
-                        {row.estimatedValue && (
-                          <span className={styles.estimate}>
-                            {' '}
-                            <Trans comment="Compact badge next to an estimated financial value">Est.</Trans>
-                          </span>
-                        )}
-                      </strong>
-                      <small data-tone={tone(row.dailyAmount)}>
-                        {format.currency(row.dailyAmount, { currency: row.position.currencyCode, signDisplay: 'exceptZero' })}
-                        {row.dailyPercentage == null
-                          ? ' (—)'
-                          : ` (${format.toLocalePercentage(row.dailyPercentage, 2, { signDisplay: 'exceptZero' })})`}
-                        {row.estimatedDaily && (
-                          <span className={styles.estimate} title={t`Flat daily impact estimate: no daily quote change`}>
-                            {' '}
-                            <Trans comment="Compact badge next to an estimated financial value">Est.</Trans>
-                          </span>
-                        )}
-                      </small>
-                    </span>
-                  </button>
-                </li>
-              ))}
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <DetailsState pending={pending} unavailable={unavailable} empty={t`No open positions in recorded portfolios.`} />
           )}
         </section>
       </div>
+      <CreatePortfolioModal opened={creating} close={creation.close} />
       <PositionInspector position={position} onClose={() => selectPosition(undefined)} />
     </>
   );
 }
 
-function PortfolioRow({ row, currency }: { row: DashboardDetails['portfolios'][number]; currency: string }) {
+function PortfolioRow({ row, currency, compact }: { row: DashboardDetails['portfolios'][number]; currency: string; compact: boolean }) {
   const { t } = useLingui();
   const format = useFormat();
   const { name, id, summary, weight, realized } = row;
@@ -140,7 +164,7 @@ function PortfolioRow({ row, currency }: { row: DashboardDetails['portfolios'][n
 
   return (
     <li>
-      <Link to="/portfolios/$portfolioId" params={{ portfolioId: id }} className={styles.detailRow}>
+      <Link to="/portfolios/$portfolioId" params={{ portfolioId: id }} className={`${styles.detailRow} ${styles.portfolioRow}`}>
         <span className={styles.portfolioName}>
           <strong>{name}</strong>
           <small>
@@ -152,8 +176,15 @@ function PortfolioRow({ row, currency }: { row: DashboardDetails['portfolios'][n
           </span>
         </span>
         <span className={styles.detailValue}>
-          <strong>
-            {summary ? format.toCurrency(summary.value, false, summary.valueCurrency) : '—'}
+          <strong title={summary ? format.toCurrency(summary.value, false, summary.valueCurrency) : undefined}>
+            {summary
+              ? format.currency(summary.value, {
+                  currency: summary.valueCurrency,
+                  currencyDisplay: summary.valueCurrency === 'TRY' ? 'narrowSymbol' : undefined,
+                  notation: compact ? 'compact' : 'standard',
+                  maximumFractionDigits: 2
+                })
+              : '—'}
             {summary?.estimated && (
               <span className={styles.estimate} title={t`Cost basis used for missing quotes`}>
                 {' '}
@@ -176,6 +207,7 @@ function PortfolioRow({ row, currency }: { row: DashboardDetails['portfolios'][n
             </small>
           )}
         </span>
+        <IconChevronRight className={styles.rowChevron} size={16} aria-hidden="true" />
       </Link>
     </li>
   );

@@ -18,6 +18,7 @@ export function getRealizedHistory(trades?: Trade[]) {
   const sales = trades?.filter(({ type }) => type === 'SELL');
   const recorded = sales?.flatMap((sale) => (sale.profit == null ? [] : [{ ...sale, profit: sale.profit }])) ?? [];
   const count = recorded.length;
+  const winningSaleCount = recorded.filter(({ profit }) => profit > 0).length;
 
   // TODO(backend): Replace the sum and coverage check with DashboardView.realizedGains.allTime and its coverage fields.
   const allTime = sales?.length === 0 || count > 0 ? recorded.reduce((sum, sale) => sum + sale.profit, 0) : undefined;
@@ -25,7 +26,8 @@ export function getRealizedHistory(trades?: Trade[]) {
     recorded,
     allTime,
     complete: sales != null && count === sales.length,
-    winRate: count > 0 ? (recorded.filter(({ profit }) => profit > 0).length / count) * 100 : undefined,
+    winRate: count > 0 ? (winningSaleCount / count) * 100 : undefined,
+    winningSaleCount,
     recordedSaleCount: trades == null ? undefined : count
   };
 }

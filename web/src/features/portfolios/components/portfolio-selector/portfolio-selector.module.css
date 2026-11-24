@@ -33,6 +33,25 @@
   color: var(--mantine-color-dimmed);
 }
 
+.choiceName {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.choiceValue {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.choiceValue [data-tone='profit'] {
+  color: var(--app-finance-profit);
+}
+
+.choiceValue [data-tone='loss'] {
+  color: var(--app-finance-loss);
+}
+
 .choiceContent svg {
   flex: none;
   color: var(--mantine-color-text);

@@ -1,19 +1,23 @@
 import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { Button, Skeleton, Tooltip } from '@mantine/core';
+import { useState } from 'react';
 import type { usePositions } from '~/features/positions';
 import type { Position } from '~/features/positions/hooks/use-positions-view';
-import { getPositionMetrics } from '~/features/positions/position-presentation';
+import { getPositionHighlightProps, type PositionHighlight } from '~/features/positions/position-presentation';
 import { useFormat } from '~/shared/format/use-format';
+import type { PortfolioBalance } from './portfolio-balances';
 import styles from './portfolio-overview.module.css';
 
 interface OverviewProps {
   query: ReturnType<typeof usePositions>;
-  onOpenPosition: (position: Position) => void;
+  balances: PortfolioBalance[];
+  onOpenPosition?: (position: Position) => void;
+  highlight?: PositionHighlight;
 }
 
-export function PortfolioOverview({ query, onOpenPosition }: OverviewProps) {
+export function PortfolioOverview({ query, balances, onOpenPosition, highlight }: OverviewProps) {
   const { t } = useLingui();
-  if (query.isPending) return <Skeleton h={150} aria-label={t`Loading portfolio overview`} />;
+  if (query.isPending) return <Skeleton h={140} aria-label={t`Loading portfolio overview`} />;
   if (query.isError) {
     return (
       <div className={styles.state}>
@@ -26,118 +30,172 @@ export function PortfolioOverview({ query, onOpenPosition }: OverviewProps) {
       </div>
     );
   }
-  if (!query.data.length)
+  if (!balances.length)
     return (
       <p className={styles.state}>
         <Trans>Record a trade to see your balance and allocation.</Trans>
       </p>
     );
 
-  const groups = new Map<string, Position[]>();
-  for (const position of query.data) {
-    const group = groups.get(position.currencyCode) ?? [];
-    group.push(position);
-    groups.set(position.currencyCode, group);
-  }
-
   return (
-    <section className={styles.hero} aria-label={t`Portfolio balance and allocation`}>
-      {[...groups].map(([currency, positions]) => (
-        <CurrencyBalance key={currency} currency={currency} positions={positions} onOpenPosition={onOpenPosition} />
+    <section className={styles.hero} aria-label={onOpenPosition ? t`Portfolio balance and allocation` : t`Portfolio balance`}>
+      {balances.map((balance) => (
+        <div className={styles.currency} key={balance.currency}>
+          <Balance balance={balance} />
+          {onOpenPosition && <Allocation balance={balance} onOpenPosition={onOpenPosition} highlight={highlight} />}
+        </div>
       ))}
     </section>
   );
 }
 
-function CurrencyBalance({
-  currency,
-  positions,
-  onOpenPosition
+function Balance({ balance }: { balance: PortfolioBalance }) {
+  const { t } = useLingui();
+  const format = useFormat();
+  const { currency, total, profit, cost, returnPercentage, unquoted, hasQuotes } = balance;
+  const tone = profit > 0 ? 'profit' : profit < 0 ? 'loss' : undefined;
+
+  return (
+    <div className={styles.balance}>
+      <dl>
+        <div>
+          <dt>
+            {unquoted ? t`Quoted balance` : t`Portfolio balance`} · {currency}
+          </dt>
+          <dd className={styles.balanceValue}>{hasQuotes ? format.toCurrency(total, false, currency) : '—'}</dd>
+        </div>
+        {hasQuotes && (
+          <div className={styles.return}>
+            <dt>
+              <Trans>Unrealized P&L</Trans>
+            </dt>
+            <dd>
+              {returnPercentage != null && (
+                <span className="finance-badge" data-tone={tone}>
+                  {format.toLocalePercentage(returnPercentage, 2, { signDisplay: 'exceptZero' })}
+                </span>
+              )}
+              <span data-tone={tone}>{format.currency(profit, { currency, signDisplay: 'exceptZero' })}</span>
+            </dd>
+          </div>
+        )}
+        <div className={styles.cost}>
+          <dt>
+            <Trans>Cost basis</Trans>
+          </dt>
+          <dd>{format.toCurrency(cost, false, currency)}</dd>
+        </div>
+      </dl>
+      {unquoted > 0 && (
+        <p className={styles.state}>
+          <Plural value={unquoted} one="# position has no current quote." other="# positions have no current quote." />
+        </p>
+      )}
+    </div>
+  );
+}
+
+export function PortfolioAllocation({
+  balances,
+  onOpenPosition,
+  highlight
 }: {
-  currency: string;
-  positions: Position[];
-  onOpenPosition: OverviewProps['onOpenPosition'];
+  balances: PortfolioBalance[];
+  onOpenPosition: (position: Position) => void;
+  highlight: PositionHighlight;
+}) {
+  const allocated = balances.filter(({ segments }) => segments.length > 0);
+  if (!allocated.length) return null;
+  return (
+    <div className={styles.allocationGroup}>
+      {allocated.map((balance) => (
+        <Allocation key={balance.currency} balance={balance} onOpenPosition={onOpenPosition} highlight={highlight} />
+      ))}
+    </div>
+  );
+}
+
+function Allocation({
+  balance,
+  onOpenPosition,
+  highlight
+}: {
+  balance: PortfolioBalance;
+  onOpenPosition: (position: Position) => void;
+  highlight?: PositionHighlight;
 }) {
   const { t } = useLingui();
   const format = useFormat();
-  const priced = positions
-    .flatMap((position) => {
-      const { value, profit } = getPositionMetrics(position);
-      return value != null ? [{ position, value, profit }] : [];
-    })
-    .sort((a, b) => b.value - a.value);
-  const total = priced.reduce((sum, { value }) => sum + value, 0);
-  const profit = priced.reduce((sum, item) => sum + (item.profit ?? 0), 0);
-  const costBasis = priced.reduce((sum, { position }) => sum + position.quantity * position.avgCost, 0);
-  const partial = priced.length !== positions.length;
-  const segments = priced.filter(({ value }) => value > 0);
-  const formatMoney = (value: number) => format.toCurrency(value, false, currency);
+  const [expanded, setExpanded] = useState(false);
+  const { currency, segments, total } = balance;
+  if (!segments.length) return null;
+  const entries = segments.map(({ position, value, returnPercentage, colorIndex, weight }) => ({
+    position,
+    value,
+    returnPercentage,
+    colorIndex,
+    weight: format.toLocalePercentage(weight, 1),
+    money: format.toCurrency(value, false, currency)
+  }));
 
   return (
-    <div className={styles.currency}>
-      <div className={styles.balance}>
-        <dl>
-          <dt>
-            {partial ? t`Quoted balance` : t`Portfolio balance`} · {currency}
-          </dt>
-          <dd>{priced.length ? formatMoney(total) : '—'}</dd>
-        </dl>
-        {priced.length > 0 && (
-          <div className={styles.return}>
-            <span className="finance-badge" data-tone={profit > 0 ? 'profit' : profit < 0 ? 'loss' : undefined}>
-              {format.currency(profit, { currency, signDisplay: 'exceptZero' })}
-              {costBasis > 0 && ` · ${format.toLocalePercentage((profit / costBasis) * 100)}`}
-            </span>
-            <small>
-              <Trans>Unrealized P&L</Trans>
-            </small>
-          </div>
-        )}
+    <div className={styles.allocation} data-has-highlight={segments.some(({ position }) => position.id === highlight?.id) || undefined}>
+      <div className={styles.allocationHeading}>
+        <h2>
+          <Trans>Asset allocation</Trans>
+        </h2>
+        <span>
+          <Plural value={segments.length} one="# asset" other="# assets" /> · {currency}
+        </span>
       </div>
-      {partial && (
-        <p className={styles.state}>
-          <Plural
-            value={positions.length - priced.length}
-            one="# position has no current quote."
-            other="# positions have no current quote."
-          />
-        </p>
-      )}
-      {total > 0 && segments.length > 0 && (
-        <div className={styles.allocation}>
-          <p>
-            <Trans>Asset allocation</Trans>
-          </p>
-          <fieldset className={styles.allocationBar} aria-label={t`${currency} allocation by quoted value`}>
-            {segments.map(({ position, value }, index) => {
-              const weight = format.toLocalePercentage((value / total) * 100, 1);
-              const label = `${position.instrument.symbol} · ${weight} · ${formatMoney(value)}`;
-              return (
-                <Tooltip key={position.id} label={label} events={{ hover: true, focus: true, touch: false }}>
-                  <button
-                    type="button"
-                    style={{ flexGrow: value / total }}
-                    data-color={index % 4}
-                    aria-label={label}
-                    aria-haspopup="dialog"
-                    onClick={() => onOpenPosition(position)}
-                  />
-                </Tooltip>
-              );
-            })}
-          </fieldset>
-          <ul className={styles.legend}>
-            {segments.slice(0, 4).map(({ position, value }, index) => (
-              <li key={position.id}>
-                <button type="button" data-color={index} aria-haspopup="dialog" onClick={() => onOpenPosition(position)}>
-                  <span aria-hidden="true" />
-                  <strong>{position.instrument.symbol}</strong>
-                  <small>{format.toLocalePercentage((value / total) * 100, 1)}</small>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
+      <fieldset className={styles.allocationBar} aria-label={t`${currency} allocation by quoted value`}>
+        {entries.map(({ position, value, colorIndex, weight, money }) => {
+          const label = `${position.instrument.symbol} · ${weight} · ${money}`;
+          return (
+            <Tooltip key={position.id} label={label} events={{ hover: true, focus: true, touch: false }}>
+              <button
+                type="button"
+                style={{ flexGrow: value / total }}
+                data-asset-color={colorIndex}
+                aria-label={label}
+                aria-haspopup="dialog"
+                onClick={() => onOpenPosition(position)}
+                {...getPositionHighlightProps(position.id, highlight)}
+              />
+            </Tooltip>
+          );
+        })}
+      </fieldset>
+      <ul className={styles.legend}>
+        {(expanded ? entries : entries.slice(0, 4)).map(({ position, colorIndex, weight, money, returnPercentage }) => (
+          <li key={position.id}>
+            <button
+              type="button"
+              data-asset-color={colorIndex}
+              aria-haspopup="dialog"
+              onClick={() => onOpenPosition(position)}
+              {...getPositionHighlightProps(position.id, highlight)}>
+              <span className={styles.legendIdentity}>
+                <span className={styles.dot} aria-hidden="true" />
+                <strong>{position.instrument.symbol}</strong>
+                <small>{weight}</small>
+              </span>
+              <span className={styles.legendValue}>
+                {money}
+                {returnPercentage != null && (
+                  <small data-tone={returnPercentage > 0 ? 'profit' : returnPercentage < 0 ? 'loss' : undefined}>
+                    {format.toLocalePercentage(returnPercentage, 2, { signDisplay: 'exceptZero' })}
+                  </small>
+                )}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      {entries.length > 4 && (
+        <Button variant="subtle" size="compact-sm" aria-expanded={expanded} onClick={() => setExpanded((value) => !value)}>
+          {expanded ? <Trans>Show fewer assets</Trans> : <Trans>Show all assets</Trans>}
+        </Button>
       )}
     </div>
   );

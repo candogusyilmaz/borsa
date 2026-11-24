@@ -1,5 +1,100 @@
 html {
+  --app-scrollbar-size: 14px;
+  --app-scrollbar-inset: 4px;
+  --app-scrollbar-thumb: color-mix(in srgb, var(--mantine-color-dimmed) 88%, var(--mantine-color-body));
+  --app-scrollbar-thumb-active: color-mix(in srgb, var(--mantine-color-text) 70%, var(--mantine-color-dimmed));
+  --app-scrollbar-track: transparent;
+
   background: var(--mantine-color-body);
+  scrollbar-color: var(--app-scrollbar-thumb) var(--app-scrollbar-track);
+  scrollbar-width: auto;
+}
+
+.mantine-ScrollArea-scrollbar,
+.mantine-ScrollArea-scrollbar:is(:hover, :active),
+.mantine-ScrollArea-corner {
+  background-color: var(--app-scrollbar-track);
+}
+
+.mantine-ScrollArea-root {
+  --scrollarea-scrollbar-size: var(--app-scrollbar-size);
+}
+
+.mantine-ScrollArea-scrollbar {
+  padding: 0;
+}
+
+.mantine-ScrollArea-thumb {
+  border: var(--app-scrollbar-inset) solid transparent;
+  background-color: var(--app-scrollbar-thumb);
+  background-clip: padding-box;
+}
+
+.mantine-ScrollArea-scrollbar:is(:hover, :active) > .mantine-ScrollArea-thumb {
+  border-width: calc(var(--app-scrollbar-inset) - 1px);
+  background-color: var(--app-scrollbar-thumb-active);
+}
+
+@media (prefers-contrast: more) {
+  html {
+    --app-scrollbar-inset: 2px;
+    --app-scrollbar-thumb: var(--mantine-color-text);
+    --app-scrollbar-thumb-active: var(--mantine-color-text);
+    --app-scrollbar-track: var(--mantine-color-body);
+  }
+}
+
+@media (forced-colors: active) {
+  html {
+    --app-scrollbar-inset: 2px;
+    --app-scrollbar-thumb: ButtonText;
+    --app-scrollbar-thumb-active: ButtonText;
+    --app-scrollbar-track: Canvas;
+
+    scrollbar-color: auto;
+  }
+
+  .mantine-ScrollArea-scrollbar,
+  .mantine-ScrollArea-thumb,
+  .mantine-ScrollArea-corner {
+    forced-color-adjust: none;
+  }
+}
+
+@supports selector(::-webkit-scrollbar-thumb) {
+  @media (pointer: fine) and (hover: hover) and (not (forced-colors: active)) and (not (prefers-contrast: more)) {
+    /* Non-auto scrollbar-color overrides the thumb pseudo-element in Blink and WebKit. */
+    html {
+      scrollbar-color: auto;
+    }
+
+    ::-webkit-scrollbar {
+      width: var(--app-scrollbar-size);
+      height: var(--app-scrollbar-size);
+    }
+
+    ::-webkit-scrollbar-button {
+      display: none;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      border: var(--app-scrollbar-inset) solid transparent;
+      border-radius: 999px;
+      background-color: var(--app-scrollbar-thumb);
+      background-clip: padding-box;
+    }
+
+    ::-webkit-scrollbar-thumb:hover,
+    ::-webkit-scrollbar-thumb:active {
+      border-width: calc(var(--app-scrollbar-inset) - 1px);
+      background-color: var(--app-scrollbar-thumb-active);
+    }
+
+    ::-webkit-scrollbar-track,
+    ::-webkit-scrollbar-corner {
+      background-color: var(--app-scrollbar-track);
+    }
+  }
 }
 
 body {

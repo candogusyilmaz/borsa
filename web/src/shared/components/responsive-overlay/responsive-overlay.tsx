@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro';
-import { Drawer, type MantineSize, Modal } from '@mantine/core';
+import { Drawer, type DrawerStylesNames, type MantineSize, Modal } from '@mantine/core';
+import clsx from 'clsx';
 import { type ReactNode, useState } from 'react';
 import { useIsMobile } from '~/shared/hooks/use-is-mobile';
 import styles from './responsive-overlay.module.css';
@@ -12,9 +13,10 @@ interface ResponsiveOverlayProps {
   desktop?: 'drawer' | 'modal';
   closeOnClickOutside?: boolean;
   size?: MantineSize | string | number;
+  drawerClassNames?: Partial<Record<DrawerStylesNames, string>>;
 }
 
-export function ResponsiveOverlay({ children, desktop = 'modal', size, ...props }: ResponsiveOverlayProps) {
+export function ResponsiveOverlay({ children, desktop = 'modal', size, drawerClassNames, ...props }: ResponsiveOverlayProps) {
   const { t } = useLingui();
   const closeButtonProps = { 'aria-label': t`Close` };
   const isMobile = useIsMobile();
@@ -30,7 +32,12 @@ export function ResponsiveOverlay({ children, desktop = 'modal', size, ...props 
         closeButtonProps={closeButtonProps}
         position="bottom"
         size="auto"
-        classNames={{ content: styles.sheet, header: styles.sheetHeader, body: styles.sheetBody }}>
+        classNames={{
+          ...drawerClassNames,
+          content: clsx(styles.sheet, drawerClassNames?.content),
+          header: clsx(styles.sheetHeader, drawerClassNames?.header),
+          body: clsx(styles.sheetBody, drawerClassNames?.body)
+        }}>
         {children}
       </Drawer>
     );
@@ -43,7 +50,7 @@ export function ResponsiveOverlay({ children, desktop = 'modal', size, ...props 
         closeButtonProps={closeButtonProps}
         position="right"
         size={size ?? 'lg'}
-        classNames={{ header: styles.drawerHeader }}>
+        classNames={{ ...drawerClassNames, header: clsx(styles.drawerHeader, drawerClassNames?.header) }}>
         {children}
       </Drawer>
     );

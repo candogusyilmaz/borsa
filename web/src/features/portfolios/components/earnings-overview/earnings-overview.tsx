@@ -62,17 +62,21 @@ export function EarningsOverview({ portfolioId }: { portfolioId: number }) {
   const bars = Array.from({ length: monthly ? 12 : 7 }, (_, index) => ({
     index,
     label: format.date(start.add(index, unit).valueOf(), monthly ? { month: 'short' } : { weekday: 'short' }),
+    fullLabel: format.date(start.add(index, unit).valueOf(), monthly ? { month: 'long', year: 'numeric' } : { dateStyle: 'long' }),
     profit: values.get(index)
   }));
   const total = [...values.values()].reduce((sum, profit) => sum + profit, 0);
-  const max = Math.max(1, ...[...values.values()].map(Math.abs));
+  const high = Math.max(0, ...values.values());
+  const low = Math.min(0, ...values.values());
+  const span = high - low;
+  const baseline = span > 0 ? 4 + (-low / span) * 92 : 50;
   const change = previous !== 0 ? ((total - previous) / Math.abs(previous)) * 100 : undefined;
-  const active = bars[selectedBar ?? -1];
+  const active = bars[selectedBar ?? Math.max(...values.keys())];
   const earliest = relevant.reduce((earlier, { date }) => (date.isBefore(earlier) ? date : earlier), now);
   const weekStart = format.date(week.valueOf(), { month: 'short', day: 'numeric' });
   const weekEnd = format.date(week.add(6, 'day').valueOf(), { month: 'short', day: 'numeric' });
   const weekLabel = `${weekStart} – ${weekEnd}`;
-  const money = (value: number) => format.toCurrency(value, false, currency);
+  const money = (value: number) => format.currency(value, { currency, signDisplay: 'exceptZero' });
 
   function shift(offset: number) {
     if (monthly) setYear((value) => value + offset);
@@ -82,72 +86,82 @@ export function EarningsOverview({ portfolioId }: { portfolioId: number }) {
 
   return (
     <div className={styles.view}>
-      <div className={styles.controls}>
-        <PeriodNavigator
-          label={monthly ? format.number(year, { useGrouping: false }) : weekLabel}
-          onPrev={() => shift(-1)}
-          onNext={() => shift(1)}
-          canPrev={monthly ? year > earliest.year() : week.isAfter(earliest.startOf('week'))}
-          canNext={monthly ? year < now.year() : week.isBefore(now.startOf('week'))}
-        />
-        <SegmentedControl
-          aria-label={t`Earnings period`}
-          size="xs"
-          value={period}
-          onChange={(value) => {
-            setPeriod(value === 'weekly' ? 'weekly' : 'monthly');
-            selectBar(undefined);
-          }}
-          data={[
-            { label: t`Weekly`, value: 'weekly' },
-            { label: t`Monthly`, value: 'monthly' }
-          ]}
-        />
-        {currencies.length > 1 && (
-          <Select
-            aria-label={t`Earnings currency`}
-            value={currency}
-            data={currencies}
-            allowDeselect={false}
-            onChange={(value) => {
-              if (value) selectCurrency(value);
-              selectBar(undefined);
-            }}
-            className={styles.currency}
-          />
-        )}
-      </div>
-      {values.size ? (
-        <>
+      <div className={styles.header}>
+        {values.size > 0 && (
           <div className={styles.summary}>
-            <strong>{money(total)}</strong>
+            <span>
+              <Trans>Realized P&L</Trans>
+            </span>
+            <strong data-tone={total < 0 ? 'loss' : undefined}>{format.toCurrency(total, false, currency)}</strong>
             {change != null && (
               <span className="finance-badge" data-tone={change > 0 ? 'profit' : change < 0 ? 'loss' : undefined}>
                 <Trans>{format.toLocalePercentage(change, 1, { signDisplay: 'exceptZero' })} vs previous period</Trans>
               </span>
             )}
           </div>
+        )}
+        <div className={styles.controls}>
+          <PeriodNavigator
+            label={monthly ? format.number(year, { useGrouping: false }) : weekLabel}
+            onPrev={() => shift(-1)}
+            onNext={() => shift(1)}
+            canPrev={monthly ? year > earliest.year() : week.isAfter(earliest.startOf('week'))}
+            canNext={monthly ? year < now.year() : week.isBefore(now.startOf('week'))}
+          />
+          <SegmentedControl
+            aria-label={t`Earnings period`}
+            size="xs"
+            value={period}
+            onChange={(value) => {
+              setPeriod(value === 'weekly' ? 'weekly' : 'monthly');
+              selectBar(undefined);
+            }}
+            data={[
+              { label: t`Weekly`, value: 'weekly' },
+              { label: t`Monthly`, value: 'monthly' }
+            ]}
+          />
+          {currencies.length > 1 && (
+            <Select
+              aria-label={t`Earnings currency`}
+              value={currency}
+              data={currencies}
+              allowDeselect={false}
+              onChange={(value) => {
+                if (value) selectCurrency(value);
+                selectBar(undefined);
+              }}
+              className={styles.currency}
+            />
+          )}
+        </div>
+      </div>
+      {values.size ? (
+        <div className={styles.canvas}>
           <fieldset className={styles.chart} data-monthly={monthly || undefined} aria-label={t`Realized profit and loss by period`}>
-            {bars.map(({ index, label, profit }) => (
+            {bars.map(({ index, label, fullLabel, profit }) => (
               <button
                 type="button"
-                key={label}
+                key={index}
                 className={styles.column}
-                aria-label={`${label}, ${profit == null ? t`no recorded P&L` : money(profit)}`}
-                aria-pressed={index === selectedBar}
+                aria-label={`${fullLabel}, ${profit == null ? t`no recorded P&L` : money(profit)}`}
+                aria-pressed={index === active?.index}
                 onPointerEnter={(event) => {
                   if (event.pointerType === 'mouse') selectBar(index);
                 }}
                 onFocus={() => selectBar(index)}
                 onClick={() => selectBar(index)}>
                 <span className={styles.plot}>
-                  {profit != null && (
-                    <span
-                      className={styles.bar}
-                      data-loss={profit < 0 || undefined}
-                      style={{ blockSize: `${Math.max(2, (Math.abs(profit) / max) * 48)}%` }}
-                    />
-                  )}
+                  <span aria-hidden="true" className={styles.zero} style={{ insetBlockEnd: `${baseline}%` }} />
+                  <span
+                    aria-hidden="true"
+                    className={styles.bar}
+                    data-tone={profit ? (profit > 0 ? 'profit' : 'loss') : undefined}
+                    style={{
+                      blockSize: profit ? `${(Math.abs(profit) / span) * 92}%` : '2px',
+                      ...(profit != null && profit < 0 ? { insetBlockStart: `${100 - baseline}%` } : { insetBlockEnd: `${baseline}%` })
+                    }}
+                  />
                 </span>
                 <span className={styles.label}>{label}</span>
               </button>
@@ -155,10 +169,13 @@ export function EarningsOverview({ portfolioId }: { portfolioId: number }) {
           </fieldset>
           {active && (
             <p className={styles.detail}>
-              {active.label} · {active.profit == null ? t`No recorded P&L` : money(active.profit)}
+              <span>{active.fullLabel}</span>
+              <span data-tone={active.profit ? (active.profit > 0 ? 'profit' : 'loss') : undefined}>
+                {active.profit == null ? t`No recorded P&L` : money(active.profit)}
+              </span>
             </p>
           )}
-        </>
+        </div>
       ) : (
         <p className={styles.state}>
           <Trans>No realized P&L in this period.</Trans>

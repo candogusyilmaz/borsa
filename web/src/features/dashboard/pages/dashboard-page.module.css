@@ -1,59 +1,71 @@
 .page {
   display: grid;
-  gap: 1.75rem;
-  min-width: 0;
-  container: dashboard / inline-size;
+  gap: 2.25rem;
+  min-inline-size: 0;
+}
+
+.pageHeader,
+.pageContext,
+.chartHeader,
+.chartTitle,
+.chartSummary,
+.sectionHeading,
+.sectionHeading > div {
+  display: flex;
+  align-items: center;
 }
 
 .pageHeader,
 .chartHeader,
 .sectionHeading {
-  display: flex;
-  flex-wrap: wrap;
   justify-content: space-between;
   gap: 0.5rem 1rem;
-  align-items: center;
 }
 
-.pageHeader {
-  align-items: start;
+.pageContext {
+  gap: 0.375rem;
+  min-inline-size: 0;
 }
 
 .title {
+  min-inline-size: 0;
   margin: 0;
-  min-width: 0;
 }
 
 .titleButton {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-  max-width: 100%;
-  padding: 0;
+  gap: 0.5rem;
+  max-inline-size: 100%;
+  padding: 0.25rem 0.625rem 0.25rem 0.25rem;
   border: 0;
+  border-radius: 12px;
   background: transparent;
   color: inherit;
-  font: 600 1.375rem/1.25 var(--mantine-font-family-headings);
+  font: 600 1.25rem/1.25 var(--mantine-font-family-headings);
   letter-spacing: -0.025em;
   text-align: start;
   overflow-wrap: anywhere;
   cursor: pointer;
 }
 
-.titleButton svg {
+.titleButton > svg,
+.rowChevron {
   flex: none;
   color: var(--mantine-color-dimmed);
 }
 
-.titleButton:hover svg {
-  color: var(--mantine-color-text);
+.titleButton:hover,
+.picker button:hover,
+.detailRow:hover {
+  background: var(--mantine-color-default-hover);
 }
 
-.pageMeta,
 .market,
 .summary dt,
 .metricDetail,
-.sectionTitle output,
+.chartTitle > span,
+.chartSummary,
 .sectionHeading small,
 .sectionLink,
 .detailList small,
@@ -67,15 +79,17 @@
   letter-spacing: normal;
 }
 
-.pageMeta {
-  margin: 0.25rem 0 0;
-}
-
 .market {
   display: flex;
+  flex: none;
   align-items: center;
   gap: 0.4rem;
-  margin: 0.3rem 0 0;
+  margin: 0;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid var(--app-border-subtle);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--app-surface-secondary) 56%, transparent);
+  font-size: 0.6875rem;
 }
 
 .market::before {
@@ -92,53 +106,115 @@
 
 .summary {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 5fr) repeat(3, minmax(0, 2.33fr));
+  align-items: end;
+  gap: clamp(0.75rem, 2.4vw, 2rem);
   margin: 0;
-  padding-block: 1.5rem;
-  border-block: 1px solid var(--app-border-subtle);
+  padding-block-end: 2rem;
+  border-block-end: 1px solid var(--app-border-subtle);
 }
 
 .summary > div {
-  min-width: 0;
-  padding-inline: clamp(0.75rem, 2.25vw, 1.5rem);
-  border-inline-start: 1px solid var(--app-border-subtle);
+  min-inline-size: 0;
   overflow-wrap: anywhere;
 }
 
-.summary > .balance {
-  padding-inline-start: 0;
-  border-inline-start: 0;
+.summary dd {
+  margin-inline-start: 0;
 }
 
 .summary dt {
   font-weight: 500;
 }
 
-.summary dd {
-  margin: 0.375rem 0 0;
-  font-size: clamp(1.25rem, 2vw, 1.375rem);
+.balance dt,
+.balanceChange,
+.balanceReturn,
+.balanceDaily,
+.metricDetail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.5rem;
+}
+
+.balanceCurrency {
+  padding: 0.1rem 0.375rem;
+  border-radius: 4px;
+  background: var(--app-surface-secondary);
+  font-size: 0.625rem;
+}
+
+.balanceValue {
+  margin-block: 0.35rem 0;
+  font-size: clamp(1.875rem, 4vw, 2.25rem);
   font-weight: 600;
-  letter-spacing: -0.02em;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+}
+
+.balanceChange {
+  margin-block: 0.7rem 0;
+  color: var(--mantine-color-dimmed);
+  font-size: 0.75rem;
+}
+
+.balanceChange :global(.finance-badge) {
+  padding-inline: 0.6rem;
+  border-radius: 999px;
+}
+
+.balanceReturn strong,
+.balanceDaily strong,
+.metricDetail strong {
+  font-weight: 500;
+}
+
+.balanceDaily {
+  display: none;
+}
+
+.daily {
+  padding-inline-start: clamp(0.75rem, 2.4vw, 2rem);
+  border-inline-start: 1px solid var(--app-border-subtle);
+}
+
+.metricValue {
+  margin-block: 0.35rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
   line-height: 1.2;
 }
 
-.balance dd:first-of-type {
-  font-size: clamp(2rem, 4vw, 2.25rem);
-  line-height: 1.1;
-  letter-spacing: -0.03em;
+.metricDetail {
+  margin-block: 0.25rem 0;
 }
 
-.summary .metricDetail {
-  margin-block-start: 0.5rem;
-  font-size: 0.75rem;
-  font-weight: 400;
-  letter-spacing: normal;
+.periodButton,
+.sectionLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--mantine-color-dimmed);
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
 }
 
-.period label,
-.chartControls label {
-  font-size: 0.71875rem;
-  font-weight: 500;
+.periodButton {
+  min-block-size: 1.25rem;
+  margin-block: -0.125rem;
+}
+
+.periodButton:hover,
+.sectionLink:hover {
+  color: var(--mantine-color-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .page [data-tone='profit'] {
@@ -149,52 +225,96 @@
   color: var(--app-finance-loss);
 }
 
-.sectionTitle h2,
+.performance,
+.sectionTitle {
+  min-inline-size: 0;
+}
+
+.chartHeader {
+  flex-wrap: wrap;
+  align-items: start;
+  margin-block-end: 1rem;
+}
+
+.chartTitle,
+.chartSummary {
+  flex-wrap: wrap;
+  gap: 0.2rem 0.5rem;
+}
+
+.chartTitle h2,
 .sectionHeading h2 {
   margin: 0;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: -0.01em;
 }
 
-.sectionTitle output {
-  display: block;
-  margin-block-start: 0.3rem;
+.chartSummary {
+  align-items: baseline;
+  margin-block-start: 0.25rem;
 }
 
 .chartTotal {
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-}
-
-.chartSurface {
-  min-width: 0;
-  padding: 1.25rem 1.375rem;
-  border: 1px solid var(--app-border-subtle);
-  border-radius: 12px;
-  background: var(--mantine-color-default);
-}
-
-.chartHeader {
-  margin-block-end: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+  overflow-wrap: anywhere;
 }
 
 .chartControls {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 0.45rem 0.9rem;
+  gap: 0.375rem 0.5rem;
+}
+
+.chartRange,
+.chartMode {
+  padding: 2px;
+  border: 1px solid var(--app-border-subtle);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--app-surface-secondary) 65%, transparent);
+}
+
+.chartControls label {
+  border-radius: 6px;
+  padding: 0.22rem 0.55rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+
+.chartRange :global(.mantine-SegmentedControl-indicator) {
+  border-radius: 6px;
+  background: var(--mantine-color-brand-filled);
+}
+
+.chartRange label[data-active] {
+  color: var(--app-on-primary);
+}
+
+.chartMode :global(.mantine-SegmentedControl-indicator) {
+  border-radius: 6px;
+  background: var(--mantine-color-default);
+}
+
+.chartSurface {
+  min-inline-size: 0;
+  padding: 1.25rem;
+  border: 1px solid var(--app-border-subtle);
+  border-radius: 16px;
+  background: var(--mantine-color-default);
 }
 
 .chart {
-  height: clamp(14rem, 29vw, 19.5rem);
-  min-width: 0;
+  block-size: 16rem;
+  min-inline-size: 0;
   font-variant-numeric: tabular-nums;
 }
 
 .chartEmpty {
   display: grid;
-  min-height: 10rem;
+  min-block-size: 10rem;
   margin: 0;
   place-items: center;
   color: var(--mantine-color-dimmed);
@@ -217,7 +337,7 @@
   display: flex;
   justify-content: space-between;
   gap: 0.75rem;
-  margin-top: 0.25rem;
+  margin-block-start: 0.25rem;
 }
 
 .tooltipRow strong {
@@ -237,20 +357,22 @@
 }
 
 .detailGrid section {
-  min-width: 0;
+  min-inline-size: 0;
 }
 
 .sectionHeading {
-  margin-block-end: 0.55rem;
+  margin-block-end: 0.65rem;
+}
+
+.sectionHeading > div {
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.15rem 0.5rem;
 }
 
 .sectionLink {
-  text-decoration: none;
-}
-
-.sectionLink:hover {
-  color: var(--mantine-color-text);
-  text-decoration: underline;
+  flex: none;
+  font: 500 0.75rem/1.3 var(--mantine-font-family);
 }
 
 .detailList,
@@ -261,61 +383,65 @@
 }
 
 .detailList li {
-  border-bottom: 1px solid var(--app-border-subtle);
+  border-block-end: 1px solid var(--app-border-subtle);
 }
 
 .detailList li:first-child {
-  border-top: 1px solid var(--app-border-subtle);
+  border-block-start: 1px solid var(--app-border-subtle);
 }
 
 .detailRow {
-  display: flex;
-  width: 100%;
-  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.6rem;
-  padding: 0.625rem 0.5rem;
+  gap: 0.625rem;
+  inline-size: 100%;
+  min-block-size: 3.25rem;
+  padding: 0.875rem 0.5rem;
   border: 0;
   background: transparent;
   color: inherit;
-  font: inherit;
-  font-size: 0.84375rem;
-  line-height: 1.4;
-  font-weight: 500;
+  font: 500 0.875rem/1.4 var(--mantine-font-family);
   text-align: start;
   text-decoration: none;
   overflow-wrap: anywhere;
   cursor: pointer;
 }
 
-.detailRow:hover {
-  background: var(--mantine-color-default-hover);
+.portfolioRow {
+  grid-template-columns: minmax(0, 1fr) auto auto;
 }
 
 .detailList small {
   display: block;
-  margin-top: 0.15rem;
-}
-
-.portfolioName,
-.positionName {
-  min-width: 0;
-}
-
-.portfolioName strong {
-  font-weight: 500;
+  margin-block-start: 0.125rem;
 }
 
 .positionName {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: 0.65rem;
+  min-inline-size: 0;
+}
+
+.positionName > :first-child {
+  inline-size: 2rem;
+  block-size: 2rem;
+  border-radius: 50%;
+}
+
+.positionIdentity {
+  min-inline-size: 0;
+}
+
+.positionIdentity small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .detailValue {
-  flex-shrink: 0;
-  max-width: 53%;
+  max-inline-size: 15ch;
   text-align: end;
 }
 
@@ -323,20 +449,24 @@
   font-weight: 500;
 }
 
+.rowChevron {
+  opacity: 0.6;
+}
+
 .weightTrack {
   display: block;
-  width: min(7.5rem, 100%);
-  height: 3px;
-  margin-block-start: 0.35rem;
-  border-radius: 3px;
+  inline-size: min(8rem, 100%);
+  block-size: 4px;
+  margin-block-start: 0.425rem;
+  border-radius: 999px;
   background: var(--app-surface-secondary);
-  overflow: hidden;
+  overflow: clip;
 }
 
 .weightTrack > span {
   display: block;
-  min-width: 4px;
-  height: 100%;
+  min-inline-size: 4px;
+  block-size: 100%;
   border-radius: inherit;
   background: var(--app-weight-fill);
 }
@@ -357,86 +487,220 @@
 }
 
 .picker {
+  max-block-size: min(48dvh, 22rem);
   margin-block-end: 1rem;
+  overflow-y: auto;
 }
 
 .picker button {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  width: 100%;
-  min-height: 44px;
-  padding: 0.65rem 0.5rem;
+  inline-size: 100%;
+  min-block-size: 44px;
+  padding: 0.65rem;
   border: 0;
-  border-bottom: 1px solid var(--app-border-subtle);
+  border-block-end: 1px solid var(--app-border-subtle);
   background: transparent;
   color: inherit;
-  font: inherit;
-  font-size: 0.875rem;
+  font: 500 0.875rem/1.3 var(--mantine-font-family);
   text-align: start;
+  overflow-wrap: anywhere;
   cursor: pointer;
 }
 
+.picker button svg {
+  flex: none;
+}
+
 .picker button[aria-current='true'] {
-  background: var(--app-surface-selected);
   border-radius: 8px;
+  background: var(--app-surface-selected);
   font-weight: 600;
 }
 
-@container dashboard (max-width: 48rem) {
-  .detailGrid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
+@media (width > 48em) and (width < 58em) {
   .summary {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    padding-block: 0;
+    grid-template-columns: minmax(0, 1.55fr) repeat(3, minmax(0, 1fr));
   }
 
-  .summary > div {
-    padding-block: 0.875rem;
-  }
-
-  .summary > div:nth-child(odd) {
-    border-inline-start: 0;
-    padding-inline-start: 0;
-  }
-
-  .summary > div:nth-child(n+3) {
-    border-block-start: 1px solid var(--app-border-subtle);
-  }
-}
-
-@container dashboard (max-width: 29rem) {
-  .chartSurface {
-    padding: 0.875rem;
-  }
-
-  .summary > .balance,
-  .summary > div:last-child {
-    grid-column: 1 / -1;
-    border-inline-start: 0;
-    padding-inline-start: 0;
-  }
-
-  .summary > div:nth-child(2),
-  .summary > div:nth-child(3) {
-    border-top: 1px solid var(--app-border-subtle);
-  }
-
-  .summary > div:nth-child(2) {
-    border-inline-start: 0;
-    padding-inline-start: 0;
-  }
-
-  .summary > div:nth-child(3) {
-    border-inline-start: 1px solid var(--app-border-subtle);
-    padding-inline: 0.55rem 0;
+  .balanceValue {
+    font-size: 1.875rem;
   }
 }
 
 @media (max-width: 48em) {
-  .market {
+  .page {
+    gap: 0;
+  }
+
+  .pageHeader {
+    flex-wrap: nowrap;
+  }
+
+  .pageContext {
+    flex: 1;
+  }
+
+  .pageHeader > button {
+    flex: none;
+  }
+
+  .titleButton {
+    min-block-size: 2.25rem;
+    padding-inline-start: 0;
+    font-size: 0.875rem;
+    letter-spacing: -0.015em;
+  }
+
+  .titleText {
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .titleMark {
+    display: grid;
+    flex: none;
+    place-items: center;
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+    border-radius: 5px;
+    background: #4f46e5;
+    color: #fff;
+  }
+
+  .summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 0;
+    padding-block: 0.5rem 0;
+  }
+
+  .summary .balance {
+    grid-column: 1 / -1;
+    padding-block-end: 1.125rem;
+    border-block-end: 1px solid var(--app-border-subtle);
+  }
+
+  .daily,
+  .balanceReturn {
+    display: none;
+  }
+
+  .balanceDaily {
+    display: flex;
+  }
+
+  .balanceValue {
+    margin-block-start: 0.1rem;
+    font-size: 1.875rem;
+  }
+
+  .balanceChange {
+    margin-block-start: 0.45rem;
+  }
+
+  .balanceCurrency {
+    padding: 0;
+    background: transparent;
+    font: inherit;
+  }
+
+  .balanceCurrency::before {
+    margin-inline-end: 0.375rem;
+    content: '·';
+  }
+
+  .realized,
+  .win {
+    margin-block: 0.75rem;
+  }
+
+  .realized {
+    position: relative;
+    padding-inline-end: 0.75rem;
+  }
+
+  .win {
+    padding-inline-start: 0.875rem;
+    border-inline-start: 1px solid var(--app-border-subtle);
+  }
+
+  .summary dt,
+  .metricDetail,
+  .detailList small,
+  .sectionHeading small,
+  .sectionLink {
+    font-size: 0.6875rem;
+  }
+
+  .metricValue {
+    margin-block-start: 0.2rem;
+    font-size: 0.875rem;
+  }
+
+  .metricDetail {
+    min-block-size: 1.125rem;
+  }
+
+  .realized .periodButton::after {
+    position: absolute;
+    inset: 0;
+    content: '';
+  }
+
+  .performance {
+    padding-block-start: 1.25rem;
+  }
+
+  .chartHeader {
+    margin-block-end: 0.75rem;
+  }
+
+  .chartSurface {
+    padding: 0.75rem;
+  }
+
+  .chart {
+    block-size: 12rem;
+  }
+
+  .chartTitle h2,
+  .sectionHeading h2 {
+    font-size: 0.8125rem;
+  }
+
+  .chartTotal {
+    font-size: 1.125rem;
+  }
+
+  .detailGrid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+    padding-block-start: 1.25rem;
+  }
+
+  .sectionHeading {
+    margin-block-end: 0.375rem;
+  }
+
+  .sectionHeading small {
+    display: none;
+  }
+
+  .detailList {
+    margin-inline: calc(-1 * var(--member-inset-start)) calc(-1 * var(--member-inset-end));
+  }
+
+  .detailRow {
+    padding-block: 0.75rem;
+    padding-inline: var(--member-inset-start) var(--member-inset-end);
+  }
+
+  .weightTrack {
     display: none;
   }
 }
@@ -444,14 +708,13 @@
 @media (pointer: coarse) {
   .titleButton,
   .chartControls label,
-  .period label,
   .sectionLink {
-    min-height: 44px;
     display: flex;
+    min-block-size: 44px;
     align-items: center;
   }
 
-  .chartControls {
-    gap: 0.25rem 0.8rem;
+  .realized {
+    min-block-size: 44px;
   }
 }

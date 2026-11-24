@@ -8,7 +8,7 @@
 
 ## Layout and interaction
 
-- Center the desktop top bar and main content in a shared container. Use the mobile header for page context and account actions. Keep Dashboard, Portfolios, Positions and Trades in the safe-area-aware bottom navigation.
+- Use the shared `74rem` member container and safe-area-aware horizontal insets for the top bar and main content on every page. Mobile list dividers can extend to the viewport edges while row content follows the shared insets. Use the mobile header for page context and account actions. Keep Dashboard, Portfolios, Positions and Trades in the safe-area-aware bottom navigation.
 - Build display layouts with semantic HTML and CSS Modules. Use Mantine for interactive menus, overlays, form controls, tooltips, segmented controls and notifications.
 - Use `useIsMobile` at the 48em boundary when markup changes. Share data and interaction state across desktop and mobile views. Use CSS for spacing, wrapping and other layout changes.
 - Use `ResponsiveOverlay` for centered desktop dialogs, right-side inspectors and mobile bottom sheets. Preserve keyboard focus, include an accessible title and keep the mobile body clear of the home indicator.
