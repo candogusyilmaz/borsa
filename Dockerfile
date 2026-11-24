@@ -1,12 +1,3 @@
-FROM node:24-alpine AS web-builder
-WORKDIR /app/web
-COPY web/package.json web/package-lock.json ./
-RUN HUSKY=0 npm ci
-COPY web/index.html web/tsconfig*.json web/vite.config.ts web/lingui.config.ts web/postcss.config.cjs ./
-COPY web/src/ ./src/
-COPY web/public/ ./public/
-RUN npm run build
-
 FROM eclipse-temurin:21-jdk-alpine AS builder
 WORKDIR /app/server
 
