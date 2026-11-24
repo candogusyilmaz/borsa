@@ -17,8 +17,8 @@ market-updater:
   markets:
     bist:
       enabled: true
-      cron: "*/30 * * * * *"
-      discovery-cron: "*/30 * * * * *"
+      cron: "0 */5 10-18 * * MON-FRI"
+      discovery-cron: "0 30 9 * * MON-FRI"
       timezone: "Europe/Istanbul"
       min-quotes: 100
 
