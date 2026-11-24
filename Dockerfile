@@ -8,7 +8,6 @@ RUN chmod +x ./mvnw
 RUN ./mvnw dependency:resolve
 
 COPY server/src/ ./src/
-COPY --from=web-builder /app/web/dist /app/web/dist
 RUN ./mvnw clean package -DskipTests
 
 FROM eclipse-temurin:21-jre-alpine AS runtime
