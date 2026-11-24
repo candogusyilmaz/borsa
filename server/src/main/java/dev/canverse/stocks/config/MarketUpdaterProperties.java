@@ -1,26 +1,25 @@
 package dev.canverse.stocks.config;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Configuration;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@Setter
-@Getter
-@Component
-@ConfigurationProperties(prefix = "app.market-updaters")
+@Data
+@Configuration
+@ConfigurationProperties(prefix = "market-updater")
 public class MarketUpdaterProperties {
     private Map<String, MarketConfig> markets = new HashMap<>();
 
-    @Getter
-    @Setter
+    @Data
     public static class MarketConfig {
         private boolean enabled;
         private String cron;
+        private String discoveryCron;
         private String timezone;
+        private int minQuotes = 1;
     }
 }

@@ -3,15 +3,24 @@ rsa:
   public-key: classpath:certs/public.pem
 
 app:
-  market-updaters:
-    markets:
-      bist:
-        enabled: false
-        cron: '*/20 * * * * *'
   forex-rate-api:
     base-url: 'https://api.forexrateapi.com'
     api-key: ${FOREX_RATE_API_KEY:your_api_key_here}
   gemini-api-key: ${GEMINI_API_KEY:your_gemini_api_key_here}
+
+market-updater:
+  providers:
+    tradingview:
+      enabled: true
+    sabah:
+      enabled: true
+  markets:
+    bist:
+      enabled: true
+      cron: "*/30 * * * * *"
+      discovery-cron: "*/30 * * * * *"
+      timezone: "Europe/Istanbul"
+      min-quotes: 100
 
 springdoc:
   api-docs:
