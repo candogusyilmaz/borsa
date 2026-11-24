@@ -1,6 +1,6 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { Link, useLocation } from '@tanstack/react-router';
-import type { ReactNode } from 'react';
+import { type ReactNode, useLayoutEffect, useRef } from 'react';
 import { PortfolioSelector } from '~/features/portfolios';
 import { AddTradeButton } from '~/features/trades/components/add-trade-button/add-trade-button';
 import { BrandLogo } from '~/shared/components/brand-logo';
@@ -12,8 +12,17 @@ import styles from './member-shell.module.css';
 export function MemberShell({ children }: { children: ReactNode }) {
   const isMobile = useIsMobile();
   const pathname = useLocation({ select: (location) => location.pathname });
+  const contentViewport = useRef<HTMLDivElement>(null);
+  const previousPathname = useRef(pathname);
   const onPositions = pathname.startsWith('/positions');
   const onDashboard = pathname === '/dashboard' || pathname === '/dashboard/';
+
+  useLayoutEffect(() => {
+    if (previousPathname.current === pathname) return;
+
+    previousPathname.current = pathname;
+    contentViewport.current?.scrollTo(0, 0);
+  }, [pathname]);
 
   return (
     <div className={styles.shell} data-positions={onPositions || undefined} data-dashboard={onDashboard || undefined}>
@@ -23,9 +32,11 @@ export function MemberShell({ children }: { children: ReactNode }) {
       {(!isMobile || (!onPositions && !onDashboard)) && (
         <ShellNavigation isMobile={isMobile} pathname={pathname} onPositions={onPositions} />
       )}
-      <main id="main-content" tabIndex={-1} className={styles.main}>
-        {children}
-      </main>
+      <div ref={contentViewport} className={styles.contentViewport}>
+        <main id="main-content" tabIndex={-1} className={styles.main}>
+          {children}
+        </main>
+      </div>
       {isMobile && <BottomNav />}
     </div>
   );

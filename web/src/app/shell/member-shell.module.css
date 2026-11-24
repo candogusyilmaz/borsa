@@ -182,15 +182,28 @@
 }
 
 @media (width > 48em) {
-  :global(html):has(.shell) {
+  .shell {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    block-size: 100dvh;
+  }
+
+  .header,
+  .contentViewport {
     scrollbar-gutter: stable;
   }
 
   .header {
-    position: sticky;
+    position: relative;
     z-index: 90;
-    inset-block-start: 0;
+    overflow: hidden;
     background: var(--mantine-color-body);
+  }
+
+  .contentViewport {
+    container-type: size;
+    overflow: auto;
+    overscroll-behavior: contain;
   }
 
   .shell[data-dashboard] .main {
