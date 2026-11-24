@@ -67,7 +67,7 @@ spring:
           batch_size: 20
           order_inserts: true
           order_updates: true
-    show-sql: on
+    show-sql: false
 
   flyway:
     enabled: false
@@ -114,8 +114,12 @@ management:
 
 
 logging:
+  pattern:
+    console: "%clr(%d{HH:mm:ss.SSS}){faint} %clr(%-5level) %clr(%esb(%X{requestId})){magenta}%clr(%logger{0}){cyan} %clr(-){faint} %m%clr(%replace( %kvp{NONE}){'^ $', ''}){faint}%n%wEx"
   level:
     root: INFO
     dev.canverse: ${LOG_LEVEL:INFO}
-    org.hibernate.sql: ${SQL_LOG_LEVEL:DEBUG}
-    org.hibernate.stat: debug
+    org.hibernate.SQL: ${SQL_LOG_LEVEL:WARN}
+    org.hibernate.orm.jdbc.bind: WARN
+    org.hibernate.stat: WARN
+    org.springdoc: WARN

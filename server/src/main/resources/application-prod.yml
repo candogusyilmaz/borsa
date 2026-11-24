@@ -1,11 +1,26 @@
 spring:
   flyway:
     enabled: true
+  jpa:
+    show-sql: false
 
 logging:
+  structured:
+    format:
+      console: ecs
+    ecs:
+      service:
+        name: ${APP_SERVICE_NAME:${spring.application.name}}
+        environment: ${APP_ENVIRONMENT:prod}
+        version: ${APP_VERSION:unknown}
+    json:
+      stacktrace:
+        max-length: 8192
+        max-throwable-depth: 20
   level:
-    org:
-      hibernate:
-        stat: info
-        SQL: info
-
+    root: INFO
+    dev.canverse: ${LOG_LEVEL:INFO}
+    org.hibernate.SQL: WARN
+    org.hibernate.orm.jdbc.bind: WARN
+    org.hibernate.stat: WARN
+    org.springdoc: WARN

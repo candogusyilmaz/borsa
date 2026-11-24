@@ -1,5 +1,7 @@
 package dev.canverse.stocks.service.marketupdater;
 
+import static dev.canverse.stocks.service.common.TimingUtils.elapsedMs;
+
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 
@@ -26,6 +28,8 @@ import java.util.Set;
 @Service
 public class MarketPriceSyncService {
 
+    private static final String JOB_NAME = "market_price_sync";
+
     private final MarketQuoteFetcher quoteFetcher;
     private final JdbcTemplate jdbcTemplate;
     private final TransactionTemplate transactionTemplate;
@@ -42,57 +46,95 @@ public class MarketPriceSyncService {
     }
 
     public void sync(String marketCode, int minQuotes) {
+        long startNanos = System.nanoTime();
         var code = marketCode.toUpperCase(Locale.ROOT);
-        var instruments = instrumentCache.get(code, this::fetchInstruments);
 
-        if (instruments == null || instruments.isEmpty()) {
-            log.warn("[{}] No instruments found in DB, skipping price sync", code);
-            return;
+        try {
+            var instruments = instrumentCache.get(code, this::fetchInstruments);
+
+            if (instruments == null || instruments.isEmpty()) {
+                log.atWarn()
+                        .addKeyValue("event", "market_data_update_completed")
+                        .addKeyValue("job", JOB_NAME)
+                        .addKeyValue("market", code)
+                        .addKeyValue("outcome", "skipped")
+                        .addKeyValue("reason", "no_instruments")
+                        .addKeyValue("durationMs", elapsedMs(startNanos))
+                        .log("Market price sync skipped");
+                return;
+            }
+
+            var heldSymbols = fetchHeldSymbols(code);
+            var quotes = quoteFetcher.fetchForPricing(code, minQuotes, heldSymbols);
+            if (quotes.isEmpty()) {
+                log.atError()
+                        .addKeyValue("event", "market_data_update_failed")
+                        .addKeyValue("job", JOB_NAME)
+                        .addKeyValue("market", code)
+                        .addKeyValue("outcome", "failed")
+                        .addKeyValue("reason", "no_quotes")
+                        .addKeyValue("durationMs", elapsedMs(startNanos))
+                        .log("Market price sync failed");
+                return;
+            }
+
+            var snapshots =
+                    quotes.stream()
+                            .map(
+                                    q -> {
+                                        var id = instruments.get(q.symbol());
+                                        if (id == null) {
+                                            return null;
+                                        }
+
+                                        return new Snapshot(
+                                                q.currencyCode(),
+                                                q.last(),
+                                                q.previousClose(),
+                                                Timestamp.from(q.updatedAt()),
+                                                id);
+                                    })
+                            .filter(Objects::nonNull)
+                            .toList();
+
+            if (snapshots.isEmpty()) {
+                log.atWarn()
+                        .addKeyValue("event", "market_data_update_completed")
+                        .addKeyValue("job", JOB_NAME)
+                        .addKeyValue("market", code)
+                        .addKeyValue("processedCount", quotes.size())
+                        .addKeyValue("succeededCount", 0)
+                        .addKeyValue("failedCount", quotes.size())
+                        .addKeyValue("outcome", "skipped")
+                        .addKeyValue("reason", "no_matching_instruments")
+                        .addKeyValue("durationMs", elapsedMs(startNanos))
+                        .log("Market price sync matched no instruments");
+                return;
+            }
+
+            transactionTemplate.executeWithoutResult(status -> batchUpdateSnapshots(snapshots));
+
+            log.atInfo()
+                    .addKeyValue("event", "market_data_update_completed")
+                    .addKeyValue("job", JOB_NAME)
+                    .addKeyValue("market", code)
+                    .addKeyValue("processedCount", quotes.size())
+                    .addKeyValue("succeededCount", snapshots.size())
+                    .addKeyValue("failedCount", quotes.size() - snapshots.size())
+                    .addKeyValue("durationMs", elapsedMs(startNanos))
+                    .addKeyValue("outcome", "success")
+                    .log("Market price sync completed");
+        } catch (Exception ex) {
+            log.atError()
+                    .addKeyValue("event", "market_data_update_failed")
+                    .addKeyValue("job", JOB_NAME)
+                    .addKeyValue("market", code)
+                    .addKeyValue("outcome", "failed")
+                    .addKeyValue("durationMs", elapsedMs(startNanos))
+                    .setCause(ex)
+                    .log("Market price sync failed unexpectedly");
+            throw ex;
         }
-
-        long startFetch = System.currentTimeMillis();
-        var heldSymbols = fetchHeldSymbols(code);
-        var quotes = quoteFetcher.fetchForPricing(code, minQuotes, heldSymbols);
-        if (quotes.isEmpty()) {
-            return;
-        }
-
-        var snapshots =
-                quotes.stream()
-                        .map(
-                                q -> {
-                                    var id = instruments.get(q.symbol());
-                                    if (id == null) {
-                                        return null;
-                                    }
-
-                                    return new Snapshot(
-                                            q.currencyCode(),
-                                            q.last(),
-                                            q.previousClose(),
-                                            Timestamp.from(q.updatedAt()),
-                                            id);
-                                })
-                        .filter(Objects::nonNull)
-                        .toList();
-
-        log.info(
-                "[{}] Matched {} snapshots in {} ms",
-                code,
-                snapshots.size(),
-                System.currentTimeMillis() - startFetch);
-
-        if (snapshots.isEmpty()) {
-            return;
-        }
-
-        long startBatch = System.currentTimeMillis();
-        transactionTemplate.executeWithoutResult(status -> batchUpdateSnapshots(snapshots));
-        log.info(
-                "[{}] Updated {} snapshots in {} ms",
-                code,
-                snapshots.size(),
-                System.currentTimeMillis() - startBatch);
     }
 
     public void evictInstrumentCache(String marketCode) {

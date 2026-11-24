@@ -1,5 +1,7 @@
 package dev.canverse.stocks.service.common;
 
+import static dev.canverse.stocks.service.common.TimingUtils.elapsedMs;
+
 import dev.canverse.stocks.domain.common.SelectItem;
 import dev.canverse.stocks.integration.forex.ForexWebClient;
 import dev.canverse.stocks.repository.CurrencyRepository;
@@ -17,6 +19,9 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class CurrencyService {
+    private static final String JOB_NAME = "currency_rate_sync";
+    private static final String PROVIDER_NAME = "forex_rate_api";
+
     private final ForexWebClient forexWebClient;
     private final CurrencyRepository currencyRepository;
 
@@ -28,28 +33,70 @@ public class CurrencyService {
 
     @Scheduled(cron = "0 0 20 * * ?")
     protected void updateCurrencyRates() {
-        var result = forexWebClient.getForexRates();
+        long startNanos = System.nanoTime();
+        try {
+            var result = forexWebClient.getForexRates();
 
-        if (!result.success()) {
-            log.error("Failed to fetch forex rates: {}", result.error().info());
-            return;
-        }
-
-        var currencies = currencyRepository.findAll();
-
-        for (var currency : currencies) {
-            var rate = result.rates().get(currency.getCode());
-
-            if (rate == null) {
-                log.warn("No rate found for currency {}", currency.getCode());
-                continue;
+            if (result == null || !result.success()) {
+                var errorBuilder =
+                        log.atError()
+                                .addKeyValue("event", "scheduled_job_failed")
+                                .addKeyValue("job", JOB_NAME)
+                                .addKeyValue("provider", PROVIDER_NAME)
+                                .addKeyValue("outcome", "failed")
+                                .addKeyValue("durationMs", elapsedMs(startNanos));
+                if (result != null && result.error() != null && result.error().code() != null) {
+                    errorBuilder.addKeyValue("errorCode", result.error().code());
+                }
+                errorBuilder.log("Currency rate sync failed");
+                return;
             }
 
-            currency.updateExchangeRate(rate, Instant.ofEpochSecond(result.timestamp()));
-            log.info("Updated currency {} with rate {}", currency.getCode(), rate);
-        }
+            var currencies = currencyRepository.findAll();
+            int updatedCount = 0;
+            int missingCount = 0;
 
-        currencyRepository.saveAll(currencies);
-        log.info("Currency rates updated successfully");
+            for (var currency : currencies) {
+                var rate = result.rates() != null ? result.rates().get(currency.getCode()) : null;
+
+                if (rate == null) {
+                    missingCount++;
+                    log.atDebug()
+                            .addKeyValue("job", JOB_NAME)
+                            .addKeyValue("provider", PROVIDER_NAME)
+                            .addKeyValue("currencyCode", currency.getCode())
+                            .log("No exchange rate returned for currency");
+                    continue;
+                }
+
+                currency.updateExchangeRate(rate, Instant.ofEpochSecond(result.timestamp()));
+                updatedCount++;
+            }
+
+            currencyRepository.saveAll(currencies);
+
+            var outcome = missingCount == 0 ? "success" : "partial";
+            var completionLog = missingCount == 0 ? log.atInfo() : log.atWarn();
+            completionLog
+                    .addKeyValue("event", "scheduled_job_completed")
+                    .addKeyValue("job", JOB_NAME)
+                    .addKeyValue("provider", PROVIDER_NAME)
+                    .addKeyValue("processedCount", currencies.size())
+                    .addKeyValue("succeededCount", updatedCount)
+                    .addKeyValue("failedCount", missingCount)
+                    .addKeyValue("durationMs", elapsedMs(startNanos))
+                    .addKeyValue("outcome", outcome)
+                    .log("Currency rate sync completed");
+        } catch (Exception ex) {
+            log.atError()
+                    .addKeyValue("event", "scheduled_job_failed")
+                    .addKeyValue("job", JOB_NAME)
+                    .addKeyValue("provider", PROVIDER_NAME)
+                    .addKeyValue("outcome", "failed")
+                    .addKeyValue("durationMs", elapsedMs(startNanos))
+                    .setCause(ex)
+                    .log("Currency rate sync failed unexpectedly");
+            throw ex;
+        }
     }
 }

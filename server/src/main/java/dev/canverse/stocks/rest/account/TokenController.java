@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
@@ -54,20 +56,39 @@ public class TokenController {
         var user = (User) auth.getPrincipal();
 
         userService.updateLastLogin(user.getId());
+        var response = tokenService.create(user);
 
-        return tokenService.create(user);
+        log.atInfo()
+                .addKeyValue("event", "authentication_succeeded")
+                .addKeyValue("authMethod", "password")
+                .addKeyValue("userId", String.valueOf(user.getId()))
+                .log("Authentication succeeded");
+
+        return response;
     }
 
     @PostMapping("/refresh-token")
     public ResponseEntity<@NotNull TokenCreateResponse> refreshAccessToken(
             @CookieValue(name = "refresh-token") Optional<String> refreshToken) {
         if (refreshToken.isEmpty()) {
+            log.atWarn()
+                    .addKeyValue("event", "authentication_failed")
+                    .addKeyValue("authMethod", "refresh_token")
+                    .addKeyValue("reason", "missing_token")
+                    .log("Token refresh failed");
             return ResponseEntity.badRequest().build();
         }
 
         var user = tokenService.getSecurityUser(refreshToken.get());
+        var response = tokenService.create(user);
 
-        return tokenService.create(user);
+        log.atInfo()
+                .addKeyValue("event", "authentication_succeeded")
+                .addKeyValue("authMethod", "refresh_token")
+                .addKeyValue("userId", String.valueOf(user.getId()))
+                .log("Token refreshed");
+
+        return response;
     }
 
     @PostMapping("/google")
@@ -87,7 +108,14 @@ public class TokenController {
                                                         UUID.randomUUID().toString())));
 
         userService.updateLastLogin(user.getId());
+        var response = tokenService.create(user);
 
-        return tokenService.create(user);
+        log.atInfo()
+                .addKeyValue("event", "authentication_succeeded")
+                .addKeyValue("authMethod", "google")
+                .addKeyValue("userId", String.valueOf(user.getId()))
+                .log("Authentication succeeded");
+
+        return response;
     }
 }

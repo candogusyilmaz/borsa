@@ -1,5 +1,7 @@
 package dev.canverse.stocks.service.account;
 
+import static dev.canverse.stocks.service.common.TransactionCallbacks.afterCommit;
+
 import dev.canverse.stocks.domain.entity.account.User;
 import dev.canverse.stocks.domain.entity.portfolio.Dashboard;
 import dev.canverse.stocks.domain.entity.portfolio.Portfolio;
@@ -13,6 +15,7 @@ import dev.canverse.stocks.service.account.model.UserRegistrationRequest;
 import dev.canverse.stocks.service.account.model.UserView;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -23,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
@@ -71,7 +75,17 @@ public class UserService implements UserDetailsService {
 
         var user = new User(normalizedEmail, passwordEncoder.encode(request.password()));
         user.setName(request.name());
-        userRepository.save(user);
+        var saved = userRepository.save(user);
+
+        var userId = saved != null ? saved.getId() : user.getId();
+        afterCommit(
+                () -> {
+                    var builder = log.atInfo().addKeyValue("event", "user_registered");
+                    if (userId != null) {
+                        builder.addKeyValue("userId", String.valueOf(userId));
+                    }
+                    builder.log("User registered");
+                });
 
         return user;
     }
@@ -115,5 +129,15 @@ public class UserService implements UserDetailsService {
 
         user.completeOnboarding();
         userRepository.save(user);
+
+        var portfolioId = portfolio.getId();
+        var dashboardId = dashboard.getId();
+        afterCommit(
+                () ->
+                        log.atInfo()
+                                .addKeyValue("event", "onboarding_completed")
+                                .addKeyValue("portfolioId", portfolioId)
+                                .addKeyValue("dashboardId", dashboardId)
+                                .log("User onboarding completed"));
     }
 }

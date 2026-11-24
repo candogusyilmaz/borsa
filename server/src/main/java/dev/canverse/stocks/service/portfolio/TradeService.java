@@ -1,5 +1,7 @@
 package dev.canverse.stocks.service.portfolio;
 
+import static dev.canverse.stocks.service.common.TransactionCallbacks.afterCommit;
+
 import dev.canverse.stocks.domain.entity.instrument.MarketCurrencyId;
 import dev.canverse.stocks.domain.entity.portfolio.Position;
 import dev.canverse.stocks.domain.exception.NotFoundException;
@@ -11,12 +13,14 @@ import dev.canverse.stocks.service.portfolio.model.TradeInfo;
 import dev.canverse.stocks.service.portfolio.model.TradeRequest;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TradeService {
@@ -73,6 +77,19 @@ public class TradeService {
         buy.getMetadata().setTags(req.tags());
 
         positionRepository.saveAndFlush(position);
+
+        var resolvedPortfolioId = portfolio.getId();
+        var instrumentId = req.stockId();
+        var currencyCode = req.currencyCode();
+        afterCommit(
+                () ->
+                        log.atInfo()
+                                .addKeyValue("event", "trade_created")
+                                .addKeyValue("tradeType", "BUY")
+                                .addKeyValue("portfolioId", resolvedPortfolioId)
+                                .addKeyValue("instrumentId", instrumentId)
+                                .addKeyValue("currencyCode", currencyCode)
+                                .log("Trade created"));
     }
 
     @Transactional
@@ -96,6 +113,18 @@ public class TradeService {
         sell.getMetadata().setTags(req.tags());
 
         positionRepository.saveAndFlush(position);
+
+        var instrumentId = req.stockId();
+        var currencyCode = req.currencyCode();
+        afterCommit(
+                () ->
+                        log.atInfo()
+                                .addKeyValue("event", "trade_created")
+                                .addKeyValue("tradeType", "SELL")
+                                .addKeyValue("portfolioId", portfolioId)
+                                .addKeyValue("instrumentId", instrumentId)
+                                .addKeyValue("currencyCode", currencyCode)
+                                .log("Trade created"));
     }
 
     @Transactional
@@ -105,10 +134,19 @@ public class TradeService {
                         .findByIdAndUserId(positionId, AuthenticationProvider.getUser().getId())
                         .orElseThrow(() -> new NotFoundException("No holding found"));
 
-        portfolioAccessValidator.validateAccess(position.getPortfolio().getId());
+        var portfolioId = position.getPortfolio().getId();
+        portfolioAccessValidator.validateAccess(portfolioId);
 
         position.undo();
         positionRepository.save(position);
+
+        afterCommit(
+                () ->
+                        log.atInfo()
+                                .addKeyValue("event", "trade_deleted")
+                                .addKeyValue("portfolioId", portfolioId)
+                                .addKeyValue("positionId", positionId)
+                                .log("Latest trade undone"));
     }
 
     public TradeHistory fetchTradeHistory(long portfolioId) {

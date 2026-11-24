@@ -1,5 +1,7 @@
 package dev.canverse.stocks.service.portfolio;
 
+import static dev.canverse.stocks.service.common.TransactionCallbacks.afterCommit;
+
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import dev.canverse.stocks.domain.entity.portfolio.Portfolio;
@@ -9,12 +11,14 @@ import dev.canverse.stocks.security.AuthenticationProvider;
 import dev.canverse.stocks.service.portfolio.model.BasicPortfolioView;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PortfolioService {
@@ -27,12 +31,22 @@ public class PortfolioService {
     @Transactional
     public void createPortfolio(String name) {
         var portfolio = new Portfolio(AuthenticationProvider.getUser(), name, "#3b82f6");
-        portfolioRepository.save(portfolio);
+        var saved = portfolioRepository.save(portfolio);
 
         var defaultDashboard =
                 dashboardRepository.findDefaultByUserId(AuthenticationProvider.getUser().getId());
         defaultDashboard.addPortfolio(portfolio);
         dashboardRepository.save(defaultDashboard);
+
+        var portfolioId = saved != null ? saved.getId() : portfolio.getId();
+        afterCommit(
+                () -> {
+                    var builder = log.atInfo().addKeyValue("event", "portfolio_created");
+                    if (portfolioId != null) {
+                        builder.addKeyValue("portfolioId", portfolioId);
+                    }
+                    builder.log("Portfolio created");
+                });
     }
 
     @Transactional
@@ -42,6 +56,13 @@ public class PortfolioService {
         portfolio.archive();
 
         portfolioRepository.save(portfolio);
+
+        afterCommit(
+                () ->
+                        log.atInfo()
+                                .addKeyValue("event", "portfolio_archived")
+                                .addKeyValue("portfolioId", portfolioId)
+                                .log("Portfolio archived"));
     }
 
     public List<BasicPortfolioView> fetchBasicPortfolioViews() {

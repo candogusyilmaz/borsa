@@ -30,23 +30,27 @@ public class MarketUpdaterScheduler {
                 .getMarkets()
                 .forEach(
                         (marketKey, config) -> {
+                            var marketCode = marketKey.toUpperCase(Locale.ROOT);
                             if (!config.isEnabled()) {
-                                log.info("[{}] Market updater is disabled, skipping", marketKey);
+                                log.atInfo()
+                                        .addKeyValue("market", marketCode)
+                                        .addKeyValue("enabled", false)
+                                        .log("Market updater disabled");
                                 return;
                             }
 
-                            var marketCode = marketKey.toUpperCase(Locale.ROOT);
                             int minQuotes = Math.max(1, config.getMinQuotes());
 
                             if (config.getCron() != null && !config.getCron().isBlank()) {
                                 taskScheduler.schedule(
                                         () -> priceSyncService.sync(marketCode, minQuotes),
                                         getCron(config.getCron(), config.getTimezone()));
-                                log.info(
-                                        "[{}] Scheduled price sync with cron: {} (tz: {})",
-                                        marketCode,
-                                        config.getCron(),
-                                        config.getTimezone());
+                                log.atInfo()
+                                        .addKeyValue("job", "market_price_sync")
+                                        .addKeyValue("market", marketCode)
+                                        .addKeyValue("cron", config.getCron())
+                                        .addKeyValue("timezone", config.getTimezone())
+                                        .log("Scheduled market price sync");
                             }
 
                             if (config.getDiscoveryCron() != null
@@ -54,12 +58,12 @@ public class MarketUpdaterScheduler {
                                 taskScheduler.schedule(
                                         () -> instrumentSyncService.sync(marketCode, minQuotes),
                                         getCron(config.getDiscoveryCron(), config.getTimezone()));
-                                log.info(
-                                        "[{}] Scheduled instrument discovery with cron: {} (tz:"
-                                                + " {})",
-                                        marketCode,
-                                        config.getDiscoveryCron(),
-                                        config.getTimezone());
+                                log.atInfo()
+                                        .addKeyValue("job", "market_instrument_sync")
+                                        .addKeyValue("market", marketCode)
+                                        .addKeyValue("cron", config.getDiscoveryCron())
+                                        .addKeyValue("timezone", config.getTimezone())
+                                        .log("Scheduled market instrument discovery");
                             }
                         });
     }

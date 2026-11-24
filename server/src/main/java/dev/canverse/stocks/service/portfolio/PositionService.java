@@ -1,5 +1,7 @@
 package dev.canverse.stocks.service.portfolio;
 
+import static dev.canverse.stocks.service.common.TransactionCallbacks.afterCommit;
+
 import dev.canverse.stocks.repository.PositionMapper;
 import dev.canverse.stocks.repository.PositionRepository;
 import dev.canverse.stocks.security.AuthenticationProvider;
@@ -24,6 +26,12 @@ public class PositionService {
     @Transactional
     public void deleteAllPositions() {
         positionRepository.deleteAllByUserId(AuthenticationProvider.getUser().getId());
+
+        afterCommit(
+                () ->
+                        log.atInfo()
+                                .addKeyValue("event", "positions_cleared")
+                                .log("User positions cleared"));
     }
 
     public List<PositionInfo> fetchPositions(Long userId, FetchPositionsQuery query) {

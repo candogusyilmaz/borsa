@@ -1,5 +1,7 @@
 package dev.canverse.stocks.service.marketupdater;
 
+import static dev.canverse.stocks.service.common.TimingUtils.elapsedMs;
+
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Component;
@@ -30,13 +32,17 @@ public class MarketQuoteFetcher {
         var candidates = providersByMarket.getOrDefault(code, List.of());
 
         if (candidates.isEmpty()) {
-            log.warn("[{}] No quote providers registered", code);
+            log.atWarn()
+                    .addKeyValue("event", "market_providers_missing")
+                    .addKeyValue("market", code)
+                    .log("No quote providers registered");
             return List.of();
         }
 
         var merged = new LinkedHashMap<String, MarketQuote>();
 
         for (var provider : candidates) {
+            long startNanos = System.nanoTime();
             try {
                 var quotes = deduplicateBySymbol(provider.fetchQuotes());
                 int added = 0;
@@ -51,43 +57,51 @@ public class MarketQuoteFetcher {
                 boolean enoughQuotes = merged.size() >= minQuotes;
 
                 if (enoughQuotes && missingRequired.isEmpty()) {
-                    log.info(
-                            "[{}] Pricing quotes complete via {} (added {}, total {})",
-                            code,
-                            provider.getName(),
-                            added,
-                            merged.size());
+                    log.atDebug()
+                            .addKeyValue("event", "market_provider_fetched")
+                            .addKeyValue("market", code)
+                            .addKeyValue("provider", provider.getName())
+                            .addKeyValue("addedCount", added)
+                            .addKeyValue("quoteCount", merged.size())
+                            .addKeyValue("durationMs", elapsedMs(startNanos))
+                            .log("Pricing quotes fetched");
                     return List.copyOf(merged.values());
                 }
 
-                log.warn(
-                        "[{}] {} incomplete (total {}/{}, missing held symbols: {}), trying"
-                                + " fallback to fill gaps",
-                        code,
-                        provider.getName(),
-                        merged.size(),
-                        minQuotes,
-                        missingRequired);
+                log.atWarn()
+                        .addKeyValue("event", "market_provider_fallback")
+                        .addKeyValue("market", code)
+                        .addKeyValue("provider", provider.getName())
+                        .addKeyValue("quoteCount", merged.size())
+                        .addKeyValue("minQuotes", minQuotes)
+                        .addKeyValue("missingRequiredCount", missingRequired.size())
+                        .addKeyValue("durationMs", elapsedMs(startNanos))
+                        .log("Provider quote coverage incomplete; trying fallback");
             } catch (Exception ex) {
-                log.warn(
-                        "[{}] {} failed, trying next provider: {}",
-                        code,
-                        provider.getName(),
-                        ex.getMessage());
+                log.atWarn()
+                        .addKeyValue("event", "market_provider_failed")
+                        .addKeyValue("market", code)
+                        .addKeyValue("provider", provider.getName())
+                        .addKeyValue("exception", ex.getClass().getSimpleName())
+                        .addKeyValue("durationMs", elapsedMs(startNanos))
+                        .log("Quote provider failed; trying next provider");
             }
         }
 
         if (merged.isEmpty()) {
-            log.error("[{}] All quote providers failed", code);
+            log.atWarn()
+                    .addKeyValue("event", "market_providers_exhausted")
+                    .addKeyValue("market", code)
+                    .log("All quote providers failed");
             return List.of();
         }
 
-        log.warn(
-                "[{}] Finished with partial coverage after all providers (total {}, still"
-                        + " missing held: {})",
-                code,
-                merged.size(),
-                findMissing(requiredSymbols, merged));
+        log.atWarn()
+                .addKeyValue("event", "market_data_partial_coverage")
+                .addKeyValue("market", code)
+                .addKeyValue("quoteCount", merged.size())
+                .addKeyValue("missingRequiredCount", findMissing(requiredSymbols, merged).size())
+                .log("Quote fetch finished with partial coverage");
         return List.copyOf(merged.values());
     }
 
@@ -99,40 +113,52 @@ public class MarketQuoteFetcher {
                         .toList();
 
         if (candidates.isEmpty()) {
-            log.warn("[{}] No discovery-capable quote providers registered", code);
+            log.atWarn()
+                    .addKeyValue("event", "market_providers_missing")
+                    .addKeyValue("market", code)
+                    .log("No discovery-capable quote providers registered");
             return List.of();
         }
 
         for (var provider : candidates) {
+            long startNanos = System.nanoTime();
             try {
                 var quotes = deduplicateBySymbol(provider.fetchQuotes());
 
                 if (quotes.size() >= minQuotes) {
-                    log.info(
-                            "[{}] Fetched {} discovery quotes via {}",
-                            code,
-                            quotes.size(),
-                            provider.getName());
+                    log.atDebug()
+                            .addKeyValue("event", "market_provider_fetched")
+                            .addKeyValue("market", code)
+                            .addKeyValue("provider", provider.getName())
+                            .addKeyValue("quoteCount", quotes.size())
+                            .addKeyValue("durationMs", elapsedMs(startNanos))
+                            .log("Discovery quotes fetched");
                     return quotes;
                 }
 
-                log.warn(
-                        "[{}] {} returned insufficient discovery quotes ({}, expected at least"
-                                + " {}), trying fallback",
-                        code,
-                        provider.getName(),
-                        quotes.size(),
-                        minQuotes);
+                log.atWarn()
+                        .addKeyValue("event", "market_provider_fallback")
+                        .addKeyValue("market", code)
+                        .addKeyValue("provider", provider.getName())
+                        .addKeyValue("quoteCount", quotes.size())
+                        .addKeyValue("minQuotes", minQuotes)
+                        .addKeyValue("durationMs", elapsedMs(startNanos))
+                        .log("Discovery provider returned insufficient quotes; trying fallback");
             } catch (Exception ex) {
-                log.warn(
-                        "[{}] {} failed during discovery, trying next provider: {}",
-                        code,
-                        provider.getName(),
-                        ex.getMessage());
+                log.atWarn()
+                        .addKeyValue("event", "market_provider_failed")
+                        .addKeyValue("market", code)
+                        .addKeyValue("provider", provider.getName())
+                        .addKeyValue("exception", ex.getClass().getSimpleName())
+                        .addKeyValue("durationMs", elapsedMs(startNanos))
+                        .log("Discovery provider failed; trying next provider");
             }
         }
 
-        log.error("[{}] All discovery providers failed", code);
+        log.atWarn()
+                .addKeyValue("event", "market_providers_exhausted")
+                .addKeyValue("market", code)
+                .log("All discovery providers failed");
         return List.of();
     }
 

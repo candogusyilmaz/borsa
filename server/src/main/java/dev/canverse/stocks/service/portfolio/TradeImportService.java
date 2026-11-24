@@ -1,5 +1,7 @@
 package dev.canverse.stocks.service.portfolio;
 
+import static dev.canverse.stocks.service.common.TimingUtils.elapsedMs;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.genai.Client;
 import com.google.genai.JsonSerializable;
@@ -131,6 +133,7 @@ public class TradeImportService {
             """;
 
     public List<TransactionImportPreview> importTransactions(MultipartFile file) {
+        long startNanos = System.nanoTime();
         try {
             var content =
                     Content.fromParts(
@@ -145,16 +148,32 @@ public class TradeImportService {
 
             var response = gemini.models.generateContent("gemini-2.5-flash-lite", content, config);
 
-            return mapper.readValue(
-                    response.text(),
-                    mapper.getTypeFactory()
-                            .constructCollectionType(List.class, TransactionImportPreview.class));
+            List<TransactionImportPreview> previews =
+                    mapper.readValue(
+                            response.text(),
+                            mapper.getTypeFactory()
+                                    .constructCollectionType(
+                                            List.class, TransactionImportPreview.class));
+
+            log.atDebug()
+                    .addKeyValue("event", "trade_import_extracted")
+                    .addKeyValue("provider", "gemini")
+                    .addKeyValue("extractedCount", previews.size())
+                    .addKeyValue("durationMs", elapsedMs(startNanos))
+                    .log("Extracted trade previews from document");
+
+            return previews;
         } catch (ServerException ex) {
-            log.error("AI service error: {}", ex.getMessage(), ex);
+            log.atError()
+                    .addKeyValue("event", "trade_import_failed")
+                    .addKeyValue("provider", "gemini")
+                    .addKeyValue("reason", "provider_unavailable")
+                    .addKeyValue("durationMs", elapsedMs(startNanos))
+                    .setCause(ex)
+                    .log("Trade import failed due to upstream provider error");
             throw new BadRequestException(
                     "Our services are currently unavailable. Please try again later.");
         } catch (Exception ex) {
-            log.error("Failed to import transactions", ex);
             throw new RuntimeException("Failed to import transactions", ex);
         }
     }
@@ -170,7 +189,9 @@ public class TradeImportService {
 
     public List<BulkTransactionRequest> parseImportedTransactions(
             List<TransactionImportPreview> imports) {
+        long startNanos = System.nanoTime();
         var result = new ArrayList<BulkTransactionRequest>();
+        int skippedCount = 0;
 
         var ins = QInstrument.instrument;
 
@@ -185,7 +206,7 @@ public class TradeImportService {
                             .fetchFirst();
 
             if (instrument == null) {
-                log.warn("No instrument found for symbol: {}", item.symbol);
+                skippedCount++;
                 continue;
             }
 
@@ -198,6 +219,14 @@ public class TradeImportService {
                             BigDecimal.ZERO,
                             item.date()));
         }
+
+        var builder = skippedCount > 0 && result.isEmpty() ? log.atWarn() : log.atInfo();
+        builder.addKeyValue("event", "trade_import_completed")
+                .addKeyValue("extractedCount", imports.size())
+                .addKeyValue("importedCount", result.size())
+                .addKeyValue("skippedCount", skippedCount)
+                .addKeyValue("durationMs", elapsedMs(startNanos))
+                .log("Trade import completed");
 
         return result;
     }

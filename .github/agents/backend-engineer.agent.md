@@ -126,6 +126,8 @@ Only `/api/auth/token`, `/api/auth/register`, `/api/auth/google`, `/api/auth/ref
 | `service/account/UserService.java`                | Registration, onboarding, `/me`, token helpers      |
 | `service/portfolio/PortfolioAccessValidator.java` | Ownership guard for portfolio ops                   |
 | `resources/application.yml`                       | All config with env-var defaults (`${VAR:default}`) |
+| `config/logging/`                                 | Request correlation, MDC filters, async MDC decorator |
+| `docs/engineering/backend-logging-standards.md`   | Authoritative backend logging & observability standards |
 | `resources/db/migrations/`                        | Flyway SQL migrations                               |
 
 ## Adding a New Endpoint — Checklist

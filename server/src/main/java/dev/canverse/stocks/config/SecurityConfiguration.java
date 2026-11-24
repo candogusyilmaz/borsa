@@ -1,5 +1,8 @@
 package dev.canverse.stocks.config;
 
+import dev.canverse.stocks.config.logging.RequestLoggingFilter;
+import dev.canverse.stocks.config.logging.UserMdcFilter;
+
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.context.annotation.Bean;
@@ -19,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -77,6 +81,7 @@ public class SecurityConfiguration {
                 config -> config.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http.httpBasic(Customizer.withDefaults());
+        http.addFilterAfter(new UserMdcFilter(), AnonymousAuthenticationFilter.class);
         return http.build();
     }
 
@@ -93,7 +98,8 @@ public class SecurityConfiguration {
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowCredentials(true);
-        configuration.setExposedHeaders(List.of("WWW-Authenticate"));
+        configuration.setExposedHeaders(
+                List.of("WWW-Authenticate", RequestLoggingFilter.REQUEST_ID_HEADER));
 
         var source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

@@ -12,6 +12,9 @@ RUN ./mvnw clean package -DskipTests
 
 FROM eclipse-temurin:21-jre-alpine AS runtime
 
+ARG APP_VERSION=unknown
+ENV APP_VERSION=${APP_VERSION}
+
 WORKDIR /app
 
 # Copy the JAR file from the builder stage

@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import dev.canverse.stocks.domain.exception.BadRequestException;
 import dev.canverse.stocks.security.GoogleOAuthProperties;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
@@ -21,6 +23,7 @@ import org.springframework.web.client.RestClientException;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class GoogleAuthService {
     private static final String GOOGLE_TOKEN_URI = "https://oauth2.googleapis.com/token";
@@ -39,6 +42,11 @@ public class GoogleAuthService {
 
     public GoogleUserInfo verifyAuthorizationCode(String code) {
         if (code == null || code.isBlank()) {
+            log.atWarn()
+                    .addKeyValue("event", "authentication_failed")
+                    .addKeyValue("authMethod", "google")
+                    .addKeyValue("reason", "missing_code")
+                    .log("Google authentication failed");
             throw new BadRequestException("Google authorization code is required");
         }
 
@@ -48,6 +56,11 @@ public class GoogleAuthService {
         var email = jwt.getClaimAsString("email");
         var emailVerified = Boolean.TRUE.equals(jwt.getClaimAsBoolean("email_verified"));
         if (email == null || email.isBlank() || !emailVerified) {
+            log.atWarn()
+                    .addKeyValue("event", "authentication_failed")
+                    .addKeyValue("authMethod", "google")
+                    .addKeyValue("reason", "email_not_verified")
+                    .log("Google authentication failed");
             throw new BadRequestException("Google account email is not verified");
         }
 
@@ -78,10 +91,23 @@ public class GoogleAuthService {
                             .retrieve()
                             .body(GoogleTokenExchangeResponse.class);
         } catch (RestClientException e) {
+            log.atWarn()
+                    .addKeyValue("event", "authentication_failed")
+                    .addKeyValue("authMethod", "google")
+                    .addKeyValue("provider", "google_oauth")
+                    .addKeyValue("reason", "token_exchange_failed")
+                    .addKeyValue("exception", e.getClass().getSimpleName())
+                    .log("Google token exchange failed");
             throw new BadRequestException("Failed to exchange Google authorization code");
         }
 
         if (response == null || response.idToken() == null || response.idToken().isBlank()) {
+            log.atWarn()
+                    .addKeyValue("event", "authentication_failed")
+                    .addKeyValue("authMethod", "google")
+                    .addKeyValue("provider", "google_oauth")
+                    .addKeyValue("reason", "missing_id_token")
+                    .log("Google token exchange returned no ID token");
             throw new BadRequestException("Google ID token was not returned");
         }
 
@@ -92,6 +118,11 @@ public class GoogleAuthService {
         try {
             return jwtDecoder.decode(idToken);
         } catch (JwtException e) {
+            log.atWarn()
+                    .addKeyValue("event", "authentication_failed")
+                    .addKeyValue("authMethod", "google")
+                    .addKeyValue("reason", "invalid_id_token")
+                    .log("Google ID token validation failed");
             throw new BadRequestException("Invalid Google ID token");
         }
     }

@@ -1,9 +1,11 @@
 package dev.canverse.stocks.service.client;
 
+import static dev.canverse.stocks.service.common.TimingUtils.elapsedMs;
+
 import dev.canverse.stocks.service.client.model.CanliBorsaVerileri;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -18,9 +20,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@Slf4j
 @Service
 public class SabahClient {
-    private static final Logger log = LoggerFactory.getLogger(SabahClient.class);
+    private static final String PROVIDER_NAME = "Sabah";
+
     private final RestTemplate client;
 
     public SabahClient() {
@@ -28,20 +32,36 @@ public class SabahClient {
     }
 
     public CanliBorsaVerileri fetchBistStocks() {
-        log.info("Fetching BIST stocks data from Sabah API...");
-        String result = null;
+        long startNanos = System.nanoTime();
+        log.atDebug()
+                .addKeyValue("provider", PROVIDER_NAME)
+                .addKeyValue("market", "BIST")
+                .log("Fetching BIST quotes from external provider");
 
+        String result;
         try {
             result =
                     client.getForObject(
                             "https://www.sabah.com.tr/json/canli-borsa-verileri", String.class);
         } catch (RestClientException e) {
-            log.error("Failed to fetch BIST data due to RestClientException.", e);
+            log.atWarn()
+                    .addKeyValue("event", "external_provider_failed")
+                    .addKeyValue("provider", PROVIDER_NAME)
+                    .addKeyValue("market", "BIST")
+                    .addKeyValue("exception", e.getClass().getSimpleName())
+                    .addKeyValue("durationMs", elapsedMs(startNanos))
+                    .log("Failed to fetch BIST quotes from provider");
+            return new CanliBorsaVerileri(List.of());
         }
 
         if (result == null) {
-            log.error(
-                    "Error while fetching BIST data. Returned data is null. Cannot parse or save BIST data. Skipping.");
+            log.atWarn()
+                    .addKeyValue("event", "external_provider_failed")
+                    .addKeyValue("provider", PROVIDER_NAME)
+                    .addKeyValue("market", "BIST")
+                    .addKeyValue("reason", "empty_response")
+                    .addKeyValue("durationMs", elapsedMs(startNanos))
+                    .log("External provider returned empty BIST response");
             return new CanliBorsaVerileri(List.of());
         }
 
