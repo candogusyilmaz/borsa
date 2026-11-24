@@ -1,6 +1,7 @@
 import { Trans } from '@lingui/react/macro';
-import { IconTrendingUp } from '@tabler/icons-react';
+import clsx from 'clsx';
 import { useState } from 'react';
+import { BrandLogo } from '~/shared/components/brand-logo';
 import { useFormat } from '~/shared/format/use-format';
 import { PublicLanguageSelect } from '~/shared/i18n/language-select';
 import { DashboardStep } from '../components/dashboard-step';
@@ -44,15 +45,10 @@ export function OnboardingPage() {
   return (
     <div className={styles.container}>
       <PublicLanguageSelect />
-      <div className={styles.card}>
+      <div className={clsx(styles.card, 'app-page-enter')}>
         <div className={styles.header}>
           <div className={styles.headerMain}>
-            <div className="logo-group">
-              <div className="logo-icon-box">
-                <IconTrendingUp className="logo-icon" />
-              </div>
-              <span className="logo-text">CANVERSE</span>
-            </div>
+            <BrandLogo />
             <div style={{ textAlign: 'right' }}>
               <span className={styles.stepLabel}>
                 <Trans>

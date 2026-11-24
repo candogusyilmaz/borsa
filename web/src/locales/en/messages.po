@@ -51,7 +51,7 @@ msgstr "{change} daily"
 msgid "{change} today"
 msgstr "{change} today"
 
-#: src/features/onboarding/pages/onboarding-page.tsx:63
+#: src/features/onboarding/pages/onboarding-page.tsx:58
 msgid "{completion} complete"
 msgstr "{completion} complete"
 
@@ -140,14 +140,6 @@ msgstr "{weightText} weight"
 msgid "@ {unitPrice}"
 msgstr "@ {unitPrice}"
 
-#: src/features/landing/landing-page.tsx:344
-msgid "/month"
-msgstr "/month"
-
-#: src/features/landing/landing-page.tsx:714
-msgid "© 2024 Portfolio Analytics. All rights reserved."
-msgstr "© 2024 Portfolio Analytics. All rights reserved."
-
 #. Compact chart filter for the last three months
 #: src/features/dashboard/components/transactions-chart.tsx:62
 msgid "3M"
@@ -158,18 +150,14 @@ msgstr "3M"
 msgid "6M"
 msgstr "6M"
 
-#: src/features/landing/landing-page.tsx:660
-msgid "A personal portfolio and analytics platform for traders and investors."
-msgstr "A personal portfolio and analytics platform for traders and investors."
-
-#: src/features/landing/landing-page.tsx:486
-msgid "A powerful personal finance and investment tracking platform. Record trades, analyze performance, and gain insights across multiple portfolios."
-msgstr "A powerful personal finance and investment tracking platform. Record trades, analyze performance, and gain insights across multiple portfolios."
-
 #: src/app/shell/account-menu.tsx:31
 #: src/app/shell/account-menu.tsx:62
 msgid "Account menu"
 msgstr "Account menu"
+
+#: src/features/legal/legal-content.ts:37
+msgid "Accounts and access"
+msgstr "Accounts and access"
 
 #: src/features/portfolios/pages/portfolio-page.tsx:160
 #: src/features/positions/components/positions-view/positions-view.tsx:92
@@ -198,36 +186,12 @@ msgstr "Add trade"
 msgid "Add Trade"
 msgstr "Add Trade"
 
-#: src/features/landing/landing-page.tsx:400
-msgid "Advanced Analytics"
-msgstr "Advanced Analytics"
-
-#: src/features/landing/landing-page.tsx:580
-msgid "AI Power Pack"
-msgstr "AI Power Pack"
-
-#: src/features/landing/landing-page.tsx:585
-msgid "AI trade insights"
-msgstr "AI trade insights"
-
-#: src/features/landing/landing-page.tsx:588
-msgid "AI-assisted data enrichment"
-msgstr "AI-assisted data enrichment"
-
-#: src/features/landing/landing-page.tsx:582
-msgid "AI-enhanced features coming soon."
-msgstr "AI-enhanced features coming soon."
-
 #: src/features/dashboard/components/dashboard-portfolios.tsx:92
 #: src/features/dashboard/components/transactions-chart.tsx:64
 #: src/features/positions/pages/positions-page.tsx:234
 #: src/features/trades/components/trades-list/trades-list.tsx:103
 msgid "All"
 msgstr "All"
-
-#: src/features/landing/landing-page.tsx:567
-msgid "All core features, no credit card required."
-msgstr "All core features, no credit card required."
 
 #: src/features/trades/components/trades-list/trades-list.tsx:159
 msgid "All portfolios"
@@ -241,10 +205,6 @@ msgstr "all time"
 msgid "All time"
 msgstr "All time"
 
-#: src/features/landing/landing-page.tsx:570
-msgid "All trade management features"
-msgstr "All trade management features"
-
 #: src/features/trades/components/trades-list/trades-list.tsx:168
 msgid "All types"
 msgstr "All types"
@@ -254,7 +214,7 @@ msgstr "All types"
 msgid "Alphabetical (A–Z)"
 msgstr "Alphabetical (A–Z)"
 
-#: src/features/auth/pages/register-page.tsx:254
+#: src/features/auth/pages/register-page.tsx:142
 msgid "Already have an account?"
 msgstr "Already have an account?"
 
@@ -262,17 +222,17 @@ msgstr "Already have an account?"
 msgid "Amber"
 msgstr "Amber"
 
-#: src/features/auth/pages/register-page.tsx:86
+#: src/features/legal/legal-content.ts:55
+msgid "An overview of what data Canverse stores while full privacy documentation is being prepared."
+msgstr "An overview of what data Canverse stores while full privacy documentation is being prepared."
+
+#: src/shared/components/error-view/error-view.tsx:47
+msgid "An unexpected error interrupted this view. You can retry or return to the dashboard."
+msgstr "An unexpected error interrupted this view. You can retry or return to the dashboard."
+
+#: src/features/auth/hooks/use-register-view.ts:57
 msgid "An unknown error occurred while creating your account"
 msgstr "An unknown error occurred while creating your account"
-
-#: src/shared/components/error-view.tsx:12
-msgid "An unknown error occurred."
-msgstr "An unknown error occurred."
-
-#: src/features/landing/landing-page.tsx:672
-msgid "API Reference"
-msgstr "API Reference"
 
 #: src/features/portfolios/components/archive-portfolio/archive-portfolio.tsx:13
 #: src/features/portfolios/components/archive-portfolio/archive-portfolio.tsx:65
@@ -309,9 +269,10 @@ msgstr "Asset count unavailable"
 msgid "At least one portfolio is required"
 msgstr "At least one portfolio is required"
 
-#: src/features/landing/landing-page.tsx:587
-msgid "Automated risk analysis"
-msgstr "Automated risk analysis"
+#: src/features/auth/hooks/use-login-view.ts:38
+#: src/features/auth/hooks/use-register-view.ts:79
+msgid "Authentication error"
+msgstr "Authentication error"
 
 #: src/features/positions/components/positions-view/position-inspector.tsx:124
 msgid "Average cost"
@@ -330,13 +291,13 @@ msgstr "Awaiting price"
 msgid "Back"
 msgstr "Back"
 
-#: src/features/landing/landing-page.tsx:402
-msgid "Balance tracking"
-msgstr "Balance tracking"
+#: src/features/legal/legal-page.tsx:122
+msgid "Back to home"
+msgstr "Back to home"
 
-#: src/features/landing/landing-page.tsx:414
-msgid "Beautiful UI"
-msgstr "Beautiful UI"
+#: src/features/legal/legal-content.ts:27
+msgid "Basic terms for using Canverse while full legal documentation is being prepared."
+msgstr "Basic terms for using Canverse while full legal documentation is being prepared."
 
 #: src/features/onboarding/components/portfolio-step.tsx:16
 msgid "Blue"
@@ -345,6 +306,11 @@ msgstr "Blue"
 #: src/features/trades/workflows/buy-transaction-form.tsx:60
 msgid "Bought {quantity} units of {symbol} at {price}."
 msgstr "Bought {quantity} units of {symbol} at {price}."
+
+#: src/features/landing/desktop-landing.tsx:97
+#: src/features/landing/mobile-landing.tsx:82
+msgid "Built for daily use"
+msgstr "Built for daily use"
 
 #. Short action to open the form for entering many trades
 #: src/features/portfolios/pages/portfolio-page.tsx:250
@@ -385,15 +351,15 @@ msgstr "Buy {0}"
 msgid "Buy an asset"
 msgstr "Buy an asset"
 
-#: src/features/landing/landing-page.tsx:395
-msgid "Buy/Sell tracking"
-msgstr "Buy/Sell tracking"
+#: src/features/auth/components/auth-legal-notice.tsx:8
+msgid "By continuing, you agree to the <0>Terms of Service</0> and <1>Privacy Policy</1>."
+msgstr "By continuing, you agree to the <0>Terms of Service</0> and <1>Privacy Policy</1>."
 
 #: src/features/dashboard/components/dashboard-portfolios.tsx:87
 msgid "By value · {rankingCurrency}"
 msgstr "By value · {rankingCurrency}"
 
-#: src/features/dashboard/pages/dashboard-page.tsx:211
+#: src/features/dashboard/pages/dashboard-page.tsx:208
 #: src/features/dashboard/workflows/create-dashboard-modal.tsx:135
 #: src/features/portfolios/components/archive-portfolio/archive-portfolio.tsx:62
 #: src/features/portfolios/workflows/create-portfolio-button.tsx:46
@@ -404,13 +370,20 @@ msgstr "By value · {rankingCurrency}"
 msgid "Cancel"
 msgstr "Cancel"
 
-#: src/features/landing/landing-page.tsx:605
-msgid "Cancel anytime • No hidden fees"
-msgstr "Cancel anytime • No hidden fees"
-
-#: src/app/shell/member-shell.tsx:55
+#: src/app/shell/member-shell.tsx:66
 msgid "Canverse dashboard"
 msgstr "Canverse dashboard"
+
+#: src/features/landing/desktop-landing.tsx:21
+#: src/features/landing/mobile-landing.tsx:21
+#: src/features/legal/legal-page.tsx:49
+#: src/features/legal/legal-page.tsx:90
+msgid "Canverse home"
+msgstr "Canverse home"
+
+#: src/features/legal/legal-content.ts:33
+msgid "Canverse is a personal tool for recording trades, positions, and portfolios. Information displayed in the application is for your own tracking only and does not constitute financial, investment, or tax advice."
+msgstr "Canverse is a personal tool for recording trades, positions, and portfolios. Information displayed in the application is for your own tracking only and does not constitute financial, investment, or tax advice."
 
 #: src/features/dashboard/components/transactions-chart.tsx:70
 msgid "Chart view"
@@ -463,23 +436,11 @@ msgstr "Close"
 msgid "Close position details"
 msgstr "Close position details"
 
-#: src/features/landing/landing-page.tsx:375
-msgid "Coming Soon"
-msgstr "Coming Soon"
-
-#: src/features/auth/pages/login-page.tsx:112
-msgid "Complete trade history with performance insights"
-msgstr "Complete trade history with performance insights"
-
 #: src/shared/feedback/alerts.tsx:9
 msgid "Completed successfully"
 msgstr "Completed successfully"
 
-#: src/features/landing/landing-page.tsx:394
-msgid "Comprehensive tracking for all your trades across multiple portfolios."
-msgstr "Comprehensive tracking for all your trades across multiple portfolios."
-
-#: src/features/auth/pages/register-page.tsx:236
+#: src/features/auth/pages/register-page.tsx:117
 msgid "Confirm password"
 msgstr "Confirm password"
 
@@ -491,17 +452,31 @@ msgstr "Confirm Removal"
 msgid "Confirmation code"
 msgstr "Confirmation code"
 
+#: src/shared/components/error-view/error-view.tsx:34
+msgid "Connection lost"
+msgstr "Connection lost"
+
 #: src/shared/components/network-error/network-error.tsx:33
 msgid "Connection Lost"
 msgstr "Connection Lost"
 
-#: src/features/auth/components/google-sign-in-button.tsx:24
+#: src/features/landing/desktop-landing.tsx:144
+#: src/features/landing/mobile-landing.tsx:119
+#: src/features/legal/legal-page.tsx:145
+#: src/features/legal/legal-page.tsx:182
+msgid "Contact"
+msgstr "Contact"
+
+#: src/features/auth/components/google-sign-in-button.tsx:43
 msgid "Continue with Google"
 msgstr "Continue with Google"
 
-#: src/features/landing/landing-page.tsx:560
-msgid "Core features are completely free. AI-powered features available as optional add-ons."
-msgstr "Core features are completely free. AI-powered features available as optional add-ons."
+#: src/features/auth/pages/login-page.tsx:26
+#: src/features/auth/pages/login-page.tsx:38
+#: src/features/auth/pages/register-page.tsx:27
+#: src/features/auth/pages/register-page.tsx:39
+msgid "Continue with Google or your email"
+msgstr "Continue with Google or your email"
 
 #: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:84
 #: src/features/positions/components/positions-view/position-inspector.tsx:136
@@ -524,7 +499,7 @@ msgstr "Could not clear your data. Try again."
 msgid "Could not create the portfolio. Try again."
 msgstr "Could not create the portfolio. Try again."
 
-#: src/features/dashboard/pages/dashboard-page.tsx:206
+#: src/features/dashboard/pages/dashboard-page.tsx:203
 msgid "Could not delete the dashboard. Try again."
 msgstr "Could not delete the dashboard. Try again."
 
@@ -549,7 +524,7 @@ msgstr "Could not load realized performance."
 msgid "Could not load the portfolio balance."
 msgstr "Could not load the portfolio balance."
 
-#: src/features/dashboard/pages/dashboard-page.tsx:44
+#: src/features/dashboard/pages/dashboard-page.tsx:45
 msgid "Could not load this dashboard."
 msgstr "Could not load this dashboard."
 
@@ -561,6 +536,10 @@ msgstr "Could not load trades."
 msgid "Could not process the file. Please check the format."
 msgstr "Could not process the file. Please check the format."
 
+#: src/shared/components/error-view/error-view.tsx:43
+msgid "Could not reach the server. Check your internet connection and try again."
+msgstr "Could not reach the server. Check your internet connection and try again."
+
 #: src/features/trades/workflows/buy-transaction-form.tsx:63
 msgid "Could not record the purchase. Try again."
 msgstr "Could not record the purchase. Try again."
@@ -568,6 +547,11 @@ msgstr "Could not record the purchase. Try again."
 #: src/features/trades/workflows/sell-transaction-form.tsx:64
 msgid "Could not record the sale. Try again."
 msgstr "Could not record the sale. Try again."
+
+#: src/features/auth/hooks/use-login-view.ts:31
+#: src/features/auth/hooks/use-register-view.ts:72
+msgid "Could not sign in with Google. Please try again."
+msgstr "Could not sign in with Google. Please try again."
 
 #: src/shared/i18n/language-select.tsx:39
 msgid "Could not switch languages. Try again."
@@ -577,7 +561,7 @@ msgstr "Could not switch languages. Try again."
 msgid "Could not undo the trade. Try again."
 msgstr "Could not undo the trade. Try again."
 
-#: src/features/dashboard/pages/dashboard-page.tsx:37
+#: src/features/dashboard/pages/dashboard-page.tsx:38
 msgid "Create a dashboard to track your balance and realized performance."
 msgstr "Create a dashboard to track your balance and realized performance."
 
@@ -586,11 +570,17 @@ msgid "Create a portfolio from the Portfolios menu to start trading."
 msgstr "Create a portfolio from the Portfolios menu to start trading."
 
 #: src/app/document-title.tsx:10
-#: src/features/auth/pages/register-page.tsx:247
+#: src/features/auth/pages/register-page.tsx:131
+#: src/features/landing/desktop-landing.tsx:38
+#: src/features/landing/desktop-landing.tsx:65
+#: src/features/landing/desktop-landing.tsx:133
+#: src/features/landing/mobile-landing.tsx:50
+#: src/features/landing/mobile-landing.tsx:108
+#: src/features/legal/legal-page.tsx:177
 msgid "Create account"
 msgstr "Create account"
 
-#: src/features/auth/pages/login-page.tsx:211
+#: src/features/auth/pages/login-page.tsx:94
 msgid "Create an account"
 msgstr "Create an account"
 
@@ -609,19 +599,15 @@ msgstr "Create dashboard"
 msgid "Create portfolio"
 msgstr "Create portfolio"
 
-#: src/features/auth/pages/register-page.tsx:200
+#: src/features/auth/pages/register-page.tsx:26
+#: src/features/auth/pages/register-page.tsx:38
 msgid "Create your account"
 msgstr "Create your account"
 
 #. Asset category tag for cryptocurrency
-#: src/features/landing/landing-page.tsx:255
 #: src/features/trades/workflows/bulk-trade/asset-combobox.tsx:20
 msgid "Crypto"
 msgstr "Crypto"
-
-#: src/features/landing/landing-page.tsx:409
-msgid "Cryptocurrencies"
-msgstr "Cryptocurrencies"
 
 #: src/features/dashboard/components/transactions-chart.tsx:74
 #: src/features/dashboard/components/transactions-chart.tsx:201
@@ -631,10 +617,6 @@ msgstr "Cumulative"
 #: src/features/dashboard/components/transactions-chart.tsx:258
 msgid "Cumulative P&L"
 msgstr "Cumulative P&L"
-
-#: src/features/landing/landing-page.tsx:402
-msgid "Cumulative performance charts"
-msgstr "Cumulative performance charts"
 
 #: src/features/dashboard/components/transactions-chart.tsx:135
 msgid "Cumulative realized profit and loss"
@@ -666,15 +648,17 @@ msgstr "Current price"
 msgid "Daily change"
 msgstr "Daily change"
 
-#: src/features/landing/landing-page.tsx:402
-msgid "Daily P&L calculation"
-msgstr "Daily P&L calculation"
-
-#: src/app/document-title.tsx:12
+#: src/app/document-title.tsx:14
 #: src/app/shell/bottom-nav.tsx:16
-#: src/app/shell/member-shell.tsx:60
-#: src/features/dashboard/pages/dashboard-page.tsx:31
-#: src/features/dashboard/pages/dashboard-page.tsx:73
+#: src/app/shell/member-shell.tsx:71
+#: src/features/dashboard/pages/dashboard-page.tsx:32
+#: src/features/dashboard/pages/dashboard-page.tsx:74
+#: src/features/landing/desktop-landing.tsx:30
+#: src/features/landing/desktop-landing.tsx:125
+#: src/features/landing/mobile-landing.tsx:100
+#: src/features/legal/legal-page.tsx:57
+#: src/features/legal/legal-page.tsx:169
+#: src/shared/components/error-view/error-view.tsx:70
 msgid "Dashboard"
 msgstr "Dashboard"
 
@@ -694,7 +678,7 @@ msgstr "Dashboard Name"
 msgid "DASHBOARD NAME"
 msgstr "DASHBOARD NAME"
 
-#: src/features/dashboard/pages/dashboard-page.tsx:184
+#: src/features/dashboard/pages/dashboard-page.tsx:181
 msgid "Dashboard options"
 msgstr "Dashboard options"
 
@@ -706,37 +690,38 @@ msgstr "Dashboard summary"
 msgid "Dashboard View"
 msgstr "Dashboard View"
 
-#: src/features/dashboard/pages/dashboard-page.tsx:112
-#: src/features/dashboard/pages/dashboard-page.tsx:142
+#: src/features/dashboard/pages/dashboard-page.tsx:109
+#: src/features/dashboard/pages/dashboard-page.tsx:139
+#: src/features/landing/use-landing-view.ts:24
 msgid "Dashboards"
 msgstr "Dashboards"
+
+#: src/features/legal/legal-content.ts:75
+msgid "Data control"
+msgstr "Data control"
 
 #: src/features/trades/components/trades-list/trade-details.tsx:74
 #: src/features/trades/workflows/undo-trade-form.tsx:72
 msgid "Date"
 msgstr "Date"
 
-#: src/features/landing/landing-page.tsx:401
-msgid "Deep insights into your portfolio performance with beautiful visualizations."
-msgstr "Deep insights into your portfolio performance with beautiful visualizations."
-
 #: src/features/onboarding/components/portfolio-step.tsx:147
 msgid "Define Portfolio"
 msgstr "Define Portfolio"
 
-#: src/features/dashboard/pages/dashboard-page.tsx:190
-#: src/features/dashboard/pages/dashboard-page.tsx:200
-#: src/features/dashboard/pages/dashboard-page.tsx:217
+#: src/features/dashboard/pages/dashboard-page.tsx:187
+#: src/features/dashboard/pages/dashboard-page.tsx:197
+#: src/features/dashboard/pages/dashboard-page.tsx:214
 msgid "Delete dashboard"
 msgstr "Delete dashboard"
 
-#: src/features/dashboard/pages/dashboard-page.tsx:202
+#: src/features/dashboard/pages/dashboard-page.tsx:199
 msgid "Delete the “{name}” dashboard? Its portfolios and transactions will be kept."
 msgstr "Delete the “{name}” dashboard? Its portfolios and transactions will be kept."
 
-#: src/features/landing/landing-page.tsx:672
-msgid "Documentation"
-msgstr "Documentation"
+#: src/features/legal/legal-page.tsx:127
+msgid "Draft"
+msgstr "Draft"
 
 #: src/features/onboarding/components/dashboard-step.tsx:80
 msgid "e.g. My Investments"
@@ -764,12 +749,12 @@ msgstr "Earnings period"
 msgid "Earnings will appear here after a sale with recorded P&L."
 msgstr "Earnings will appear here after a sale with recorded P&L."
 
-#: src/features/auth/pages/login-page.tsx:193
-#: src/features/auth/pages/register-page.tsx:224
+#: src/features/auth/pages/login-page.tsx:65
+#: src/features/auth/pages/register-page.tsx:91
 msgid "Email"
 msgstr "Email"
 
-#: src/features/auth/pages/register-page.tsx:33
+#: src/features/auth/hooks/use-register-view.ts:23
 msgid "Email is not valid"
 msgstr "Email is not valid"
 
@@ -781,11 +766,15 @@ msgstr "Emerald"
 msgid "Enter dashboard name"
 msgstr "Enter dashboard name"
 
-#: src/features/auth/pages/login-page.tsx:28
+#: src/features/auth/hooks/use-login-view.ts:18
+#: src/features/auth/pages/login-page.tsx:66
+#: src/features/auth/pages/register-page.tsx:92
 msgid "Enter your email address"
 msgstr "Enter your email address"
 
-#: src/features/auth/pages/login-page.tsx:29
+#: src/features/auth/hooks/use-login-view.ts:19
+#: src/features/auth/pages/login-page.tsx:77
+#: src/features/auth/pages/register-page.tsx:105
 msgid "Enter your password"
 msgstr "Enter your password"
 
@@ -798,11 +787,11 @@ msgstr "Equity"
 msgid "Error Details"
 msgstr "Error Details"
 
-#: src/features/auth/pages/register-page.tsx:86
+#: src/features/auth/hooks/use-register-view.ts:57
 msgid "Error while creating account"
 msgstr "Error while creating account"
 
-#: src/features/auth/pages/login-page.tsx:185
+#: src/features/auth/hooks/use-login-view.ts:54
 msgid "Error while logging in"
 msgstr "Error while logging in"
 
@@ -815,14 +804,6 @@ msgstr "Error while logging in"
 msgid "Est."
 msgstr "Est."
 
-#: src/features/landing/landing-page.tsx:584
-msgid "Everything in Free"
-msgstr "Everything in Free"
-
-#: src/features/landing/landing-page.tsx:534
-msgid "Everything you need to manage your investments and track your trading performance."
-msgstr "Everything you need to manage your investments and track your trading performance."
-
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:222
 #: src/features/trades/workflows/bulk-trade/virtual-row.tsx:101
 #: src/features/trades/workflows/buy-transaction-form.tsx:175
@@ -833,10 +814,6 @@ msgstr "Execution date"
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:130
 msgid "Failed to submit trades. Please try again."
 msgstr "Failed to submit trades. Please try again."
-
-#: src/features/landing/landing-page.tsx:668
-msgid "Features"
-msgstr "Features"
 
 #: src/features/trades/components/trades-list/trades-list.tsx:65
 msgid "Filter"
@@ -851,11 +828,11 @@ msgstr "Filter by portfolio"
 msgid "Filter trades"
 msgstr "Filter trades"
 
-#: src/features/auth/pages/register-page.tsx:221
+#: src/features/auth/pages/register-page.tsx:52
 msgid "First name"
 msgstr "First name"
 
-#: src/features/auth/pages/register-page.tsx:31
+#: src/features/auth/hooks/use-register-view.ts:21
 msgid "First name must be between 2 and 50 characters"
 msgstr "First name must be between 2 and 50 characters"
 
@@ -867,55 +844,39 @@ msgstr "First page"
 msgid "Flat daily impact estimate: no daily quote change"
 msgstr "Flat daily impact estimate: no daily quote change"
 
-#: src/features/landing/landing-page.tsx:256
-msgid "Forex"
-msgstr "Forex"
-
-#: src/features/landing/landing-page.tsx:409
-msgid "Forex & Metals"
-msgstr "Forex & Metals"
-
-#: src/features/landing/landing-page.tsx:340
-msgid "Free"
-msgstr "Free"
-
-#: src/features/auth/pages/register-page.tsx:144
-msgid "Free account — no credit card required"
-msgstr "Free account — no credit card required"
-
-#: src/features/landing/landing-page.tsx:566
-msgid "Free Forever"
-msgstr "Free Forever"
-
-#: src/features/auth/pages/register-page.tsx:203
-msgid "Free forever. Set up in under a minute."
-msgstr "Free forever. Set up in under a minute."
+#: src/features/landing/desktop-landing.tsx:122
+#: src/features/landing/mobile-landing.tsx:97
+#: src/features/legal/legal-page.tsx:165
+msgid "Footer links"
+msgstr "Footer links"
 
 #: src/features/dashboard/components/dashboard-portfolios.tsx:60
 msgid "From portfolios with recorded trades."
 msgstr "From portfolios with recorded trades."
-
-#: src/features/landing/landing-page.tsx:571
-msgid "Full analytics dashboard"
-msgstr "Full analytics dashboard"
 
 #. Asset category tag for foreign exchange
 #: src/features/trades/workflows/bulk-trade/asset-combobox.tsx:21
 msgid "FX"
 msgstr "FX"
 
-#: src/features/landing/landing-page.tsx:462
-msgid "Get Started"
-msgstr "Get Started"
-
-#: src/features/landing/landing-page.tsx:375
-#: src/features/landing/landing-page.tsx:646
-msgid "Get Started Free"
-msgstr "Get Started Free"
-
 #: src/features/onboarding/components/portfolio-step.tsx:52
 msgid "Give your new portfolio a name and a visual brand."
 msgstr "Give your new portfolio a name and a visual brand."
+
+#: src/features/legal/legal-content.ts:70
+msgid "Google sign-in"
+msgstr "Google sign-in"
+
+#: src/features/auth/hooks/use-login-view.ts:31
+#: src/features/auth/hooks/use-login-view.ts:38
+#: src/features/auth/hooks/use-register-view.ts:72
+#: src/features/auth/hooks/use-register-view.ts:79
+msgid "Google sign-in failed"
+msgstr "Google sign-in failed"
+
+#: src/features/landing/use-landing-view.ts:25
+msgid "Group portfolios into custom dashboards to see total balance, daily change, realized P&L, and win rate."
+msgstr "Group portfolios into custom dashboards to see total balance, daily change, realized P&L, and win rate."
 
 #. Sort by unrealized profit amount in the position currency
 #: src/features/positions/pages/positions-page.tsx:22
@@ -937,25 +898,46 @@ msgstr "Highest value"
 msgid "Holding"
 msgstr "Holding"
 
+#: src/features/auth/components/auth-shell.tsx:29
+#: src/features/auth/components/auth-shell.tsx:63
+msgid "Home"
+msgstr "Home"
+
 #: src/shared/components/localized-date-time-picker.tsx:23
 msgid "Hours"
 msgstr "Hours"
+
+#: src/features/legal/legal-content.ts:65
+msgid "How information is used"
+msgstr "How information is used"
 
 #: src/features/trades/workflows/undo-trade-form.tsx:93
 msgid "I understand this action is permanent"
 msgstr "I understand this action is permanent"
 
+#: src/features/legal/legal-content.ts:71
+msgid "If you choose to continue with Google, authentication is verified through Google OAuth using only your verified email address and display name."
+msgstr "If you choose to continue with Google, authentication is verified through Google OAuth using only your verified email address and display name."
+
+#: src/features/legal/legal-page.tsx:148
+msgid "If you have questions about this notice, email <link>{LEGAL_CONTACT_EMAIL}</link>."
+msgstr "If you have questions about this notice, email <link>{LEGAL_CONTACT_EMAIL}</link>."
+
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:174
 msgid "Import file"
 msgstr "Import file"
 
-#: src/features/auth/pages/login-page.tsx:185
+#: src/features/legal/legal-content.ts:60
+msgid "Information stored"
+msgstr "Information stored"
+
+#: src/features/auth/hooks/use-login-view.ts:54
 msgid "Invalid username or password"
 msgstr "Invalid username or password"
 
-#: src/features/auth/pages/register-page.tsx:132
-msgid "Join thousands of traders who use Canverse to track positions, review every trade, and build a clear picture of their performance."
-msgstr "Join thousands of traders who use Canverse to track positions, review every trade, and build a clear picture of their performance."
+#: src/features/landing/use-landing-view.ts:51
+msgid "Keep balances and returns separated by currency without mixing totals."
+msgstr "Keep balances and returns separated by currency without mixing totals."
 
 #: src/shared/i18n/language-select.tsx:11
 msgid "Language"
@@ -969,11 +951,11 @@ msgstr "Last 3 months"
 msgid "Last 6 months"
 msgstr "Last 6 months"
 
-#: src/features/auth/pages/register-page.tsx:222
+#: src/features/auth/pages/register-page.tsx:56
 msgid "Last name"
 msgstr "Last name"
 
-#: src/features/auth/pages/register-page.tsx:32
+#: src/features/auth/hooks/use-register-view.ts:22
 msgid "Last name must be between 2 and 50 characters"
 msgstr "Last name must be between 2 and 50 characters"
 
@@ -981,22 +963,13 @@ msgstr "Last name must be between 2 and 50 characters"
 msgid "Last page"
 msgstr "Last page"
 
-#: src/features/dashboard/pages/dashboard-page.tsx:230
+#: src/features/dashboard/pages/dashboard-page.tsx:227
 msgid "Last quote"
 msgstr "Last quote"
 
 #: src/features/onboarding/components/dashboard-step.tsx:194
 msgid "Launch Workspace"
 msgstr "Launch Workspace"
-
-#: src/features/landing/landing-page.tsx:675
-msgid "Legal"
-msgstr "Legal"
-
-#: src/features/landing/landing-page.tsx:416
-#: src/features/landing/landing-page.tsx:573
-msgid "Light/Dark mode"
-msgstr "Light/Dark mode"
 
 #: src/features/dashboard/components/dashboard-portfolios.tsx:41
 msgid "Linked portfolios"
@@ -1010,14 +983,7 @@ msgstr "Linked Portfolios"
 msgid "Linked portfolios with recorded trades will appear here."
 msgstr "Linked portfolios with recorded trades will appear here."
 
-#. Indicator that market data is live
-#. Indicator that market data is live
-#: src/features/auth/pages/login-page.tsx:133
-#: src/features/auth/pages/register-page.tsx:177
-msgid "Live"
-msgstr "Live"
-
-#: src/features/dashboard/pages/dashboard-page.tsx:40
+#: src/features/dashboard/pages/dashboard-page.tsx:41
 msgid "Loading dashboard"
 msgstr "Loading dashboard"
 
@@ -1054,13 +1020,17 @@ msgstr "Loading trades…"
 msgid "Loading…"
 msgstr "Loading…"
 
+#: src/features/landing/use-landing-view.ts:43
+msgid "Log single or bulk buy and sell trades, filter your history by portfolio or type, and undo eligible entries."
+msgstr "Log single or bulk buy and sell trades, filter your history by portfolio or type, and undo eligible entries."
+
 #. Sort by unrealized percentage return, smallest first
 #: src/features/positions/pages/positions-page.tsx:24
 msgid "Lowest return (%)"
 msgstr "Lowest return (%)"
 
 #: src/app/shell/bottom-nav.tsx:13
-#: src/app/shell/member-shell.tsx:58
+#: src/app/shell/member-shell.tsx:69
 msgid "Main navigation"
 msgstr "Main navigation"
 
@@ -1069,55 +1039,26 @@ msgstr "Main navigation"
 msgid "Market"
 msgstr "Market"
 
+#: src/features/legal/legal-content.ts:42
+msgid "Market data and entries"
+msgstr "Market data and entries"
+
 #: src/features/positions/components/positions-view/position-inspector.tsx:157
 msgid "Market data is unavailable for this symbol."
 msgstr "Market data is unavailable for this symbol."
 
-#: src/features/landing/landing-page.tsx:257
-msgid "Metals"
-msgstr "Metals"
-
 #: src/shared/components/localized-date-time-picker.tsx:24
 msgid "Minutes"
 msgstr "Minutes"
-
-#: src/features/landing/landing-page.tsx:415
-msgid "Modern, responsive interface with customizable themes and smooth interactions."
-msgstr "Modern, responsive interface with customizable themes and smooth interactions."
 
 #: src/features/dashboard/components/transactions-chart.tsx:29
 #: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:121
 msgid "Monthly"
 msgstr "Monthly"
 
-#: src/features/landing/landing-page.tsx:209
-msgid "Monthly P&L"
-msgstr "Monthly P&L"
-
-#: src/features/landing/landing-page.tsx:576
-msgid "Most Popular"
-msgstr "Most Popular"
-
-#: src/features/landing/landing-page.tsx:395
-#: src/features/landing/landing-page.tsx:572
-msgid "Multi-currency support"
-msgstr "Multi-currency support"
-
-#: src/features/auth/pages/login-page.tsx:106
-msgid "Multi-portfolio management & analytics"
-msgstr "Multi-portfolio management & analytics"
-
-#: src/features/landing/landing-page.tsx:395
-msgid "Multi-portfolio support"
-msgstr "Multi-portfolio support"
-
-#: src/features/landing/landing-page.tsx:416
-msgid "Multiple dashboard views"
-msgstr "Multiple dashboard views"
-
-#: src/features/landing/landing-page.tsx:407
-msgid "Multiple Instruments"
-msgstr "Multiple Instruments"
+#: src/features/landing/use-landing-view.ts:50
+msgid "Multi-currency"
+msgstr "Multi-currency"
 
 #: src/app/shell/account-menu.tsx:24
 msgid "My account"
@@ -1131,8 +1072,8 @@ msgstr "Name is required"
 msgid "Name must be at least 3 characters"
 msgstr "Name must be at least 3 characters"
 
-#: src/features/dashboard/pages/dashboard-page.tsx:124
-#: src/features/dashboard/pages/dashboard-page.tsx:156
+#: src/features/dashboard/pages/dashboard-page.tsx:121
+#: src/features/dashboard/pages/dashboard-page.tsx:153
 #: src/features/dashboard/workflows/create-dashboard-modal.tsx:32
 msgid "New dashboard"
 msgstr "New dashboard"
@@ -1142,7 +1083,7 @@ msgstr "New dashboard"
 msgid "New portfolio"
 msgstr "New portfolio"
 
-#: src/features/auth/pages/login-page.tsx:209
+#: src/features/auth/pages/login-page.tsx:92
 msgid "New to Canverse?"
 msgstr "New to Canverse?"
 
@@ -1229,6 +1170,11 @@ msgstr "No trades yet."
 msgid "Nothing to see here"
 msgstr "Nothing to see here"
 
+#: src/features/landing/desktop-landing.tsx:60
+#: src/features/landing/mobile-landing.tsx:45
+msgid "Open dashboard"
+msgstr "Open dashboard"
+
 #: src/features/positions/pages/positions-page.tsx:148
 msgid "Open positions"
 msgstr "Open positions"
@@ -1241,22 +1187,20 @@ msgstr "Open positions versus cost basis"
 msgid "Open trade history"
 msgstr "Open trade history"
 
-#: src/features/auth/pages/login-page.tsx:170
-msgid "OR LOG IN WITH YOUR EMAIL"
-msgstr "OR LOG IN WITH YOUR EMAIL"
+#. Separator between Google sign-in and email form
+#. Separator between Google sign-in and email form
+#: src/features/auth/pages/login-page.tsx:55
+#: src/features/auth/pages/register-page.tsx:69
+msgid "Or continue with"
+msgstr "Or continue with"
 
-#: src/features/auth/pages/register-page.tsx:214
-msgid "OR SIGN UP WITH YOUR EMAIL"
-msgstr "OR SIGN UP WITH YOUR EMAIL"
+#: src/features/landing/use-landing-view.ts:31
+msgid "Organize holdings across separate portfolios with per-currency totals, asset allocation, and monthly earnings."
+msgstr "Organize holdings across separate portfolios with per-currency totals, asset allocation, and monthly earnings."
 
 #: src/features/positions/components/positions-view/positions-view.tsx:396
 msgid "P/L unavailable"
 msgstr "P/L unavailable"
-
-#: src/features/auth/pages/login-page.tsx:136
-#: src/features/auth/pages/register-page.tsx:180
-msgid "P&L data"
-msgstr "P&L data"
 
 #: src/shared/components/not-found/not-found.tsx:17
 msgid "Page you are trying to open does not exist. You may have mistyped the address, or the page has been moved to another URL. If you think this is an error contact support."
@@ -1267,16 +1211,16 @@ msgstr "Page you are trying to open does not exist. You may have mistyped the ad
 msgid "Partial"
 msgstr "Partial"
 
-#: src/features/auth/pages/login-page.tsx:197
-#: src/features/auth/pages/register-page.tsx:228
+#: src/features/auth/pages/login-page.tsx:76
+#: src/features/auth/pages/register-page.tsx:104
 msgid "Password"
 msgstr "Password"
 
-#: src/features/auth/pages/register-page.tsx:34
+#: src/features/auth/hooks/use-register-view.ts:24
 msgid "Password must be between 8 and 20 characters"
 msgstr "Password must be between 8 and 20 characters"
 
-#: src/features/auth/pages/register-page.tsx:35
+#: src/features/auth/hooks/use-register-view.ts:25
 msgid "Passwords do not match"
 msgstr "Passwords do not match"
 
@@ -1293,6 +1237,15 @@ msgstr "Period P&L"
 msgid "Periodic"
 msgstr "Periodic"
 
+#: src/features/landing/desktop-landing.tsx:118
+#: src/features/landing/mobile-landing.tsx:128
+msgid "Personal portfolio and trade tracker"
+msgstr "Personal portfolio and trade tracker"
+
+#: src/features/legal/legal-content.ts:32
+msgid "Personal tracking tool"
+msgstr "Personal tracking tool"
+
 #: src/shared/components/localized-date-time-picker.tsx:19
 msgid "Pick a month"
 msgstr "Pick a month"
@@ -1301,8 +1254,16 @@ msgstr "Pick a month"
 msgid "Pick a year"
 msgstr "Pick a year"
 
+#: src/features/legal/legal-content.ts:56
+msgid "Placeholder draft. A detailed privacy policy will be published here as the platform matures."
+msgstr "Placeholder draft. A detailed privacy policy will be published here as the platform matures."
+
+#: src/features/legal/legal-content.ts:28
+msgid "Placeholder draft. Detailed terms of service will be published here as the platform matures."
+msgstr "Placeholder draft. Detailed terms of service will be published here as the platform matures."
+
 #. Short label for the portfolio switcher in the mobile tab bar
-#: src/app/document-title.tsx:16
+#: src/app/document-title.tsx:18
 #: src/app/shell/bottom-nav.tsx:20
 #: src/features/portfolios/pages/portfolio-page.tsx:34
 #: src/features/positions/components/positions-view/positions-view.tsx:108
@@ -1313,6 +1274,11 @@ msgstr "Portfolio"
 #: src/features/portfolios/pages/portfolio-page.tsx:190
 msgid "Portfolio actions"
 msgstr "Portfolio actions"
+
+#: src/features/landing/desktop-landing.tsx:49
+#: src/features/landing/mobile-landing.tsx:34
+msgid "Portfolio and trade tracking, kept simple."
+msgstr "Portfolio and trade tracking, kept simple."
 
 #: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:41
 #: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:63
@@ -1333,10 +1299,6 @@ msgstr "Portfolio created successfully"
 msgid "Portfolio ID is required to perform this action."
 msgstr "Portfolio ID is required to perform this action."
 
-#: src/features/auth/pages/login-page.tsx:81
-msgid "Portfolio Intelligence"
-msgstr "Portfolio Intelligence"
-
 #: src/features/portfolios/workflows/create-portfolio-button.tsx:33
 msgid "Portfolio name"
 msgstr "Portfolio name"
@@ -1344,10 +1306,6 @@ msgstr "Portfolio name"
 #: src/features/onboarding/components/portfolio-step.tsx:60
 msgid "PORTFOLIO NAME"
 msgstr "PORTFOLIO NAME"
-
-#: src/features/landing/landing-page.tsx:196
-msgid "Portfolio Overview"
-msgstr "Portfolio Overview"
 
 #: src/features/portfolios/pages/portfolio-page.tsx:132
 msgid "Portfolio sections"
@@ -1365,11 +1323,10 @@ msgstr "Portfolio trade actions"
 msgid "Portfolio weight"
 msgstr "Portfolio weight"
 
-#: src/app/shell/member-shell.tsx:42
-#: src/app/shell/member-shell.tsx:63
-#: src/features/auth/pages/login-page.tsx:122
-#: src/features/auth/pages/register-page.tsx:166
+#: src/app/shell/member-shell.tsx:53
+#: src/app/shell/member-shell.tsx:74
 #: src/features/dashboard/workflows/create-dashboard-modal.tsx:121
+#: src/features/landing/use-landing-view.ts:30
 #: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:60
 msgid "Portfolios"
 msgstr "Portfolios"
@@ -1385,8 +1342,9 @@ msgstr "Position"
 msgid "Position value"
 msgstr "Position value"
 
-#: src/app/document-title.tsx:13
-#: src/app/shell/member-shell.tsx:66
+#: src/app/document-title.tsx:15
+#: src/app/shell/member-shell.tsx:77
+#: src/features/landing/use-landing-view.ts:36
 #: src/features/portfolios/pages/portfolio-page.tsx:134
 #: src/features/positions/pages/positions-page.tsx:336
 msgid "Positions"
@@ -1395,10 +1353,6 @@ msgstr "Positions"
 #: src/features/positions/components/positions-view/positions-view.tsx:317
 msgid "Positions pages"
 msgstr "Positions pages"
-
-#: src/features/landing/landing-page.tsx:529
-msgid "Powerful <0>Features</0>"
-msgstr "Powerful <0>Features</0>"
 
 #: src/shared/components/localized-date-time-picker.tsx:18
 msgid "Previous decade"
@@ -1440,21 +1394,19 @@ msgstr "Price"
 msgid "Price as of {0}"
 msgstr "Price as of {0}"
 
-#: src/features/dashboard/pages/dashboard-page.tsx:230
+#: src/features/dashboard/pages/dashboard-page.tsx:227
 msgid "Prices updated"
 msgstr "Prices updated"
 
-#: src/features/landing/landing-page.tsx:668
-msgid "Pricing"
-msgstr "Pricing"
+#: src/features/landing/desktop-landing.tsx:141
+#: src/features/landing/mobile-landing.tsx:116
+msgid "Privacy"
+msgstr "Privacy"
 
-#: src/features/landing/landing-page.tsx:676
+#: src/app/document-title.tsx:12
+#: src/features/legal/legal-content.ts:54
 msgid "Privacy Policy"
 msgstr "Privacy Policy"
-
-#: src/features/landing/landing-page.tsx:667
-msgid "Product"
-msgstr "Product"
 
 #. Buy action in the footer of the position drawer
 #. Trade history entry for a purchase
@@ -1486,17 +1438,13 @@ msgstr "Quantity"
 msgid "Quoted balance"
 msgstr "Quoted balance"
 
-#: src/features/dashboard/pages/dashboard-page.tsx:230
+#: src/features/dashboard/pages/dashboard-page.tsx:227
 msgid "Quotes pending"
 msgstr "Quotes pending"
 
-#: src/features/landing/landing-page.tsx:618
-msgid "Ready to <0>Transform</0> Your Trading?"
-msgstr "Ready to <0>Transform</0> Your Trading?"
-
-#: src/features/auth/pages/login-page.tsx:100
-msgid "Real-time position tracking across all markets"
-msgstr "Real-time position tracking across all markets"
+#: src/features/auth/pages/register-page.tsx:118
+msgid "Re-enter your password"
+msgstr "Re-enter your password"
 
 #: src/features/dashboard/components/dashboard-summary.tsx:94
 #: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:93
@@ -1513,9 +1461,22 @@ msgstr "Realized performance"
 msgid "Realized profit and loss by period"
 msgstr "Realized profit and loss by period"
 
+#: src/shared/components/error-view/error-view.tsx:63
+msgid "Reconnect"
+msgstr "Reconnect"
+
 #: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:36
 msgid "Record a trade to see your balance and allocation."
 msgstr "Record a trade to see your balance and allocation."
+
+#: src/features/landing/desktop-landing.tsx:52
+#: src/features/landing/mobile-landing.tsx:37
+msgid "Record buy and sell trades across portfolios and currencies, follow open positions, and review realized profit and loss in one place."
+msgstr "Record buy and sell trades across portfolios and currencies, follow open positions, and review realized profit and loss in one place."
+
+#: src/features/legal/legal-content.ts:43
+msgid "Recorded trades and portfolio metrics depend on the figures you enter and external market quotes, which may be delayed, estimated, or temporarily unavailable. Please verify figures independently before making financial decisions."
+msgstr "Recorded trades and portfolio metrics depend on the figures you enter and external market quotes, which may be delayed, estimated, or temporarily unavailable. Please verify figures independently before making financial decisions."
 
 #: src/features/trades/workflows/bulk-trade/virtual-row.tsx:112
 msgid "Remove trade row"
@@ -1524,14 +1485,6 @@ msgstr "Remove trade row"
 #: src/features/onboarding/components/dashboard-step.tsx:103
 msgid "Reporting Currency"
 msgstr "Reporting Currency"
-
-#: src/features/landing/landing-page.tsx:671
-msgid "Resources"
-msgstr "Resources"
-
-#: src/features/landing/landing-page.tsx:416
-msgid "Responsive design"
-msgstr "Responsive design"
 
 #: src/shared/components/network-error/network-error.tsx:39
 msgid "Retry Connection"
@@ -1597,10 +1550,6 @@ msgstr "Search trades"
 msgid "Seconds"
 msgstr "Seconds"
 
-#: src/features/auth/pages/register-page.tsx:156
-msgid "Secure, private & always up to date"
-msgstr "Secure, private & always up to date"
-
 #: src/features/trades/workflows/buy-transaction-form.tsx:140
 #: src/features/trades/workflows/sell-transaction-form.tsx:123
 msgid "Select an asset"
@@ -1636,7 +1585,15 @@ msgstr "Sell {0}"
 msgid "Sell an asset"
 msgstr "Sell an asset"
 
-#: src/app/document-title.tsx:11
+#: src/shared/components/error-view/error-view.tsx:36
+msgid "Server unavailable"
+msgstr "Server unavailable"
+
+#: src/features/legal/legal-content.ts:47
+msgid "Service updates"
+msgstr "Service updates"
+
+#: src/app/document-title.tsx:13
 msgid "Set up your account"
 msgstr "Set up your account"
 
@@ -1657,29 +1614,47 @@ msgid "Show this month"
 msgstr "Show this month"
 
 #: src/app/document-title.tsx:9
-#: src/features/auth/pages/login-page.tsx:202
-#: src/features/auth/pages/register-page.tsx:256
+#: src/features/auth/pages/login-page.tsx:81
+#: src/features/auth/pages/register-page.tsx:144
+#: src/features/landing/desktop-landing.tsx:35
+#: src/features/landing/desktop-landing.tsx:68
+#: src/features/landing/desktop-landing.tsx:130
+#: src/features/landing/mobile-landing.tsx:53
+#: src/features/landing/mobile-landing.tsx:105
+#: src/features/legal/legal-page.tsx:57
+#: src/features/legal/legal-page.tsx:174
 msgid "Sign in"
 msgstr "Sign in"
 
-#: src/features/auth/pages/login-page.tsx:159
-msgid "Sign in to your account to continue"
-msgstr "Sign in to your account to continue"
+#: src/features/auth/pages/login-page.tsx:25
+#: src/features/auth/pages/login-page.tsx:37
+msgid "Sign in to Canverse"
+msgstr "Sign in to Canverse"
+
+#: src/features/landing/use-landing-view.ts:56
+msgid "Sign in with email and password or continue with your Google account."
+msgstr "Sign in with email and password or continue with your Google account."
 
 #: src/app/shell/account-menu.tsx:51
 #: src/app/shell/account-menu.tsx:79
 msgid "Sign out"
 msgstr "Sign out"
 
-#: src/features/auth/components/google-sign-in-button.tsx:24
+#: src/features/landing/use-landing-view.ts:55
+msgid "Sign-in options"
+msgstr "Sign-in options"
+
+#: src/features/auth/components/google-sign-in-button.tsx:43
 msgid "Signing in…"
 msgstr "Signing in…"
 
-#: src/features/landing/landing-page.tsx:555
-msgid "Simple <0>Pricing</0>"
-msgstr "Simple <0>Pricing</0>"
-
-#: src/app/shell/member-shell.tsx:21
+#: src/app/shell/member-shell.tsx:30
+#: src/features/auth/components/auth-shell.tsx:23
+#: src/features/auth/components/auth-shell.tsx:57
+#: src/features/landing/desktop-landing.tsx:16
+#: src/features/landing/mobile-landing.tsx:16
+#: src/features/legal/legal-page.tsx:44
+#: src/features/legal/legal-page.tsx:85
 msgid "Skip to main content"
 msgstr "Skip to main content"
 
@@ -1687,13 +1662,13 @@ msgstr "Skip to main content"
 msgid "Slate"
 msgstr "Slate"
 
-#: src/features/landing/landing-page.tsx:586
-msgid "Smart portfolio suggestions"
-msgstr "Smart portfolio suggestions"
-
 #: src/features/trades/workflows/sell-transaction-form.tsx:61
 msgid "Sold {quantity} units of {symbol} at {price}."
 msgstr "Sold {quantity} units of {symbol} at {price}."
+
+#: src/shared/components/error-view/error-view.tsx:38
+msgid "Something went wrong"
+msgstr "Something went wrong"
 
 #. Title of the mobile positions sort options sheet
 #: src/features/positions/pages/positions-page.tsx:370
@@ -1705,29 +1680,13 @@ msgstr "Sort by"
 msgid "Sort positions"
 msgstr "Sort positions"
 
-#: src/features/landing/landing-page.tsx:503
-msgid "Start Free"
-msgstr "Start Free"
+#: src/shared/components/error-view/error-view.tsx:85
+msgid "Status"
+msgstr "Status"
 
-#: src/features/landing/landing-page.tsx:630
-msgid "Start tracking your investments and gain valuable insights into your trading performance."
-msgstr "Start tracking your investments and gain valuable insights into your trading performance."
-
-#: src/features/auth/pages/register-page.tsx:124
-msgid "Start your journey"
-msgstr "Start your journey"
-
-#: src/features/onboarding/pages/onboarding-page.tsx:58
+#: src/features/onboarding/pages/onboarding-page.tsx:53
 msgid "Step {step} of {totalSteps}"
 msgstr "Step {step} of {totalSteps}"
-
-#: src/features/landing/landing-page.tsx:254
-msgid "Stocks"
-msgstr "Stocks"
-
-#: src/features/landing/landing-page.tsx:409
-msgid "Stocks & ETFs"
-msgstr "Stocks & ETFs"
 
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:276
 msgid "Submit trades"
@@ -1737,19 +1696,17 @@ msgstr "Submit trades"
 msgid "Successfully cleared all of your data."
 msgstr "Successfully cleared all of your data."
 
-#: src/features/landing/landing-page.tsx:408
-msgid "Support for various asset types including stocks, crypto, forex, and more."
-msgstr "Support for various asset types including stocks, crypto, forex, and more."
+#: src/features/landing/use-landing-view.ts:61
+msgid "Switch between light and dark mode, and use the interface in English or Turkish."
+msgstr "Switch between light and dark mode, and use the interface in English or Turkish."
 
 #: src/app/shell/account-menu.tsx:22
-#: src/features/auth/pages/login-page.tsx:61
-#: src/features/auth/pages/register-page.tsx:103
+#: src/shared/components/theme-toggle.tsx:10
 msgid "Switch to dark mode"
 msgstr "Switch to dark mode"
 
 #: src/app/shell/account-menu.tsx:22
-#: src/features/auth/pages/login-page.tsx:61
-#: src/features/auth/pages/register-page.tsx:103
+#: src/shared/components/theme-toggle.tsx:10
 msgid "Switch to light mode"
 msgstr "Switch to light mode"
 
@@ -1757,13 +1714,35 @@ msgstr "Switch to light mode"
 msgid "Take me back to home page"
 msgstr "Take me back to home page"
 
-#: src/features/landing/landing-page.tsx:676
+#: src/shared/components/error-view/error-view.tsx:80
+msgid "Technical details"
+msgstr "Technical details"
+
+#: src/features/landing/desktop-landing.tsx:138
+#: src/features/landing/mobile-landing.tsx:113
+msgid "Terms"
+msgstr "Terms"
+
+#: src/app/document-title.tsx:11
+#: src/features/legal/legal-content.ts:26
 msgid "Terms of Service"
 msgstr "Terms of Service"
+
+#: src/features/legal/legal-content.ts:48
+msgid "The application is under active development. Features, availability, and these preliminary terms may be updated over time."
+msgstr "The application is under active development. Features, availability, and these preliminary terms may be updated over time."
+
+#: src/shared/components/error-view/error-view.tsx:45
+msgid "The service responded with an error. Please try again in a moment."
+msgstr "The service responded with an error. Please try again in a moment."
 
 #: src/features/onboarding/components/portfolio-step.tsx:85
 msgid "THEME COLOR"
 msgstr "THEME COLOR"
+
+#: src/features/landing/use-landing-view.ts:60
+msgid "Themes and languages"
+msgstr "Themes and languages"
 
 #. The confirmation code is a fixed string inserted by the application.
 #: src/features/account/workflows/clear-my-data.tsx:57
@@ -1783,18 +1762,9 @@ msgstr "This will permanently remove this trade record. This action cannot be re
 msgid "today"
 msgstr "today"
 
-#: src/features/landing/landing-page.tsx:208
-msgid "Today's P&L"
-msgstr "Today's P&L"
-
-#: src/features/auth/pages/login-page.tsx:60
+#: src/features/auth/pages/login-page.tsx:74
 #: src/features/auth/pages/register-page.tsx:102
-msgid "Toggle color scheme"
-msgstr "Toggle color scheme"
-
-#: src/features/auth/pages/login-page.tsx:196
-#: src/features/auth/pages/register-page.tsx:227
-#: src/features/auth/pages/register-page.tsx:235
+#: src/features/auth/pages/register-page.tsx:115
 msgid "Toggle password visibility"
 msgstr "Toggle password visibility"
 
@@ -1814,22 +1784,14 @@ msgstr "Total amount"
 msgid "Total balance"
 msgstr "Total balance"
 
-#: src/features/landing/landing-page.tsx:207
-msgid "Total Balance"
-msgstr "Total Balance"
-
 #: src/features/positions/components/positions-view/positions-view.tsx:122
 #: src/features/positions/pages/positions-page.tsx:144
 msgid "Total Value"
 msgstr "Total Value"
 
-#: src/features/auth/pages/login-page.tsx:84
-msgid "Track every trade. <0>Grow every portfolio.</0>"
-msgstr "Track every trade. <0>Grow every portfolio.</0>"
-
-#: src/features/landing/landing-page.tsx:478
-msgid "Track Your <0>Portfolio</0><1/> Like Never Before"
-msgstr "Track Your <0>Portfolio</0><1/> Like Never Before"
+#: src/features/landing/use-landing-view.ts:37
+msgid "Track open positions with average cost, current market value, portfolio weight, and unrealized return."
+msgstr "Track open positions with average cost, current market value, portfolio weight, and unrealized return."
 
 #: src/features/trades/components/trades-list/trade-details.tsx:43
 #: src/features/trades/components/trades-list/trade-details.tsx:48
@@ -1844,10 +1806,6 @@ msgstr "Trade details for {symbol}"
 #: src/features/trades/components/trades-list/trades-list.tsx:155
 msgid "Trade filters"
 msgstr "Trade filters"
-
-#: src/features/landing/landing-page.tsx:393
-msgid "Trade Management"
-msgstr "Trade Management"
 
 #: src/features/trades/workflows/buy-transaction-form.tsx:60
 #: src/features/trades/workflows/sell-transaction-form.tsx:61
@@ -1867,10 +1825,11 @@ msgstr "Trade type"
 msgid "Trade undone for {symbol}."
 msgstr "Trade undone for {symbol}."
 
-#: src/app/document-title.tsx:14
+#: src/app/document-title.tsx:16
 #: src/app/shell/bottom-nav.tsx:28
-#: src/app/shell/member-shell.tsx:42
-#: src/app/shell/member-shell.tsx:69
+#: src/app/shell/member-shell.tsx:53
+#: src/app/shell/member-shell.tsx:80
+#: src/features/landing/use-landing-view.ts:42
 #: src/features/portfolios/pages/portfolio-page.tsx:140
 #: src/features/trades/components/trades-list/trades-list.tsx:85
 #: src/routes/_authenticated/_member/trades/route.tsx:15
@@ -1880,11 +1839,6 @@ msgstr "Trades"
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:112
 msgid "Trades imported from file: {count}."
 msgstr "Trades imported from file: {count}."
-
-#: src/features/auth/pages/login-page.tsx:128
-#: src/features/auth/pages/register-page.tsx:172
-msgid "Trades logged"
-msgstr "Trades logged"
 
 #: src/features/trades/components/trades-list/trades-list.tsx:212
 #: src/features/trades/components/trades-list/trades-list.tsx:242
@@ -1900,11 +1854,12 @@ msgid "Trades submitted: {count}."
 msgstr "Trades submitted: {count}."
 
 #: src/features/dashboard/components/transactions-chart.tsx:88
-#: src/features/dashboard/pages/dashboard-page.tsx:47
+#: src/features/dashboard/pages/dashboard-page.tsx:48
 #: src/features/portfolios/components/earnings-overview/earnings-overview.tsx:31
 #: src/features/portfolios/components/portfolio-overview/portfolio-overview.tsx:28
 #: src/features/positions/components/positions-view/positions-view.tsx:291
 #: src/features/trades/components/trades-list/trades-list.tsx:261
+#: src/shared/components/error-view/error-view.tsx:63
 msgid "Try again"
 msgstr "Try again"
 
@@ -1948,21 +1903,13 @@ msgstr "Undo trade"
 msgid "Undo trade for <bold>{0}</bold>"
 msgstr "Undo trade for <bold>{0}</bold>"
 
-#: src/features/auth/pages/login-page.tsx:89
-msgid "Unified multi-portfolio management with real-time P&L, trade history, and analytics built for serious traders."
-msgstr "Unified multi-portfolio management with real-time P&L, trade history, and analytics built for serious traders."
-
 #: src/features/trades/components/trades-list/trade-details.tsx:76
 msgid "Unit price"
 msgstr "Unit price"
 
-#: src/features/landing/landing-page.tsx:569
-msgid "Unlimited portfolios"
-msgstr "Unlimited portfolios"
-
-#: src/features/auth/pages/register-page.tsx:150
-msgid "Unlimited portfolios & trade entries"
-msgstr "Unlimited portfolios & trade entries"
+#: src/shared/components/error-view/error-view.tsx:86
+msgid "Unknown error"
+msgstr "Unknown error"
 
 #: src/features/positions/components/positions-view/position-inspector.tsx:163
 msgid "Unrealized P/L"
@@ -2024,18 +1971,27 @@ msgstr "Weights cover the {currency} portion only."
 msgid "Weights include estimated values."
 msgstr "Weights include estimated values."
 
-#: src/features/auth/pages/login-page.tsx:156
-msgid "Welcome back"
-msgstr "Welcome back"
+#: src/features/landing/desktop-landing.tsx:77
+#: src/features/landing/mobile-landing.tsx:62
+msgid "What’s included"
+msgstr "What’s included"
+
+#: src/features/legal/legal-content.ts:61
+msgid "When you register or sign in with Google, we store your name and email address to identify your account. We also store the dashboards, portfolios, and trade records you choose to enter."
+msgstr "When you register or sign in with Google, we store your name and email address to identify your account. We also store the dashboards, portfolios, and trade records you choose to enter."
 
 #: src/features/dashboard/components/dashboard-summary.tsx:119
 msgid "Win rate"
 msgstr "Win rate"
 
-#: src/features/landing/landing-page.tsx:199
-msgid "Your investment summary"
-msgstr "Your investment summary"
+#: src/features/legal/legal-content.ts:38
+msgid "You can access the platform with an email and password or by signing in with Google, which creates an account automatically if you do not have one yet. You are responsible for keeping your credentials secure."
+msgstr "You can access the platform with an email and password or by signing in with Google, which creates an account automatically if you do not have one yet. You are responsible for keeping your credentials secure."
 
-#: src/features/auth/pages/register-page.tsx:127
-msgid "Your portfolio, <0>your edge.</0>"
-msgstr "Your portfolio, <0>your edge.</0>"
+#: src/features/legal/legal-content.ts:76
+msgid "You can clear your portfolio and trade records at any time from the account menu. For account removal or privacy questions, you can reach out by email."
+msgstr "You can clear your portfolio and trade records at any time from the account menu. For account removal or privacy questions, you can reach out by email."
+
+#: src/features/legal/legal-content.ts:66
+msgid "Your account details and records are used strictly to authenticate your session, remember interface preferences such as theme and language, and display your portfolio calculations back to you."
+msgstr "Your account details and records are used strictly to authenticate your session, remember interface preferences such as theme and language, and display your portfolio calculations back to you."

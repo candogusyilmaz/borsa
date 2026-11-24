@@ -8,6 +8,8 @@ export function DocumentTitle() {
   const labels: Record<string, string | undefined> = {
     '/login': t`Sign in`,
     '/register': t`Create account`,
+    '/terms': t`Terms of Service`,
+    '/privacy': t`Privacy Policy`,
     '/onboarding': t`Set up your account`,
     '/dashboard': t`Dashboard`,
     '/positions': t`Positions`,
@@ -16,7 +18,7 @@ export function DocumentTitle() {
   const label = pathname.startsWith('/portfolios/') ? t`Portfolio` : labels[pathname];
 
   useEffect(() => {
-    document.title = label ? `${label} · Canverse` : 'Borsa | Canverse';
+    document.title = label ? `${label} · Canverse` : 'Canverse';
   }, [label]);
 
   return null;

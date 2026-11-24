@@ -34,7 +34,9 @@ export function MemberShell({ children }: { children: ReactNode }) {
       )}
       <div ref={contentViewport} className={styles.contentViewport}>
         <main id="main-content" tabIndex={-1} className={styles.main}>
-          {children}
+          <div key={pathname} className="app-page-enter">
+            {children}
+          </div>
         </main>
       </div>
       {isMobile && <BottomNav />}

@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, redirect } from '@tanstack/react-router';
 import { RegisterPage } from '~/features/auth/pages/register-page';
 
 export const Route = createFileRoute('/(auth)/register')({
@@ -6,11 +6,11 @@ export const Route = createFileRoute('/(auth)/register')({
     meta: [
       {
         name: 'description',
-        content: 'Create your Canverse account to connect and collaborate seamlessly.'
+        content: 'Create your Canverse account to track your portfolios and trades.'
       },
       {
         name: 'keywords',
-        content: 'register, sign up, Canverse, collaboration, account creation'
+        content: 'register, sign up, Canverse, portfolio, trades, account'
       },
       {
         name: 'robots',
@@ -18,11 +18,11 @@ export const Route = createFileRoute('/(auth)/register')({
       },
       {
         property: 'og:title',
-        content: 'Register | Canverse'
+        content: 'Create account | Canverse'
       },
       {
         property: 'og:description',
-        content: 'Create your Canverse account to connect and collaborate seamlessly.'
+        content: 'Create your Canverse account to track your portfolios and trades.'
       },
       {
         property: 'og:type',
@@ -34,9 +34,12 @@ export const Route = createFileRoute('/(auth)/register')({
       },
       {
         property: 'og:image',
-        content: 'https://borsa.canverse.dev/assets/favicon.png'
+        content: 'https://borsa.canverse.dev/assets/logo.png'
       }
     ]
   }),
-  component: RegisterPage
+  component: RegisterPage,
+  beforeLoad: (p) => {
+    if (p.context.auth.isAuthenticated) throw redirect({ to: '/dashboard' });
+  }
 });

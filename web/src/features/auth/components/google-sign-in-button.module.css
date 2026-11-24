@@ -3,37 +3,31 @@
   align-items: center;
   justify-content: center;
   gap: 0.625rem;
-  width: 100%;
-  height: 44px;
+  inline-size: 100%;
+  min-block-size: 2.375rem;
   padding: 0 1rem;
-  border-radius: 0.75rem;
   border: 1px solid var(--app-border-subtle);
+  border-radius: var(--mantine-radius-sm);
   background: var(--mantine-color-default);
   color: var(--mantine-color-text);
   font-family: var(--mantine-font-family);
   cursor: pointer;
   user-select: none;
+  touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   transition:
-    background-color 140ms ease,
-    border-color 140ms ease,
-    box-shadow 140ms ease,
-    transform 100ms ease;
+    background-color 140ms var(--app-ease),
+    border-color 140ms var(--app-ease);
 }
 
 .button:hover:not(:disabled) {
-  background: var(--mantine-color-default-hover);
   border-color: var(--app-border-strong);
-}
-
-.button:active:not(:disabled) {
-  transform: translateY(1px);
+  background: var(--mantine-color-default-hover);
 }
 
 .button:focus-visible {
-  outline: none;
-  border-color: var(--app-border-strong);
-  box-shadow: 0 0 0 3px var(--app-focus-ring);
+  outline: 2px solid var(--app-accent);
+  outline-offset: 2px;
 }
 
 .button:disabled {
@@ -43,9 +37,9 @@
 
 .iconWrap {
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
 }
 
 .label {
@@ -53,4 +47,10 @@
   font-weight: 500;
   letter-spacing: -0.01em;
   white-space: nowrap;
+}
+
+@media (max-width: 48em), (pointer: coarse) {
+  .button {
+    min-block-size: 44px;
+  }
 }

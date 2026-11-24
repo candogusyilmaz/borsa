@@ -20,11 +20,11 @@ export default defineConfig({
     }),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["assets/favicon.png", "assets/logo.png"],
+      includeAssets: ["assets/favicon.svg", "assets/favicon.png", "assets/apple-touch-icon.png", "assets/logo.png"],
       manifest: {
-        name: "Borsa | Canverse",
-        short_name: "Borsa",
-        description: "Advanced stock market analysis and trading platform",
+        name: "Canverse",
+        short_name: "Canverse",
+        description: "Personal portfolio and trade tracking across multiple portfolios and currencies.",
         theme_color: "#F3F2EE",
         background_color: "#F3F2EE",
         display: "standalone",
@@ -43,7 +43,7 @@ export default defineConfig({
             type: "image/png",
           },
           {
-            src: "/assets/pwa-512x512.png",
+            src: "/assets/pwa-maskable-512x512.png",
             sizes: "512x512",
             type: "image/png",
             purpose: "maskable",

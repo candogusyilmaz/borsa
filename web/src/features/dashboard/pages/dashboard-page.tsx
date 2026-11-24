@@ -1,11 +1,12 @@
 import { Trans, useLingui } from '@lingui/react/macro';
 import { ActionIcon, Button, Group, Menu, Skeleton } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { IconCheck, IconChevronDown, IconDots, IconPlus, IconTrash, IconTrendingUp } from '@tabler/icons-react';
+import { IconCheck, IconChevronDown, IconDots, IconPlus, IconTrash } from '@tabler/icons-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { $api } from '~/api/openapi';
 import { AccountMenu } from '~/app/shell/account-menu';
 import { isDataStale } from '~/features/positions';
+import { BrandMark } from '~/shared/components/brand-logo';
 import { ResponsiveOverlay } from '~/shared/components/responsive-overlay/responsive-overlay';
 import { useFormat } from '~/shared/format/use-format';
 import { useIsMobile } from '~/shared/hooks/use-is-mobile';
@@ -85,11 +86,7 @@ function DashboardSelector({ model, isMobile }: { model: DashboardModel; isMobil
 
   const titleLabel = (
     <>
-      {isMobile && (
-        <span className={styles.titleMark} aria-hidden="true">
-          <IconTrendingUp size={13} stroke={2.4} />
-        </span>
-      )}
+      {isMobile && <BrandMark size={20} className={styles.titleMark} />}
       <span className={styles.titleText}>{title}</span>
       <IconChevronDown size={16} stroke={1.6} aria-hidden="true" />
     </>

@@ -1,283 +1,151 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import { ActionIcon, Button, Divider, Group, PasswordInput, Stack, TextInput } from '@mantine/core';
-import { hasLength, isEmail, useForm } from '@mantine/form';
-import { IconMoon, IconSun } from '@tabler/icons-react';
-import { Link, useNavigate } from '@tanstack/react-router';
-import { useAuthentication } from '~/features/auth/authentication-context';
+import { Button, Divider, PasswordInput, Stack, TextInput } from '@mantine/core';
+import { Link } from '@tanstack/react-router';
+import { AuthLegalNotice } from '~/features/auth/components/auth-legal-notice';
+import { DesktopAuthShell, MobileAuthShell } from '~/features/auth/components/auth-shell';
 import { GoogleSignInButton } from '~/features/auth/components/google-sign-in-button';
-import { alerts } from '~/shared/feedback/alerts';
-import { useFormat } from '~/shared/format/use-format';
-import { LanguageSelect } from '~/shared/i18n/language-select';
-import { useThemeToggle } from '~/theme/use-theme-toggle';
+import { type RegisterViewModel, useRegisterView } from '~/features/auth/hooks/use-register-view';
+import { useIsMobile } from '~/shared/hooks/use-is-mobile';
 import styles from './auth.module.css';
 
 export function RegisterPage() {
-  const { t } = useLingui();
-  const format = useFormat();
-  const navigate = useNavigate();
-  const { login, register } = useAuthentication();
-  const { colorScheme, toggleTheme } = useThemeToggle();
+  const isMobile = useIsMobile();
+  const model = useRegisterView();
 
-  const form = useForm({
-    initialValues: {
-      firstName: '',
-      lastName: '',
-      email: '',
-      password: '',
-      confirmPassword: ''
-    },
-    validate: {
-      firstName: hasLength({ min: 2, max: 50 }, <Trans>First name must be between 2 and 50 characters</Trans>),
-      lastName: hasLength({ min: 2, max: 50 }, <Trans>Last name must be between 2 and 50 characters</Trans>),
-      email: isEmail(<Trans>Email is not valid</Trans>),
-      password: hasLength({ min: 8, max: 20 }, <Trans>Password must be between 8 and 20 characters</Trans>),
-      confirmPassword: (value, values) => (value !== values.password ? <Trans>Passwords do not match</Trans> : null)
-    }
-  });
-
-  function handleSubmit(data: { firstName: string; lastName: string; email: string; password: string; confirmPassword: string }): void {
-    register.mutate(
-      {
-        name: `${data.firstName} ${data.lastName}`,
-        email: data.email,
-        password: data.password
-      },
-      {
-        onSuccess: () => {
-          navigate({ to: '/dashboard' });
-        },
-        onError: (error) => {
-          const res = error as unknown as { response?: { data?: unknown } };
-          const responseData = res.response?.data as {
-            detail?: string;
-            'invalid-params'?: { field: string; message: string }[];
-          };
-
-          // Handle validation errors with field-specific messages
-          if (responseData?.['invalid-params']) {
-            for (const param of responseData['invalid-params']) {
-              if (param.field === 'name') {
-                form.setFieldError('firstName', param.message);
-                form.setFieldError('lastName', param.message);
-              } else {
-                form.setFieldError(param.field, param.message);
-              }
-            }
-          } else {
-            alerts.error(responseData?.detail || t`An unknown error occurred while creating your account`, t`Error while creating account`);
-          }
-        }
-      }
-    );
+  if (isMobile) {
+    return <MobileRegisterView model={model} />;
   }
 
-  const handleGoogleCode = (code: string) => {
-    login.mutate(
-      { code },
-      {
-        onSuccess: () => {
-          navigate({ to: '/dashboard' });
-        },
-        onError: () => {
-          alerts.error(t`Could not sign in with Google. Please try again.`, t`Google sign-in failed`);
-        }
-      }
-    );
-  };
+  return <DesktopRegisterView model={model} />;
+}
+
+function DesktopRegisterView({ model }: { model: RegisterViewModel }) {
+  return (
+    <DesktopAuthShell
+      wide
+      title={<Trans>Create your account</Trans>}
+      subtitle={<Trans>Continue with Google or your email</Trans>}
+      footer={<RegisterFooter />}
+      legal={<AuthLegalNotice />}>
+      <RegisterFormContent model={model} mobile={false} />
+    </DesktopAuthShell>
+  );
+}
+
+function MobileRegisterView({ model }: { model: RegisterViewModel }) {
+  return (
+    <MobileAuthShell
+      title={<Trans>Create your account</Trans>}
+      subtitle={<Trans>Continue with Google or your email</Trans>}
+      footer={<RegisterFooter />}
+      legal={<AuthLegalNotice />}>
+      <RegisterFormContent model={model} mobile />
+    </MobileAuthShell>
+  );
+}
+
+function RegisterFormContent({ model, mobile }: { model: RegisterViewModel; mobile: boolean }) {
+  const { t } = useLingui();
+  const controlSize = mobile ? 'md' : 'sm';
+
+  const firstNameInput = (
+    <TextInput size={controlSize} label={t`First name`} autoComplete="given-name" withAsterisk {...model.form.getInputProps('firstName')} />
+  );
+
+  const lastNameInput = (
+    <TextInput size={controlSize} label={t`Last name`} autoComplete="family-name" withAsterisk {...model.form.getInputProps('lastName')} />
+  );
 
   return (
-    <div className={styles.pageWrapper}>
-      <div className={styles.preferences}>
-        <LanguageSelect />
-        <ActionIcon
-          className={styles.themeToggle}
-          size="lg"
-          radius="md"
-          onClick={toggleTheme}
-          aria-label={t`Toggle color scheme`}
-          title={colorScheme === 'dark' ? t`Switch to light mode` : t`Switch to dark mode`}>
-          {colorScheme === 'dark' ? <IconSun size={17} /> : <IconMoon size={17} />}
-        </ActionIcon>
+    <div className={styles.formBody}>
+      <GoogleSignInButton
+        onCode={model.handleGoogleCode}
+        onError={model.handleGoogleError}
+        loading={model.isGooglePending}
+        disabled={model.isRegisterPending}
+      />
+
+      <div className={styles.divider}>
+        <Divider
+          label={t({ message: 'Or continue with', comment: 'Separator between Google sign-in and email form' })}
+          labelPosition="center"
+        />
       </div>
 
-      {/* ── LEFT: brand hero panel ──────────────────────────────── */}
-      <aside className={styles.heroPanel}>
-        <div className={styles.heroAccent} />
-
-        {/* Wordmark */}
-        <div className={styles.heroBrand}>
-          <div className={styles.heroBrandMark}>
-            <CanverseMark />
-          </div>
-          <span className={styles.heroBrandName}>Canverse</span>
-        </div>
-
-        {/* Headline + features */}
-        <div className={styles.heroCenter}>
-          <div>
-            <p className={styles.heroTagline}>
-              <Trans>Start your journey</Trans>
-            </p>
-            <h1 className={styles.heroTitle}>
-              <Trans>
-                Your portfolio, <span className={styles.heroTitleAccent}>your edge.</span>
-              </Trans>
-            </h1>
-            <p className={styles.heroSubtext}>
-              <Trans>
-                Join thousands of traders who use Canverse to track positions, review every trade, and build a clear picture of their
-                performance.
-              </Trans>
-            </p>
-          </div>
-
-          <ul className={styles.featureList}>
-            <li className={styles.featureItem}>
-              <span className={styles.featureDot}>
-                <CheckIcon />
-              </span>
-              <Trans>Free account — no credit card required</Trans>
-            </li>
-            <li className={styles.featureItem}>
-              <span className={styles.featureDot}>
-                <CheckIcon />
-              </span>
-              <Trans>Unlimited portfolios &amp; trade entries</Trans>
-            </li>
-            <li className={styles.featureItem}>
-              <span className={styles.featureDot}>
-                <CheckIcon />
-              </span>
-              <Trans>Secure, private &amp; always up to date</Trans>
-            </li>
-          </ul>
-        </div>
-
-        {/* Stats */}
-        <div className={styles.heroStats}>
-          <div className={styles.heroStat}>
-            <div className={styles.heroStatValue}>{format.number(10000, { notation: 'compact' })}+</div>
-            <div className={styles.heroStatLabel}>
-              <Trans>Portfolios</Trans>
+      <form className={styles.form} onSubmit={model.handleSubmit} noValidate>
+        <Stack gap={mobile ? 'md' : 'sm'}>
+          {mobile ? (
+            <>
+              {firstNameInput}
+              {lastNameInput}
+            </>
+          ) : (
+            <div className={styles.nameRow}>
+              {firstNameInput}
+              {lastNameInput}
             </div>
-          </div>
-          <div className={styles.heroStat}>
-            <div className={styles.heroStatValue}>{format.number(500000, { notation: 'compact' })}+</div>
-            <div className={styles.heroStatLabel}>
-              <Trans>Trades logged</Trans>
-            </div>
-          </div>
-          <div className={styles.heroStat}>
-            <div className={styles.heroStatValue}>
-              <Trans comment="Indicator that market data is live">Live</Trans>
-            </div>
-            <div className={styles.heroStatLabel}>
-              <Trans>P&amp;L data</Trans>
-            </div>
-          </div>
-        </div>
-      </aside>
+          )}
 
-      {/* ── RIGHT: form panel ───────────────────────────────────── */}
-      <main className={styles.formPanel}>
-        <div className={styles.formInner}>
-          {/* Mobile-only logo */}
-          <div className={styles.mobileLogo}>
-            <div className={styles.mobileLogoMark}>
-              <CanverseMark />
-            </div>
-            <span className={styles.mobileLogoName}>Canverse</span>
-          </div>
-
-          {/* Heading */}
-          <div className={styles.formHeading}>
-            <h2 className={styles.formTitle}>
-              <Trans>Create your account</Trans>
-            </h2>
-            <p className={styles.formSubtitle}>
-              <Trans>Free forever. Set up in under a minute.</Trans>
-            </p>
-          </div>
-
-          {/* Custom Google button */}
-          <GoogleSignInButton
-            onCode={handleGoogleCode}
-            onError={() => alerts.error(t`Google sign-in failed`, t`Authentication error`)}
-            loading={login.isPending}
-            disabled={register.isPending}
+          <TextInput
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            size={controlSize}
+            label={t`Email`}
+            placeholder={t`Enter your email address`}
+            withAsterisk
+            {...model.form.getInputProps('email')}
           />
 
-          {/* Divider */}
-          <div className={styles.formDivider}>
-            <Divider label={t`OR SIGN UP WITH YOUR EMAIL`} />
-          </div>
+          <PasswordInput
+            size={controlSize}
+            autoComplete="new-password"
+            visibilityToggleFocusable
+            visibilityToggleButtonProps={{
+              'aria-label': t`Toggle password visibility`
+            }}
+            label={t`Password`}
+            placeholder={t`Enter your password`}
+            withAsterisk
+            {...model.form.getInputProps('password')}
+          />
 
-          {/* Registration form */}
-          <form className={styles.formFields} onSubmit={form.onSubmit(handleSubmit)}>
-            <Stack gap="md">
-              <Group grow align="flex-start">
-                <TextInput label={t`First name`} autoComplete="given-name" withAsterisk {...form.getInputProps('firstName')} />
-                <TextInput label={t`Last name`} autoComplete="family-name" withAsterisk {...form.getInputProps('lastName')} />
-              </Group>
-              <TextInput label={t`Email`} placeholder="me@canverse.com" withAsterisk {...form.getInputProps('email')} />
-              <PasswordInput
-                visibilityToggleFocusable
-                visibilityToggleButtonProps={{
-                  'aria-label': t`Toggle password visibility`
-                }}
-                label={t`Password`}
-                placeholder="••••••••"
-                withAsterisk
-                {...form.getInputProps('password')}
-              />
-              <PasswordInput
-                visibilityToggleFocusable
-                visibilityToggleButtonProps={{
-                  'aria-label': t`Toggle password visibility`
-                }}
-                label={t`Confirm password`}
-                placeholder="••••••••"
-                withAsterisk
-                {...form.getInputProps('confirmPassword')}
-              />
-              <Button
-                className={styles.submitButton}
-                loading={login.isPending || register.isPending}
-                type="submit"
-                fullWidth
-                disabled={login.isPending}>
-                <Trans>Create account</Trans>
-              </Button>
-            </Stack>
-          </form>
+          <PasswordInput
+            size={controlSize}
+            autoComplete="new-password"
+            visibilityToggleFocusable
+            visibilityToggleButtonProps={{
+              'aria-label': t`Toggle password visibility`
+            }}
+            label={t`Confirm password`}
+            placeholder={t`Re-enter your password`}
+            withAsterisk
+            {...model.form.getInputProps('confirmPassword')}
+          />
 
-          {/* Footer */}
-          <div className={styles.formFooter}>
-            <Trans>Already have an account?</Trans>{' '}
-            <Link to="/login" className={styles.formLink}>
-              <Trans>Sign in</Trans>
-            </Link>
-          </div>
-        </div>
-      </main>
+          <Button
+            className={styles.submitButton}
+            size={controlSize}
+            radius="sm"
+            loading={model.isSubmitting}
+            disabled={model.isGooglePending}
+            type="submit"
+            fullWidth>
+            <Trans>Create account</Trans>
+          </Button>
+        </Stack>
+      </form>
     </div>
   );
 }
 
-/* ── Internal SVG helpers ──────────────────────────────────────── */
-
-function CanverseMark() {
+function RegisterFooter() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path d="M12 2L4 6v6c0 4.418 3.134 8.548 8 9.93C16.866 20.548 20 16.418 20 12V6L12 2z" fill="white" fillOpacity="0.9" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <polyline points="1.5,6 4.5,9 10.5,3" />
-    </svg>
+    <>
+      <Trans>Already have an account?</Trans>{' '}
+      <Link to="/login" className={styles.footerLink}>
+        <Trans>Sign in</Trans>
+      </Link>
+    </>
   );
 }

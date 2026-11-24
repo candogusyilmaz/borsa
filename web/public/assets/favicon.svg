@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <style>
+    .bg { fill: #1C1B18; }
+    .fg { fill: #FAF9F6; }
+    .muted { fill: #FAF9F6; fill-opacity: 0.42; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #F4F4F5; }
+      .fg { fill: #0D0D0F; }
+      .muted { fill: #0D0D0F; fill-opacity: 0.4; }
+    }
+  </style>
+  <rect class="bg" width="32" height="32" rx="7.5" />
+  <rect class="muted" x="7" y="7" width="8" height="6" rx="1.4" />
+  <rect class="fg" x="7" y="15" width="8" height="10" rx="1.4" />
+  <rect class="fg" x="17" y="7" width="8" height="18" rx="1.4" />
+</svg>
