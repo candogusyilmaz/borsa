@@ -1,0 +1,607 @@
+.scope {
+  --tm-elevated: #ffffff;
+  --tm-hover: #e4e1d8;
+  --tm-invest: #4f46e5;
+  --tm-invest-bg: rgb(79 70 229 / 10%);
+  --tm-backdrop: rgb(28 27 24 / 34%);
+  --tm-shadow: 0 25px 50px -12px rgb(28 27 24 / 22%);
+  --tm-popover-shadow: 0 20px 25px -5px rgb(28 27 24 / 14%), 0 8px 10px -6px rgb(28 27 24 / 10%);
+}
+
+:global([data-mantine-color-scheme='dark']) .scope {
+  --tm-elevated: #19191e;
+  --tm-hover: #222229;
+  --tm-invest: #818cf8;
+  --tm-invest-bg: rgb(129 140 248 / 13%);
+  --tm-backdrop: rgb(6 6 8 / 72%);
+  --tm-shadow: 0 25px 50px -12px rgb(0 0 0 / 50%);
+  --tm-popover-shadow: 0 20px 25px -5px rgb(0 0 0 / 45%), 0 8px 10px -6px rgb(0 0 0 / 35%);
+}
+
+/* Overlay shells */
+
+.desktopOverlay.desktopOverlay {
+  background: var(--tm-backdrop);
+  backdrop-filter: blur(2px);
+}
+
+.mobileOverlay.mobileOverlay {
+  background: var(--tm-backdrop);
+}
+
+.desktopContent.desktopContent {
+  width: 100%;
+  max-width: 396px;
+  border: 1px solid var(--app-border-subtle);
+  border-radius: 18px;
+  background: var(--mantine-color-default);
+  color: var(--mantine-color-text);
+  box-shadow: var(--tm-shadow);
+  overflow: visible;
+}
+
+.mobileContent.mobileContent {
+  max-height: min(90dvh, calc(100dvh - env(safe-area-inset-top)));
+  border-top: 1px solid var(--app-border-subtle);
+  border-radius: 22px 22px 0 0;
+  background: var(--mantine-color-default);
+  color: var(--mantine-color-text);
+  overscroll-behavior: contain;
+}
+
+.body.body {
+  padding: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.handleWrap {
+  display: flex;
+  justify-content: center;
+  padding: 10px 0 4px;
+}
+
+.handleBar {
+  width: 36px;
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--app-border-strong);
+}
+
+/* Header & capsule */
+
+.header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 20px 8px;
+}
+
+.header[data-mobile='true'] {
+  padding-top: 4px;
+}
+
+.capsule {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--app-border-subtle);
+  border-radius: 9999px;
+  background: var(--mantine-color-body);
+}
+
+.capsuleTab {
+  height: 29px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--mantine-color-dimmed);
+  font: 500 12px/1 var(--mantine-font-family);
+  white-space: nowrap;
+}
+
+.capsuleTab:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.capsuleTab[data-active='true'] {
+  background: var(--tm-invest-bg);
+  color: var(--tm-invest);
+  font-weight: 600;
+}
+
+.closeButton {
+  position: absolute;
+  right: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--mantine-color-dimmed);
+  cursor: pointer;
+}
+
+.closeButton:hover {
+  background: var(--tm-hover);
+  color: var(--mantine-color-text);
+}
+
+/* Centerpiece Hero */
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 24px 20px;
+  text-align: center;
+}
+
+.selectorRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.sideButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 9999px;
+  font: 600 11.5px/1 var(--mantine-font-family);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.sideButton[data-side='Buy'] {
+  background: var(--app-finance-profit-bg);
+  color: var(--app-finance-profit);
+}
+
+.sideButton[data-side='Sell'] {
+  background: var(--app-finance-loss-bg);
+  color: var(--app-finance-loss);
+}
+
+.assetPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  max-width: 210px;
+  padding: 0 12px 0 6px;
+  border: 1px solid var(--app-border-subtle);
+  border-radius: 9999px;
+  background: var(--app-surface-secondary);
+  color: var(--mantine-color-text);
+  font: 600 12.5px/1 var(--mantine-font-family);
+  cursor: pointer;
+}
+
+.assetPill[data-empty='true'] {
+  padding-left: 12px;
+  color: var(--mantine-color-dimmed);
+  font-weight: 500;
+}
+
+.assetPill:hover {
+  background: var(--tm-hover);
+}
+
+.assetMonogram {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background: var(--mantine-color-default);
+  font: 600 9.5px/1 var(--mantine-font-family-monospace);
+  flex-shrink: 0;
+}
+
+.chevron {
+  color: var(--mantine-color-dimmed);
+  flex-shrink: 0;
+}
+
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.muted {
+  color: var(--mantine-color-dimmed);
+}
+
+/* Quantity & Price inputs */
+
+.qtyLabel {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+  max-width: 100%;
+  cursor: text;
+}
+
+.qtyInput,
+.priceInput,
+.noteInput {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--mantine-color-text);
+  font-family: var(--mantine-font-family);
+  outline: none;
+}
+
+.qtyInput::placeholder,
+.priceInput::placeholder,
+.noteInput::placeholder {
+  color: var(--mantine-color-placeholder);
+}
+
+.qtyInput {
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  text-align: center;
+  transition: font-size 120ms ease;
+}
+
+.qtyUnit {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--mantine-color-dimmed);
+  user-select: none;
+}
+
+.pricePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  margin-top: 12px;
+  padding: 0 12px;
+  border: 1px solid var(--app-border-subtle);
+  border-radius: 9999px;
+  background: var(--mantine-color-body);
+  cursor: text;
+}
+
+.pricePill:focus-within {
+  border-color: var(--app-border-strong);
+}
+
+.pricePrefix {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  color: var(--mantine-color-dimmed);
+  user-select: none;
+}
+
+.currencyCycle {
+  padding: 1px 4px;
+  margin: 0 -2px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--mantine-color-text);
+  font: 600 12px/1 var(--mantine-font-family);
+  cursor: pointer;
+}
+
+.currencyCycle:hover {
+  background: var(--tm-hover);
+}
+
+.priceInput {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.totalLine {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--mantine-color-dimmed);
+}
+
+.totalLine strong {
+  color: var(--mantine-color-text);
+}
+
+.inlineHint {
+  margin-top: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--app-finance-loss);
+  font: 500 11.5px/1.3 var(--mantine-font-family);
+  cursor: pointer;
+}
+
+/* Meta rows */
+
+.metaList {
+  margin: 0 20px;
+  border-top: 1px solid var(--app-border-subtle);
+  font-size: 13px;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.metaRow + .metaRow {
+  border-top: 1px solid var(--app-border-subtle);
+}
+
+.metaLabel {
+  color: var(--mantine-color-dimmed);
+  flex-shrink: 0;
+}
+
+.metaValue {
+  font-weight: 500;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.metaButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--mantine-color-text);
+  font: 500 13px/1.3 var(--mantine-font-family);
+  cursor: pointer;
+  min-width: 0;
+}
+
+.metaButton:hover {
+  opacity: 0.8;
+}
+
+.noteInput {
+  width: 100%;
+  font-size: 13px;
+  text-align: right;
+}
+
+/* Footer CTA */
+
+.footer {
+  padding: 16px 20px 20px;
+}
+
+.footer[data-mobile='true'] {
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+}
+
+.submitButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 42px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--mantine-color-brand-filled);
+  color: var(--app-on-primary);
+  font: 600 13px/1 var(--mantine-font-family);
+  cursor: pointer;
+  transition: background-color 140ms ease, opacity 140ms ease;
+}
+
+.submitButton[data-mobile='true'] {
+  height: 46px;
+}
+
+.submitButton:hover:not(:disabled) {
+  background: var(--mantine-color-brand-filled-hover);
+}
+
+.submitButton:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Mantine Combobox & DateTimePicker Dropdowns */
+
+.dropdown.dropdown {
+  padding: 4px;
+  border: 1px solid var(--app-border-strong);
+  border-radius: 12px;
+  background: var(--tm-elevated);
+  box-shadow: var(--tm-popover-shadow);
+}
+
+.assetDropdown.assetDropdown {
+  max-width: calc(100vw - 32px);
+}
+
+.assetSearch.assetSearch {
+  min-height: 34px;
+  height: 34px;
+  margin-bottom: 4px;
+  border: 0;
+  border-bottom: 1px solid var(--app-border-subtle);
+  border-radius: 0;
+  background: transparent;
+  font-size: 12.5px;
+}
+
+.assetOption.assetOption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 10px;
+  border-radius: 8px;
+}
+
+.assetOption.assetOption:hover,
+.portfolioOption.portfolioOption:hover,
+.assetOption.assetOption[data-combobox-selected],
+.portfolioOption.portfolioOption[data-combobox-selected] {
+  background: var(--tm-hover);
+  color: var(--mantine-color-text);
+}
+
+.assetOption.assetOption[data-combobox-active],
+.portfolioOption.portfolioOption[data-combobox-active] {
+  background: var(--app-surface-secondary);
+}
+
+.assetOptionIdentity {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.assetOptionSymbol {
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.assetOptionName {
+  font-size: 10.5px;
+  line-height: 1.25;
+  color: var(--mantine-color-dimmed);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assetOptionMeta {
+  font-size: 11.5px;
+  color: var(--mantine-color-dimmed);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.dropdownEmpty {
+  padding: 18px 12px;
+  font-size: 12px;
+  color: var(--mantine-color-dimmed);
+}
+
+.portfolioDropdown.portfolioDropdown {
+  min-width: 196px;
+  max-width: min(260px, calc(100vw - 32px));
+}
+
+.portfolioOption.portfolioOption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+/* LocalizedDateTimePicker trigger & dark-contrast calendar overrides */
+
+.dateTriggerRoot {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.dateTriggerInput.dateTriggerInput {
+  min-height: 0;
+  height: auto;
+  padding: 0 18px 0 0;
+  color: var(--mantine-color-text);
+  font: 500 13px/1.3 var(--mantine-font-family);
+  text-align: right;
+  cursor: pointer;
+}
+
+.dateDropdown.dateDropdown {
+  padding: 12px;
+  max-width: calc(100vw - 24px);
+}
+
+.calDay.calDay[data-weekend] {
+  color: var(--mantine-color-dimmed);
+}
+
+.calDay.calDay[data-today]:not([data-selected]) {
+  border: 1px solid var(--app-border-strong);
+}
+
+.calDay.calDay[data-selected],
+.calDay.calDay[data-selected]:hover,
+.calControl.calControl[data-selected],
+.calControl.calControl[data-selected]:hover {
+  background: var(--mantine-color-brand-filled);
+  color: var(--app-on-primary);
+  font-weight: 600;
+}
+
+.calTimeWrapper {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--app-border-subtle);
+}
+
+.calTimeInput :global(.mantine-Input-input) {
+  min-height: 32px;
+  height: 32px;
+  border-color: var(--app-border-subtle);
+  background: var(--mantine-color-body);
+  font-size: 12.5px;
+}
+
+.calSubmitBtn.calSubmitBtn {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  border: 0;
+  background: var(--mantine-color-brand-filled);
+  color: var(--app-on-primary);
+}

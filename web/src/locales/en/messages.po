@@ -51,7 +51,7 @@ msgstr "{change} daily"
 msgid "{change} today"
 msgstr "{change} today"
 
-#: src/features/onboarding/pages/onboarding-page.tsx:58
+#: src/features/onboarding/pages/onboarding-page.tsx:59
 msgid "{completion} complete"
 msgstr "{completion} complete"
 
@@ -177,12 +177,12 @@ msgid "Add sale"
 msgstr "Add sale"
 
 #. Accessible label of the compact action to record a buy or sell
-#: src/features/trades/components/add-trade-button/add-trade-button.tsx:34
+#: src/features/trades/components/add-trade-button/add-trade-button.tsx:22
 msgid "Add trade"
 msgstr "Add trade"
 
 #. Primary action to record a new buy or sell transaction
-#: src/features/trades/components/add-trade-button/add-trade-button.tsx:40
+#: src/features/trades/components/add-trade-button/add-trade-button.tsx:31
 msgid "Add Trade"
 msgstr "Add Trade"
 
@@ -214,7 +214,7 @@ msgstr "All types"
 msgid "Alphabetical (A–Z)"
 msgstr "Alphabetical (A–Z)"
 
-#: src/features/auth/pages/register-page.tsx:142
+#: src/features/auth/pages/register-page.tsx:145
 msgid "Already have an account?"
 msgstr "Already have an account?"
 
@@ -252,8 +252,7 @@ msgstr "Archiving this portfolio hides it from active portfolios and keeps its t
 #: src/features/positions/components/positions-view/positions-view.tsx:104
 #: src/features/trades/workflows/bulk-trade/asset-combobox.tsx:122
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:213
-#: src/features/trades/workflows/buy-transaction-form.tsx:139
-#: src/features/trades/workflows/sell-transaction-form.tsx:121
+#: src/features/trades/workflows/transaction-modal/asset-picker.tsx:139
 msgid "Asset"
 msgstr "Asset"
 
@@ -291,7 +290,7 @@ msgstr "Awaiting price"
 msgid "Back"
 msgstr "Back"
 
-#: src/features/legal/legal-page.tsx:122
+#: src/features/legal/legal-page.tsx:123
 msgid "Back to home"
 msgstr "Back to home"
 
@@ -303,12 +302,12 @@ msgstr "Basic terms for using Canverse while full legal documentation is being p
 msgid "Blue"
 msgstr "Blue"
 
-#: src/features/trades/workflows/buy-transaction-form.tsx:60
-msgid "Bought {quantity} units of {symbol} at {price}."
-msgstr "Bought {quantity} units of {symbol} at {price}."
+#: src/features/trades/workflows/transaction-modal/use-transaction-form.ts:160
+msgid "Bought {quantity} units of {symbol} at {formattedPrice}."
+msgstr "Bought {quantity} units of {symbol} at {formattedPrice}."
 
-#: src/features/landing/desktop-landing.tsx:97
-#: src/features/landing/mobile-landing.tsx:82
+#: src/features/landing/desktop-landing.tsx:98
+#: src/features/landing/mobile-landing.tsx:83
 msgid "Built for daily use"
 msgstr "Built for daily use"
 
@@ -329,7 +328,12 @@ msgstr "Bulk trades"
 #. Button or filter for a purchase of an asset
 #: src/features/portfolios/pages/portfolio-page.tsx:244
 #: src/features/trades/components/trades-list/trades-list.tsx:149
-#: src/features/trades/workflows/buy-transaction-form.tsx:181
+msgid "Buy"
+msgstr "Buy"
+
+#. Short trade side toggle label for a buy trade
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:168
+msgctxt "trade side toggle"
 msgid "Buy"
 msgstr "Buy"
 
@@ -342,12 +346,7 @@ msgstr "Buy"
 msgid "BUY"
 msgstr "BUY"
 
-#. placeholder {0}: selectedStock.symbol
-#: src/features/trades/workflows/buy-transaction-form.tsx:181
-msgid "Buy {0}"
-msgstr "Buy {0}"
-
-#: src/features/trades/workflows/transaction-modal.tsx:33
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:23
 msgid "Buy an asset"
 msgstr "Buy an asset"
 
@@ -364,20 +363,18 @@ msgstr "By value · {rankingCurrency}"
 #: src/features/portfolios/components/archive-portfolio/archive-portfolio.tsx:62
 #: src/features/portfolios/workflows/create-portfolio-button.tsx:46
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:269
-#: src/features/trades/workflows/buy-transaction-form.tsx:178
-#: src/features/trades/workflows/sell-transaction-form.tsx:161
 #: src/features/trades/workflows/undo-trade-form.tsx:98
 msgid "Cancel"
 msgstr "Cancel"
 
-#: src/app/shell/member-shell.tsx:66
+#: src/app/shell/member-shell.tsx:68
 msgid "Canverse dashboard"
 msgstr "Canverse dashboard"
 
-#: src/features/landing/desktop-landing.tsx:21
-#: src/features/landing/mobile-landing.tsx:21
-#: src/features/legal/legal-page.tsx:49
-#: src/features/legal/legal-page.tsx:90
+#: src/features/landing/desktop-landing.tsx:22
+#: src/features/landing/mobile-landing.tsx:22
+#: src/features/legal/legal-page.tsx:50
+#: src/features/legal/legal-page.tsx:91
 msgid "Canverse home"
 msgstr "Canverse home"
 
@@ -389,7 +386,7 @@ msgstr "Canverse is a personal tool for recording trades, positions, and portfol
 msgid "Chart view"
 msgstr "Chart view"
 
-#: src/features/trades/components/add-trade-button/add-trade-button.tsx:43
+#: src/features/trades/workflows/transaction-modal/portfolio-picker.tsx:61
 msgid "Choose a portfolio"
 msgstr "Choose a portfolio"
 
@@ -419,8 +416,6 @@ msgstr "Clear search"
 
 #: src/features/trades/components/trades-list/trades-list.tsx:164
 #: src/features/trades/components/trades-list/trades-list.tsx:173
-#: src/features/trades/workflows/buy-transaction-form.tsx:144
-#: src/features/trades/workflows/sell-transaction-form.tsx:126
 msgid "Clear selection"
 msgstr "Clear selection"
 
@@ -428,6 +423,7 @@ msgstr "Clear selection"
 msgid "Click a row for details"
 msgstr "Click a row for details"
 
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:153
 #: src/shared/components/responsive-overlay/responsive-overlay.tsx:21
 msgid "Close"
 msgstr "Close"
@@ -436,11 +432,16 @@ msgstr "Close"
 msgid "Close position details"
 msgstr "Close position details"
 
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:142
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:145
+msgid "Coming soon"
+msgstr "Coming soon"
+
 #: src/shared/feedback/alerts.tsx:9
 msgid "Completed successfully"
 msgstr "Completed successfully"
 
-#: src/features/auth/pages/register-page.tsx:117
+#: src/features/auth/pages/register-page.tsx:120
 msgid "Confirm password"
 msgstr "Confirm password"
 
@@ -460,10 +461,10 @@ msgstr "Connection lost"
 msgid "Connection Lost"
 msgstr "Connection Lost"
 
-#: src/features/landing/desktop-landing.tsx:144
-#: src/features/landing/mobile-landing.tsx:119
-#: src/features/legal/legal-page.tsx:145
-#: src/features/legal/legal-page.tsx:182
+#: src/features/landing/desktop-landing.tsx:145
+#: src/features/landing/mobile-landing.tsx:120
+#: src/features/legal/legal-page.tsx:146
+#: src/features/legal/legal-page.tsx:183
 msgid "Contact"
 msgstr "Contact"
 
@@ -508,7 +509,6 @@ msgid "Could not load earnings."
 msgstr "Could not load earnings."
 
 #: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:118
-#: src/features/trades/components/add-trade-button/add-trade-button.tsx:51
 msgid "Could not load portfolios."
 msgstr "Could not load portfolios."
 
@@ -540,11 +540,11 @@ msgstr "Could not process the file. Please check the format."
 msgid "Could not reach the server. Check your internet connection and try again."
 msgstr "Could not reach the server. Check your internet connection and try again."
 
-#: src/features/trades/workflows/buy-transaction-form.tsx:63
+#: src/features/trades/workflows/transaction-modal/use-transaction-form.ts:168
 msgid "Could not record the purchase. Try again."
 msgstr "Could not record the purchase. Try again."
 
-#: src/features/trades/workflows/sell-transaction-form.tsx:64
+#: src/features/trades/workflows/transaction-modal/use-transaction-form.ts:173
 msgid "Could not record the sale. Try again."
 msgstr "Could not record the sale. Try again."
 
@@ -565,22 +565,22 @@ msgstr "Could not undo the trade. Try again."
 msgid "Create a dashboard to track your balance and realized performance."
 msgstr "Create a dashboard to track your balance and realized performance."
 
-#: src/features/trades/components/add-trade-button/add-trade-button.tsx:56
-msgid "Create a portfolio from the Portfolios menu to start trading."
-msgstr "Create a portfolio from the Portfolios menu to start trading."
+#: src/features/trades/workflows/transaction-modal/portfolio-picker.tsx:33
+msgid "Create a portfolio first"
+msgstr "Create a portfolio first"
 
 #: src/app/document-title.tsx:10
-#: src/features/auth/pages/register-page.tsx:131
-#: src/features/landing/desktop-landing.tsx:38
-#: src/features/landing/desktop-landing.tsx:65
-#: src/features/landing/desktop-landing.tsx:133
-#: src/features/landing/mobile-landing.tsx:50
-#: src/features/landing/mobile-landing.tsx:108
-#: src/features/legal/legal-page.tsx:177
+#: src/features/auth/pages/register-page.tsx:134
+#: src/features/landing/desktop-landing.tsx:39
+#: src/features/landing/desktop-landing.tsx:66
+#: src/features/landing/desktop-landing.tsx:134
+#: src/features/landing/mobile-landing.tsx:51
+#: src/features/landing/mobile-landing.tsx:109
+#: src/features/legal/legal-page.tsx:178
 msgid "Create account"
 msgstr "Create account"
 
-#: src/features/auth/pages/login-page.tsx:94
+#: src/features/auth/pages/login-page.tsx:97
 msgid "Create an account"
 msgstr "Create an account"
 
@@ -627,7 +627,7 @@ msgid "Cumulative total"
 msgstr "Cumulative total"
 
 #: src/features/dashboard/workflows/create-dashboard-modal.tsx:112
-#: src/features/trades/workflows/buy-transaction-form.tsx:100
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:215
 msgid "Currency"
 msgstr "Currency"
 
@@ -650,14 +650,14 @@ msgstr "Daily change"
 
 #: src/app/document-title.tsx:14
 #: src/app/shell/bottom-nav.tsx:16
-#: src/app/shell/member-shell.tsx:71
+#: src/app/shell/member-shell.tsx:73
 #: src/features/dashboard/pages/dashboard-page.tsx:32
 #: src/features/dashboard/pages/dashboard-page.tsx:74
-#: src/features/landing/desktop-landing.tsx:30
-#: src/features/landing/desktop-landing.tsx:125
-#: src/features/landing/mobile-landing.tsx:100
-#: src/features/legal/legal-page.tsx:57
-#: src/features/legal/legal-page.tsx:169
+#: src/features/landing/desktop-landing.tsx:31
+#: src/features/landing/desktop-landing.tsx:126
+#: src/features/landing/mobile-landing.tsx:101
+#: src/features/legal/legal-page.tsx:58
+#: src/features/legal/legal-page.tsx:170
 #: src/shared/components/error-view/error-view.tsx:70
 msgid "Dashboard"
 msgstr "Dashboard"
@@ -701,6 +701,8 @@ msgid "Data control"
 msgstr "Data control"
 
 #: src/features/trades/components/trades-list/trade-details.tsx:74
+#: src/features/trades/workflows/transaction-modal/date-picker-row.tsx:34
+#: src/features/trades/workflows/transaction-modal/date-picker-row.tsx:40
 #: src/features/trades/workflows/undo-trade-form.tsx:72
 msgid "Date"
 msgstr "Date"
@@ -719,7 +721,7 @@ msgstr "Delete dashboard"
 msgid "Delete the “{name}” dashboard? Its portfolios and transactions will be kept."
 msgstr "Delete the “{name}” dashboard? Its portfolios and transactions will be kept."
 
-#: src/features/legal/legal-page.tsx:127
+#: src/features/legal/legal-page.tsx:128
 msgid "Draft"
 msgstr "Draft"
 
@@ -749,8 +751,8 @@ msgstr "Earnings period"
 msgid "Earnings will appear here after a sale with recorded P&L."
 msgstr "Earnings will appear here after a sale with recorded P&L."
 
-#: src/features/auth/pages/login-page.tsx:65
-#: src/features/auth/pages/register-page.tsx:91
+#: src/features/auth/pages/login-page.tsx:68
+#: src/features/auth/pages/register-page.tsx:94
 msgid "Email"
 msgstr "Email"
 
@@ -767,16 +769,20 @@ msgid "Enter dashboard name"
 msgstr "Enter dashboard name"
 
 #: src/features/auth/hooks/use-login-view.ts:18
-#: src/features/auth/pages/login-page.tsx:66
-#: src/features/auth/pages/register-page.tsx:92
+#: src/features/auth/pages/login-page.tsx:69
+#: src/features/auth/pages/register-page.tsx:95
 msgid "Enter your email address"
 msgstr "Enter your email address"
 
 #: src/features/auth/hooks/use-login-view.ts:19
-#: src/features/auth/pages/login-page.tsx:77
-#: src/features/auth/pages/register-page.tsx:105
+#: src/features/auth/pages/login-page.tsx:80
+#: src/features/auth/pages/register-page.tsx:108
 msgid "Enter your password"
 msgstr "Enter your password"
+
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:141
+msgid "Entry type"
+msgstr "Entry type"
 
 #. Asset category tag for stocks
 #: src/features/trades/workflows/bulk-trade/asset-combobox.tsx:19
@@ -806,10 +812,13 @@ msgstr "Est."
 
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:222
 #: src/features/trades/workflows/bulk-trade/virtual-row.tsx:101
-#: src/features/trades/workflows/buy-transaction-form.tsx:175
-#: src/features/trades/workflows/sell-transaction-form.tsx:158
 msgid "Execution date"
 msgstr "Execution date"
+
+#. Disabled cashflow tab in the add entry modal
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:143
+msgid "Expense"
+msgstr "Expense"
 
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:130
 msgid "Failed to submit trades. Please try again."
@@ -844,9 +853,9 @@ msgstr "First page"
 msgid "Flat daily impact estimate: no daily quote change"
 msgstr "Flat daily impact estimate: no daily quote change"
 
-#: src/features/landing/desktop-landing.tsx:122
-#: src/features/landing/mobile-landing.tsx:97
-#: src/features/legal/legal-page.tsx:165
+#: src/features/landing/desktop-landing.tsx:123
+#: src/features/landing/mobile-landing.tsx:98
+#: src/features/legal/legal-page.tsx:166
 msgid "Footer links"
 msgstr "Footer links"
 
@@ -898,8 +907,8 @@ msgstr "Highest value"
 msgid "Holding"
 msgstr "Holding"
 
-#: src/features/auth/components/auth-shell.tsx:29
-#: src/features/auth/components/auth-shell.tsx:63
+#: src/features/auth/components/auth-shell.tsx:30
+#: src/features/auth/components/auth-shell.tsx:64
 msgid "Home"
 msgstr "Home"
 
@@ -919,13 +928,18 @@ msgstr "I understand this action is permanent"
 msgid "If you choose to continue with Google, authentication is verified through Google OAuth using only your verified email address and display name."
 msgstr "If you choose to continue with Google, authentication is verified through Google OAuth using only your verified email address and display name."
 
-#: src/features/legal/legal-page.tsx:148
+#: src/features/legal/legal-page.tsx:149
 msgid "If you have questions about this notice, email <link>{LEGAL_CONTACT_EMAIL}</link>."
 msgstr "If you have questions about this notice, email <link>{LEGAL_CONTACT_EMAIL}</link>."
 
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:174
 msgid "Import file"
 msgstr "Import file"
+
+#. Disabled cashflow tab in the add entry modal
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:146
+msgid "Income"
+msgstr "Income"
 
 #: src/features/legal/legal-content.ts:60
 msgid "Information stored"
@@ -934,6 +948,11 @@ msgstr "Information stored"
 #: src/features/auth/hooks/use-login-view.ts:54
 msgid "Invalid username or password"
 msgstr "Invalid username or password"
+
+#. Active investment tab in the add entry modal
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:149
+msgid "Investment"
+msgstr "Investment"
 
 #: src/features/landing/use-landing-view.ts:51
 msgid "Keep balances and returns separated by currency without mixing totals."
@@ -1004,7 +1023,6 @@ msgid "Loading portfolio overview"
 msgstr "Loading portfolio overview"
 
 #: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:112
-#: src/features/trades/components/add-trade-button/add-trade-button.tsx:46
 msgid "Loading portfolios…"
 msgstr "Loading portfolios…"
 
@@ -1030,7 +1048,7 @@ msgid "Lowest return (%)"
 msgstr "Lowest return (%)"
 
 #: src/app/shell/bottom-nav.tsx:13
-#: src/app/shell/member-shell.tsx:69
+#: src/app/shell/member-shell.tsx:71
 msgid "Main navigation"
 msgstr "Main navigation"
 
@@ -1083,7 +1101,7 @@ msgstr "New dashboard"
 msgid "New portfolio"
 msgstr "New portfolio"
 
-#: src/features/auth/pages/login-page.tsx:92
+#: src/features/auth/pages/login-page.tsx:95
 msgid "New to Canverse?"
 msgstr "New to Canverse?"
 
@@ -1108,7 +1126,12 @@ msgstr "Next period"
 msgid "Next year"
 msgstr "Next year"
 
+#: src/features/trades/workflows/transaction-modal/asset-picker.tsx:146
+msgid "No holdings to sell in this portfolio"
+msgstr "No holdings to sell in this portfolio"
+
 #: src/features/trades/workflows/bulk-trade/asset-combobox.tsx:133
+#: src/features/trades/workflows/transaction-modal/asset-picker.tsx:148
 msgid "No matches found"
 msgstr "No matches found"
 
@@ -1166,12 +1189,20 @@ msgstr "No trades yet — add a row or import a file"
 msgid "No trades yet."
 msgstr "No trades yet."
 
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:258
+msgid "Note"
+msgstr "Note"
+
 #: src/shared/components/not-found/not-found.tsx:14
 msgid "Nothing to see here"
 msgstr "Nothing to see here"
 
-#: src/features/landing/desktop-landing.tsx:60
-#: src/features/landing/mobile-landing.tsx:45
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:248
+msgid "Only {availableFormatted} units available"
+msgstr "Only {availableFormatted} units available"
+
+#: src/features/landing/desktop-landing.tsx:61
+#: src/features/landing/mobile-landing.tsx:46
 msgid "Open dashboard"
 msgstr "Open dashboard"
 
@@ -1187,10 +1218,14 @@ msgstr "Open positions versus cost basis"
 msgid "Open trade history"
 msgstr "Open trade history"
 
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:265
+msgid "Optional…"
+msgstr "Optional…"
+
 #. Separator between Google sign-in and email form
 #. Separator between Google sign-in and email form
-#: src/features/auth/pages/login-page.tsx:55
-#: src/features/auth/pages/register-page.tsx:69
+#: src/features/auth/pages/login-page.tsx:56
+#: src/features/auth/pages/register-page.tsx:70
 msgid "Or continue with"
 msgstr "Or continue with"
 
@@ -1211,8 +1246,8 @@ msgstr "Page you are trying to open does not exist. You may have mistyped the ad
 msgid "Partial"
 msgstr "Partial"
 
-#: src/features/auth/pages/login-page.tsx:76
-#: src/features/auth/pages/register-page.tsx:104
+#: src/features/auth/pages/login-page.tsx:79
+#: src/features/auth/pages/register-page.tsx:107
 msgid "Password"
 msgstr "Password"
 
@@ -1237,8 +1272,8 @@ msgstr "Period P&L"
 msgid "Periodic"
 msgstr "Periodic"
 
-#: src/features/landing/desktop-landing.tsx:118
-#: src/features/landing/mobile-landing.tsx:128
+#: src/features/landing/desktop-landing.tsx:119
+#: src/features/landing/mobile-landing.tsx:129
 msgid "Personal portfolio and trade tracker"
 msgstr "Personal portfolio and trade tracker"
 
@@ -1268,6 +1303,8 @@ msgstr "Placeholder draft. Detailed terms of service will be published here as t
 #: src/features/portfolios/pages/portfolio-page.tsx:34
 #: src/features/positions/components/positions-view/positions-view.tsx:108
 #: src/features/trades/components/trades-list/trades-list.tsx:158
+#: src/features/trades/workflows/transaction-modal/portfolio-picker.tsx:30
+#: src/features/trades/workflows/transaction-modal/portfolio-picker.tsx:42
 msgid "Portfolio"
 msgstr "Portfolio"
 
@@ -1275,8 +1312,8 @@ msgstr "Portfolio"
 msgid "Portfolio actions"
 msgstr "Portfolio actions"
 
-#: src/features/landing/desktop-landing.tsx:49
-#: src/features/landing/mobile-landing.tsx:34
+#: src/features/landing/desktop-landing.tsx:50
+#: src/features/landing/mobile-landing.tsx:35
 msgid "Portfolio and trade tracking, kept simple."
 msgstr "Portfolio and trade tracking, kept simple."
 
@@ -1293,8 +1330,6 @@ msgstr "Portfolio balance and allocation"
 msgid "Portfolio created successfully"
 msgstr "Portfolio created successfully"
 
-#: src/features/trades/workflows/buy-transaction-form.tsx:70
-#: src/features/trades/workflows/sell-transaction-form.tsx:78
 #: src/features/trades/workflows/undo-trade-form.tsx:45
 msgid "Portfolio ID is required to perform this action."
 msgstr "Portfolio ID is required to perform this action."
@@ -1323,8 +1358,8 @@ msgstr "Portfolio trade actions"
 msgid "Portfolio weight"
 msgstr "Portfolio weight"
 
-#: src/app/shell/member-shell.tsx:53
-#: src/app/shell/member-shell.tsx:74
+#: src/app/shell/member-shell.tsx:55
+#: src/app/shell/member-shell.tsx:76
 #: src/features/dashboard/workflows/create-dashboard-modal.tsx:121
 #: src/features/landing/use-landing-view.ts:30
 #: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:60
@@ -1343,7 +1378,7 @@ msgid "Position value"
 msgstr "Position value"
 
 #: src/app/document-title.tsx:15
-#: src/app/shell/member-shell.tsx:77
+#: src/app/shell/member-shell.tsx:79
 #: src/features/landing/use-landing-view.ts:36
 #: src/features/portfolios/pages/portfolio-page.tsx:134
 #: src/features/positions/pages/positions-page.tsx:336
@@ -1379,12 +1414,10 @@ msgstr "Previous year"
 #. Unit price of a financial instrument
 #. Unit price of a financial instrument
 #. Unit price of a financial instrument
-#. Unit price of a financial instrument
 #: src/features/positions/components/positions-view/positions-view.tsx:119
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:216
 #: src/features/trades/workflows/bulk-trade/virtual-row.tsx:70
-#: src/features/trades/workflows/buy-transaction-form.tsx:161
-#: src/features/trades/workflows/sell-transaction-form.tsx:148
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:233
 #: src/features/trades/workflows/undo-trade-form.tsx:75
 msgid "Price"
 msgstr "Price"
@@ -1398,8 +1431,8 @@ msgstr "Price as of {0}"
 msgid "Prices updated"
 msgstr "Prices updated"
 
-#: src/features/landing/desktop-landing.tsx:141
-#: src/features/landing/mobile-landing.tsx:116
+#: src/features/landing/desktop-landing.tsx:142
+#: src/features/landing/mobile-landing.tsx:117
 msgid "Privacy"
 msgstr "Privacy"
 
@@ -1428,8 +1461,7 @@ msgstr "Qty / Cost"
 #: src/features/trades/components/trades-list/trade-details.tsx:75
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:219
 #: src/features/trades/workflows/bulk-trade/virtual-row.tsx:88
-#: src/features/trades/workflows/buy-transaction-form.tsx:154
-#: src/features/trades/workflows/sell-transaction-form.tsx:136
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:197
 #: src/features/trades/workflows/undo-trade-form.tsx:73
 msgid "Quantity"
 msgstr "Quantity"
@@ -1442,7 +1474,7 @@ msgstr "Quoted balance"
 msgid "Quotes pending"
 msgstr "Quotes pending"
 
-#: src/features/auth/pages/register-page.tsx:118
+#: src/features/auth/pages/register-page.tsx:121
 msgid "Re-enter your password"
 msgstr "Re-enter your password"
 
@@ -1469,8 +1501,8 @@ msgstr "Reconnect"
 msgid "Record a trade to see your balance and allocation."
 msgstr "Record a trade to see your balance and allocation."
 
-#: src/features/landing/desktop-landing.tsx:52
-#: src/features/landing/mobile-landing.tsx:37
+#: src/features/landing/desktop-landing.tsx:53
+#: src/features/landing/mobile-landing.tsx:38
 msgid "Record buy and sell trades across portfolios and currencies, follow open positions, and review realized profit and loss in one place."
 msgstr "Record buy and sell trades across portfolios and currencies, follow open positions, and review realized profit and loss in one place."
 
@@ -1507,6 +1539,26 @@ msgstr "Rose"
 msgid "Sale"
 msgstr "Sale"
 
+#. Primary CTA button to save a buy trade for a selected asset
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:125
+msgid "Save {symbol} buy"
+msgstr "Save {symbol} buy"
+
+#. Primary CTA button to save a sell trade for a selected asset
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:126
+msgid "Save {symbol} sell"
+msgstr "Save {symbol} sell"
+
+#. Primary CTA button to save a buy trade before selecting an asset
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:128
+msgid "Save buy"
+msgstr "Save buy"
+
+#. Primary CTA button to save a sell trade before selecting an asset
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:129
+msgid "Save sell"
+msgstr "Save sell"
+
 #: src/shared/components/localized-date-time-picker.tsx:27
 msgid "Save time"
 msgstr "Save time"
@@ -1534,6 +1586,7 @@ msgid "Search stocks…"
 msgstr "Search stocks…"
 
 #: src/features/trades/workflows/bulk-trade/asset-combobox.tsx:123
+#: src/features/trades/workflows/transaction-modal/asset-picker.tsx:138
 msgid "Search symbol or name…"
 msgstr "Search symbol or name…"
 
@@ -1550,10 +1603,9 @@ msgstr "Search trades"
 msgid "Seconds"
 msgstr "Seconds"
 
-#: src/features/trades/workflows/buy-transaction-form.tsx:140
-#: src/features/trades/workflows/sell-transaction-form.tsx:123
-msgid "Select an asset"
-msgstr "Select an asset"
+#: src/features/trades/workflows/transaction-modal/asset-picker.tsx:126
+msgid "Select asset"
+msgstr "Select asset"
 
 #: src/features/dashboard/workflows/create-dashboard-modal.tsx:113
 msgid "Select currency"
@@ -1563,7 +1615,12 @@ msgstr "Select currency"
 #. Button or filter for a sale of an asset
 #: src/features/portfolios/pages/portfolio-page.tsx:247
 #: src/features/trades/components/trades-list/trades-list.tsx:150
-#: src/features/trades/workflows/sell-transaction-form.tsx:164
+msgid "Sell"
+msgstr "Sell"
+
+#. Short trade side toggle label for a sell trade
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:172
+msgctxt "trade side toggle"
 msgid "Sell"
 msgstr "Sell"
 
@@ -1576,12 +1633,7 @@ msgstr "Sell"
 msgid "SELL"
 msgstr "SELL"
 
-#. placeholder {0}: selectedStock.symbol
-#: src/features/trades/workflows/sell-transaction-form.tsx:164
-msgid "Sell {0}"
-msgstr "Sell {0}"
-
-#: src/features/trades/workflows/transaction-modal.tsx:33
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:23
 msgid "Sell an asset"
 msgstr "Sell an asset"
 
@@ -1614,15 +1666,15 @@ msgid "Show this month"
 msgstr "Show this month"
 
 #: src/app/document-title.tsx:9
-#: src/features/auth/pages/login-page.tsx:81
-#: src/features/auth/pages/register-page.tsx:144
-#: src/features/landing/desktop-landing.tsx:35
-#: src/features/landing/desktop-landing.tsx:68
-#: src/features/landing/desktop-landing.tsx:130
-#: src/features/landing/mobile-landing.tsx:53
-#: src/features/landing/mobile-landing.tsx:105
-#: src/features/legal/legal-page.tsx:57
-#: src/features/legal/legal-page.tsx:174
+#: src/features/auth/pages/login-page.tsx:84
+#: src/features/auth/pages/register-page.tsx:147
+#: src/features/landing/desktop-landing.tsx:36
+#: src/features/landing/desktop-landing.tsx:69
+#: src/features/landing/desktop-landing.tsx:131
+#: src/features/landing/mobile-landing.tsx:54
+#: src/features/landing/mobile-landing.tsx:106
+#: src/features/legal/legal-page.tsx:58
+#: src/features/legal/legal-page.tsx:175
 msgid "Sign in"
 msgstr "Sign in"
 
@@ -1649,12 +1701,12 @@ msgid "Signing in…"
 msgstr "Signing in…"
 
 #: src/app/shell/member-shell.tsx:30
-#: src/features/auth/components/auth-shell.tsx:23
-#: src/features/auth/components/auth-shell.tsx:57
-#: src/features/landing/desktop-landing.tsx:16
-#: src/features/landing/mobile-landing.tsx:16
-#: src/features/legal/legal-page.tsx:44
-#: src/features/legal/legal-page.tsx:85
+#: src/features/auth/components/auth-shell.tsx:24
+#: src/features/auth/components/auth-shell.tsx:58
+#: src/features/landing/desktop-landing.tsx:17
+#: src/features/landing/mobile-landing.tsx:17
+#: src/features/legal/legal-page.tsx:45
+#: src/features/legal/legal-page.tsx:86
 msgid "Skip to main content"
 msgstr "Skip to main content"
 
@@ -1662,9 +1714,9 @@ msgstr "Skip to main content"
 msgid "Slate"
 msgstr "Slate"
 
-#: src/features/trades/workflows/sell-transaction-form.tsx:61
-msgid "Sold {quantity} units of {symbol} at {price}."
-msgstr "Sold {quantity} units of {symbol} at {price}."
+#: src/features/trades/workflows/transaction-modal/use-transaction-form.ts:161
+msgid "Sold {quantity} units of {symbol} at {formattedPrice}."
+msgstr "Sold {quantity} units of {symbol} at {formattedPrice}."
 
 #: src/shared/components/error-view/error-view.tsx:38
 msgid "Something went wrong"
@@ -1684,7 +1736,7 @@ msgstr "Sort positions"
 msgid "Status"
 msgstr "Status"
 
-#: src/features/onboarding/pages/onboarding-page.tsx:53
+#: src/features/onboarding/pages/onboarding-page.tsx:54
 msgid "Step {step} of {totalSteps}"
 msgstr "Step {step} of {totalSteps}"
 
@@ -1700,6 +1752,10 @@ msgstr "Successfully cleared all of your data."
 msgid "Switch between light and dark mode, and use the interface in English or Turkish."
 msgstr "Switch between light and dark mode, and use the interface in English or Turkish."
 
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:164
+msgid "Switch to buy"
+msgstr "Switch to buy"
+
 #: src/app/shell/account-menu.tsx:22
 #: src/shared/components/theme-toggle.tsx:10
 msgid "Switch to dark mode"
@@ -1710,6 +1766,10 @@ msgstr "Switch to dark mode"
 msgid "Switch to light mode"
 msgstr "Switch to light mode"
 
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:164
+msgid "Switch to sell"
+msgstr "Switch to sell"
+
 #: src/shared/components/not-found/not-found.tsx:23
 msgid "Take me back to home page"
 msgstr "Take me back to home page"
@@ -1718,8 +1778,8 @@ msgstr "Take me back to home page"
 msgid "Technical details"
 msgstr "Technical details"
 
-#: src/features/landing/desktop-landing.tsx:138
-#: src/features/landing/mobile-landing.tsx:113
+#: src/features/landing/desktop-landing.tsx:139
+#: src/features/landing/mobile-landing.tsx:114
 msgid "Terms"
 msgstr "Terms"
 
@@ -1762,9 +1822,13 @@ msgstr "This will permanently remove this trade record. This action cannot be re
 msgid "today"
 msgstr "today"
 
-#: src/features/auth/pages/login-page.tsx:74
-#: src/features/auth/pages/register-page.tsx:102
-#: src/features/auth/pages/register-page.tsx:115
+#: src/features/trades/workflows/transaction-modal/date-picker-row.tsx:21
+msgid "Today, {time}"
+msgstr "Today, {time}"
+
+#: src/features/auth/pages/login-page.tsx:77
+#: src/features/auth/pages/register-page.tsx:105
+#: src/features/auth/pages/register-page.tsx:118
 msgid "Toggle password visibility"
 msgstr "Toggle password visibility"
 
@@ -1775,6 +1839,10 @@ msgstr "Top positions"
 #: src/features/trades/workflows/undo-trade-form.tsx:78
 msgid "Total"
 msgstr "Total"
+
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:241
+msgid "Total <bold>{formattedTotal}</bold>"
+msgstr "Total <bold>{formattedTotal}</bold>"
 
 #: src/features/trades/components/trades-list/trade-details.tsx:77
 msgid "Total amount"
@@ -1807,8 +1875,7 @@ msgstr "Trade details for {symbol}"
 msgid "Trade filters"
 msgstr "Trade filters"
 
-#: src/features/trades/workflows/buy-transaction-form.tsx:60
-#: src/features/trades/workflows/sell-transaction-form.tsx:61
+#: src/features/trades/workflows/transaction-modal/use-transaction-form.ts:158
 msgid "Trade recorded."
 msgstr "Trade recorded."
 
@@ -1827,8 +1894,8 @@ msgstr "Trade undone for {symbol}."
 
 #: src/app/document-title.tsx:16
 #: src/app/shell/bottom-nav.tsx:28
-#: src/app/shell/member-shell.tsx:53
-#: src/app/shell/member-shell.tsx:80
+#: src/app/shell/member-shell.tsx:55
+#: src/app/shell/member-shell.tsx:82
 #: src/features/landing/use-landing-view.ts:42
 #: src/features/portfolios/pages/portfolio-page.tsx:140
 #: src/features/trades/components/trades-list/trades-list.tsx:85
@@ -1907,6 +1974,11 @@ msgstr "Undo trade for <bold>{0}</bold>"
 msgid "Unit price"
 msgstr "Unit price"
 
+#. Unit label next to the giant quantity input
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:204
+msgid "units"
+msgstr "units"
+
 #: src/shared/components/error-view/error-view.tsx:86
 msgid "Unknown error"
 msgstr "Unknown error"
@@ -1971,8 +2043,8 @@ msgstr "Weights cover the {currency} portion only."
 msgid "Weights include estimated values."
 msgstr "Weights include estimated values."
 
-#: src/features/landing/desktop-landing.tsx:77
-#: src/features/landing/mobile-landing.tsx:62
+#: src/features/landing/desktop-landing.tsx:78
+#: src/features/landing/mobile-landing.tsx:63
 msgid "What’s included"
 msgstr "What’s included"
 
@@ -1983,6 +2055,10 @@ msgstr "When you register or sign in with Google, we store your name and email a
 #: src/features/dashboard/components/dashboard-summary.tsx:119
 msgid "Win rate"
 msgstr "Win rate"
+
+#: src/features/trades/workflows/transaction-modal/date-picker-row.tsx:22
+msgid "Yesterday, {time}"
+msgstr "Yesterday, {time}"
 
 #: src/features/legal/legal-content.ts:38
 msgid "You can access the platform with an email and password or by signing in with Google, which creates an account automatically if you do not have one yet. You are responsible for keeping your credentials secure."

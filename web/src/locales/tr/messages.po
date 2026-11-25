@@ -51,7 +51,7 @@ msgstr "{change} günlük"
 msgid "{change} today"
 msgstr "{change} bugün"
 
-#: src/features/onboarding/pages/onboarding-page.tsx:58
+#: src/features/onboarding/pages/onboarding-page.tsx:59
 msgid "{completion} complete"
 msgstr "{completion} tamamlandı"
 
@@ -177,12 +177,12 @@ msgid "Add sale"
 msgstr "Satış Ekle"
 
 #. Accessible label of the compact action to record a buy or sell
-#: src/features/trades/components/add-trade-button/add-trade-button.tsx:34
+#: src/features/trades/components/add-trade-button/add-trade-button.tsx:22
 msgid "Add trade"
 msgstr "İşlem Ekle"
 
 #. Primary action to record a new buy or sell transaction
-#: src/features/trades/components/add-trade-button/add-trade-button.tsx:40
+#: src/features/trades/components/add-trade-button/add-trade-button.tsx:31
 msgid "Add Trade"
 msgstr "İşlem Ekle"
 
@@ -214,7 +214,7 @@ msgstr "Tüm türler"
 msgid "Alphabetical (A–Z)"
 msgstr "Alfabetik (A–Z)"
 
-#: src/features/auth/pages/register-page.tsx:142
+#: src/features/auth/pages/register-page.tsx:145
 msgid "Already have an account?"
 msgstr "Zaten hesabınız var mı?"
 
@@ -252,8 +252,7 @@ msgstr "Arşivlenen portföy aktif portföyler listesinden kalkar. İşlem geçm
 #: src/features/positions/components/positions-view/positions-view.tsx:104
 #: src/features/trades/workflows/bulk-trade/asset-combobox.tsx:122
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:213
-#: src/features/trades/workflows/buy-transaction-form.tsx:139
-#: src/features/trades/workflows/sell-transaction-form.tsx:121
+#: src/features/trades/workflows/transaction-modal/asset-picker.tsx:139
 msgid "Asset"
 msgstr "Varlık"
 
@@ -291,7 +290,7 @@ msgstr "Fiyat bekleniyor"
 msgid "Back"
 msgstr "Geri"
 
-#: src/features/legal/legal-page.tsx:122
+#: src/features/legal/legal-page.tsx:123
 msgid "Back to home"
 msgstr "Ana sayfaya dön"
 
@@ -303,12 +302,12 @@ msgstr "Ayrıntılı yasal metinler hazırlanırken Canverse kullanımı için t
 msgid "Blue"
 msgstr "Mavi"
 
-#: src/features/trades/workflows/buy-transaction-form.tsx:60
-msgid "Bought {quantity} units of {symbol} at {price}."
-msgstr "{quantity} adet {symbol}, {price} fiyattan alındı."
+#: src/features/trades/workflows/transaction-modal/use-transaction-form.ts:160
+msgid "Bought {quantity} units of {symbol} at {formattedPrice}."
+msgstr "{quantity} adet {symbol}, {formattedPrice} fiyattan alındı."
 
-#: src/features/landing/desktop-landing.tsx:97
-#: src/features/landing/mobile-landing.tsx:82
+#: src/features/landing/desktop-landing.tsx:98
+#: src/features/landing/mobile-landing.tsx:83
 msgid "Built for daily use"
 msgstr "Günlük kullanım için"
 
@@ -329,9 +328,14 @@ msgstr "Toplu işlemler"
 #. Button or filter for a purchase of an asset
 #: src/features/portfolios/pages/portfolio-page.tsx:244
 #: src/features/trades/components/trades-list/trades-list.tsx:149
-#: src/features/trades/workflows/buy-transaction-form.tsx:181
 msgid "Buy"
 msgstr "Al"
+
+#. Short trade side toggle label for a buy trade
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:168
+msgctxt "trade side toggle"
+msgid "Buy"
+msgstr "Alım"
 
 #. Short label on a purchase transaction badge
 #. Short label on a purchase transaction badge
@@ -342,12 +346,7 @@ msgstr "Al"
 msgid "BUY"
 msgstr "ALIM"
 
-#. placeholder {0}: selectedStock.symbol
-#: src/features/trades/workflows/buy-transaction-form.tsx:181
-msgid "Buy {0}"
-msgstr "{0} al"
-
-#: src/features/trades/workflows/transaction-modal.tsx:33
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:23
 msgid "Buy an asset"
 msgstr "Varlık al"
 
@@ -364,20 +363,18 @@ msgstr "Değere göre · {rankingCurrency}"
 #: src/features/portfolios/components/archive-portfolio/archive-portfolio.tsx:62
 #: src/features/portfolios/workflows/create-portfolio-button.tsx:46
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:269
-#: src/features/trades/workflows/buy-transaction-form.tsx:178
-#: src/features/trades/workflows/sell-transaction-form.tsx:161
 #: src/features/trades/workflows/undo-trade-form.tsx:98
 msgid "Cancel"
 msgstr "İptal"
 
-#: src/app/shell/member-shell.tsx:66
+#: src/app/shell/member-shell.tsx:68
 msgid "Canverse dashboard"
 msgstr "Canverse özet sayfası"
 
-#: src/features/landing/desktop-landing.tsx:21
-#: src/features/landing/mobile-landing.tsx:21
-#: src/features/legal/legal-page.tsx:49
-#: src/features/legal/legal-page.tsx:90
+#: src/features/landing/desktop-landing.tsx:22
+#: src/features/landing/mobile-landing.tsx:22
+#: src/features/legal/legal-page.tsx:50
+#: src/features/legal/legal-page.tsx:91
 msgid "Canverse home"
 msgstr "Canverse ana sayfası"
 
@@ -389,7 +386,7 @@ msgstr "Canverse; işlemlerinizi, pozisyonlarınızı ve portföylerinizi kaydet
 msgid "Chart view"
 msgstr "Grafik görünümü"
 
-#: src/features/trades/components/add-trade-button/add-trade-button.tsx:43
+#: src/features/trades/workflows/transaction-modal/portfolio-picker.tsx:61
 msgid "Choose a portfolio"
 msgstr "Portföy seçin"
 
@@ -419,8 +416,6 @@ msgstr "Aramayı temizle"
 
 #: src/features/trades/components/trades-list/trades-list.tsx:164
 #: src/features/trades/components/trades-list/trades-list.tsx:173
-#: src/features/trades/workflows/buy-transaction-form.tsx:144
-#: src/features/trades/workflows/sell-transaction-form.tsx:126
 msgid "Clear selection"
 msgstr "Seçimi temizle"
 
@@ -428,6 +423,7 @@ msgstr "Seçimi temizle"
 msgid "Click a row for details"
 msgstr "Detay için satıra tıklayın"
 
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:153
 #: src/shared/components/responsive-overlay/responsive-overlay.tsx:21
 msgid "Close"
 msgstr "Kapat"
@@ -436,11 +432,16 @@ msgstr "Kapat"
 msgid "Close position details"
 msgstr "Pozisyon detayını kapat"
 
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:142
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:145
+msgid "Coming soon"
+msgstr "Yakında"
+
 #: src/shared/feedback/alerts.tsx:9
 msgid "Completed successfully"
 msgstr "İşlem tamamlandı"
 
-#: src/features/auth/pages/register-page.tsx:117
+#: src/features/auth/pages/register-page.tsx:120
 msgid "Confirm password"
 msgstr "Şifreyi doğrulayın"
 
@@ -460,10 +461,10 @@ msgstr "Bağlantı kesildi"
 msgid "Connection Lost"
 msgstr "Bağlantı Kesildi"
 
-#: src/features/landing/desktop-landing.tsx:144
-#: src/features/landing/mobile-landing.tsx:119
-#: src/features/legal/legal-page.tsx:145
-#: src/features/legal/legal-page.tsx:182
+#: src/features/landing/desktop-landing.tsx:145
+#: src/features/landing/mobile-landing.tsx:120
+#: src/features/legal/legal-page.tsx:146
+#: src/features/legal/legal-page.tsx:183
 msgid "Contact"
 msgstr "İletişim"
 
@@ -508,7 +509,6 @@ msgid "Could not load earnings."
 msgstr "Kazançlar yüklenemedi."
 
 #: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:118
-#: src/features/trades/components/add-trade-button/add-trade-button.tsx:51
 msgid "Could not load portfolios."
 msgstr "Portföyler yüklenemedi."
 
@@ -540,11 +540,11 @@ msgstr "Dosya işlenemedi. Biçimini kontrol edin."
 msgid "Could not reach the server. Check your internet connection and try again."
 msgstr "Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edip tekrar deneyin."
 
-#: src/features/trades/workflows/buy-transaction-form.tsx:63
+#: src/features/trades/workflows/transaction-modal/use-transaction-form.ts:168
 msgid "Could not record the purchase. Try again."
 msgstr "Alış kaydedilemedi. Tekrar deneyin."
 
-#: src/features/trades/workflows/sell-transaction-form.tsx:64
+#: src/features/trades/workflows/transaction-modal/use-transaction-form.ts:173
 msgid "Could not record the sale. Try again."
 msgstr "Satış kaydedilemedi. Tekrar deneyin."
 
@@ -565,22 +565,22 @@ msgstr "İşlem geri alınamadı. Tekrar deneyin."
 msgid "Create a dashboard to track your balance and realized performance."
 msgstr "Bakiyenizi ve gerçekleşen performansınızı takip etmek için bir özet oluşturun."
 
-#: src/features/trades/components/add-trade-button/add-trade-button.tsx:56
-msgid "Create a portfolio from the Portfolios menu to start trading."
-msgstr "İşlem kaydetmek için Portföyler menüsünden bir portföy oluşturun."
+#: src/features/trades/workflows/transaction-modal/portfolio-picker.tsx:33
+msgid "Create a portfolio first"
+msgstr "Önce bir portföy oluşturun"
 
 #: src/app/document-title.tsx:10
-#: src/features/auth/pages/register-page.tsx:131
-#: src/features/landing/desktop-landing.tsx:38
-#: src/features/landing/desktop-landing.tsx:65
-#: src/features/landing/desktop-landing.tsx:133
-#: src/features/landing/mobile-landing.tsx:50
-#: src/features/landing/mobile-landing.tsx:108
-#: src/features/legal/legal-page.tsx:177
+#: src/features/auth/pages/register-page.tsx:134
+#: src/features/landing/desktop-landing.tsx:39
+#: src/features/landing/desktop-landing.tsx:66
+#: src/features/landing/desktop-landing.tsx:134
+#: src/features/landing/mobile-landing.tsx:51
+#: src/features/landing/mobile-landing.tsx:109
+#: src/features/legal/legal-page.tsx:178
 msgid "Create account"
 msgstr "Hesap oluştur"
 
-#: src/features/auth/pages/login-page.tsx:94
+#: src/features/auth/pages/login-page.tsx:97
 msgid "Create an account"
 msgstr "Hesap oluşturun"
 
@@ -627,7 +627,7 @@ msgid "Cumulative total"
 msgstr "kümülatif toplam"
 
 #: src/features/dashboard/workflows/create-dashboard-modal.tsx:112
-#: src/features/trades/workflows/buy-transaction-form.tsx:100
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:215
 msgid "Currency"
 msgstr "Para birimi"
 
@@ -650,14 +650,14 @@ msgstr "Günlük Değişim"
 
 #: src/app/document-title.tsx:14
 #: src/app/shell/bottom-nav.tsx:16
-#: src/app/shell/member-shell.tsx:71
+#: src/app/shell/member-shell.tsx:73
 #: src/features/dashboard/pages/dashboard-page.tsx:32
 #: src/features/dashboard/pages/dashboard-page.tsx:74
-#: src/features/landing/desktop-landing.tsx:30
-#: src/features/landing/desktop-landing.tsx:125
-#: src/features/landing/mobile-landing.tsx:100
-#: src/features/legal/legal-page.tsx:57
-#: src/features/legal/legal-page.tsx:169
+#: src/features/landing/desktop-landing.tsx:31
+#: src/features/landing/desktop-landing.tsx:126
+#: src/features/landing/mobile-landing.tsx:101
+#: src/features/legal/legal-page.tsx:58
+#: src/features/legal/legal-page.tsx:170
 #: src/shared/components/error-view/error-view.tsx:70
 msgid "Dashboard"
 msgstr "Özet"
@@ -701,6 +701,8 @@ msgid "Data control"
 msgstr "Veri kontrolü"
 
 #: src/features/trades/components/trades-list/trade-details.tsx:74
+#: src/features/trades/workflows/transaction-modal/date-picker-row.tsx:34
+#: src/features/trades/workflows/transaction-modal/date-picker-row.tsx:40
 #: src/features/trades/workflows/undo-trade-form.tsx:72
 msgid "Date"
 msgstr "Tarih"
@@ -719,7 +721,7 @@ msgstr "Özeti sil"
 msgid "Delete the “{name}” dashboard? Its portfolios and transactions will be kept."
 msgstr "“{name}” özeti silinsin mi? Portföyleri ve işlemleri korunacak."
 
-#: src/features/legal/legal-page.tsx:127
+#: src/features/legal/legal-page.tsx:128
 msgid "Draft"
 msgstr "Taslak"
 
@@ -749,8 +751,8 @@ msgstr "Kazanç dönemi"
 msgid "Earnings will appear here after a sale with recorded P&L."
 msgstr "Kâr veya zararı kaydedilen bir satıştan sonra kazançlar burada görünür."
 
-#: src/features/auth/pages/login-page.tsx:65
-#: src/features/auth/pages/register-page.tsx:91
+#: src/features/auth/pages/login-page.tsx:68
+#: src/features/auth/pages/register-page.tsx:94
 msgid "Email"
 msgstr "E-posta"
 
@@ -767,16 +769,20 @@ msgid "Enter dashboard name"
 msgstr "Özet adını girin"
 
 #: src/features/auth/hooks/use-login-view.ts:18
-#: src/features/auth/pages/login-page.tsx:66
-#: src/features/auth/pages/register-page.tsx:92
+#: src/features/auth/pages/login-page.tsx:69
+#: src/features/auth/pages/register-page.tsx:95
 msgid "Enter your email address"
 msgstr "E-posta adresinizi girin"
 
 #: src/features/auth/hooks/use-login-view.ts:19
-#: src/features/auth/pages/login-page.tsx:77
-#: src/features/auth/pages/register-page.tsx:105
+#: src/features/auth/pages/login-page.tsx:80
+#: src/features/auth/pages/register-page.tsx:108
 msgid "Enter your password"
 msgstr "Şifrenizi girin"
+
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:141
+msgid "Entry type"
+msgstr "Kayıt türü"
 
 #. Asset category tag for stocks
 #: src/features/trades/workflows/bulk-trade/asset-combobox.tsx:19
@@ -806,10 +812,13 @@ msgstr "Tahm."
 
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:222
 #: src/features/trades/workflows/bulk-trade/virtual-row.tsx:101
-#: src/features/trades/workflows/buy-transaction-form.tsx:175
-#: src/features/trades/workflows/sell-transaction-form.tsx:158
 msgid "Execution date"
 msgstr "İşlem tarihi"
+
+#. Disabled cashflow tab in the add entry modal
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:143
+msgid "Expense"
+msgstr "Harcama"
 
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:130
 msgid "Failed to submit trades. Please try again."
@@ -844,9 +853,9 @@ msgstr "İlk sayfa"
 msgid "Flat daily impact estimate: no daily quote change"
 msgstr "Günlük fiyat değişimi verisi olmadığından etki sıfır varsayıldı"
 
-#: src/features/landing/desktop-landing.tsx:122
-#: src/features/landing/mobile-landing.tsx:97
-#: src/features/legal/legal-page.tsx:165
+#: src/features/landing/desktop-landing.tsx:123
+#: src/features/landing/mobile-landing.tsx:98
+#: src/features/legal/legal-page.tsx:166
 msgid "Footer links"
 msgstr "Alt bilgi bağlantıları"
 
@@ -898,8 +907,8 @@ msgstr "En Yüksek Değer"
 msgid "Holding"
 msgstr "Pozisyon"
 
-#: src/features/auth/components/auth-shell.tsx:29
-#: src/features/auth/components/auth-shell.tsx:63
+#: src/features/auth/components/auth-shell.tsx:30
+#: src/features/auth/components/auth-shell.tsx:64
 msgid "Home"
 msgstr "Ana sayfa"
 
@@ -919,13 +928,18 @@ msgstr "Bu işlemin kalıcı olduğunu anlıyorum"
 msgid "If you choose to continue with Google, authentication is verified through Google OAuth using only your verified email address and display name."
 msgstr "Google ile devam etmeyi seçerseniz, kimlik doğrulama yalnızca doğrulanmış e-posta adresiniz ve adınız kullanılarak Google OAuth üzerinden yapılır."
 
-#: src/features/legal/legal-page.tsx:148
+#: src/features/legal/legal-page.tsx:149
 msgid "If you have questions about this notice, email <link>{LEGAL_CONTACT_EMAIL}</link>."
 msgstr "Bu metinle ilgili sorularınız için <link>{LEGAL_CONTACT_EMAIL}</link> adresine e-posta gönderebilirsiniz."
 
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:174
 msgid "Import file"
 msgstr "Dosya içe aktar"
+
+#. Disabled cashflow tab in the add entry modal
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:146
+msgid "Income"
+msgstr "Gelir"
 
 #: src/features/legal/legal-content.ts:60
 msgid "Information stored"
@@ -934,6 +948,11 @@ msgstr "Saklanan bilgiler"
 #: src/features/auth/hooks/use-login-view.ts:54
 msgid "Invalid username or password"
 msgstr "E-posta adresi veya şifre hatalı"
+
+#. Active investment tab in the add entry modal
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:149
+msgid "Investment"
+msgstr "Yatırım"
 
 #: src/features/landing/use-landing-view.ts:51
 msgid "Keep balances and returns separated by currency without mixing totals."
@@ -1004,7 +1023,6 @@ msgid "Loading portfolio overview"
 msgstr "Portföy özeti yükleniyor"
 
 #: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:112
-#: src/features/trades/components/add-trade-button/add-trade-button.tsx:46
 msgid "Loading portfolios…"
 msgstr "Portföyler yükleniyor…"
 
@@ -1030,7 +1048,7 @@ msgid "Lowest return (%)"
 msgstr "En Düşük Getiri (%)"
 
 #: src/app/shell/bottom-nav.tsx:13
-#: src/app/shell/member-shell.tsx:69
+#: src/app/shell/member-shell.tsx:71
 msgid "Main navigation"
 msgstr "Ana gezinme"
 
@@ -1083,7 +1101,7 @@ msgstr "Yeni özet"
 msgid "New portfolio"
 msgstr "Yeni portföy"
 
-#: src/features/auth/pages/login-page.tsx:92
+#: src/features/auth/pages/login-page.tsx:95
 msgid "New to Canverse?"
 msgstr "Canverse’te yeni misiniz?"
 
@@ -1108,7 +1126,12 @@ msgstr "Sonraki dönem"
 msgid "Next year"
 msgstr "Sonraki yıl"
 
+#: src/features/trades/workflows/transaction-modal/asset-picker.tsx:146
+msgid "No holdings to sell in this portfolio"
+msgstr "Bu portföyde satılabilir varlık yok"
+
 #: src/features/trades/workflows/bulk-trade/asset-combobox.tsx:133
+#: src/features/trades/workflows/transaction-modal/asset-picker.tsx:148
 msgid "No matches found"
 msgstr "Sonuç bulunamadı"
 
@@ -1166,12 +1189,20 @@ msgstr "Henüz işlem yok. Satır ekleyin veya dosya içe aktarın."
 msgid "No trades yet."
 msgstr "Henüz işlem yok."
 
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:258
+msgid "Note"
+msgstr "Not"
+
 #: src/shared/components/not-found/not-found.tsx:14
 msgid "Nothing to see here"
 msgstr "Sayfa bulunamadı"
 
-#: src/features/landing/desktop-landing.tsx:60
-#: src/features/landing/mobile-landing.tsx:45
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:248
+msgid "Only {availableFormatted} units available"
+msgstr "Portföyde {availableFormatted} adet mevcut"
+
+#: src/features/landing/desktop-landing.tsx:61
+#: src/features/landing/mobile-landing.tsx:46
 msgid "Open dashboard"
 msgstr "Özeti aç"
 
@@ -1187,10 +1218,14 @@ msgstr "Açık pozisyonların maliyete göre getirisi"
 msgid "Open trade history"
 msgstr "Açık İşlem Geçmişi"
 
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:265
+msgid "Optional…"
+msgstr "İsteğe bağlı…"
+
 #. Separator between Google sign-in and email form
 #. Separator between Google sign-in and email form
-#: src/features/auth/pages/login-page.tsx:55
-#: src/features/auth/pages/register-page.tsx:69
+#: src/features/auth/pages/login-page.tsx:56
+#: src/features/auth/pages/register-page.tsx:70
 msgid "Or continue with"
 msgstr "Veya e-posta ile devam et"
 
@@ -1211,8 +1246,8 @@ msgstr "Aradığınız sayfa bulunamadı. Adresi kontrol edin. Sorun devam eders
 msgid "Partial"
 msgstr "Kısmi"
 
-#: src/features/auth/pages/login-page.tsx:76
-#: src/features/auth/pages/register-page.tsx:104
+#: src/features/auth/pages/login-page.tsx:79
+#: src/features/auth/pages/register-page.tsx:107
 msgid "Password"
 msgstr "Şifre"
 
@@ -1237,8 +1272,8 @@ msgstr "Dönem K/Z"
 msgid "Periodic"
 msgstr "Dönemsel"
 
-#: src/features/landing/desktop-landing.tsx:118
-#: src/features/landing/mobile-landing.tsx:128
+#: src/features/landing/desktop-landing.tsx:119
+#: src/features/landing/mobile-landing.tsx:129
 msgid "Personal portfolio and trade tracker"
 msgstr "Kişisel portföy ve işlem takip uygulaması"
 
@@ -1268,6 +1303,8 @@ msgstr "Geçici taslak metindir. Platform olgunlaştıkça ayrıntılı kullanı
 #: src/features/portfolios/pages/portfolio-page.tsx:34
 #: src/features/positions/components/positions-view/positions-view.tsx:108
 #: src/features/trades/components/trades-list/trades-list.tsx:158
+#: src/features/trades/workflows/transaction-modal/portfolio-picker.tsx:30
+#: src/features/trades/workflows/transaction-modal/portfolio-picker.tsx:42
 msgid "Portfolio"
 msgstr "Portföy"
 
@@ -1275,8 +1312,8 @@ msgstr "Portföy"
 msgid "Portfolio actions"
 msgstr "Portföy işlemleri"
 
-#: src/features/landing/desktop-landing.tsx:49
-#: src/features/landing/mobile-landing.tsx:34
+#: src/features/landing/desktop-landing.tsx:50
+#: src/features/landing/mobile-landing.tsx:35
 msgid "Portfolio and trade tracking, kept simple."
 msgstr "Sade portföy ve işlem takibi."
 
@@ -1293,8 +1330,6 @@ msgstr "Portföy bakiyesi ve dağılımı"
 msgid "Portfolio created successfully"
 msgstr "Portföy oluşturuldu"
 
-#: src/features/trades/workflows/buy-transaction-form.tsx:70
-#: src/features/trades/workflows/sell-transaction-form.tsx:78
 #: src/features/trades/workflows/undo-trade-form.tsx:45
 msgid "Portfolio ID is required to perform this action."
 msgstr "Bu işlem için bir portföy seçin."
@@ -1323,8 +1358,8 @@ msgstr "Portföy alım-satım işlemleri"
 msgid "Portfolio weight"
 msgstr "Portföy ağırlığı"
 
-#: src/app/shell/member-shell.tsx:53
-#: src/app/shell/member-shell.tsx:74
+#: src/app/shell/member-shell.tsx:55
+#: src/app/shell/member-shell.tsx:76
 #: src/features/dashboard/workflows/create-dashboard-modal.tsx:121
 #: src/features/landing/use-landing-view.ts:30
 #: src/features/portfolios/components/portfolio-selector/portfolio-selector.tsx:60
@@ -1343,7 +1378,7 @@ msgid "Position value"
 msgstr "Pozisyon Değeri"
 
 #: src/app/document-title.tsx:15
-#: src/app/shell/member-shell.tsx:77
+#: src/app/shell/member-shell.tsx:79
 #: src/features/landing/use-landing-view.ts:36
 #: src/features/portfolios/pages/portfolio-page.tsx:134
 #: src/features/positions/pages/positions-page.tsx:336
@@ -1379,12 +1414,10 @@ msgstr "Önceki yıl"
 #. Unit price of a financial instrument
 #. Unit price of a financial instrument
 #. Unit price of a financial instrument
-#. Unit price of a financial instrument
 #: src/features/positions/components/positions-view/positions-view.tsx:119
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:216
 #: src/features/trades/workflows/bulk-trade/virtual-row.tsx:70
-#: src/features/trades/workflows/buy-transaction-form.tsx:161
-#: src/features/trades/workflows/sell-transaction-form.tsx:148
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:233
 #: src/features/trades/workflows/undo-trade-form.tsx:75
 msgid "Price"
 msgstr "Fiyat"
@@ -1398,8 +1431,8 @@ msgstr "Son fiyat zamanı: {0}"
 msgid "Prices updated"
 msgstr "Fiyatlar güncellendi"
 
-#: src/features/landing/desktop-landing.tsx:141
-#: src/features/landing/mobile-landing.tsx:116
+#: src/features/landing/desktop-landing.tsx:142
+#: src/features/landing/mobile-landing.tsx:117
 msgid "Privacy"
 msgstr "Gizlilik"
 
@@ -1428,8 +1461,7 @@ msgstr "Adet / Maliyet"
 #: src/features/trades/components/trades-list/trade-details.tsx:75
 #: src/features/trades/workflows/bulk-trade/bulk-trade-modal.tsx:219
 #: src/features/trades/workflows/bulk-trade/virtual-row.tsx:88
-#: src/features/trades/workflows/buy-transaction-form.tsx:154
-#: src/features/trades/workflows/sell-transaction-form.tsx:136
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:197
 #: src/features/trades/workflows/undo-trade-form.tsx:73
 msgid "Quantity"
 msgstr "Adet"
@@ -1442,7 +1474,7 @@ msgstr "Fiyatlanan varlıkların bakiyesi"
 msgid "Quotes pending"
 msgstr "Fiyatlar bekleniyor"
 
-#: src/features/auth/pages/register-page.tsx:118
+#: src/features/auth/pages/register-page.tsx:121
 msgid "Re-enter your password"
 msgstr "Şifrenizi tekrar girin"
 
@@ -1469,8 +1501,8 @@ msgstr "Yeniden bağlan"
 msgid "Record a trade to see your balance and allocation."
 msgstr "Bakiyenizi ve varlık dağılımınızı görmek için bir işlem kaydedin."
 
-#: src/features/landing/desktop-landing.tsx:52
-#: src/features/landing/mobile-landing.tsx:37
+#: src/features/landing/desktop-landing.tsx:53
+#: src/features/landing/mobile-landing.tsx:38
 msgid "Record buy and sell trades across portfolios and currencies, follow open positions, and review realized profit and loss in one place."
 msgstr "Birden fazla portföy ve para biriminde alış-satış işlemlerinizi kaydedin, açık pozisyonlarınızı ve gerçekleşen kâr-zararınızı tek yerden takip edin."
 
@@ -1507,6 +1539,26 @@ msgstr "Gül pembesi"
 msgid "Sale"
 msgstr "Satış"
 
+#. Primary CTA button to save a buy trade for a selected asset
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:125
+msgid "Save {symbol} buy"
+msgstr "{symbol} Alımını Kaydet"
+
+#. Primary CTA button to save a sell trade for a selected asset
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:126
+msgid "Save {symbol} sell"
+msgstr "{symbol} Satışını Kaydet"
+
+#. Primary CTA button to save a buy trade before selecting an asset
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:128
+msgid "Save buy"
+msgstr "Alımı Kaydet"
+
+#. Primary CTA button to save a sell trade before selecting an asset
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:129
+msgid "Save sell"
+msgstr "Satışı Kaydet"
+
 #: src/shared/components/localized-date-time-picker.tsx:27
 msgid "Save time"
 msgstr "Saati kaydet"
@@ -1534,6 +1586,7 @@ msgid "Search stocks…"
 msgstr "Hisse ara…"
 
 #: src/features/trades/workflows/bulk-trade/asset-combobox.tsx:123
+#: src/features/trades/workflows/transaction-modal/asset-picker.tsx:138
 msgid "Search symbol or name…"
 msgstr "Sembol veya ad ara…"
 
@@ -1550,10 +1603,9 @@ msgstr "İşlemlerde ara"
 msgid "Seconds"
 msgstr "Saniye"
 
-#: src/features/trades/workflows/buy-transaction-form.tsx:140
-#: src/features/trades/workflows/sell-transaction-form.tsx:123
-msgid "Select an asset"
-msgstr "Varlık seçin"
+#: src/features/trades/workflows/transaction-modal/asset-picker.tsx:126
+msgid "Select asset"
+msgstr "Varlık seç"
 
 #: src/features/dashboard/workflows/create-dashboard-modal.tsx:113
 msgid "Select currency"
@@ -1563,9 +1615,14 @@ msgstr "Para birimi seçin"
 #. Button or filter for a sale of an asset
 #: src/features/portfolios/pages/portfolio-page.tsx:247
 #: src/features/trades/components/trades-list/trades-list.tsx:150
-#: src/features/trades/workflows/sell-transaction-form.tsx:164
 msgid "Sell"
 msgstr "Sat"
+
+#. Short trade side toggle label for a sell trade
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:172
+msgctxt "trade side toggle"
+msgid "Sell"
+msgstr "Satış"
 
 #. Short label on a sale transaction badge
 #. Short label on a sale transaction badge
@@ -1576,12 +1633,7 @@ msgstr "Sat"
 msgid "SELL"
 msgstr "SATIŞ"
 
-#. placeholder {0}: selectedStock.symbol
-#: src/features/trades/workflows/sell-transaction-form.tsx:164
-msgid "Sell {0}"
-msgstr "{0} sat"
-
-#: src/features/trades/workflows/transaction-modal.tsx:33
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:23
 msgid "Sell an asset"
 msgstr "Varlık sat"
 
@@ -1614,15 +1666,15 @@ msgid "Show this month"
 msgstr "Bu ayı göster"
 
 #: src/app/document-title.tsx:9
-#: src/features/auth/pages/login-page.tsx:81
-#: src/features/auth/pages/register-page.tsx:144
-#: src/features/landing/desktop-landing.tsx:35
-#: src/features/landing/desktop-landing.tsx:68
-#: src/features/landing/desktop-landing.tsx:130
-#: src/features/landing/mobile-landing.tsx:53
-#: src/features/landing/mobile-landing.tsx:105
-#: src/features/legal/legal-page.tsx:57
-#: src/features/legal/legal-page.tsx:174
+#: src/features/auth/pages/login-page.tsx:84
+#: src/features/auth/pages/register-page.tsx:147
+#: src/features/landing/desktop-landing.tsx:36
+#: src/features/landing/desktop-landing.tsx:69
+#: src/features/landing/desktop-landing.tsx:131
+#: src/features/landing/mobile-landing.tsx:54
+#: src/features/landing/mobile-landing.tsx:106
+#: src/features/legal/legal-page.tsx:58
+#: src/features/legal/legal-page.tsx:175
 msgid "Sign in"
 msgstr "Giriş yap"
 
@@ -1649,12 +1701,12 @@ msgid "Signing in…"
 msgstr "Giriş yapılıyor…"
 
 #: src/app/shell/member-shell.tsx:30
-#: src/features/auth/components/auth-shell.tsx:23
-#: src/features/auth/components/auth-shell.tsx:57
-#: src/features/landing/desktop-landing.tsx:16
-#: src/features/landing/mobile-landing.tsx:16
-#: src/features/legal/legal-page.tsx:44
-#: src/features/legal/legal-page.tsx:85
+#: src/features/auth/components/auth-shell.tsx:24
+#: src/features/auth/components/auth-shell.tsx:58
+#: src/features/landing/desktop-landing.tsx:17
+#: src/features/landing/mobile-landing.tsx:17
+#: src/features/legal/legal-page.tsx:45
+#: src/features/legal/legal-page.tsx:86
 msgid "Skip to main content"
 msgstr "Ana içeriğe geç"
 
@@ -1662,9 +1714,9 @@ msgstr "Ana içeriğe geç"
 msgid "Slate"
 msgstr "Arduvaz"
 
-#: src/features/trades/workflows/sell-transaction-form.tsx:61
-msgid "Sold {quantity} units of {symbol} at {price}."
-msgstr "{quantity} adet {symbol}, {price} fiyattan satıldı."
+#: src/features/trades/workflows/transaction-modal/use-transaction-form.ts:161
+msgid "Sold {quantity} units of {symbol} at {formattedPrice}."
+msgstr "{quantity} adet {symbol}, {formattedPrice} fiyattan satıldı."
 
 #: src/shared/components/error-view/error-view.tsx:38
 msgid "Something went wrong"
@@ -1684,7 +1736,7 @@ msgstr "Pozisyonları sırala"
 msgid "Status"
 msgstr "Durum"
 
-#: src/features/onboarding/pages/onboarding-page.tsx:53
+#: src/features/onboarding/pages/onboarding-page.tsx:54
 msgid "Step {step} of {totalSteps}"
 msgstr "Adım {step}/{totalSteps}"
 
@@ -1700,6 +1752,10 @@ msgstr "Tüm verileriniz silindi."
 msgid "Switch between light and dark mode, and use the interface in English or Turkish."
 msgstr "Açık ve koyu tema arasında geçiş yapın, arayüzü Türkçe veya İngilizce kullanın."
 
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:164
+msgid "Switch to buy"
+msgstr "Alıma geç"
+
 #: src/app/shell/account-menu.tsx:22
 #: src/shared/components/theme-toggle.tsx:10
 msgid "Switch to dark mode"
@@ -1710,6 +1766,10 @@ msgstr "Koyu temaya geç"
 msgid "Switch to light mode"
 msgstr "Açık temaya geç"
 
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:164
+msgid "Switch to sell"
+msgstr "Satışa geç"
+
 #: src/shared/components/not-found/not-found.tsx:23
 msgid "Take me back to home page"
 msgstr "Ana sayfaya dön"
@@ -1718,8 +1778,8 @@ msgstr "Ana sayfaya dön"
 msgid "Technical details"
 msgstr "Teknik ayrıntılar"
 
-#: src/features/landing/desktop-landing.tsx:138
-#: src/features/landing/mobile-landing.tsx:113
+#: src/features/landing/desktop-landing.tsx:139
+#: src/features/landing/mobile-landing.tsx:114
 msgid "Terms"
 msgstr "Koşullar"
 
@@ -1762,9 +1822,13 @@ msgstr "Bu işlem kaydı kalıcı olarak silinir ve geri getirilemez. Portföyü
 msgid "today"
 msgstr "bugün"
 
-#: src/features/auth/pages/login-page.tsx:74
-#: src/features/auth/pages/register-page.tsx:102
-#: src/features/auth/pages/register-page.tsx:115
+#: src/features/trades/workflows/transaction-modal/date-picker-row.tsx:21
+msgid "Today, {time}"
+msgstr "Bugün, {time}"
+
+#: src/features/auth/pages/login-page.tsx:77
+#: src/features/auth/pages/register-page.tsx:105
+#: src/features/auth/pages/register-page.tsx:118
 msgid "Toggle password visibility"
 msgstr "Şifre görünürlüğünü değiştir"
 
@@ -1775,6 +1839,10 @@ msgstr "Öne Çıkan Pozisyonlar"
 #: src/features/trades/workflows/undo-trade-form.tsx:78
 msgid "Total"
 msgstr "Toplam"
+
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:241
+msgid "Total <bold>{formattedTotal}</bold>"
+msgstr "Toplam <bold>{formattedTotal}</bold>"
 
 #: src/features/trades/components/trades-list/trade-details.tsx:77
 msgid "Total amount"
@@ -1807,8 +1875,7 @@ msgstr "{symbol} işlem detayı"
 msgid "Trade filters"
 msgstr "İşlem filtreleri"
 
-#: src/features/trades/workflows/buy-transaction-form.tsx:60
-#: src/features/trades/workflows/sell-transaction-form.tsx:61
+#: src/features/trades/workflows/transaction-modal/use-transaction-form.ts:158
 msgid "Trade recorded."
 msgstr "İşlem kaydedildi."
 
@@ -1827,8 +1894,8 @@ msgstr "{symbol} işlemi geri alındı."
 
 #: src/app/document-title.tsx:16
 #: src/app/shell/bottom-nav.tsx:28
-#: src/app/shell/member-shell.tsx:53
-#: src/app/shell/member-shell.tsx:80
+#: src/app/shell/member-shell.tsx:55
+#: src/app/shell/member-shell.tsx:82
 #: src/features/landing/use-landing-view.ts:42
 #: src/features/portfolios/pages/portfolio-page.tsx:140
 #: src/features/trades/components/trades-list/trades-list.tsx:85
@@ -1907,6 +1974,11 @@ msgstr "<bold>{0}</bold> işlemini geri al"
 msgid "Unit price"
 msgstr "Birim fiyat"
 
+#. Unit label next to the giant quantity input
+#: src/features/trades/workflows/transaction-modal/transaction-modal.tsx:204
+msgid "units"
+msgstr "adet"
+
 #: src/shared/components/error-view/error-view.tsx:86
 msgid "Unknown error"
 msgstr "Bilinmeyen hata"
@@ -1971,8 +2043,8 @@ msgstr "Ağırlıklar yalnızca {currency} cinsinden varlıkları kapsar."
 msgid "Weights include estimated values."
 msgstr "Ağırlıklara tahmini değerler dahildir."
 
-#: src/features/landing/desktop-landing.tsx:77
-#: src/features/landing/mobile-landing.tsx:62
+#: src/features/landing/desktop-landing.tsx:78
+#: src/features/landing/mobile-landing.tsx:63
 msgid "What’s included"
 msgstr "Neler var"
 
@@ -1983,6 +2055,10 @@ msgstr "Kayıt olduğunuzda veya Google ile giriş yaptığınızda hesabınız�
 #: src/features/dashboard/components/dashboard-summary.tsx:119
 msgid "Win rate"
 msgstr "Kazanma Oranı"
+
+#: src/features/trades/workflows/transaction-modal/date-picker-row.tsx:22
+msgid "Yesterday, {time}"
+msgstr "Dün, {time}"
 
 #: src/features/legal/legal-content.ts:38
 msgid "You can access the platform with an email and password or by signing in with Google, which creates an account automatically if you do not have one yet. You are responsible for keeping your credentials secure."
