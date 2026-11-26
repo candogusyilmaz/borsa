@@ -68,7 +68,7 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
     '--app-ease': 'cubic-bezier(0.2, 0.8, 0.2, 1)',
     '--app-motion-slow': '200ms',
     '--app-content-width': '74rem',
-    '--mobile-bottom-nav-height': '4rem'
+    '--mobile-bottom-nav-height': '3.75rem'
   },
   light: scheme({
     body: '#F3F2EE',

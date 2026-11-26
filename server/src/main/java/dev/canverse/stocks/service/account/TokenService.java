@@ -65,9 +65,17 @@ public class TokenService {
 
         var token = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
 
+        return buildRefreshTokenCookie(token, REFRESH_TOKEN_EXPIRATION_IN_SECONDS);
+    }
+
+    public String clearRefreshTokenCookie() {
+        return buildRefreshTokenCookie("", 0);
+    }
+
+    private static String buildRefreshTokenCookie(String token, long maxAgeSeconds) {
         return ResponseCookie.from("refresh-token", token)
                 .path("/")
-                .maxAge(REFRESH_TOKEN_EXPIRATION_IN_SECONDS)
+                .maxAge(maxAgeSeconds)
                 .httpOnly(true)
                 .secure(true)
                 .sameSite("none")

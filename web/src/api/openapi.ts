@@ -7,7 +7,13 @@ import { isTokenExpiringSoon, sessionStore } from './token';
 
 const api = import.meta.env.VITE_API_BASE_URL as string | undefined;
 
-const UNPROTECTED_ROUTES: (keyof paths)[] = ['/api/auth/token', '/api/auth/google', '/api/auth/refresh-token', '/api/auth/register'];
+const UNPROTECTED_ROUTES: (keyof paths)[] = [
+  '/api/auth/token',
+  '/api/auth/google',
+  '/api/auth/refresh-token',
+  '/api/auth/logout',
+  '/api/auth/register'
+];
 
 function isUnprotectedRequest(url: string): boolean {
   const { pathname } = new URL(url, window.location.origin);

@@ -204,6 +204,36 @@ class TokenRefreshTests {
                 .isInstanceOf(BadJwtException.class);
     }
 
+    @Test
+    void logoutReturnsNoContentAndClearsRefreshTokenCookie() throws Exception {
+        var clearCookie =
+                "refresh-token=; Path=/; Max-Age=0; Expires=Thu, 1 Jan 1970 00:00:00 GMT; Secure; HttpOnly; SameSite=none";
+        when(tokenService.clearRefreshTokenCookie()).thenReturn(clearCookie);
+
+        mockMvc.perform(post("/api/auth/logout"))
+                .andExpect(status().isNoContent())
+                .andExpect(header().string(HttpHeaders.SET_COOKIE, clearCookie));
+    }
+
+    @Test
+    void clearRefreshTokenCookiePreservesCookieAttributesWithZeroMaxAge() {
+        var service =
+                new TokenService(
+                        mock(UserDetailsService.class),
+                        mock(JwtEncoder.class),
+                        mock(JwtDecoder.class));
+
+        var cookie = service.clearRefreshTokenCookie();
+
+        assertThat(cookie)
+                .startsWith("refresh-token=;")
+                .contains("Path=/")
+                .contains("Max-Age=0")
+                .contains("HttpOnly")
+                .contains("Secure")
+                .contains("SameSite=none");
+    }
+
     private static Map<String, Object> toMap(ILoggingEvent event) {
         if (event.getKeyValuePairs() == null) {
             return Map.of();

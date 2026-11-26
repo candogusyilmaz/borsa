@@ -290,6 +290,10 @@ msgstr "Awaiting price"
 msgid "Back"
 msgstr "Back"
 
+#: src/shared/feedback/alerts.tsx:45
+msgid "Back online"
+msgstr "Back online"
+
 #: src/features/legal/legal-page.tsx:123
 msgid "Back to home"
 msgstr "Back to home"
@@ -437,7 +441,7 @@ msgstr "Close position details"
 msgid "Coming soon"
 msgstr "Coming soon"
 
-#: src/shared/feedback/alerts.tsx:9
+#: src/shared/feedback/alerts.tsx:12
 msgid "Completed successfully"
 msgstr "Completed successfully"
 
@@ -1716,6 +1720,10 @@ msgstr "Slate"
 msgid "Sold {quantity} units of {symbol} at {formattedPrice}."
 msgstr "Sold {quantity} units of {symbol} at {formattedPrice}."
 
+#: src/shared/feedback/alerts.tsx:33
+msgid "Some actions require an internet connection."
+msgstr "Some actions require an internet connection."
+
 #: src/shared/components/error-view/error-view.tsx:38
 msgid "Something went wrong"
 msgstr "Something went wrong"
@@ -2058,6 +2066,10 @@ msgstr "Win rate"
 msgid "Yesterday, {time}"
 msgstr "Yesterday, {time}"
 
+#: src/shared/feedback/alerts.tsx:32
+msgid "You are offline"
+msgstr "You are offline"
+
 #: src/features/legal/legal-content.ts:38
 msgid "You can access the platform with an email and password or by signing in with Google, which creates an account automatically if you do not have one yet. You are responsible for keeping your credentials secure."
 msgstr "You can access the platform with an email and password or by signing in with Google, which creates an account automatically if you do not have one yet. You are responsible for keeping your credentials secure."
@@ -2069,3 +2081,7 @@ msgstr "You can clear your portfolio and trade records at any time from the acco
 #: src/features/legal/legal-content.ts:66
 msgid "Your account details and records are used strictly to authenticate your session, remember interface preferences such as theme and language, and display your portfolio calculations back to you."
 msgstr "Your account details and records are used strictly to authenticate your session, remember interface preferences such as theme and language, and display your portfolio calculations back to you."
+
+#: src/shared/feedback/alerts.tsx:46
+msgid "Your connection has been restored."
+msgstr "Your connection has been restored."

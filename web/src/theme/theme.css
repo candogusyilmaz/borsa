@@ -225,6 +225,10 @@ input[inputmode='numeric'] {
   scrollbar-width: none;
 }
 
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 .finance-badge {
   display: inline-flex;
   align-items: center;

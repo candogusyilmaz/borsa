@@ -5,6 +5,7 @@ import type { ReactNode } from 'react';
 import { AuthenticationProvider, useAuthentication } from '~/features/auth/authentication-context';
 import { LocaleProvider, useLocale } from '~/shared/i18n/locale-context';
 import { AppThemeProvider } from '~/theme';
+import { NetworkStatusNotifier } from './network-status-notifier';
 import { queryClient } from './query-client';
 
 function UserLocaleProvider({ children }: { children: ReactNode }) {
@@ -28,6 +29,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
         <AppThemeProvider>
           <UserLocaleProvider>
             <Notifications position="top-right" />
+            <NetworkStatusNotifier />
             <GoogleServices>{children}</GoogleServices>
           </UserLocaleProvider>
         </AppThemeProvider>

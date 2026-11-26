@@ -57,7 +57,13 @@ export function AuthenticationProvider({ children }: Readonly<AuthProviderProps>
   }, []);
 
   const logout = useCallback(async () => {
-    sessionStore.clearSession();
+    try {
+      await client.POST('/api/auth/logout');
+    } catch {
+      // Clear local session even if the logout request fails (e.g. offline).
+    } finally {
+      sessionStore.clearSession();
+    }
   }, []);
 
   const login = useMutation({

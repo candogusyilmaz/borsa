@@ -60,6 +60,8 @@ public class SecurityConfiguration {
                                 .permitAll()
                                 .requestMatchers("/api/auth/refresh-token")
                                 .permitAll()
+                                .requestMatchers("/api/auth/logout")
+                                .permitAll()
                                 .requestMatchers("/v3/api-docs")
                                 .permitAll()
                                 .requestMatchers("/swagger-ui/**")

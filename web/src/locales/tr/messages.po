@@ -290,6 +290,10 @@ msgstr "Fiyat bekleniyor"
 msgid "Back"
 msgstr "Geri"
 
+#: src/shared/feedback/alerts.tsx:45
+msgid "Back online"
+msgstr "Tekrar çevrimiçisiniz"
+
 #: src/features/legal/legal-page.tsx:123
 msgid "Back to home"
 msgstr "Ana sayfaya dön"
@@ -437,7 +441,7 @@ msgstr "Pozisyon detayını kapat"
 msgid "Coming soon"
 msgstr "Yakında"
 
-#: src/shared/feedback/alerts.tsx:9
+#: src/shared/feedback/alerts.tsx:12
 msgid "Completed successfully"
 msgstr "İşlem tamamlandı"
 
@@ -1716,6 +1720,10 @@ msgstr "Arduvaz"
 msgid "Sold {quantity} units of {symbol} at {formattedPrice}."
 msgstr "{quantity} adet {symbol}, {formattedPrice} fiyattan satıldı."
 
+#: src/shared/feedback/alerts.tsx:33
+msgid "Some actions require an internet connection."
+msgstr "Bazı işlemler için internet bağlantısı gerekiyor."
+
 #: src/shared/components/error-view/error-view.tsx:38
 msgid "Something went wrong"
 msgstr "Bir şeyler ters gitti"
@@ -2058,6 +2066,10 @@ msgstr "Kazanma Oranı"
 msgid "Yesterday, {time}"
 msgstr "Dün, {time}"
 
+#: src/shared/feedback/alerts.tsx:32
+msgid "You are offline"
+msgstr "Çevrimdışısınız"
+
 #: src/features/legal/legal-content.ts:38
 msgid "You can access the platform with an email and password or by signing in with Google, which creates an account automatically if you do not have one yet. You are responsible for keeping your credentials secure."
 msgstr "Platforma e-posta ve şifreyle ya da henüz hesabınız yoksa otomatik olarak hesap oluşturan Google girişiyle erişebilirsiniz. Giriş bilgilerinizin güvenliğinden siz sorumlusunuz."
@@ -2069,3 +2081,7 @@ msgstr "Portföy ve işlem kayıtlarınızı hesap menüsünden dilediğiniz zam
 #: src/features/legal/legal-content.ts:66
 msgid "Your account details and records are used strictly to authenticate your session, remember interface preferences such as theme and language, and display your portfolio calculations back to you."
 msgstr "Hesap bilgileriniz ve kayıtlarınız yalnızca oturumunuzu doğrulamak, tema ve dil gibi arayüz tercihlerinizi hatırlamak ve portföy hesaplamalarınızı size göstermek için kullanılır."
+
+#: src/shared/feedback/alerts.tsx:46
+msgid "Your connection has been restored."
+msgstr "İnternet bağlantınız geri geldi."

@@ -220,16 +220,18 @@
   }
 
   .header {
-    padding-top: calc(env(safe-area-inset-top) + 0.625rem); /* +10px nefes payı */
+    padding-top: calc(env(safe-area-inset-top) + 0.625rem);
   }
-  
+
   .headerInner {
     min-height: 3.5rem;
     justify-content: space-between;
   }
 
   .main {
-    padding-bottom: calc(var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom) + 1.5rem);
+    padding-bottom: calc(
+      var(--mobile-bottom-nav-height) + max(0px, calc(env(safe-area-inset-bottom) - 1rem)) + 1.5rem
+    );
   }
 
   .shell[data-positions] .main {
