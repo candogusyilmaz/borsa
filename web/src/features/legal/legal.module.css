@@ -267,7 +267,7 @@
   text-underline-offset: 3px;
 }
 
-@media (max-width: 48em) {
+@media (max-width: $mantine-breakpoint-sm) {
   .page {
     --legal-gutter: 1.25rem;
   }

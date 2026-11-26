@@ -168,7 +168,7 @@
 
 .skipLink {
   position: fixed;
-  z-index: 1000;
+  z-index: var(--app-layer-skip-link);
   inset: 0.5rem auto auto 0.5rem;
   padding: 0.5rem 0.75rem;
   background: var(--mantine-color-default);
@@ -183,7 +183,7 @@
   transform: none;
 }
 
-@media (width > 48em) {
+@media (width > $mantine-breakpoint-sm) {
   .shell {
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
@@ -197,7 +197,7 @@
 
   .header {
     position: relative;
-    z-index: 90;
+    z-index: var(--app-layer-desktop-header);
     overflow: hidden;
     background: var(--mantine-color-body);
   }
@@ -213,14 +213,14 @@
   }
 }
 
-@media (max-width: 48em) {
+@media (max-width: $mantine-breakpoint-sm) {
   .statusBarBackdrop {
     display: block;
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    z-index: 95;
+    z-index: var(--app-layer-mobile-status-bar);
     height: max(env(safe-area-inset-top), 6px);
     background-color: var(--mantine-color-default);
     pointer-events: none;
@@ -248,9 +248,7 @@
   }
 
   .main {
-    padding-bottom: calc(
-      var(--mobile-bottom-nav-height) + max(0px, calc(env(safe-area-inset-bottom) - 1rem)) + 1.5rem
-    );
+    padding-bottom: calc(var(--app-bottom-nav-offset) + 1.5rem);
   }
 
   .shell[data-positions] .main {

@@ -3,6 +3,7 @@ import tanstackRouter from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
+import { THEME_PALETTE } from "./src/theme/tokens";
 
 const ReactCompilerConfig = {
   /* ... */
@@ -25,8 +26,8 @@ export default defineConfig({
         name: "Canverse",
         short_name: "Canverse",
         description: "Personal portfolio and trade tracking across multiple portfolios and currencies.",
-        theme_color: "#0D0D0F",
-        background_color: "#0D0D0F",
+        theme_color: THEME_PALETTE.dark.canvas,
+        background_color: THEME_PALETTE.dark.canvas,
         display: "standalone",
         orientation: "portrait",
         scope: "/",

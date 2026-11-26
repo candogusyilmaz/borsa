@@ -354,7 +354,7 @@
   white-space: nowrap;
 }
 
-@media (max-width: 48em) {
+@media (max-width: $mantine-breakpoint-sm) {
   .panel.panel {
     height: auto;
     max-height: min(85dvh, calc(100dvh - env(safe-area-inset-top)));

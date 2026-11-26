@@ -2,6 +2,7 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import { Combobox, useCombobox } from '@mantine/core';
 import { IconCheck, IconChevronDown } from '@tabler/icons-react';
 import clsx from 'clsx';
+import { APP_LAYERS } from '~/theme/tokens';
 import styles from './transaction-modal.module.css';
 
 export interface PortfolioItem {
@@ -41,7 +42,7 @@ export function PortfolioPickerRow({
       width={240}
       position="top"
       offset={6}
-      zIndex={350}
+      zIndex={APP_LAYERS.dialogPicker}
       middlewares={{ flip: true, shift: { padding: 12 } }}
       classNames={{
         dropdown: clsx(styles.scope, styles.dropdown, styles.portfolioDropdown),

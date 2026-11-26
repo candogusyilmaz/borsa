@@ -116,7 +116,7 @@
   }
 }
 
-@media (max-width: 48em) {
+@media (max-width: $mantine-breakpoint-sm) {
   .table,
   .table tbody,
   .virtualSpacer,

@@ -1,4 +1,5 @@
 html {
+  --app-bottom-nav-offset: calc(var(--mobile-bottom-nav-height) + max(0px, calc(env(safe-area-inset-bottom) - 1rem)));
   --app-scrollbar-size: 14px;
   --app-scrollbar-inset: 4px;
   --app-scrollbar-thumb: color-mix(in srgb, var(--mantine-color-dimmed) 88%, var(--mantine-color-body));
@@ -141,7 +142,6 @@ b {
   letter-spacing: -0.025em;
 }
 
-.app-numeric,
 input[type='number'],
 input[inputmode='decimal'],
 input[inputmode='numeric'] {
@@ -221,14 +221,6 @@ input[inputmode='numeric'] {
   color: var(--mantine-color-text);
 }
 
-.no-scrollbar {
-  scrollbar-width: none;
-}
-
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
 .finance-badge {
   display: inline-flex;
   align-items: center;
@@ -278,7 +270,7 @@ input[inputmode='numeric'] {
   }
 }
 
-@media (max-width: 48em) {
+@media (max-width: $mantine-breakpoint-sm) {
   .member-page-title {
     position: absolute;
     width: 1px;

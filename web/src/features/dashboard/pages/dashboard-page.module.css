@@ -520,7 +520,7 @@
   font-weight: 600;
 }
 
-@media (width > 48em) and (width < 58em) {
+@media (width > $mantine-breakpoint-sm) and (width < 58em) {
   .summary {
     grid-template-columns: minmax(0, 1.55fr) repeat(3, minmax(0, 1fr));
   }
@@ -530,7 +530,7 @@
   }
 }
 
-@media (max-width: 48em) {
+@media (max-width: $mantine-breakpoint-sm) {
   .page {
     gap: 0;
   }

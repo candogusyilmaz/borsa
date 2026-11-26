@@ -22,7 +22,7 @@
 
 .public {
   position: absolute;
-  z-index: 20;
+  z-index: var(--app-layer-language-selector);
   inset-block-start: max(0.75rem, env(safe-area-inset-top));
   inset-inline-end: max(0.75rem, env(safe-area-inset-right));
 }

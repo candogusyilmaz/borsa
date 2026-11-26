@@ -371,7 +371,7 @@
   color: var(--sort-text);
 }
 
-@media (max-width: 48em) {
+@media (max-width: $mantine-breakpoint-sm) {
   .page > .summary {
     padding-block: 0.5rem 1.25rem;
   }

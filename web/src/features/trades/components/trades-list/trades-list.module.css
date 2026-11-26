@@ -359,7 +359,7 @@
   background: var(--mantine-color-default-hover);
 }
 
-@media (max-width: 48em) {
+@media (max-width: $mantine-breakpoint-sm) {
   .toolbar,
   .quickFilters {
     width: 100%;
@@ -507,7 +507,7 @@
   text-align: center;
 }
 
-@media (max-width: 48em) {
+@media (max-width: $mantine-breakpoint-sm) {
   .filters {
     display: grid;
     align-items: stretch;

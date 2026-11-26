@@ -608,8 +608,8 @@
 
 @media (pointer: coarse) {
   .assetSearch.assetSearch {
-    min-height: 40px;
-    height: 40px;
+    min-height: 44px;
+    height: 44px;
     font-size: 1rem;
   }
 
@@ -623,8 +623,8 @@
   }
 
   .calTimeInput :global(.mantine-Input-input) {
-    min-height: 36px;
-    height: 36px;
+    min-height: 44px;
+    height: 44px;
     font-size: 1rem;
   }
 

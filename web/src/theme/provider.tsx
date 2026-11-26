@@ -2,16 +2,12 @@ import { localStorageColorSchemeManager, MantineProvider, useComputedColorScheme
 import { type ReactNode, useEffect } from 'react';
 import { cssVariablesResolver } from './css-variables';
 import { theme } from './theme';
+import { THEME_PALETTE } from './tokens';
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
 import '@mantine/charts/styles.css';
 import '@mantine/notifications/styles.css';
 import './theme.css';
-
-const THEME_COLORS = {
-  light: '#F3F2EE',
-  dark: '#0D0D0F'
-} as const;
 
 export const colorSchemeManager = localStorageColorSchemeManager({
   key: 'mantine-color-scheme-value'
@@ -21,7 +17,7 @@ function ThemeColorSync() {
   const colorScheme = useComputedColorScheme('light');
 
   useEffect(() => {
-    const color = THEME_COLORS[colorScheme];
+    const color = THEME_PALETTE[colorScheme].canvas;
     const metas = document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]');
 
     if (metas.length === 0) {

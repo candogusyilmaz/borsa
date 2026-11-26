@@ -49,7 +49,7 @@
   white-space: nowrap;
 }
 
-@media (max-width: 48em), (pointer: coarse) {
+@media (max-width: $mantine-breakpoint-sm), (pointer: coarse) {
   .button {
     min-block-size: 44px;
   }

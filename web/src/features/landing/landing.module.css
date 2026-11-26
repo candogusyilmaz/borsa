@@ -358,7 +358,7 @@
   margin: 0;
 }
 
-@media (max-width: 48em) {
+@media (max-width: $mantine-breakpoint-sm) {
   .page {
     --public-gutter: 1.25rem;
   }

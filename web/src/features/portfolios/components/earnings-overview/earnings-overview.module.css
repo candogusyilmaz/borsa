@@ -141,7 +141,7 @@
   font-weight: 500;
 }
 
-@media (max-width: 48em) {
+@media (max-width: $mantine-breakpoint-sm) {
   .controls {
     margin-inline-start: 0;
   }

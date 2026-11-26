@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import dayjs from 'dayjs';
 import { LocalizedDateTimePicker } from '~/shared/components/localized-date-time-picker';
 import { useFormat } from '~/shared/format/use-format';
+import { APP_LAYERS } from '~/theme/tokens';
 import styles from './transaction-modal.module.css';
 
 export function DatePickerRow({ value, onChange }: { value: Date; onChange: (date: Date) => void }) {
@@ -50,7 +51,7 @@ export function DatePickerRow({ value, onChange }: { value: Date; onChange: (dat
         rightSectionPointerEvents="none"
         popoverProps={{
           withinPortal: true,
-          zIndex: 350,
+          zIndex: APP_LAYERS.dialogPicker,
           position: 'top-end',
           offset: 6,
           middlewares: { flip: true, shift: { padding: 12 } },

@@ -6,6 +6,7 @@ import clsx from 'clsx';
 import type { ReactNode } from 'react';
 import { useMemo, useState } from 'react';
 import { useFormat } from '~/shared/format/use-format';
+import { APP_LAYERS } from '~/theme/tokens';
 import type { TransactionType } from './store';
 import styles from './transaction-modal.module.css';
 
@@ -100,7 +101,7 @@ export function AssetPicker({
       width={288}
       position="bottom"
       offset={6}
-      zIndex={350}
+      zIndex={APP_LAYERS.dialogPicker}
       middlewares={{ flip: true, shift: { padding: 12 } }}
       classNames={{
         dropdown: clsx(styles.scope, styles.dropdown, styles.assetDropdown),
