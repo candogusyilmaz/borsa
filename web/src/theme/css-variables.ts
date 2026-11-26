@@ -22,7 +22,9 @@ const scheme = (colors: {
   financeOpacity: number;
   profit: string;
   loss: string;
-  overlay: string;
+  overlayScrim: string;
+  overlayShadow: string;
+  popoverShadow: string;
 }) => ({
   '--mantine-color-body': colors.body,
   '--mantine-color-default': colors.surface,
@@ -52,9 +54,14 @@ const scheme = (colors: {
   '--mantine-color-loss-light-color': colors.loss,
   '--app-on-primary': colors.onPrimary,
   '--app-accent': colors.accent,
+  '--app-canvas': colors.body,
+  '--app-surface': colors.surface,
   '--app-surface-elevated': colors.elevated,
+  '--app-surface-hover': colors.hover,
   '--app-surface-secondary': colors.secondary,
   '--app-surface-selected': colors.secondary,
+  '--app-text': colors.text,
+  '--app-text-muted': colors.dimmed,
   '--app-chart-line': colors.chartLine,
   '--app-weight-fill': colors.weightFill,
   '--app-border-subtle': colors.border,
@@ -63,7 +70,9 @@ const scheme = (colors: {
   '--app-finance-loss': colors.loss,
   '--app-finance-profit-bg': `color-mix(in srgb, ${colors.profit} ${colors.financeOpacity}%, transparent)`,
   '--app-finance-loss-bg': `color-mix(in srgb, ${colors.loss} ${colors.financeOpacity}%, transparent)`,
-  '--app-overlay': colors.overlay
+  '--app-overlay': colors.overlayScrim,
+  '--app-shadow-overlay': colors.overlayShadow,
+  '--app-shadow-popover': colors.popoverShadow
 });
 
 export const cssVariablesResolver: CSSVariablesResolver = () => ({
@@ -74,7 +83,6 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
     '--mobile-bottom-nav-height': '3.75rem',
     '--app-layer-language-selector': String(APP_LAYERS.languageSelector),
     '--app-layer-desktop-header': String(APP_LAYERS.desktopHeader),
-    '--app-layer-mobile-status-bar': String(APP_LAYERS.mobileStatusBar),
     '--app-layer-bottom-nav': String(APP_LAYERS.bottomNav),
     '--app-layer-skip-link': String(APP_LAYERS.skipLink)
   },
@@ -97,13 +105,15 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
     financeOpacity: 10,
     profit: light.profit,
     loss: light.loss,
-    overlay: 'rgb(28 27 24 / 0.42)'
+    overlayScrim: light.overlayScrim,
+    overlayShadow: light.overlayShadow,
+    popoverShadow: light.popoverShadow
   }),
   dark: scheme({
     body: dark.canvas,
     surface: dark.surface,
     elevated: dark.raised,
-    secondary: '#1C1C21',
+    secondary: dark.secondary,
     hover: dark.raised,
     border: dark.border,
     strong: dark.strongBorder,
@@ -118,6 +128,8 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
     financeOpacity: 12,
     profit: dark.profit,
     loss: dark.loss,
-    overlay: 'rgb(0 0 0 / 0.62)'
+    overlayScrim: dark.overlayScrim,
+    overlayShadow: dark.overlayShadow,
+    popoverShadow: dark.popoverShadow
   })
 });

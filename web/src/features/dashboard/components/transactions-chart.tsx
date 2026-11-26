@@ -2,9 +2,9 @@ import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { Button, SegmentedControl, Skeleton, VisuallyHidden } from '@mantine/core';
 import { useId, useState } from 'react';
 import { Area, Bar, CartesianGrid, ComposedChart, Rectangle, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { getFinanceTone } from '~/shared/format/finance-tone';
 import { useFormat } from '~/shared/format/use-format';
 import type { ChartRange, PerformanceGrouping, PerformancePoint } from '../dashboard-placeholders';
-import { tone } from '../dashboard-presentation';
 import type { DashboardModel } from '../hooks/use-dashboard-view';
 import styles from '../pages/dashboard-page.module.css';
 
@@ -44,7 +44,7 @@ export function TransactionsChart({ model, currency }: { model: DashboardModel; 
           </div>
           {trades.isSuccess && chart.count > 0 && (
             <output className={styles.chartSummary}>
-              <strong className={styles.chartTotal} data-tone={tone(chart.cumulative)}>
+              <strong className={styles.chartTotal} data-tone={getFinanceTone(chart.cumulative)}>
                 {cumulative}
               </strong>
               {rangeLabel}
@@ -251,13 +251,13 @@ function PerformanceTooltip({ point, currency, grouping }: { point: PerformanceP
         <span>
           <Trans>Period P&L</Trans>
         </span>
-        <strong data-tone={tone(point.periodPnl)}>{format.toCurrency(point.periodPnl, false, currency)}</strong>
+        <strong data-tone={getFinanceTone(point.periodPnl)}>{format.toCurrency(point.periodPnl, false, currency)}</strong>
       </span>
       <span className={styles.tooltipRow}>
         <span>
           <Trans>Cumulative P&L</Trans>
         </span>
-        <strong data-tone={tone(point.cumulative)}>{format.toCurrency(point.cumulative, false, currency)}</strong>
+        <strong data-tone={getFinanceTone(point.cumulative)}>{format.toCurrency(point.cumulative, false, currency)}</strong>
       </span>
       <small className={styles.tooltipCount}>
         <Plural value={point.tradeCount} one="# transaction" other="# transactions" />

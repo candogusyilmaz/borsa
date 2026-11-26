@@ -1,0 +1,31 @@
+.value {
+  font-variant-numeric: tabular-nums;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: var(--finance-badge-padding, 2px 7px);
+  border-radius: var(--finance-badge-radius, 6px);
+  background: var(--app-surface-secondary);
+  color: var(--app-text-muted);
+  font-size: var(--finance-badge-font-size, 0.71875rem);
+  font-weight: 500;
+}
+
+.value[data-tone='profit'] {
+  color: var(--app-finance-profit);
+}
+
+.value[data-tone='loss'] {
+  color: var(--app-finance-loss);
+}
+
+.badge[data-tone='profit'] {
+  background: var(--app-finance-profit-bg);
+}
+
+.badge[data-tone='loss'] {
+  background: var(--app-finance-loss-bg);
+}

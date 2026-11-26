@@ -6,10 +6,10 @@ import { useState } from 'react';
 import { CreatePortfolioModal } from '~/features/portfolios/workflows/create-portfolio-button';
 import { PositionInspector } from '~/features/positions/components/positions-view/position-inspector';
 import { TickerAvatar } from '~/shared/components/ticker-avatar/ticker-avatar';
+import { getFinanceTone } from '~/shared/format/finance-tone';
 import { useFormat } from '~/shared/format/use-format';
 import { useIsMobile } from '~/shared/hooks/use-is-mobile';
 import type { DashboardDetails } from '../dashboard-placeholders';
-import { tone } from '../dashboard-presentation';
 import styles from '../pages/dashboard-page.module.css';
 
 export function DashboardPortfolios({
@@ -126,7 +126,7 @@ export function DashboardPortfolios({
                             </span>
                           )}
                         </strong>
-                        <small data-tone={tone(row.dailyAmount)} title={dailyAmount}>
+                        <small data-tone={getFinanceTone(row.dailyAmount)} title={dailyAmount}>
                           {row.dailyPercentage == null
                             ? dailyAmount
                             : format.toLocalePercentage(row.dailyPercentage, 2, { signDisplay: 'exceptZero' })}
@@ -198,11 +198,11 @@ function PortfolioRow({ row, currency, compact }: { row: DashboardDetails['portf
             </small>
           )}
           {summary?.returnPercentage != null ? (
-            <small data-tone={tone(summary.returnPercentage)} title={t`Unrealized return on open positions`}>
+            <small data-tone={getFinanceTone(summary.returnPercentage)} title={t`Unrealized return on open positions`}>
               {format.toLocalePercentage(summary.returnPercentage, 2, { signDisplay: 'exceptZero' })}
             </small>
           ) : (
-            <small data-tone={tone(realized)}>
+            <small data-tone={getFinanceTone(realized)}>
               <Trans>{realizedAmount} realized</Trans>
             </small>
           )}

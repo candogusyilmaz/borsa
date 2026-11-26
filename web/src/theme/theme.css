@@ -221,29 +221,6 @@ input[inputmode='numeric'] {
   color: var(--mantine-color-text);
 }
 
-.finance-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 2px 7px;
-  border-radius: 6px;
-  background: var(--app-surface-secondary);
-  color: var(--mantine-color-dimmed);
-  font-size: 0.71875rem;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-}
-
-.finance-badge[data-tone='profit'] {
-  background: var(--app-finance-profit-bg);
-  color: var(--app-finance-profit);
-}
-
-.finance-badge[data-tone='loss'] {
-  background: var(--app-finance-loss-bg);
-  color: var(--app-finance-loss);
-}
-
 @keyframes app-page-enter {
   from {
     opacity: 0;

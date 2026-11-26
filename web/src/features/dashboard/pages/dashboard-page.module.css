@@ -58,7 +58,7 @@
 .titleButton:hover,
 .picker button:hover,
 .detailRow:hover {
-  background: var(--mantine-color-default-hover);
+  background: var(--app-surface-hover);
 }
 
 .market,
@@ -159,9 +159,9 @@
   font-size: 0.75rem;
 }
 
-.balanceChange :global(.finance-badge) {
-  padding-inline: 0.6rem;
-  border-radius: 999px;
+.balanceBadge {
+  --finance-badge-padding: 2px 0.6rem;
+  --finance-badge-radius: 999px;
 }
 
 .balanceReturn strong,
@@ -295,7 +295,7 @@
 
 .chartMode :global(.mantine-SegmentedControl-indicator) {
   border-radius: 6px;
-  background: var(--mantine-color-default);
+  background: var(--app-surface);
 }
 
 .chartSurface {
@@ -303,7 +303,7 @@
   padding: 1.25rem;
   border: 1px solid var(--app-border-subtle);
   border-radius: 16px;
-  background: var(--mantine-color-default);
+  background: var(--app-surface);
 }
 
 .chart {
@@ -328,7 +328,7 @@
   padding: 0.625rem 0.75rem;
   border: 1px solid var(--app-border-subtle);
   border-radius: 8px;
-  background: var(--mantine-color-default);
+  background: var(--app-surface-elevated);
   font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
 }

@@ -4,8 +4,11 @@ import { useDisclosure } from '@mantine/hooks';
 import { IconArrowBackUp, IconChevronLeft, IconChevronRight, IconFilter, IconSearch } from '@tabler/icons-react';
 import { useRef, useState } from 'react';
 import { useUndoTradeModalStore } from '~/features/trades/workflows/undo-trade-modal';
+import { FinanceBadge } from '~/shared/components/finance-badge/finance-badge';
+import { InlineState } from '~/shared/components/inline-state/inline-state';
 import { LocalizedPagination } from '~/shared/components/localized-pagination';
 import { ResponsiveOverlay } from '~/shared/components/responsive-overlay/responsive-overlay';
+import { getFinanceTone } from '~/shared/format/finance-tone';
 import { useFormat } from '~/shared/format/use-format';
 import { useIsMobile } from '~/shared/hooks/use-is-mobile';
 import { TradeBadge, TradeDetails } from './trade-details';
@@ -253,18 +256,20 @@ function TradeRowsState({ model, children }: { model: TradesListModel; children:
     );
   if (model.result.isError) {
     return (
-      <div className={styles.state}>
-        <p role="alert">
-          <Trans>Could not load trades.</Trans>
-        </p>
-        <Button variant="default" onClick={() => void model.result.refetch()}>
-          <Trans>Try again</Trans>
-        </Button>
-      </div>
+      <InlineState
+        className={styles.state}
+        error
+        action={
+          <Button variant="default" onClick={() => void model.result.refetch()}>
+            <Trans>Try again</Trans>
+          </Button>
+        }>
+        <Trans>Could not load trades.</Trans>
+      </InlineState>
     );
   }
   if (!model.visible.length)
-    return <p className={styles.state}>{model.activeCount ? t`No trades match these filters.` : t`No trades yet.`}</p>;
+    return <InlineState className={styles.state}>{model.activeCount ? t`No trades match these filters.` : t`No trades yet.`}</InlineState>;
 
   return children;
 }
@@ -404,8 +409,7 @@ function TradeListRow({
           maximumFractionDigits: 2,
           signDisplay: 'exceptZero'
         });
-  const direction = realizedProfit ?? returnRate ?? 0;
-  const tone = direction > 0 ? 'profit' : direction < 0 ? 'loss' : undefined;
+  const tone = getFinanceTone(realizedProfit ?? returnRate);
 
   return (
     <li className={styles.row} data-interactive={!!onOpen || undefined}>
@@ -440,9 +444,9 @@ function TradeListRow({
       <div className={styles.amount}>
         <strong title={exactTotal}>{compactTotal}</strong>
         {(realized != null || percentage != null) && (
-          <small className={styles.profit} data-tone={tone}>
+          <FinanceBadge as="small" variant="text" tone={tone}>
             {compact ? (percentage ?? realized) : realized == null ? percentage : `${realized}${percentage ? ` (${percentage})` : ''}`}
-          </small>
+          </FinanceBadge>
         )}
         {!compact && type === 'BUY' && compactTotal !== exactTotal && <small>{exactTotal}</small>}
       </div>

@@ -4,6 +4,9 @@ import { useState } from 'react';
 import type { usePositions } from '~/features/positions';
 import type { Position } from '~/features/positions/hooks/use-positions-view';
 import { getPositionHighlightProps, type PositionHighlight } from '~/features/positions/position-presentation';
+import { FinanceBadge } from '~/shared/components/finance-badge/finance-badge';
+import { InlineState } from '~/shared/components/inline-state/inline-state';
+import { getFinanceTone } from '~/shared/format/finance-tone';
 import { useFormat } from '~/shared/format/use-format';
 import type { PortfolioBalance } from './portfolio-balances';
 import styles from './portfolio-overview.module.css';
@@ -20,21 +23,23 @@ export function PortfolioOverview({ query, balances, onOpenPosition, highlight }
   if (query.isPending) return <Skeleton h={140} aria-label={t`Loading portfolio overview`} />;
   if (query.isError) {
     return (
-      <div className={styles.state}>
-        <p role="alert">
-          <Trans>Could not load the portfolio balance.</Trans>
-        </p>
-        <Button variant="default" onClick={() => void query.refetch()}>
-          <Trans>Try again</Trans>
-        </Button>
-      </div>
+      <InlineState
+        className={styles.state}
+        error
+        action={
+          <Button variant="default" onClick={() => void query.refetch()}>
+            <Trans>Try again</Trans>
+          </Button>
+        }>
+        <Trans>Could not load the portfolio balance.</Trans>
+      </InlineState>
     );
   }
   if (!balances.length)
     return (
-      <p className={styles.state}>
+      <InlineState className={styles.state}>
         <Trans>Record a trade to see your balance and allocation.</Trans>
-      </p>
+      </InlineState>
     );
 
   return (
@@ -53,7 +58,7 @@ function Balance({ balance }: { balance: PortfolioBalance }) {
   const { t } = useLingui();
   const format = useFormat();
   const { currency, total, profit, cost, returnPercentage, unquoted, hasQuotes } = balance;
-  const tone = profit > 0 ? 'profit' : profit < 0 ? 'loss' : undefined;
+  const tone = getFinanceTone(profit);
 
   return (
     <div className={styles.balance}>
@@ -71,11 +76,11 @@ function Balance({ balance }: { balance: PortfolioBalance }) {
             </dt>
             <dd>
               {returnPercentage != null && (
-                <span className="finance-badge" data-tone={tone}>
-                  {format.toLocalePercentage(returnPercentage, 2, { signDisplay: 'exceptZero' })}
-                </span>
+                <FinanceBadge tone={tone}>{format.toLocalePercentage(returnPercentage, 2, { signDisplay: 'exceptZero' })}</FinanceBadge>
               )}
-              <span data-tone={tone}>{format.currency(profit, { currency, signDisplay: 'exceptZero' })}</span>
+              <FinanceBadge variant="text" tone={tone}>
+                {format.currency(profit, { currency, signDisplay: 'exceptZero' })}
+              </FinanceBadge>
             </dd>
           </div>
         )}
@@ -183,9 +188,9 @@ function Allocation({
               <span className={styles.legendValue}>
                 {money}
                 {returnPercentage != null && (
-                  <small data-tone={returnPercentage > 0 ? 'profit' : returnPercentage < 0 ? 'loss' : undefined}>
+                  <FinanceBadge as="small" variant="text" tone={getFinanceTone(returnPercentage)}>
                     {format.toLocalePercentage(returnPercentage, 2, { signDisplay: 'exceptZero' })}
-                  </small>
+                  </FinanceBadge>
                 )}
               </span>
             </button>

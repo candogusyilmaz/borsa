@@ -1,64 +1,20 @@
 .panel.panel {
-  --position-surface: #fff;
-  --position-text: #09090b;
-  --position-secondary: #52525b;
-  --position-muted: #71717a;
-  --position-border: rgb(228 228 231 / 80%);
-  --position-divider: rgb(228 228 231 / 70%);
-  --position-edge: #d4d4d8;
-  --position-avatar: #f4f4f5;
-  --position-avatar-text: #27272a;
-  --position-primary: #09090b;
-  --position-primary-hover: #27272a;
-  --position-on-primary: #fff;
-  --position-sell: #fff;
-  --position-sell-hover: #f4f4f5;
-  --position-sell-border: #e4e4e7;
-  --position-profit: #047857;
-  --position-loss: #be123c;
-  --position-profit-bg: rgb(16 185 129 / 10%);
-  --position-loss-bg: rgb(244 63 94 / 10%);
-
   display: flex;
   flex-direction: column;
   height: 100%;
   min-height: 0;
   overflow: hidden;
-  border-inline-start: 1px solid var(--position-edge);
-  background: var(--position-surface);
-  color: var(--position-text);
-  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 25%);
+  border-inline-start: 1px solid var(--app-border-strong);
+  background: var(--app-surface-elevated);
+  color: var(--app-text);
+  box-shadow: var(--app-shadow-overlay);
   font-family: ui-sans-serif, system-ui, sans-serif;
   font-feature-settings: normal;
 }
 
-:global([data-mantine-color-scheme='dark']) .panel {
-  --position-surface: #161619;
-  --position-text: #fafafa;
-  --position-secondary: #a1a1aa;
-  --position-muted: #a1a1aa;
-  --position-border: rgb(255 255 255 / 7%);
-  --position-divider: rgb(255 255 255 / 6%);
-  --position-edge: rgb(255 255 255 / 12%);
-  --position-avatar: #18181b;
-  --position-avatar-text: #e4e4e7;
-  --position-primary: #f4f4f5;
-  --position-primary-hover: #fff;
-  --position-on-primary: #09090b;
-  --position-sell: rgb(255 255 255 / 5%);
-  --position-sell-hover: rgb(255 255 255 / 9%);
-  --position-sell-border: rgb(255 255 255 / 8%);
-  --position-profit: #34d399;
-  --position-loss: #fb7185;
-}
-
 .overlay.overlay {
-  background: rgb(9 9 11 / 35%);
+  background: var(--app-overlay);
   backdrop-filter: blur(2px);
-}
-
-:global([data-mantine-color-scheme='dark']) .overlay {
-  background: rgb(0 0 0 / 65%);
 }
 
 .panel .header {
@@ -66,29 +22,21 @@
   gap: 0.75rem;
   min-height: 0;
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--position-border);
-  background: var(--position-surface);
+  border-bottom: 1px solid var(--app-border-subtle);
+  background: var(--app-surface-elevated);
   color: inherit;
 }
 
 .inline.inline {
-  --position-surface: var(--positions-surface);
-  --position-text: var(--positions-text);
-  --position-secondary: var(--positions-secondary);
-  --position-muted: var(--positions-muted);
-  --position-border: var(--positions-border);
-  --position-divider: var(--positions-border);
-  --position-avatar: var(--positions-avatar);
-  --position-avatar-text: var(--positions-avatar-text);
-  --position-sell: var(--positions-input);
   --position-panel-inset: 1.25rem;
 
   position: sticky;
   inset-block-start: var(--position-panel-inset);
   height: auto;
   max-block-size: min(48rem, calc(100cqb - 2 * var(--position-panel-inset)));
-  border: 1px solid var(--position-border);
+  border: 1px solid var(--app-border-subtle);
   border-radius: 1rem;
+  background: var(--app-surface);
   box-shadow: none;
 }
 
@@ -96,6 +44,7 @@
   display: flex;
   align-items: start;
   justify-content: space-between;
+  background: var(--app-surface);
 }
 
 .inline .title {
@@ -112,13 +61,13 @@
   border: 0;
   border-radius: 0.5rem;
   background: transparent;
-  color: var(--position-secondary);
+  color: var(--app-text-muted);
   cursor: pointer;
 }
 
 .inlineClose:hover {
-  background: var(--position-sell-hover);
-  color: var(--position-text);
+  background: var(--app-surface-hover);
+  color: var(--app-text);
 }
 
 .title {
@@ -140,10 +89,10 @@
 .identity > :first-child {
   inline-size: 2.5rem;
   block-size: 2.5rem;
-  border: 1px solid var(--position-border);
+  border: 1px solid var(--app-border-subtle);
   border-radius: 50%;
-  background: var(--position-avatar);
-  color: var(--position-avatar-text);
+  background: var(--app-surface-secondary);
+  color: var(--app-text);
   font: 600 0.75rem/1 ui-sans-serif, system-ui, sans-serif;
   letter-spacing: -0.02em;
 }
@@ -170,12 +119,12 @@
 }
 
 .portfolio {
-  color: var(--position-muted);
+  color: var(--app-text-muted);
   font-size: 0.6875rem;
 }
 
 .instrumentName {
-  color: var(--position-secondary);
+  color: var(--app-text-muted);
   font-size: 0.75rem;
   line-height: 1rem;
 }
@@ -187,7 +136,7 @@
   min-width: 1.75rem;
   min-height: 1.75rem;
   border-radius: 8px;
-  color: var(--position-secondary);
+  color: var(--app-text-muted);
 }
 
 .close svg {
@@ -196,8 +145,8 @@
 }
 
 .panel .close:hover {
-  background: var(--position-sell-hover);
-  color: var(--position-text);
+  background: var(--app-surface-hover);
+  color: var(--app-text);
 }
 
 .panel .body {
@@ -230,7 +179,7 @@
 .hero dt,
 .stale,
 .missingPrice {
-  color: var(--position-muted);
+  color: var(--app-text-muted);
   font-size: 0.75rem;
   line-height: 1rem;
 }
@@ -240,7 +189,7 @@
   align-items: center;
   gap: 0.375rem;
   margin: 0.625rem 0 0;
-  color: var(--position-secondary);
+  color: var(--app-text-muted);
 }
 
 .missingPrice svg {
@@ -272,26 +221,15 @@
   line-height: 1.25rem;
 }
 
-.return[data-tone='profit'] {
-  --position-return-bg: var(--position-profit-bg);
-  color: var(--position-profit);
-}
-
-.return[data-tone='loss'] {
-  --position-return-bg: var(--position-loss-bg);
-  color: var(--position-loss);
-}
-
 .returnBadge {
-  padding: 0.125rem 0.5rem;
-  border-radius: 999px;
-  background: var(--position-return-bg, var(--position-avatar));
-  font-size: 0.75rem;
+  --finance-badge-padding: 0.125rem 0.5rem;
+  --finance-badge-radius: 999px;
+  --finance-badge-font-size: 0.75rem;
   line-height: 1rem;
 }
 
 .metrics {
-  border-block: 1px solid var(--position-border);
+  border-block: 1px solid var(--app-border-subtle);
   font-size: 0.75rem;
   line-height: 1rem;
 }
@@ -304,11 +242,11 @@
 }
 
 .metrics > div + div {
-  border-top: 1px solid var(--position-divider);
+  border-top: 1px solid var(--app-border-subtle);
 }
 
 .metrics dt {
-  color: var(--position-secondary);
+  color: var(--app-text-muted);
 }
 
 .metrics dd {
@@ -323,7 +261,7 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.625rem;
   padding: 1rem 1.25rem;
-  border-top: 1px solid var(--position-border);
+  border-top: 1px solid var(--app-border-subtle);
 }
 
 .actions button {
@@ -333,16 +271,16 @@
 }
 
 .actions .buy {
-  --button-bg: var(--position-primary);
-  --button-hover: var(--position-primary-hover);
-  --button-color: var(--position-on-primary);
+  --button-bg: var(--mantine-color-brand-filled);
+  --button-hover: var(--mantine-color-brand-filled-hover);
+  --button-color: var(--app-on-primary);
 }
 
 .actions .sell {
-  --button-bg: var(--position-sell);
-  --button-hover: var(--position-sell-hover);
-  --button-color: var(--position-text);
-  --button-bd: 1px solid var(--position-sell-border);
+  --button-bg: var(--app-surface);
+  --button-hover: var(--app-surface-hover);
+  --button-color: var(--app-text);
+  --button-bd: 1px solid var(--app-border-subtle);
 }
 
 .visuallyHidden {
@@ -359,7 +297,7 @@
     height: auto;
     max-height: min(85dvh, calc(100dvh - env(safe-area-inset-top)));
     border: 0;
-    border-top: 1px solid var(--position-edge);
+    border-top: 1px solid var(--app-border-strong);
     border-radius: 24px 24px 0 0;
   }
 
@@ -371,7 +309,7 @@
   .header::before {
     inset-block-start: 0.625rem;
     width: 2.25rem;
-    background: rgb(113 113 122 / 35%);
+    background: var(--app-border-strong);
   }
 
   .portfolio:not([data-market]) {

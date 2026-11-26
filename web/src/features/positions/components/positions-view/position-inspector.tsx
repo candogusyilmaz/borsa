@@ -6,8 +6,10 @@ import type { Position } from '~/features/positions/hooks/use-positions-view';
 import { getPositionCurrencyOptions, getPositionMetrics, isDataStale } from '~/features/positions/position-presentation';
 import { TradesList } from '~/features/trades/components/trades-list/trades-list';
 import { useTransactionModalStore } from '~/features/trades/workflows/transaction-modal';
+import { FinanceBadge } from '~/shared/components/finance-badge/finance-badge';
 import { ResponsiveOverlay } from '~/shared/components/responsive-overlay/responsive-overlay';
 import { TickerAvatar } from '~/shared/components/ticker-avatar/ticker-avatar';
+import { getFinanceTone } from '~/shared/format/finance-tone';
 import { useFormat } from '~/shared/format/use-format';
 import styles from './position-inspector.module.css';
 
@@ -117,7 +119,9 @@ function PositionMetrics({ position, weight, market }: { position: Position; wei
   const money = (amount: number) => format.currency(amount, { ...currency, minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const signedMoney = (amount: number) => format.currency(amount, { ...currency, signDisplay: 'exceptZero' });
   const percent = (amount: number) => format.toLocalePercentage(amount, 2, { signDisplay: 'exceptZero' });
-  const tone = profit == null || profit === 0 ? undefined : profit > 0 ? 'profit' : 'loss';
+  const tone = getFinanceTone(profit);
+  const dailyChange =
+    dailyChangePercentage == null ? (dailyProfit == null ? undefined : signedMoney(dailyProfit)) : percent(dailyChangePercentage);
   const quantity = format.number(position.quantity, { maximumFractionDigits: 20 });
   const metrics = [
     { label: t`Quantity`, value: t({ comment: 'Number of units held in the position', message: `${quantity} units` }) },
@@ -125,13 +129,12 @@ function PositionMetrics({ position, weight, market }: { position: Position; wei
     { label: t`Current price`, value: price == null ? (market ? t`No price` : undefined) : money(price) },
     {
       label: t`Daily change`,
-      value: market
-        ? undefined
-        : dailyChangePercentage == null
-          ? dailyProfit == null
-            ? undefined
-            : signedMoney(dailyProfit)
-          : percent(dailyChangePercentage)
+      value:
+        !market && dailyChange != null ? (
+          <FinanceBadge variant="text" tone={getFinanceTone(dailyChangePercentage ?? dailyProfit)}>
+            {dailyChange}
+          </FinanceBadge>
+        ) : undefined
     },
     { label: t`Cost basis`, value: money(position.total) },
     {
@@ -162,9 +165,15 @@ function PositionMetrics({ position, weight, market }: { position: Position; wei
             <dt className={styles.visuallyHidden}>
               <Trans>Unrealized P/L</Trans>
             </dt>
-            <dd className={styles.return} data-tone={tone}>
-              <span>{signedMoney(profit)}</span>
-              {returnPercentage != null && <span className={styles.returnBadge}>{percent(returnPercentage)}</span>}
+            <dd className={styles.return}>
+              <FinanceBadge variant="text" tone={tone}>
+                {signedMoney(profit)}
+              </FinanceBadge>
+              {returnPercentage != null && (
+                <FinanceBadge className={styles.returnBadge} tone={tone}>
+                  {percent(returnPercentage)}
+                </FinanceBadge>
+              )}
             </dd>
           </div>
         )}

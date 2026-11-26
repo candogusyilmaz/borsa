@@ -6,6 +6,7 @@ import { Link, useParams } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { $api } from '~/api/openapi';
 import { ResponsiveOverlay } from '~/shared/components/responsive-overlay/responsive-overlay';
+import { getFinanceTone } from '~/shared/format/finance-tone';
 import { useFormat } from '~/shared/format/use-format';
 import { useIsMobile } from '~/shared/hooks/use-is-mobile';
 import { CreatePortfolioModal } from '../../workflows/create-portfolio-button';
@@ -148,9 +149,7 @@ function Choice({ name, count, balance, selected }: { name: string; count?: numb
         <span className={styles.choiceValue}>
           <strong>{format.toCurrency(balance.total, false, balance.currency)}</strong>
           {percentage != null && (
-            <small data-tone={percentage > 0 ? 'profit' : percentage < 0 ? 'loss' : undefined}>
-              {format.toLocalePercentage(percentage, 2, { signDisplay: 'exceptZero' })}
-            </small>
+            <small data-tone={getFinanceTone(percentage)}>{format.toLocalePercentage(percentage, 2, { signDisplay: 'exceptZero' })}</small>
           )}
         </span>
       )}

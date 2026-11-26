@@ -3,6 +3,9 @@ import { Button, SegmentedControl, Select, Skeleton } from '@mantine/core';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 import { $api } from '~/api/openapi';
+import { FinanceBadge } from '~/shared/components/finance-badge/finance-badge';
+import { InlineState } from '~/shared/components/inline-state/inline-state';
+import { getFinanceTone } from '~/shared/format/finance-tone';
 import { useFormat } from '~/shared/format/use-format';
 import styles from './earnings-overview.module.css';
 import { PeriodNavigator } from './period-navigator';
@@ -23,14 +26,16 @@ export function EarningsOverview({ portfolioId }: { portfolioId: number }) {
   if (trades.isPending) return <Skeleton h={150} aria-label={t`Loading earnings`} />;
   if (trades.isError)
     return (
-      <div className={styles.state}>
-        <p role="alert">
-          <Trans>Could not load earnings.</Trans>
-        </p>
-        <Button variant="default" onClick={() => void trades.refetch()}>
-          <Trans>Try again</Trans>
-        </Button>
-      </div>
+      <InlineState
+        className={styles.state}
+        error
+        action={
+          <Button variant="default" onClick={() => void trades.refetch()}>
+            <Trans>Try again</Trans>
+          </Button>
+        }>
+        <Trans>Could not load earnings.</Trans>
+      </InlineState>
     );
 
   const realized = trades.data.flatMap(({ type, profit, actionDate, position }) =>
@@ -40,9 +45,9 @@ export function EarningsOverview({ portfolioId }: { portfolioId: number }) {
   const currency = currencies.find((value) => value === selectedCurrency) ?? currencies[0];
   if (!currency)
     return (
-      <p className={styles.state}>
+      <InlineState className={styles.state}>
         <Trans>Earnings will appear here after a sale with recorded P&L.</Trans>
-      </p>
+      </InlineState>
     );
 
   const relevant = realized.filter((trade) => trade.currency === currency);
@@ -92,11 +97,13 @@ export function EarningsOverview({ portfolioId }: { portfolioId: number }) {
             <span>
               <Trans>Realized P&L</Trans>
             </span>
-            <strong data-tone={total < 0 ? 'loss' : undefined}>{format.toCurrency(total, false, currency)}</strong>
+            <FinanceBadge as="strong" variant="text" tone={getFinanceTone(total)}>
+              {format.toCurrency(total, false, currency)}
+            </FinanceBadge>
             {change != null && (
-              <span className="finance-badge" data-tone={change > 0 ? 'profit' : change < 0 ? 'loss' : undefined}>
+              <FinanceBadge tone={getFinanceTone(change)}>
                 <Trans>{format.toLocalePercentage(change, 1, { signDisplay: 'exceptZero' })} vs previous period</Trans>
-              </span>
+              </FinanceBadge>
             )}
           </div>
         )}
@@ -156,7 +163,7 @@ export function EarningsOverview({ portfolioId }: { portfolioId: number }) {
                   <span
                     aria-hidden="true"
                     className={styles.bar}
-                    data-tone={profit ? (profit > 0 ? 'profit' : 'loss') : undefined}
+                    data-tone={getFinanceTone(profit)}
                     style={{
                       blockSize: profit ? `${(Math.abs(profit) / span) * 92}%` : '2px',
                       ...(profit != null && profit < 0 ? { insetBlockStart: `${100 - baseline}%` } : { insetBlockEnd: `${baseline}%` })
@@ -170,16 +177,16 @@ export function EarningsOverview({ portfolioId }: { portfolioId: number }) {
           {active && (
             <p className={styles.detail}>
               <span>{active.fullLabel}</span>
-              <span data-tone={active.profit ? (active.profit > 0 ? 'profit' : 'loss') : undefined}>
+              <FinanceBadge variant="text" tone={getFinanceTone(active.profit)}>
                 {active.profit == null ? t`No recorded P&L` : money(active.profit)}
-              </span>
+              </FinanceBadge>
             </p>
           )}
         </div>
       ) : (
-        <p className={styles.state}>
+        <InlineState className={styles.state}>
           <Trans>No realized P&L in this period.</Trans>
-        </p>
+        </InlineState>
       )}
     </div>
   );

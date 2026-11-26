@@ -2,8 +2,9 @@ import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { IconChevronDown } from '@tabler/icons-react';
 import { useState } from 'react';
 import type { components } from '~/api/schema';
+import { FinanceBadge } from '~/shared/components/finance-badge/finance-badge';
+import { getFinanceTone } from '~/shared/format/finance-tone';
 import { useFormat } from '~/shared/format/use-format';
-import { tone } from '../dashboard-presentation';
 import type { DashboardModel } from '../hooks/use-dashboard-view';
 import styles from '../pages/dashboard-page.module.css';
 
@@ -57,21 +58,28 @@ export function DashboardSummary({
         </dt>
         <dd className={styles.balanceValue}>{money(balance, balanceCurrency)}</dd>
         <dd className={styles.balanceChange}>
-          <span className="finance-badge" data-tone={tone(totalBalance.percentageChange)} title={t`Open positions versus cost basis`}>
+          <FinanceBadge
+            className={styles.balanceBadge}
+            tone={getFinanceTone(totalBalance.percentageChange)}
+            title={t`Open positions versus cost basis`}>
             {percent(totalBalance.percentageChange)}
-          </span>
+          </FinanceBadge>
           <span className={styles.balanceReturn}>
-            {balanceReturn != null && <strong data-tone={tone(balanceReturn)}>{money(balanceReturn, balanceCurrency, true)}</strong>}
+            {balanceReturn != null && (
+              <FinanceBadge as="strong" variant="text" tone={getFinanceTone(balanceReturn)}>
+                {money(balanceReturn, balanceCurrency, true)}
+              </FinanceBadge>
+            )}
             <span>
               <Trans>all time</Trans>
             </span>
           </span>
           {(daily != null || dailyChange.percentageChange != null) && (
             <span className={styles.balanceDaily}>
-              <strong data-tone={tone(daily ?? dailyChange.percentageChange)}>
+              <FinanceBadge as="strong" variant="text" tone={getFinanceTone(daily ?? dailyChange.percentageChange)}>
                 {daily == null ? dailyPercent : dailyText}
                 {daily != null && dailyChange.percentageChange != null && ` (${dailyPercent})`}
-              </strong>
+              </FinanceBadge>
               <span>{today}</span>
             </span>
           )}
@@ -81,11 +89,15 @@ export function DashboardSummary({
         <dt>
           <Trans>Daily change</Trans>
         </dt>
-        <dd className={styles.metricValue} data-tone={tone(daily)}>
+        <dd className={styles.metricValue} data-tone={getFinanceTone(daily)}>
           {dailyText}
         </dd>
         <dd className={styles.metricDetail} title={t`vs. previous close`}>
-          {dailyChange.percentageChange != null && <strong data-tone={tone(dailyChange.percentageChange)}>{dailyPercent}</strong>}
+          {dailyChange.percentageChange != null && (
+            <FinanceBadge as="strong" variant="text" tone={getFinanceTone(dailyChange.percentageChange)}>
+              {dailyPercent}
+            </FinanceBadge>
+          )}
           {today}
         </dd>
       </div>
@@ -93,7 +105,7 @@ export function DashboardSummary({
         <dt>
           <Trans>Realized P&L</Trans>
         </dt>
-        <dd className={styles.metricValue} data-tone={tone(profit)}>
+        <dd className={styles.metricValue} data-tone={getFinanceTone(profit)}>
           {money(profit, allTime ? currencyCode : (realizedGains.currencyCode ?? currencyCode), true)}
           {allTime && profit != null && !realized.complete && (
             <span className={styles.estimate}>

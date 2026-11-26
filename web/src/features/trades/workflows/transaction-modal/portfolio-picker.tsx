@@ -45,7 +45,7 @@ export function PortfolioPickerRow({
       zIndex={APP_LAYERS.dialogPicker}
       middlewares={{ flip: true, shift: { padding: 12 } }}
       classNames={{
-        dropdown: clsx(styles.scope, styles.dropdown, styles.portfolioDropdown),
+        dropdown: clsx(styles.dropdown, styles.portfolioDropdown),
         option: styles.portfolioOption
       }}
       onOptionSubmit={(val) => {

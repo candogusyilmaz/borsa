@@ -13,7 +13,7 @@ export const TypePill = memo(function TypePill({ value, onChange }: TypePillProp
   return (
     <Menu position="bottom-start" width={110}>
       <Menu.Target>
-        <button type="button" className={`finance-badge ${styles.typePill}`} data-tone={value === 'BUY' ? 'profit' : 'loss'}>
+        <button type="button" className={styles.typePill} data-side={value}>
           {value === 'BUY' ? (
             <Trans comment="Short label on a purchase transaction badge">BUY</Trans>
           ) : (

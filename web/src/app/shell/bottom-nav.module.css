@@ -1,9 +1,4 @@
 .nav {
-  --nav-canvas: #faf9f6;
-  --nav-border: #dddad2;
-  --nav-muted: #6e6b64;
-  --nav-text: #1c1b18;
-
   position: fixed;
   z-index: var(--app-layer-bottom-nav);
   inset: auto 0 0;
@@ -13,8 +8,8 @@
   padding: 0.375rem max(0.5rem, env(safe-area-inset-right))
     max(0.5rem, calc(env(safe-area-inset-bottom) - 0.5rem))
     max(0.5rem, env(safe-area-inset-left));
-  border-block-start: 1px solid var(--nav-border);
-  background: var(--nav-canvas);
+  border-block-start: 1px solid var(--app-border-subtle);
+  background: var(--app-surface);
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
@@ -22,13 +17,6 @@
 
 .nav[data-hidden] {
   display: none;
-}
-
-:global([data-mantine-color-scheme='dark']) .nav {
-  --nav-canvas: #111113;
-  --nav-border: rgb(255 255 255 / 7%);
-  --nav-muted: #898992;
-  --nav-text: #fafafa;
 }
 
 .tab {
@@ -41,7 +29,7 @@
   padding: 0 0.125rem;
   border: 0;
   background: transparent;
-  color: var(--nav-muted);
+  color: var(--app-text-muted);
   font: 500 0.625rem/1.25 var(--mantine-font-family);
   overflow-wrap: anywhere;
   text-align: center;
@@ -59,7 +47,7 @@
 }
 
 .tab[aria-current='page'] {
-  color: var(--nav-text);
+  color: var(--app-text);
 }
 
 .tab[aria-current='page'] svg {

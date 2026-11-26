@@ -1,32 +1,22 @@
 .scope {
-  --tm-elevated: #ffffff;
-  --tm-hover: #e4e1d8;
   --tm-invest: #4f46e5;
   --tm-invest-bg: rgb(79 70 229 / 10%);
-  --tm-backdrop: rgb(28 27 24 / 34%);
-  --tm-shadow: 0 25px 50px -12px rgb(28 27 24 / 22%);
-  --tm-popover-shadow: 0 20px 25px -5px rgb(28 27 24 / 14%), 0 8px 10px -6px rgb(28 27 24 / 10%);
 }
 
 :global([data-mantine-color-scheme='dark']) .scope {
-  --tm-elevated: #19191e;
-  --tm-hover: #222229;
   --tm-invest: #818cf8;
   --tm-invest-bg: rgb(129 140 248 / 13%);
-  --tm-backdrop: rgb(6 6 8 / 72%);
-  --tm-shadow: 0 25px 50px -12px rgb(0 0 0 / 50%);
-  --tm-popover-shadow: 0 20px 25px -5px rgb(0 0 0 / 45%), 0 8px 10px -6px rgb(0 0 0 / 35%);
 }
 
 /* Overlay shells */
 
 .desktopOverlay.desktopOverlay {
-  background: var(--tm-backdrop);
+  background: var(--app-overlay);
   backdrop-filter: blur(2px);
 }
 
 .mobileOverlay.mobileOverlay {
-  background: var(--tm-backdrop);
+  background: var(--app-overlay);
 }
 
 .desktopContent.desktopContent {
@@ -34,9 +24,9 @@
   max-width: 396px;
   border: 1px solid var(--app-border-subtle);
   border-radius: 18px;
-  background: var(--mantine-color-default);
-  color: var(--mantine-color-text);
-  box-shadow: var(--tm-shadow);
+  background: var(--app-surface-elevated);
+  color: var(--app-text);
+  box-shadow: var(--app-shadow-overlay);
   overflow: visible;
 }
 
@@ -44,8 +34,8 @@
   max-height: min(90dvh, calc(100dvh - env(safe-area-inset-top)));
   border-top: 1px solid var(--app-border-subtle);
   border-radius: 22px 22px 0 0;
-  background: var(--mantine-color-default);
-  color: var(--mantine-color-text);
+  background: var(--app-surface-elevated);
+  color: var(--app-text);
   overscroll-behavior: contain;
 }
 
@@ -142,7 +132,7 @@
 }
 
 .closeButton:hover {
-  background: var(--tm-hover);
+  background: var(--app-surface-hover);
   color: var(--mantine-color-text);
 }
 
@@ -210,7 +200,7 @@
 }
 
 .assetPill:hover {
-  background: var(--tm-hover);
+  background: var(--app-surface-hover);
 }
 
 .assetMonogram {
@@ -322,7 +312,7 @@
 }
 
 .currencyCycle:hover {
-  background: var(--tm-hover);
+  background: var(--app-surface-hover);
 }
 
 .priceInput {
@@ -452,8 +442,8 @@
   padding: 4px;
   border: 1px solid var(--app-border-strong);
   border-radius: 12px;
-  background: var(--tm-elevated);
-  box-shadow: var(--tm-popover-shadow);
+  background: var(--app-surface-elevated);
+  box-shadow: var(--app-shadow-popover);
 }
 
 .assetDropdown.assetDropdown {
@@ -484,7 +474,7 @@
 .portfolioOption.portfolioOption:hover,
 .assetOption.assetOption[data-combobox-selected],
 .portfolioOption.portfolioOption[data-combobox-selected] {
-  background: var(--tm-hover);
+  background: var(--app-surface-hover);
   color: var(--mantine-color-text);
 }
 

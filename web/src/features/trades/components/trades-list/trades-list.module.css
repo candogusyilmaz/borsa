@@ -229,14 +229,6 @@
   text-align: end;
 }
 
-.profit[data-tone='profit'] {
-  color: var(--app-finance-profit);
-}
-
-.profit[data-tone='loss'] {
-  color: var(--app-finance-loss);
-}
-
 .amount .profit {
   font-weight: 500;
 }
@@ -431,7 +423,7 @@
 
 .historyHeader > span,
 .historyRow small {
-  color: var(--position-muted);
+  color: var(--app-text-muted);
   font-size: 0.6875rem;
   line-height: 1rem;
 }
@@ -450,7 +442,7 @@
 }
 
 .historyRow + .historyRow {
-  border-top: 1px solid var(--position-divider);
+  border-top: 1px solid var(--app-border-subtle);
 }
 
 .historyRow small {
@@ -467,7 +459,7 @@
 }
 
 .historyDot[data-sale] {
-  background: var(--position-loss);
+  background: var(--mantine-color-loss-light-color);
 }
 
 .historyDate,
@@ -476,7 +468,7 @@
 }
 
 .historyDate time {
-  color: var(--position-muted);
+  color: var(--app-text-muted);
   font-weight: 400;
 }
 

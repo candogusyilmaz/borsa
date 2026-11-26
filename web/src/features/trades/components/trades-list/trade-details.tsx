@@ -2,7 +2,9 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import { Button, VisuallyHidden } from '@mantine/core';
 import { IconArrowBackUp } from '@tabler/icons-react';
 import { useUndoTradeModalStore } from '~/features/trades/workflows/undo-trade-modal';
+import { FinanceBadge } from '~/shared/components/finance-badge/finance-badge';
 import { ResponsiveOverlay } from '~/shared/components/responsive-overlay/responsive-overlay';
+import { getFinanceTone } from '~/shared/format/finance-tone';
 import { useFormat } from '~/shared/format/use-format';
 import styles from './trades-list.module.css';
 import type { TradeRow, UndoTrade } from './use-trades-list';
@@ -96,8 +98,10 @@ function TradeMetrics({ trade, history, onClose }: { trade: TradeRow; history?: 
             <dt>
               <Trans>Realized P&L</Trans>
             </dt>
-            <dd className={styles.profit} data-tone={direction > 0 ? 'profit' : direction < 0 ? 'loss' : undefined}>
-              {signedProfit == null ? percentage : `${signedProfit}${percentage ? ` (${percentage})` : ''}`}
+            <dd>
+              <FinanceBadge variant="text" tone={getFinanceTone(direction)}>
+                {signedProfit == null ? percentage : `${signedProfit}${percentage ? ` (${percentage})` : ''}`}
+              </FinanceBadge>
             </dd>
           </div>
         )}

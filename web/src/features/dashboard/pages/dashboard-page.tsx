@@ -7,6 +7,7 @@ import { $api } from '~/api/openapi';
 import { AccountMenu } from '~/app/shell/account-menu';
 import { isDataStale } from '~/features/positions';
 import { BrandMark } from '~/shared/components/brand-logo';
+import { InlineState } from '~/shared/components/inline-state/inline-state';
 import { ResponsiveOverlay } from '~/shared/components/responsive-overlay/responsive-overlay';
 import { useFormat } from '~/shared/format/use-format';
 import { useIsMobile } from '~/shared/hooks/use-is-mobile';
@@ -34,20 +35,22 @@ export function DashboardPage() {
         {isMobile ? <AccountMenu isMobile /> : model.details && <MarketStatus market={model.details.market} />}
       </header>
       {!model.selected && (
-        <p className={styles.state}>
+        <InlineState className={styles.state}>
           <Trans>Create a dashboard to track your balance and realized performance.</Trans>
-        </p>
+        </InlineState>
       )}
       {model.selected && model.dashboard.isPending && <Skeleton h={154} aria-label={t`Loading dashboard`} />}
       {model.selected && model.dashboard.isError && (
-        <div className={styles.state}>
-          <p role="alert">
-            <Trans>Could not load this dashboard.</Trans>
-          </p>
-          <Button variant="default" onClick={() => void model.dashboard.refetch()}>
-            <Trans>Try again</Trans>
-          </Button>
-        </div>
+        <InlineState
+          className={styles.state}
+          error
+          action={
+            <Button variant="default" onClick={() => void model.dashboard.refetch()}>
+              <Trans>Try again</Trans>
+            </Button>
+          }>
+          <Trans>Could not load this dashboard.</Trans>
+        </InlineState>
       )}
       {dashboard && (
         <>

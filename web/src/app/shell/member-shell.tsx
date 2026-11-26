@@ -26,7 +26,6 @@ export function MemberShell({ children }: { children: ReactNode }) {
 
   return (
     <div className={styles.shell} data-positions={onPositions || undefined} data-dashboard={onDashboard || undefined}>
-      <div className={styles.statusBarBackdrop} aria-hidden="true" />
       <a href="#main-content" className={styles.skipLink}>
         <Trans>Skip to main content</Trans>
       </a>

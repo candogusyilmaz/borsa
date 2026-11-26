@@ -55,7 +55,7 @@ export function DatePickerRow({ value, onChange }: { value: Date; onChange: (dat
           position: 'top-end',
           offset: 6,
           middlewares: { flip: true, shift: { padding: 12 } },
-          classNames: { dropdown: clsx(styles.scope, styles.dropdown, styles.dateDropdown) }
+          classNames: { dropdown: clsx(styles.dropdown, styles.dateDropdown) }
         }}
         classNames={{
           root: styles.dateTriggerRoot,

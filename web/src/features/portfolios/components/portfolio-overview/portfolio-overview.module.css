@@ -196,16 +196,6 @@
   background: var(--allocation-color);
 }
 
-.balance [data-tone='profit'],
-.legend [data-tone='profit'] {
-  color: var(--app-finance-profit);
-}
-
-.balance [data-tone='loss'],
-.legend [data-tone='loss'] {
-  color: var(--app-finance-loss);
-}
-
 @media (max-width: $mantine-breakpoint-sm) {
   .currency,
   .legend {

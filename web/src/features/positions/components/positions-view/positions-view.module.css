@@ -163,16 +163,6 @@
   color: var(--mantine-color-dimmed);
 }
 
-.view [data-tone='profit'],
-.return[data-tone='profit'] small {
-  color: var(--app-finance-profit);
-}
-
-.view [data-tone='loss'],
-.return[data-tone='loss'] small {
-  color: var(--app-finance-loss);
-}
-
 .state {
   margin: 0;
   padding-block: 1.25rem;
@@ -257,7 +247,7 @@
 .marketTable th,
 .marketTable td {
   padding-inline: clamp(0.3125rem, 0.8vw, 0.75rem);
-  border-color: var(--positions-border);
+  border-color: var(--app-border-subtle);
 }
 
 .marketTable tbody tr > * {
@@ -269,14 +259,14 @@
 .marketTable .muted,
 .marketList small,
 .marketList .muted {
-  color: var(--positions-muted);
+  color: var(--app-text-muted);
 }
 
 .marketTable .instrumentName,
 .marketList .symbolIdentity > span > small,
 .marketTable [data-stale='true'],
 .marketList [data-stale='true'] {
-  color: var(--positions-secondary);
+  color: var(--app-text-muted);
 }
 
 .marketTable .symbolIdentity,
@@ -286,9 +276,9 @@
 
 .marketTable .symbolIdentity > :first-child,
 .marketList .symbolIdentity > :first-child {
-  border-color: var(--positions-border);
-  background: var(--positions-avatar);
-  color: var(--positions-avatar-text);
+  border-color: var(--app-border-subtle);
+  background: var(--app-surface-secondary);
+  color: var(--app-text);
   font-family: inherit;
   letter-spacing: -0.02em;
 }
@@ -324,23 +314,11 @@
 .marketTable tbody tr:hover > *,
 .marketTable tbody tr:focus-within > *,
 .marketList .mobileRow:hover {
-  background: var(--positions-hover);
+  background: var(--app-surface-hover);
 }
 
 .marketTable tbody tr[data-selected] > * {
-  background: var(--positions-selected);
-}
-
-.marketTable [data-tone='profit'],
-.marketTable [data-tone='profit'] small,
-.marketList [data-tone='profit'] {
-  color: var(--positions-profit);
-}
-
-.marketTable [data-tone='loss'],
-.marketTable [data-tone='loss'] small,
-.marketList [data-tone='loss'] {
-  color: var(--positions-loss);
+  background: var(--app-surface-selected);
 }
 
 .marketList {
@@ -354,7 +332,7 @@
   gap: 0.5rem;
   padding-block: 0.875rem;
   padding-inline: var(--member-inset-start) var(--member-inset-end);
-  border-color: var(--positions-border);
+  border-color: var(--app-border-subtle);
   line-height: 1.25rem;
 }
 
@@ -367,7 +345,7 @@
 }
 
 .marketList .mobileValues svg {
-  color: var(--positions-muted);
+  color: var(--app-text-muted);
 }
 
 .marketList .mobileRow:focus-visible {
@@ -382,6 +360,6 @@
 
 .marketEmpty p {
   margin: 0.25rem 0 0;
-  color: var(--positions-muted);
+  color: var(--app-text-muted);
   font-size: 0.75rem;
 }

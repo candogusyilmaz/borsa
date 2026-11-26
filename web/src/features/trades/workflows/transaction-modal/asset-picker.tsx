@@ -104,7 +104,7 @@ export function AssetPicker({
       zIndex={APP_LAYERS.dialogPicker}
       middlewares={{ flip: true, shift: { padding: 12 } }}
       classNames={{
-        dropdown: clsx(styles.scope, styles.dropdown, styles.assetDropdown),
+        dropdown: clsx(styles.dropdown, styles.assetDropdown),
         search: styles.assetSearch,
         option: styles.assetOption,
         empty: styles.dropdownEmpty

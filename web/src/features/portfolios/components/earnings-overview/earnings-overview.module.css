@@ -37,15 +37,6 @@
   letter-spacing: -0.03em;
 }
 
-.summary strong[data-tone='loss'],
-.detail [data-tone='loss'] {
-  color: var(--app-finance-loss);
-}
-
-.detail [data-tone='profit'] {
-  color: var(--app-finance-profit);
-}
-
 .canvas {
   padding: clamp(0.65rem, 2vw, 1.2rem);
   border: 1px solid var(--app-border-subtle);

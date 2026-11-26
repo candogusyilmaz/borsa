@@ -12,9 +12,12 @@ import {
   type PositionAllocation,
   type PositionHighlight
 } from '~/features/positions/position-presentation';
+import { FinanceBadge } from '~/shared/components/finance-badge/finance-badge';
+import { InlineState } from '~/shared/components/inline-state/inline-state';
 import { LocalizedPagination } from '~/shared/components/localized-pagination';
 import { ResponsiveOverlay } from '~/shared/components/responsive-overlay/responsive-overlay';
 import { TickerAvatar } from '~/shared/components/ticker-avatar/ticker-avatar';
+import { getFinanceTone } from '~/shared/format/finance-tone';
 import { useFormat } from '~/shared/format/use-format';
 import { useIsMobile } from '~/shared/hooks/use-is-mobile';
 import { PositionInspector } from './position-inspector';
@@ -283,14 +286,16 @@ export function PositionsState({
     );
   if (model.query.isError) {
     return (
-      <div className={styles.state}>
-        <p role="alert">
-          <Trans>Could not load positions.</Trans>
-        </p>
-        <Button variant="default" onClick={() => void model.query.refetch()}>
-          <Trans>Try again</Trans>
-        </Button>
-      </div>
+      <InlineState
+        className={styles.state}
+        error
+        action={
+          <Button variant="default" onClick={() => void model.query.refetch()}>
+            <Trans>Try again</Trans>
+          </Button>
+        }>
+        <Trans>Could not load positions.</Trans>
+      </InlineState>
     );
   }
   if (!model.positions.length && market) {
@@ -299,14 +304,16 @@ export function PositionsState({
         <strong>
           <Trans>No positions found</Trans>
         </strong>
-        <p>
+        <InlineState>
           <Trans>Try another search or choose a different portfolio.</Trans>
-        </p>
+        </InlineState>
       </div>
     );
   }
   if (!model.positions.length)
-    return <p className={styles.state}>{model.search.trim() ? t`No positions match this search.` : t`No open positions.`}</p>;
+    return (
+      <InlineState className={styles.state}>{model.search.trim() ? t`No positions match this search.` : t`No open positions.`}</InlineState>
+    );
   return children;
 }
 
@@ -352,11 +359,11 @@ function PriceChange({ percentage, position }: { percentage: number; position: P
   const stale = isDataStale(updatedAt);
   const isToday = updatedAt != null && new Date(updatedAt).toDateString() === new Date().toDateString();
   const change = format.toLocalePercentage(percentage, 2, { signDisplay: 'exceptZero' });
-  const tone = stale ? undefined : percentage > 0 ? 'profit' : percentage < 0 ? 'loss' : undefined;
+  const tone = stale ? undefined : getFinanceTone(percentage);
   return (
-    <small data-tone={tone} data-stale={stale || undefined}>
+    <FinanceBadge as="small" variant="text" tone={tone} data-stale={stale || undefined}>
       {isToday ? <Trans>{change} today</Trans> : <Trans>{change} daily</Trans>}
-    </small>
+    </FinanceBadge>
   );
 }
 
@@ -400,19 +407,23 @@ function PositionReturn({ position, compact, market }: { position: Position; com
   const value = format.currency(profit, { ...getPositionCurrencyOptions(position.currencyCode, market), signDisplay: 'exceptZero' });
   const percentage = returnPercentage == null ? null : format.toLocalePercentage(returnPercentage, 2, { signDisplay: 'exceptZero' });
   const stale = !market && isDataStale(position.instrument.updatedAt);
-  const tone = stale ? undefined : profit > 0 ? 'profit' : profit < 0 ? 'loss' : undefined;
+  const tone = stale ? undefined : getFinanceTone(profit);
   if (compact)
     return (
-      <small className={styles.return} data-tone={tone}>
+      <FinanceBadge as="small" className={styles.return} variant="text" tone={tone}>
         {percentage ?? value}
-      </small>
+      </FinanceBadge>
     );
   return (
-    <span className={styles.return} data-tone={tone}>
-      <span className={styles.returnAmount} title={value}>
+    <span className={styles.return}>
+      <FinanceBadge className={styles.returnAmount} variant="text" title={value} tone={tone}>
         {value}
-      </span>
-      {percentage && <small>{percentage}</small>}
+      </FinanceBadge>
+      {percentage && (
+        <FinanceBadge as="small" variant="text" tone={tone}>
+          {percentage}
+        </FinanceBadge>
+      )}
     </span>
   );
 }

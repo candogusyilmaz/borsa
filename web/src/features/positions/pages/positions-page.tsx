@@ -5,7 +5,9 @@ import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import { IconAdjustmentsHorizontal, IconArrowsSort, IconCheck, IconSearch } from '@tabler/icons-react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { AddTradeButton } from '~/features/trades/components/add-trade-button/add-trade-button';
+import { FinanceBadge } from '~/shared/components/finance-badge/finance-badge';
 import { ResponsiveOverlay } from '~/shared/components/responsive-overlay/responsive-overlay';
+import { getFinanceTone } from '~/shared/format/finance-tone';
 import { useFormat } from '~/shared/format/use-format';
 import { useIsMobile } from '~/shared/hooks/use-is-mobile';
 import { InlinePositionInspector, PositionInspector } from '../components/positions-view/position-inspector';
@@ -150,7 +152,7 @@ function PositionsSummary({
       )}
       {balances.length ? (
         balances.map(({ currency, value, cost, profit, quoted }) => {
-          const tone = profit > 0 ? 'profit' : profit < 0 ? 'loss' : undefined;
+          const tone = getFinanceTone(profit);
           const options = { ...getPositionCurrencyOptions(currency, true), minimumFractionDigits: 2, maximumFractionDigits: 2 };
           const signed = format.currency(profit, { ...options, signDisplay: 'exceptZero' });
           const percentage = cost > 0 ? format.toLocalePercentage((profit / cost) * 100, 2, { signDisplay: 'exceptZero' }) : undefined;
@@ -168,18 +170,18 @@ function PositionsSummary({
                 {balances.length > 1 && <span className={styles.currency}>{currency}</span>}
                 <strong className={styles.value}>{quoted ? format.currency(value, options) : '—'}</strong>
                 {!mobile && quoted > 0 && (
-                  <span className={styles.badge} data-tone={tone}>
+                  <FinanceBadge className={styles.badge} tone={tone}>
                     {returnLabel}
-                  </span>
+                  </FinanceBadge>
                 )}
               </div>
               {mobile ? (
                 <div className={styles.summaryMeta}>
                   {quoted > 0 && (
                     <>
-                      <span className={styles.mobileReturn} data-tone={tone}>
+                      <FinanceBadge className={styles.mobileReturn} variant="text" tone={tone}>
                         {returnLabel}
-                      </span>
+                      </FinanceBadge>
                       <span aria-hidden="true">·</span>
                     </>
                   )}
