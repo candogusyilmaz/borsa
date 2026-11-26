@@ -246,3 +246,29 @@
 .language {
   padding: 0.3rem 0.75rem;
 }
+
+.statusBarBackdrop {
+  display: none;
+}
+
+@media (max-width: 48em) {
+  .statusBarBackdrop {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 95;
+    height: max(env(safe-area-inset-top), 6px);
+    background-color: var(--mantine-color-default);
+    pointer-events: none;
+  }
+
+  .shell[data-dashboard] .statusBarBackdrop {
+    background-color: var(--mantine-color-body);
+  }
+
+  .shell[data-positions] .statusBarBackdrop {
+    background-color: var(--positions-canvas);
+  }
+}
