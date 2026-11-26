@@ -25,12 +25,13 @@ export default defineConfig({
         name: "Canverse",
         short_name: "Canverse",
         description: "Personal portfolio and trade tracking across multiple portfolios and currencies.",
-        theme_color: "#F3F2EE",
-        background_color: "#F3F2EE",
+        theme_color: "#0D0D0F",
+        background_color: "#0D0D0F",
         display: "standalone",
         orientation: "portrait",
         scope: "/",
-        start_url: "/",
+        id: "/",
+        start_url: "/dashboard",
         icons: [
           {
             src: "/assets/pwa-192x192.png",
@@ -53,6 +54,7 @@ export default defineConfig({
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
         navigateFallback: "/index.html",
+        navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

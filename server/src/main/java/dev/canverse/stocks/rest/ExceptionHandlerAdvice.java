@@ -8,6 +8,8 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.http.*;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -102,6 +104,23 @@ public class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
         var detail =
                 ProblemDetail.forStatusAndDetail(
                         HttpStatus.UNAUTHORIZED, "Email or password is incorrect.");
+        detail.setInstance(URI.create(request.getRequest().getRequestURI()));
+
+        return ResponseEntity.status(detail.getStatus()).body(detail);
+    }
+
+    @ExceptionHandler({JwtException.class, UsernameNotFoundException.class})
+    public ResponseEntity<Object> handleInvalidTokenException(
+            RuntimeException ex, ServletWebRequest request) {
+        log.atWarn()
+                .addKeyValue("event", "authentication_failed")
+                .addKeyValue("reason", "invalid_token")
+                .addKeyValue("exception", ex.getClass().getSimpleName())
+                .log("Token authentication failed");
+
+        var detail =
+                ProblemDetail.forStatusAndDetail(
+                        HttpStatus.UNAUTHORIZED, "Invalid or expired token.");
         detail.setInstance(URI.create(request.getRequest().getRequestURI()));
 
         return ResponseEntity.status(detail.getStatus()).body(detail);

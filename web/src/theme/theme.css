@@ -104,6 +104,23 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+a,
+button,
+input,
+select,
+textarea,
+label,
+[role='button'] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (display-mode: standalone) {
+  html,
+  body {
+    overscroll-behavior-y: none;
+  }
+}
+
 ::selection {
   background: var(--app-surface-selected);
 }
@@ -265,5 +282,21 @@ input[inputmode='numeric'] {
     overflow: hidden;
     clip-path: inset(50%);
     white-space: nowrap;
+  }
+}
+
+@media (display-mode: standalone) and (pointer: coarse) {
+  html,
+  body,
+  * {
+    scrollbar-width: none;
+  }
+
+  *::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mantine-ScrollArea-root .mantine-ScrollArea-scrollbar {
+    display: none;
   }
 }

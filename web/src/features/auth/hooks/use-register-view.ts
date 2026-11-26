@@ -7,7 +7,7 @@ import { alerts } from '~/shared/feedback/alerts';
 export function useRegisterView() {
   const { t } = useLingui();
   const navigate = useNavigate();
-  const { login, register } = useAuthentication();
+  const { register } = useAuthentication();
 
   const form = useForm({
     initialValues: {
@@ -61,31 +61,14 @@ export function useRegisterView() {
     );
   });
 
-  function handleGoogleCode(code: string) {
-    login.mutate(
-      { code },
-      {
-        onSuccess: () => {
-          navigate({ to: '/dashboard' });
-        },
-        onError: () => {
-          alerts.error(t`Could not sign in with Google. Please try again.`, t`Google sign-in failed`);
-        }
-      }
-    );
-  }
-
   function handleGoogleError() {
     alerts.error(t`Google sign-in failed`, t`Authentication error`);
   }
 
   return {
     form,
-    isGooglePending: login.isPending,
-    isRegisterPending: register.isPending,
-    isSubmitting: login.isPending || register.isPending,
+    isPending: register.isPending,
     handleSubmit,
-    handleGoogleCode,
     handleGoogleError
   };
 }

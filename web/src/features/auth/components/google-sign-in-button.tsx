@@ -1,42 +1,89 @@
 import { useLingui } from '@lingui/react/macro';
 import { Loader } from '@mantine/core';
 import { useGoogleLogin } from '@react-oauth/google';
-
+import { useState } from 'react';
 import styles from './google-sign-in-button.module.css';
 
+const GOOGLE_OAUTH_STATE_KEY = 'canverse_google_oauth_state';
+
+export function getGoogleRedirectUri(): string {
+  return `${window.location.origin}/login`;
+}
+
+function persistOAuthState(state: string): void {
+  try {
+    sessionStorage.setItem(GOOGLE_OAUTH_STATE_KEY, state);
+  } catch {
+    // Ignore storage errors in restricted webviews.
+  }
+}
+
+function getOrCreateOAuthState(): string {
+  try {
+    const existing = sessionStorage.getItem(GOOGLE_OAUTH_STATE_KEY);
+    if (existing) return existing;
+    const created = crypto.randomUUID();
+    sessionStorage.setItem(GOOGLE_OAUTH_STATE_KEY, created);
+    return created;
+  } catch {
+    return crypto.randomUUID();
+  }
+}
+
+export function consumeGoogleRedirectParams(): { code: string; redirectUri: string } | { error: string } | null {
+  if (typeof window === 'undefined') return null;
+
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  const error = params.get('error');
+  const state = params.get('state');
+
+  if (!code && !error) return null;
+
+  const cleanUrl = window.location.pathname + window.location.hash;
+  window.history.replaceState(window.history.state, document.title, cleanUrl);
+
+  let expectedState: string | null = null;
+  try {
+    expectedState = sessionStorage.getItem(GOOGLE_OAUTH_STATE_KEY);
+    sessionStorage.removeItem(GOOGLE_OAUTH_STATE_KEY);
+  } catch {
+    // Ignore storage errors in restricted webviews.
+  }
+
+  if (error) return { error };
+  if (!code || !expectedState || state !== expectedState) return { error: 'invalid_state' };
+
+  return { code, redirectUri: getGoogleRedirectUri() };
+}
+
 interface GoogleSignInButtonProps {
-  onCode: (code: string) => void;
   onError?: () => void;
   loading?: boolean;
   disabled?: boolean;
 }
 
-export function GoogleSignInButton({ onCode, onError, loading, disabled }: GoogleSignInButtonProps) {
+export function GoogleSignInButton({ onError, loading, disabled }: GoogleSignInButtonProps) {
   const { t } = useLingui();
+  const [redirectState] = useState(getOrCreateOAuthState);
 
   const triggerGoogleLogin = useGoogleLogin({
     flow: 'auth-code',
-    onSuccess: (response) => {
-      if (response.code) {
-        onCode(response.code);
-      } else {
-        onError?.();
-      }
-    },
-    onError: () => {
-      onError?.();
-    }
+    ux_mode: 'redirect',
+    redirect_uri: getGoogleRedirectUri(),
+    state: redirectState,
+    onError: () => onError?.()
   });
 
   const isDisabled = Boolean(loading || disabled);
 
+  function handleClick() {
+    persistOAuthState(redirectState);
+    triggerGoogleLogin();
+  }
+
   return (
-    <button
-      type="button"
-      className={styles.button}
-      disabled={isDisabled}
-      aria-busy={loading || undefined}
-      onClick={() => triggerGoogleLogin()}>
+    <button type="button" className={styles.button} disabled={isDisabled} aria-busy={loading || undefined} onClick={handleClick}>
       <span className={styles.iconWrap} aria-hidden="true">
         {loading ? <Loader size={16} color="currentColor" /> : <GoogleIcon />}
       </span>

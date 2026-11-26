@@ -49,7 +49,7 @@ function LoginFormContent({ model, mobile }: { model: LoginViewModel; mobile: bo
 
   return (
     <div className={styles.formBody}>
-      <GoogleSignInButton onCode={model.handleGoogleCode} onError={model.handleGoogleError} loading={model.isPending} />
+      <GoogleSignInButton onError={model.handleGoogleError} loading={model.isPending} />
 
       <div className={styles.divider}>
         <Divider

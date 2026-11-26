@@ -58,12 +58,7 @@ function RegisterFormContent({ model, mobile }: { model: RegisterViewModel; mobi
 
   return (
     <div className={styles.formBody}>
-      <GoogleSignInButton
-        onCode={model.handleGoogleCode}
-        onError={model.handleGoogleError}
-        loading={model.isGooglePending}
-        disabled={model.isRegisterPending}
-      />
+      <GoogleSignInButton onError={model.handleGoogleError} disabled={model.isPending} />
 
       <div className={styles.divider}>
         <Divider
@@ -123,14 +118,7 @@ function RegisterFormContent({ model, mobile }: { model: RegisterViewModel; mobi
             {...model.form.getInputProps('confirmPassword')}
           />
 
-          <Button
-            className={styles.submitButton}
-            size={controlSize}
-            radius="sm"
-            loading={model.isSubmitting}
-            disabled={model.isGooglePending}
-            type="submit"
-            fullWidth>
+          <Button className={styles.submitButton} size={controlSize} radius="sm" loading={model.isPending} type="submit" fullWidth>
             <Trans>Create account</Trans>
           </Button>
         </Stack>

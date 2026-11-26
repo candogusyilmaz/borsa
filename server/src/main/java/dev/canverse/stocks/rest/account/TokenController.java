@@ -19,6 +19,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.oauth2.jwt.JwtException;
+import org.springframework.security.oauth2.jwt.JwtValidationException;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -70,16 +73,28 @@ public class TokenController {
     @PostMapping("/refresh-token")
     public ResponseEntity<@NotNull TokenCreateResponse> refreshAccessToken(
             @CookieValue(name = "refresh-token") Optional<String> refreshToken) {
-        if (refreshToken.isEmpty()) {
+        if (refreshToken.isEmpty() || refreshToken.get().isBlank()) {
             log.atWarn()
                     .addKeyValue("event", "authentication_failed")
                     .addKeyValue("authMethod", "refresh_token")
                     .addKeyValue("reason", "missing_token")
                     .log("Token refresh failed");
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        var user = tokenService.getSecurityUser(refreshToken.get());
+        User user;
+        try {
+            user = tokenService.getSecurityUser(refreshToken.get());
+        } catch (JwtException | UsernameNotFoundException ex) {
+            log.atWarn()
+                    .addKeyValue("event", "authentication_failed")
+                    .addKeyValue("authMethod", "refresh_token")
+                    .addKeyValue("reason", resolveRefreshFailureReason(ex))
+                    .addKeyValue("exception", ex.getClass().getSimpleName())
+                    .log("Token refresh failed");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         var response = tokenService.create(user);
 
         log.atInfo()
@@ -91,10 +106,28 @@ public class TokenController {
         return response;
     }
 
+    private static String resolveRefreshFailureReason(RuntimeException ex) {
+        if (ex instanceof UsernameNotFoundException) {
+            return "user_not_found";
+        }
+        if (ex instanceof JwtValidationException validationEx
+                && validationEx.getErrors().stream()
+                        .anyMatch(
+                                error ->
+                                        error.getDescription() != null
+                                                && error.getDescription()
+                                                        .toLowerCase()
+                                                        .contains("expired"))) {
+            return "expired_token";
+        }
+        return "invalid_token";
+    }
+
     @PostMapping("/google")
     public ResponseEntity<@NotNull TokenCreateResponse> googleLogin(
             @Valid @RequestBody GoogleTokenRequest request) {
-        var googleUser = googleAuthService.verifyAuthorizationCode(request.code());
+        var googleUser =
+                googleAuthService.verifyAuthorizationCode(request.code(), request.redirectUri());
 
         var user =
                 userService

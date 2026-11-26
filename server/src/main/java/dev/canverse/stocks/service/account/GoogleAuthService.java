@@ -22,12 +22,18 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Service
 public class GoogleAuthService {
     private static final String GOOGLE_TOKEN_URI = "https://oauth2.googleapis.com/token";
     private static final String GOOGLE_JWKS_URI = "https://www.googleapis.com/oauth2/v3/certs";
+    private static final Set<String> ALLOWED_REDIRECT_URIS =
+            Set.of(
+                    "postmessage",
+                    "https://borsa.canverse.dev/login",
+                    "http://localhost:5173/login");
 
     private final GoogleOAuthProperties properties;
     private final RestClient restClient;
@@ -40,7 +46,7 @@ public class GoogleAuthService {
         this.jwtDecoder = buildGoogleJwtDecoder(properties.clientId());
     }
 
-    public GoogleUserInfo verifyAuthorizationCode(String code) {
+    public GoogleUserInfo verifyAuthorizationCode(String code, String redirectUri) {
         if (code == null || code.isBlank()) {
             log.atWarn()
                     .addKeyValue("event", "authentication_failed")
@@ -50,7 +56,18 @@ public class GoogleAuthService {
             throw new BadRequestException("Google authorization code is required");
         }
 
-        var idToken = exchangeCodeForIdToken(code);
+        var resolvedRedirectUri =
+                (redirectUri == null || redirectUri.isBlank()) ? "postmessage" : redirectUri.trim();
+        if (!ALLOWED_REDIRECT_URIS.contains(resolvedRedirectUri)) {
+            log.atWarn()
+                    .addKeyValue("event", "authentication_failed")
+                    .addKeyValue("authMethod", "google")
+                    .addKeyValue("reason", "invalid_redirect_uri")
+                    .log("Google authentication failed");
+            throw new BadRequestException("Invalid Google redirect URI");
+        }
+
+        var idToken = exchangeCodeForIdToken(code, resolvedRedirectUri);
         var jwt = decodeAndValidate(idToken);
 
         var email = jwt.getClaimAsString("email");
@@ -72,12 +89,12 @@ public class GoogleAuthService {
         return new GoogleUserInfo(email, name);
     }
 
-    private String exchangeCodeForIdToken(String code) {
+    private String exchangeCodeForIdToken(String code, String redirectUri) {
         var form = new LinkedMultiValueMap<String, String>();
         form.add("code", code);
         form.add("client_id", properties.clientId());
         form.add("client_secret", properties.clientSecret());
-        form.add("redirect_uri", "postmessage");
+        form.add("redirect_uri", redirectUri);
         form.add("grant_type", "authorization_code");
 
         GoogleTokenExchangeResponse response;

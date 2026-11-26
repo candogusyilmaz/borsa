@@ -65,6 +65,9 @@
   border-bottom: 1px solid var(--app-border-subtle);
   background: var(--mantine-color-default);
   padding-top: env(safe-area-inset-top);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .headerInner,
@@ -216,6 +219,10 @@
     --member-gutter: 1.25rem;
   }
 
+  .header {
+    padding-top: calc(env(safe-area-inset-top) + 0.625rem); /* +10px nefes payı */
+  }
+  
   .headerInner {
     min-height: 3.5rem;
     justify-content: space-between;

@@ -491,6 +491,7 @@ export interface components {
         };
         GoogleTokenRequest: {
             code: string;
+            redirectUri?: string;
         };
         PortfolioView: {
             id: string;

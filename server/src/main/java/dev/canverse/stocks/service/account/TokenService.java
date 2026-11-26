@@ -9,6 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.oauth2.jwt.BadJwtException;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -30,8 +31,16 @@ public class TokenService {
     private final JwtDecoder jwtDecoder;
 
     public User getSecurityUser(String refreshToken) {
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new BadJwtException("Refresh token is missing");
+        }
+
         var jwt = jwtDecoder.decode(refreshToken);
         var username = jwt.getClaimAsString("sub");
+        if (username == null || username.isBlank()) {
+            throw new BadJwtException("Refresh token subject is missing");
+        }
+
         return (User) userService.loadUserByUsername(username);
     }
 

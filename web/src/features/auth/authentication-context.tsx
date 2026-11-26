@@ -8,7 +8,7 @@ import { type AuthSession, isTokenExpiringSoon, sessionStore } from '~/api/token
 export interface AuthContext {
   user: AuthSession | null;
   isAuthenticated: boolean;
-  login: UseMutationResult<AuthSession, unknown, { username: string; password: string } | { code: string }, unknown>;
+  login: UseMutationResult<AuthSession, unknown, { username: string; password: string } | { code: string; redirectUri?: string }, unknown>;
   register: UseMutationResult<AuthSession, unknown, { name: string; email: string; password: string }, unknown>;
   logout: () => Promise<void>;
 }
@@ -61,7 +61,7 @@ export function AuthenticationProvider({ children }: Readonly<AuthProviderProps>
   }, []);
 
   const login = useMutation({
-    mutationFn: async (credentials: { username: string; password: string } | { code: string }) => {
+    mutationFn: async (credentials: { username: string; password: string } | { code: string; redirectUri?: string }) => {
       const endpoint = 'code' in credentials ? '/api/auth/google' : '/api/auth/token';
       const { data, error } = await client.POST(endpoint, { body: credentials });
       if (error || !data) {
