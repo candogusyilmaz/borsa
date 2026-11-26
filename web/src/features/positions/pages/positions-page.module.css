@@ -415,6 +415,11 @@
     min-block-size: 2.75rem;
   }
 
+  .input.input,
+  .select select {
+    font-size: 1rem;
+  }
+
   .mobileSearch .input {
     min-block-size: 2.75rem;
     font-size: 1rem;

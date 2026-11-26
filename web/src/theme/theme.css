@@ -147,6 +147,14 @@ input[inputmode='numeric'] {
     min-width: 44px;
   }
 
+  input:not([type='checkbox'], [type='radio'], [type='range'], [type='hidden']),
+  select,
+  textarea,
+  .mantine-PasswordInput-innerInput,
+  .mantine-TimePicker-field {
+    font-size: max(var(--input-fz, 1rem), 1rem);
+  }
+
   .mantine-Input-input {
     min-height: 44px;
     font-size: max(var(--input-fz, 1rem), 1rem);

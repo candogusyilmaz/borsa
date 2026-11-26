@@ -605,3 +605,37 @@
   background: var(--mantine-color-brand-filled);
   color: var(--app-on-primary);
 }
+
+@media (pointer: coarse) {
+  .assetSearch.assetSearch {
+    min-height: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+
+  .pricePill {
+    height: 34px;
+  }
+
+  .priceInput,
+  .noteInput {
+    font-size: 1rem;
+  }
+
+  .calTimeInput :global(.mantine-Input-input) {
+    min-height: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+
+  .calTimeInput :global(.mantine-TimePicker-field) {
+    font-size: 1rem;
+  }
+
+  .calSubmitBtn.calSubmitBtn {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+  }
+}
