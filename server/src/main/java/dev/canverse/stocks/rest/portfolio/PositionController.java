@@ -6,16 +6,13 @@ import dev.canverse.stocks.service.portfolio.TradeService;
 import dev.canverse.stocks.service.portfolio.model.FetchPositionsQuery;
 import dev.canverse.stocks.service.portfolio.model.PositionInfo;
 import dev.canverse.stocks.service.portfolio.model.TradeInfo;
-
+import java.util.List;
 import lombok.RequiredArgsConstructor;
-
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor

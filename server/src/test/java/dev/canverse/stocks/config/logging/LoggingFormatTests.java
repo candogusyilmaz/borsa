@@ -7,10 +7,11 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.spi.LoggingEvent;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.Properties;
 import org.junit.jupiter.api.Test;
 import org.slf4j.event.KeyValuePair;
 import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
@@ -23,10 +24,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.core.io.ClassPathResource;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.Properties;
 
 class LoggingFormatTests {
 
@@ -42,12 +39,8 @@ class LoggingFormatTests {
         AnsiOutput.setEnabled(AnsiOutput.Enabled.NEVER);
         try {
             LoggerContext context = new LoggerContext();
-            context.putObject(
-                    ch.qos.logback.core.CoreConstants.PATTERN_RULE_REGISTRY,
-                    Map.of(
-                            "clr", ColorConverter.class.getName(),
-                            "esb", EnclosedInSquareBracketsConverter.class.getName(),
-                            "wEx", ExtendedWhitespaceThrowableProxyConverter.class.getName()));
+            context.putObject(ch.qos.logback.core.CoreConstants.PATTERN_RULE_REGISTRY, Map.of("clr", ColorConverter.class.getName(), "esb",
+                EnclosedInSquareBracketsConverter.class.getName(), "wEx", ExtendedWhitespaceThrowableProxyConverter.class.getName()));
 
             PatternLayout layout = new PatternLayout();
             layout.setContext(context);
@@ -55,14 +48,7 @@ class LoggingFormatTests {
             layout.start();
 
             Logger httpLogger = context.getLogger("dev.canverse.stocks.config.logging.HTTP");
-            LoggingEvent httpEvent =
-                    new LoggingEvent(
-                            Logger.FQCN,
-                            httpLogger,
-                            Level.INFO,
-                            "GET /api/portfolios 200 42ms",
-                            null,
-                            null);
+            LoggingEvent httpEvent = new LoggingEvent(Logger.FQCN, httpLogger, Level.INFO, "GET /api/portfolios 200 42ms", null, null);
             httpEvent.setMDCPropertyMap(Map.of("requestId", "a83f2b91", "userId", "42"));
             httpEvent.addKeyValuePair(new KeyValuePair("event", "http_request_completed"));
             httpEvent.addKeyValuePair(new KeyValuePair("method", "GET"));
@@ -71,35 +57,26 @@ class LoggingFormatTests {
             httpEvent.addKeyValuePair(new KeyValuePair("durationMs", 42));
 
             String renderedHttp = layout.doLayout(httpEvent).replace("\r", "").replace("\n", "");
-            assertThat(renderedHttp)
-                    .matches(
-                            "^\\d{2}:\\d{2}:\\d{2}\\.\\d{3} INFO  \\[a83f2b91] HTTP - GET /api/portfolios 200 42ms event=http_request_completed method=GET route=/api/portfolios status=200 durationMs=42$");
+            assertThat(renderedHttp).matches(
+                "^\\d{2}:\\d{2}:\\d{2}\\.\\d{3} INFO  \\[a83f2b91] HTTP - GET /api/portfolios 200 42ms event=http_request_completed method=GET route=/api/portfolios status=200 durationMs=42$");
 
-            Logger updaterLogger =
-                    context.getLogger(
-                            "dev.canverse.stocks.service.marketupdater.MarketQuoteFetcher");
-            LoggingEvent warnEvent =
-                    new LoggingEvent(
-                            Logger.FQCN, updaterLogger, Level.WARN, "Provider timeout", null, null);
+            Logger updaterLogger = context.getLogger("dev.canverse.stocks.service.marketupdater.MarketQuoteFetcher");
+            LoggingEvent warnEvent = new LoggingEvent(Logger.FQCN, updaterLogger, Level.WARN, "Provider timeout", null, null);
             warnEvent.setMDCPropertyMap(Map.of());
             warnEvent.addKeyValuePair(new KeyValuePair("provider", "TradingView"));
             warnEvent.addKeyValuePair(new KeyValuePair("market", "BIST"));
 
             String renderedWarn = layout.doLayout(warnEvent).replace("\r", "").replace("\n", "");
             assertThat(renderedWarn)
-                    .matches(
-                            "^\\d{2}:\\d{2}:\\d{2}\\.\\d{3} WARN  MarketQuoteFetcher - Provider timeout provider=TradingView market=BIST$");
+                .matches("^\\d{2}:\\d{2}:\\d{2}\\.\\d{3} WARN  MarketQuoteFetcher - Provider timeout provider=TradingView market=BIST$");
             assertThat(renderedWarn).doesNotContain("[]");
 
             Logger startupLogger = context.getLogger("dev.canverse.stocks.Server");
-            LoggingEvent plainEvent =
-                    new LoggingEvent(
-                            Logger.FQCN, startupLogger, Level.INFO, "Started Server", null, null);
+            LoggingEvent plainEvent = new LoggingEvent(Logger.FQCN, startupLogger, Level.INFO, "Started Server", null, null);
             plainEvent.setMDCPropertyMap(Map.of());
 
             String renderedPlain = layout.doLayout(plainEvent).replace("\r", "").replace("\n", "");
-            assertThat(renderedPlain)
-                    .matches("^\\d{2}:\\d{2}:\\d{2}\\.\\d{3} INFO  Server - Started Server$");
+            assertThat(renderedPlain).matches("^\\d{2}:\\d{2}:\\d{2}\\.\\d{3} INFO  Server - Started Server$");
         } finally {
             AnsiOutput.setEnabled(AnsiOutput.Enabled.DETECT);
         }
@@ -129,19 +106,12 @@ class LoggingFormatTests {
         encoder.start();
 
         Logger httpLogger = context.getLogger("dev.canverse.stocks.config.logging.HTTP");
-        LoggingEvent httpEvent =
-                new LoggingEvent(
-                        Logger.FQCN,
-                        httpLogger,
-                        Level.INFO,
-                        "POST /api/portfolios/{portfolioId}/trades/buy 200 62ms",
-                        null,
-                        null);
+        LoggingEvent httpEvent = new LoggingEvent(Logger.FQCN, httpLogger, Level.INFO,
+            "POST /api/portfolios/{portfolioId}/trades/buy 200 62ms", null, null);
         httpEvent.setMDCPropertyMap(Map.of("requestId", "a83f2b91", "userId", "42"));
         httpEvent.addKeyValuePair(new KeyValuePair("event", "http_request_completed"));
         httpEvent.addKeyValuePair(new KeyValuePair("method", "POST"));
-        httpEvent.addKeyValuePair(
-                new KeyValuePair("route", "/api/portfolios/{portfolioId}/trades/buy"));
+        httpEvent.addKeyValuePair(new KeyValuePair("route", "/api/portfolios/{portfolioId}/trades/buy"));
         httpEvent.addKeyValuePair(new KeyValuePair("status", 200));
         httpEvent.addKeyValuePair(new KeyValuePair("durationMs", 62));
 
@@ -151,31 +121,22 @@ class LoggingFormatTests {
         JsonNode node = objectMapper.readTree(json);
         assertThat(node.path("@timestamp").asText()).isNotBlank();
         assertThat(node.path("log").path("level").asText()).isEqualTo("INFO");
-        assertThat(node.path("log").path("logger").asText())
-                .isEqualTo("dev.canverse.stocks.config.logging.HTTP");
+        assertThat(node.path("log").path("logger").asText()).isEqualTo("dev.canverse.stocks.config.logging.HTTP");
         assertThat(node.path("service").path("name").asText()).isEqualTo("Finance");
         assertThat(node.path("service").path("environment").asText()).isEqualTo("prod");
         assertThat(node.path("service").path("version").asText()).isEqualTo("7f3a9c2");
-        assertThat(node.path("message").asText())
-                .isEqualTo("POST /api/portfolios/{portfolioId}/trades/buy 200 62ms");
+        assertThat(node.path("message").asText()).isEqualTo("POST /api/portfolios/{portfolioId}/trades/buy 200 62ms");
         assertThat(node.path("requestId").asText()).isEqualTo("a83f2b91");
         assertThat(node.path("userId").asText()).isEqualTo("42");
         assertThat(node.path("event").asText()).isEqualTo("http_request_completed");
         assertThat(node.path("method").asText()).isEqualTo("POST");
-        assertThat(node.path("route").asText())
-                .isEqualTo("/api/portfolios/{portfolioId}/trades/buy");
+        assertThat(node.path("route").asText()).isEqualTo("/api/portfolios/{portfolioId}/trades/buy");
         assertThat(node.path("status").asInt()).isEqualTo(200);
         assertThat(node.path("durationMs").asLong()).isEqualTo(62L);
         assertThat(node.path("ecs").path("version").asText()).isNotBlank();
 
-        LoggingEvent errorEvent =
-                new LoggingEvent(
-                        Logger.FQCN,
-                        context.getLogger("dev.canverse.stocks.rest.ExceptionHandlerAdvice"),
-                        Level.ERROR,
-                        "Unhandled server exception",
-                        new IllegalStateException("Unexpected failure"),
-                        null);
+        LoggingEvent errorEvent = new LoggingEvent(Logger.FQCN, context.getLogger("dev.canverse.stocks.rest.ExceptionHandlerAdvice"),
+            Level.ERROR, "Unhandled server exception", new IllegalStateException("Unexpected failure"), null);
         errorEvent.setMDCPropertyMap(Map.of("requestId", "c91d2a13", "userId", "42"));
         errorEvent.addKeyValuePair(new KeyValuePair("event", "unhandled_exception"));
         errorEvent.addKeyValuePair(new KeyValuePair("category", "application"));
@@ -183,10 +144,8 @@ class LoggingFormatTests {
         String errorJson = new String(encoder.encode(errorEvent), StandardCharsets.UTF_8);
         JsonNode errorNode = objectMapper.readTree(errorJson);
         assertThat(errorNode.path("log").path("level").asText()).isEqualTo("ERROR");
-        assertThat(errorNode.path("error").path("type").asText())
-                .isEqualTo("java.lang.IllegalStateException");
-        assertThat(errorNode.path("error").path("stack_trace").asText())
-                .contains("IllegalStateException");
+        assertThat(errorNode.path("error").path("type").asText()).isEqualTo("java.lang.IllegalStateException");
+        assertThat(errorNode.path("error").path("stack_trace").asText()).contains("IllegalStateException");
 
         encoder.stop();
     }

@@ -5,13 +5,7 @@ import java.time.Instant;
 import java.util.List;
 
 public record CanliBorsaVerileri(List<Item> data) {
-    public record Item(
-            String symbol,
-            BigDecimal price,
-            BigDecimal change,
-            Instant time,
-            BigDecimal changePercent,
-            String volume) {
+    public record Item(String symbol, BigDecimal price, BigDecimal change, Instant time, BigDecimal changePercent, String volume) {
         public BigDecimal previousClose() {
             return price().subtract(change());
         }

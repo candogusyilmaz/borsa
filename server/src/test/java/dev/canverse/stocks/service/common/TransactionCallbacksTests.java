@@ -1,7 +1,6 @@
 package dev.canverse.stocks.service.common;
 
 import static dev.canverse.stocks.service.common.TransactionCallbacks.afterCommit;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -10,7 +9,9 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
-
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,10 +22,6 @@ import org.springframework.transaction.support.DefaultTransactionStatus;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 class TransactionCallbacksTests {
 
@@ -52,11 +49,10 @@ class TransactionCallbacksTests {
         var txTemplate = new TransactionTemplate(txManager);
         var counter = new AtomicInteger();
 
-        txTemplate.executeWithoutResult(
-                status -> {
-                    afterCommit(counter::incrementAndGet);
-                    assertThat(counter.get()).isZero();
-                });
+        txTemplate.executeWithoutResult(status -> {
+            afterCommit(counter::incrementAndGet);
+            assertThat(counter.get()).isZero();
+        });
 
         assertThat(counter.get()).isEqualTo(1);
     }
@@ -67,14 +63,10 @@ class TransactionCallbacksTests {
         var txTemplate = new TransactionTemplate(txManager);
         var counter = new AtomicInteger();
 
-        assertThatThrownBy(
-                        () ->
-                                txTemplate.executeWithoutResult(
-                                        status -> {
-                                            afterCommit(counter::incrementAndGet);
-                                            throw new IllegalStateException("business failure");
-                                        }))
-                .isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> txTemplate.executeWithoutResult(status -> {
+            afterCommit(counter::incrementAndGet);
+            throw new IllegalStateException("business failure");
+        })).isInstanceOf(IllegalStateException.class);
 
         assertThat(counter.get()).isZero();
     }
@@ -124,18 +116,12 @@ class TransactionCallbacksTests {
         var txTemplate = new TransactionTemplate(txManager);
         var secondCallbackRan = new AtomicInteger();
 
-        assertThatCode(
-                        () ->
-                                txTemplate.executeWithoutResult(
-                                        status -> {
-                                            afterCommit(
-                                                    () -> {
-                                                        throw new IllegalStateException(
-                                                                "logging failure");
-                                                    });
-                                            afterCommit(secondCallbackRan::incrementAndGet);
-                                        }))
-                .doesNotThrowAnyException();
+        assertThatCode(() -> txTemplate.executeWithoutResult(status -> {
+            afterCommit(() -> {
+                throw new IllegalStateException("logging failure");
+            });
+            afterCommit(secondCallbackRan::incrementAndGet);
+        })).doesNotThrowAnyException();
 
         assertThat(txManager.committed).isTrue();
         assertThat(secondCallbackRan.get()).isEqualTo(1);
@@ -143,34 +129,24 @@ class TransactionCallbacksTests {
         var event = appender.list.getFirst();
         assertThat(event.getLevel()).isEqualTo(Level.WARN);
         assertThat(event.getThrowableProxy()).isNotNull();
-        assertThat(toMap(event))
-                .containsEntry("event", "transaction_callback_failed")
-                .containsEntry("exception", "IllegalStateException");
+        assertThat(toMap(event)).containsEntry("event", "transaction_callback_failed").containsEntry("exception", "IllegalStateException");
     }
 
     @Test
     void suppressesCallbackFailureOutsideTransaction() {
-        assertThatCode(
-                        () ->
-                                afterCommit(
-                                        () -> {
-                                            throw new RuntimeException("formatter bug");
-                                        }))
-                .doesNotThrowAnyException();
+        assertThatCode(() -> afterCommit(() -> {
+            throw new RuntimeException("formatter bug");
+        })).doesNotThrowAnyException();
 
         assertThat(appender.list).hasSize(1);
         var event = appender.list.getFirst();
         assertThat(event.getLevel()).isEqualTo(Level.WARN);
-        assertThat(toMap(event))
-                .containsEntry("event", "transaction_callback_failed")
-                .containsEntry("exception", "RuntimeException");
+        assertThat(toMap(event)).containsEntry("event", "transaction_callback_failed").containsEntry("exception", "RuntimeException");
     }
 
     @Test
     void rejectsNullAction() {
-        assertThatThrownBy(() -> afterCommit(null))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessage("action must not be null");
+        assertThatThrownBy(() -> afterCommit(null)).isInstanceOf(NullPointerException.class).hasMessage("action must not be null");
     }
 
     private static void clearTransactionState() {

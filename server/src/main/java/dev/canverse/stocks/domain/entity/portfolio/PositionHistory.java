@@ -2,14 +2,11 @@ package dev.canverse.stocks.domain.entity.portfolio;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-
-import lombok.Getter;
-
-import org.hibernate.annotations.CreationTimestamp;
-
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Instant;
+import lombok.Getter;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Getter
 @Entity
@@ -49,9 +46,6 @@ public class PositionHistory implements Serializable {
     }
 
     public enum ActionType {
-        BUY,
-        SELL,
-        UNDO,
-        STOCK_SPLIT
+        BUY, SELL, UNDO, STOCK_SPLIT
     }
 }

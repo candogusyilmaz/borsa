@@ -3,9 +3,8 @@ package dev.canverse.stocks.security;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
-
+import java.util.List;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.oauth2.jwt.JwtClaimValidator;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -15,8 +14,6 @@ import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -40,20 +37,14 @@ public class JwtConfiguration {
 
     private JwtDecoder decoderFor(String tokenUse) {
         var decoder = NimbusJwtDecoder.withPublicKey(rsaKeys.getPublicKey()).build();
-        decoder.setJwtValidator(
-                JwtValidators.createDefaultWithValidators(
-                        List.of(
-                                new JwtIssuerValidator(ISSUER),
-                                new JwtClaimValidator<>(TOKEN_USE_CLAIM, tokenUse::equals))));
+        decoder.setJwtValidator(JwtValidators.createDefaultWithValidators(
+            List.of(new JwtIssuerValidator(ISSUER), new JwtClaimValidator<>(TOKEN_USE_CLAIM, tokenUse::equals))));
         return decoder;
     }
 
     @Bean
     public JwtEncoder encoder() {
-        var jwk =
-                new RSAKey.Builder(rsaKeys.getPublicKey())
-                        .privateKey(rsaKeys.getPrivateKey())
-                        .build();
+        var jwk = new RSAKey.Builder(rsaKeys.getPublicKey()).privateKey(rsaKeys.getPrivateKey()).build();
         var jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
 
         return new NimbusJwtEncoder(jwks);

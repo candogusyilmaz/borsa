@@ -1,13 +1,10 @@
 package dev.canverse.stocks.domain.entity.portfolio;
 
 import jakarta.persistence.*;
-
-import lombok.Getter;
-
-import org.hibernate.annotations.CreationTimestamp;
-
 import java.io.Serializable;
 import java.time.Instant;
+import lombok.Getter;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Getter
 @Entity

@@ -1,20 +1,16 @@
 package dev.canverse.stocks.domain.entity.portfolio;
 
 import dev.canverse.stocks.domain.entity.account.User;
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-
-import lombok.Getter;
-
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Getter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Getter
 @Entity
@@ -62,16 +58,14 @@ public class Portfolio implements Serializable {
     }
 
     public void setColor(String color) {
-        var validColors =
-                List.of(
-                        "#ef4444", // Red
-                        "#3b82f6", // Blue
-                        "#a855f7", // Purple
-                        "#10b981", // Emerald
-                        "#f59e0b", // Amber
-                        "#f43f5e", // Rose
-                        "#475569" // Slate
-                        );
+        var validColors = List.of("#ef4444", // Red
+            "#3b82f6", // Blue
+            "#a855f7", // Purple
+            "#10b981", // Emerald
+            "#f59e0b", // Amber
+            "#f43f5e", // Rose
+            "#475569" // Slate
+        );
 
         if (!validColors.contains(color.toLowerCase())) {
             throw new IllegalArgumentException("Invalid color code.");

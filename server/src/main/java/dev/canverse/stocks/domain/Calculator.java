@@ -27,8 +27,7 @@ public final class Calculator {
         var difference = current.subtract(previous);
 
         if (previous.compareTo(BigDecimal.ZERO) < 0 && current.compareTo(BigDecimal.ZERO) < 0) {
-            var improvementInLoss =
-                    previous.subtract(current); // How much loss was reduced/increased
+            var improvementInLoss = previous.subtract(current); // How much loss was reduced/increased
             return Calculator.divide(difference, previous.abs()).multiply(BigDecimal.valueOf(100));
         }
 

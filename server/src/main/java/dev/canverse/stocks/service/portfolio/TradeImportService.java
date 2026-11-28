@@ -10,22 +10,18 @@ import com.google.genai.types.Content;
 import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.Part;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-
 import dev.canverse.stocks.domain.entity.instrument.QInstrument;
 import dev.canverse.stocks.domain.entity.portfolio.Transaction;
 import dev.canverse.stocks.domain.exception.BadRequestException;
 import dev.canverse.stocks.service.portfolio.model.BulkTransactionRequest;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
@@ -35,9 +31,8 @@ public class TradeImportService {
     private final ObjectMapper mapper;
     private final JPAQueryFactory queryFactory;
 
-    private static final Part PROMP_TEMPLATE =
-            Part.fromText(
-                    """
+    private static final Part PROMP_TEMPLATE = Part.fromText(
+        """
             You are given the text content of a PDF that may include various financial information. Your task is to extract only the valid stock trade transactions — excluding any unrelated sections or cancelled trades.
 
             Return the result as a JSON array where each object has the following structure:
@@ -94,101 +89,85 @@ public class TradeImportService {
             ]
             """);
 
-    private static final String JSON_SCHEMA =
-            """
-            {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "date": {
-                    "type": "string",
-                    "format": "YYYY-MM-DD'T'hh:mm:ss.SSSZ"
-                  },
-                  "symbol": {
-                    "type": "string"
-                  },
-                  "currency": {
-                    "type": "string"
-                  },
-                  "quantity": {
-                    "type": "number",
-                    "minimum": 0
-                  },
-                  "avgPrice": {
-                    "type": "number"
-                  },
-                  "type": {
-                    "type": "string",
-                    "enum": ["BUY", "SELL"]
-                  },
-                  "marketCode": {
-                    "type": "string",
-                    "enum": ["BIST", "NYSE", "NASDAQ"]
-                  }
-                },
-                "required": ["date", "symbol", "quantity", "avgPrice", "type"]
+    private static final String JSON_SCHEMA = """
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "date": {
+                "type": "string",
+                "format": "YYYY-MM-DD'T'hh:mm:ss.SSSZ"
+              },
+              "symbol": {
+                "type": "string"
+              },
+              "currency": {
+                "type": "string"
+              },
+              "quantity": {
+                "type": "number",
+                "minimum": 0
+              },
+              "avgPrice": {
+                "type": "number"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["BUY", "SELL"]
+              },
+              "marketCode": {
+                "type": "string",
+                "enum": ["BIST", "NYSE", "NASDAQ"]
               }
-            }
-            """;
+            },
+            "required": ["date", "symbol", "quantity", "avgPrice", "type"]
+          }
+        }
+        """;
 
     public List<TransactionImportPreview> importTransactions(MultipartFile file) {
         long startNanos = System.nanoTime();
         try {
-            var content =
-                    Content.fromParts(
-                            PROMP_TEMPLATE, Part.fromBytes(file.getBytes(), file.getContentType()));
+            var content = Content.fromParts(PROMP_TEMPLATE, Part.fromBytes(file.getBytes(), file.getContentType()));
 
-            var config =
-                    GenerateContentConfig.builder()
-                            .temperature(0.1f)
-                            .responseMimeType("application/json")
-                            .responseJsonSchema(JsonSerializable.stringToJsonNode(JSON_SCHEMA))
-                            .build();
+            var config = GenerateContentConfig.builder()
+                .temperature(0.1f)
+                .responseMimeType("application/json")
+                .responseJsonSchema(JsonSerializable.stringToJsonNode(JSON_SCHEMA))
+                .build();
 
             var response = gemini.models.generateContent("gemini-2.5-flash-lite", content, config);
 
-            List<TransactionImportPreview> previews =
-                    mapper.readValue(
-                            response.text(),
-                            mapper.getTypeFactory()
-                                    .constructCollectionType(
-                                            List.class, TransactionImportPreview.class));
+            List<TransactionImportPreview> previews = mapper.readValue(response.text(),
+                mapper.getTypeFactory().constructCollectionType(List.class, TransactionImportPreview.class));
 
             log.atDebug()
-                    .addKeyValue("event", "trade_import_extracted")
-                    .addKeyValue("provider", "gemini")
-                    .addKeyValue("extractedCount", previews.size())
-                    .addKeyValue("durationMs", elapsedMs(startNanos))
-                    .log("Extracted trade previews from document");
+                .addKeyValue("event", "trade_import_extracted")
+                .addKeyValue("provider", "gemini")
+                .addKeyValue("extractedCount", previews.size())
+                .addKeyValue("durationMs", elapsedMs(startNanos))
+                .log("Extracted trade previews from document");
 
             return previews;
         } catch (ServerException ex) {
             log.atError()
-                    .addKeyValue("event", "trade_import_failed")
-                    .addKeyValue("provider", "gemini")
-                    .addKeyValue("reason", "provider_unavailable")
-                    .addKeyValue("durationMs", elapsedMs(startNanos))
-                    .setCause(ex)
-                    .log("Trade import failed due to upstream provider error");
-            throw new BadRequestException(
-                    "Our services are currently unavailable. Please try again later.");
+                .addKeyValue("event", "trade_import_failed")
+                .addKeyValue("provider", "gemini")
+                .addKeyValue("reason", "provider_unavailable")
+                .addKeyValue("durationMs", elapsedMs(startNanos))
+                .setCause(ex)
+                .log("Trade import failed due to upstream provider error");
+            throw new BadRequestException("Our services are currently unavailable. Please try again later.");
         } catch (Exception ex) {
             throw new RuntimeException("Failed to import transactions", ex);
         }
     }
 
-    public record TransactionImportPreview(
-            Instant date,
-            String symbol,
-            String marketCode,
-            String currency,
-            BigDecimal quantity,
-            BigDecimal avgPrice,
-            Transaction.Type type) {}
+    public record TransactionImportPreview(Instant date, String symbol, String marketCode, String currency, BigDecimal quantity,
+        BigDecimal avgPrice, Transaction.Type type) {}
 
-    public List<BulkTransactionRequest> parseImportedTransactions(
-            List<TransactionImportPreview> imports) {
+    public List<BulkTransactionRequest> parseImportedTransactions(List<TransactionImportPreview> imports) {
         long startNanos = System.nanoTime();
         var result = new ArrayList<BulkTransactionRequest>();
         int skippedCount = 0;
@@ -196,37 +175,26 @@ public class TradeImportService {
         var ins = QInstrument.instrument;
 
         for (var item : imports) {
-            var instrument =
-                    queryFactory
-                            .selectFrom(ins)
-                            .where(
-                                    ins.symbol
-                                            .eq(item.symbol)
-                                            .and(ins.market.code.eq(item.marketCode)))
-                            .fetchFirst();
+            var instrument = queryFactory.selectFrom(ins)
+                .where(ins.symbol.eq(item.symbol).and(ins.market.code.eq(item.marketCode)))
+                .fetchFirst();
 
             if (instrument == null) {
                 skippedCount++;
                 continue;
             }
 
-            result.add(
-                    new BulkTransactionRequest(
-                            item.type(),
-                            instrument.getId(),
-                            item.quantity(),
-                            item.avgPrice(),
-                            BigDecimal.ZERO,
-                            item.date()));
+            result.add(new BulkTransactionRequest(item.type(), instrument.getId(), item.quantity(), item.avgPrice(), BigDecimal.ZERO,
+                item.date()));
         }
 
         var builder = skippedCount > 0 && result.isEmpty() ? log.atWarn() : log.atInfo();
         builder.addKeyValue("event", "trade_import_completed")
-                .addKeyValue("extractedCount", imports.size())
-                .addKeyValue("importedCount", result.size())
-                .addKeyValue("skippedCount", skippedCount)
-                .addKeyValue("durationMs", elapsedMs(startNanos))
-                .log("Trade import completed");
+            .addKeyValue("extractedCount", imports.size())
+            .addKeyValue("importedCount", result.size())
+            .addKeyValue("skippedCount", skippedCount)
+            .addKeyValue("durationMs", elapsedMs(startNanos))
+            .log("Trade import completed");
 
         return result;
     }

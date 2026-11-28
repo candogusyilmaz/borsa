@@ -1,11 +1,9 @@
 package dev.canverse.stocks.domain.exception;
 
+import java.io.Serializable;
 import lombok.Getter;
-
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
-
-import java.io.Serializable;
 
 @Getter
 public abstract class ApiException extends RuntimeException implements Serializable {

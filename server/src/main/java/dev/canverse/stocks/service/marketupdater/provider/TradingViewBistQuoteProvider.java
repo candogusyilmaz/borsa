@@ -2,7 +2,13 @@ package dev.canverse.stocks.service.marketupdater.provider;
 
 import dev.canverse.stocks.service.marketupdater.MarketQuote;
 import dev.canverse.stocks.service.marketupdater.MarketQuoteProvider;
-
+import java.math.BigDecimal;
+import java.net.http.HttpClient;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
@@ -11,20 +17,9 @@ import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
-import java.math.BigDecimal;
-import java.net.http.HttpClient;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
 @Component
 @Order(1)
-@ConditionalOnProperty(
-        name = "market-updater.providers.tradingview.enabled",
-        havingValue = "true",
-        matchIfMissing = true)
+@ConditionalOnProperty(name = "market-updater.providers.tradingview.enabled", havingValue = "true", matchIfMissing = true)
 public class TradingViewBistQuoteProvider implements MarketQuoteProvider {
 
     private final RestClient restClient;
@@ -34,11 +29,10 @@ public class TradingViewBistQuoteProvider implements MarketQuoteProvider {
         var requestFactory = new JdkClientHttpRequestFactory(httpClient);
         requestFactory.setReadTimeout(Duration.ofSeconds(10));
 
-        this.restClient =
-                builder.baseUrl("https://scanner.tradingview.com")
-                        .requestFactory(requestFactory)
-                        .defaultHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0")
-                        .build();
+        this.restClient = builder.baseUrl("https://scanner.tradingview.com")
+            .requestFactory(requestFactory)
+            .defaultHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0")
+            .build();
     }
 
     @Override
@@ -58,43 +52,22 @@ public class TradingViewBistQuoteProvider implements MarketQuoteProvider {
 
     @Override
     public List<MarketQuote> fetchQuotes() {
-        var request =
-                Map.of(
-                        "filter",
-                        List.of(
-                                Map.of(
-                                        "left",
-                                        "type",
-                                        "operation",
-                                        "in_range",
-                                        "right",
-                                        List.of("stock", "fund"))),
-                        "options",
-                        Map.of("lang", "tr"),
-                        "columns",
-                        List.of("name", "description", "close", "change_abs", "time|1", "time"),
-                        "sort",
-                        Map.of("sortBy", "name", "sortOrder", "asc"),
-                        "range",
-                        List.of(0, 1000));
+        var request = Map.of("filter", List.of(Map.of("left", "type", "operation", "in_range", "right", List.of("stock", "fund"))),
+            "options", Map.of("lang", "tr"), "columns", List.of("name", "description", "close", "change_abs", "time|1", "time"), "sort",
+            Map.of("sortBy", "name", "sortOrder", "asc"), "range", List.of(0, 1000));
 
-        var response =
-                restClient
-                        .post()
-                        .uri("/turkey/scan")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(request)
-                        .retrieve()
-                        .body(TvScanResponse.class);
+        var response = restClient.post()
+            .uri("/turkey/scan")
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(request)
+            .retrieve()
+            .body(TvScanResponse.class);
 
         if (response == null || response.data() == null) {
             return List.of();
         }
 
-        return response.data().stream()
-                .map(row -> toQuote(row.d()))
-                .filter(Objects::nonNull)
-                .toList();
+        return response.data().stream().map(row -> toQuote(row.d())).filter(Objects::nonNull).toList();
     }
 
     private MarketQuote toQuote(List<Object> cols) {
@@ -115,8 +88,7 @@ public class TradingViewBistQuoteProvider implements MarketQuoteProvider {
             return null;
         }
 
-        var changeAbs =
-                cols.get(3) != null ? new BigDecimal(cols.get(3).toString()) : BigDecimal.ZERO;
+        var changeAbs = cols.get(3) != null ? new BigDecimal(cols.get(3).toString()) : BigDecimal.ZERO;
         var previousClose = last.subtract(changeAbs);
         if (previousClose.signum() <= 0) {
             return null;

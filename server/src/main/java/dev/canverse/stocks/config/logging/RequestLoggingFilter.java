@@ -3,13 +3,16 @@ package dev.canverse.stocks.config.logging;
 import static dev.canverse.stocks.service.common.TimingUtils.elapsedMs;
 
 import dev.canverse.stocks.domain.entity.account.User;
-
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
+import java.io.IOException;
+import java.util.Locale;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -21,12 +24,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
 
-import java.io.IOException;
-import java.util.Locale;
-import java.util.Set;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.regex.Pattern;
-
 public class RequestLoggingFilter extends OncePerRequestFilter {
 
     public static final String REQUEST_ID_HEADER = "X-Request-Id";
@@ -34,21 +31,17 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
     public static final String MDC_USER_ID = "userId";
     static final String USER_ID_ATTRIBUTE = RequestLoggingFilter.class.getName() + ".USER_ID";
 
-    private static final Logger HTTP_LOG =
-            LoggerFactory.getLogger("dev.canverse.stocks.config.logging.HTTP");
+    private static final Logger HTTP_LOG = LoggerFactory.getLogger("dev.canverse.stocks.config.logging.HTTP");
 
     private static final Pattern VALID_REQUEST_ID = Pattern.compile("^[A-Za-z0-9_-]{8,64}$");
-    private static final Pattern UUID_SEGMENT =
-            Pattern.compile(
-                    "(?<=/)([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(?=/|$)");
+    private static final Pattern UUID_SEGMENT = Pattern
+        .compile("(?<=/)([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})(?=/|$)");
     private static final Pattern NUMERIC_SEGMENT = Pattern.compile("(?<=/)\\d+(?=/|$)");
     private static final Pattern CONTROL_CHARS = Pattern.compile("[\\p{Cntrl}]");
     private static final int MAX_ROUTE_LENGTH = 128;
 
-    private static final Set<String> STATIC_EXTENSIONS =
-            Set.of(
-                    ".js", ".css", ".map", ".svg", ".png", ".jpg", ".jpeg", ".gif", ".ico", ".woff",
-                    ".woff2", ".ttf", ".eot", ".webp", ".html");
+    private static final Set<String> STATIC_EXTENSIONS = Set.of(".js", ".css", ".map", ".svg", ".png", ".jpg", ".jpeg", ".gif", ".ico",
+        ".woff", ".woff2", ".ttf", ".eot", ".webp", ".html");
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -56,9 +49,8 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(
-            HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+        throws ServletException, IOException {
         String previousRequestId = MDC.get(MDC_REQUEST_ID);
         String previousUserId = MDC.get(MDC_USER_ID);
         String requestId = resolveRequestId(request.getHeader(REQUEST_ID_HEADER));
@@ -88,15 +80,9 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
                 String route = resolveRoute(request);
 
                 if (!shouldSkipLogging(request)) {
-                    logCompletion(
-                            completionBuilder(status),
-                            request.getMethod(),
-                            route,
-                            status,
-                            durationMs);
+                    logCompletion(completionBuilder(status), request.getMethod(), route, status, durationMs);
                 } else if (HTTP_LOG.isTraceEnabled()) {
-                    logCompletion(
-                            HTTP_LOG.atTrace(), request.getMethod(), route, status, durationMs);
+                    logCompletion(HTTP_LOG.atTrace(), request.getMethod(), route, status, durationMs);
                 }
             } finally {
                 restoreMdc(MDC_REQUEST_ID, previousRequestId);
@@ -115,14 +101,13 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         return HTTP_LOG.atInfo();
     }
 
-    private void logCompletion(
-            LoggingEventBuilder builder, String method, String route, int status, long durationMs) {
+    private void logCompletion(LoggingEventBuilder builder, String method, String route, int status, long durationMs) {
         builder.addKeyValue("event", "http_request_completed")
-                .addKeyValue("method", method)
-                .addKeyValue("route", route)
-                .addKeyValue("status", status)
-                .addKeyValue("durationMs", durationMs)
-                .log("{} {} {} {}ms", method, route, status, durationMs);
+            .addKeyValue("method", method)
+            .addKeyValue("route", route)
+            .addKeyValue("status", status)
+            .addKeyValue("durationMs", durationMs)
+            .log("{} {} {} {}ms", method, route, status, durationMs);
     }
 
     static String resolveRequestId(String headerValue) {
@@ -218,15 +203,9 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         }
 
         String normalized = uri.toLowerCase(Locale.ROOT);
-        if (normalized.equals("/actuator")
-                || normalized.startsWith("/actuator/")
-                || normalized.equals("/swagger-ui.html")
-                || normalized.startsWith("/swagger-ui/")
-                || normalized.equals("/v3/api-docs")
-                || normalized.startsWith("/v3/api-docs/")
-                || normalized.equals("/favicon.ico")
-                || normalized.equals("/robots.txt")
-                || normalized.startsWith("/assets/")) {
+        if (normalized.equals("/actuator") || normalized.startsWith("/actuator/") || normalized.equals("/swagger-ui.html")
+            || normalized.startsWith("/swagger-ui/") || normalized.equals("/v3/api-docs") || normalized.startsWith("/v3/api-docs/")
+            || normalized.equals("/favicon.ico") || normalized.equals("/robots.txt") || normalized.startsWith("/assets/")) {
             return true;
         }
 

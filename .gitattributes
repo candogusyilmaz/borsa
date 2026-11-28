@@ -1,3 +1,4 @@
 /server/mvnw text eol=lf
+/server/src/**/*.java text eol=lf
 /web/** text=auto eol=lf
 *.cmd text eol=crlf

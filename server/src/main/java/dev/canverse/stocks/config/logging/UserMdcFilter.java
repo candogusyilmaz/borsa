@@ -4,23 +4,18 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
+import java.io.IOException;
 import org.slf4j.MDC;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-
 public class UserMdcFilter extends OncePerRequestFilter {
 
     @Override
-    protected void doFilterInternal(
-            HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+        throws ServletException, IOException {
         String previousUserId = MDC.get(RequestLoggingFilter.MDC_USER_ID);
-        String userId =
-                RequestLoggingFilter.extractAuthenticatedUserId(
-                        SecurityContextHolder.getContext().getAuthentication());
+        String userId = RequestLoggingFilter.extractAuthenticatedUserId(SecurityContextHolder.getContext().getAuthentication());
 
         if (userId != null) {
             MDC.put(RequestLoggingFilter.MDC_USER_ID, userId);

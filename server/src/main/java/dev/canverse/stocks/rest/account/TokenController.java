@@ -8,13 +8,12 @@ import dev.canverse.stocks.service.account.model.GoogleTokenRequest;
 import dev.canverse.stocks.service.account.model.TokenCreateRequest;
 import dev.canverse.stocks.service.account.model.TokenCreateResponse;
 import dev.canverse.stocks.service.account.model.UserRegistrationRequest;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,9 +29,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Optional;
-import java.util.UUID;
-
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -45,16 +41,14 @@ public class TokenController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/register")
-    public ResponseEntity<@NotNull TokenCreateResponse> register(
-            @Valid @RequestBody UserRegistrationRequest request) {
+    public ResponseEntity<@NotNull TokenCreateResponse> register(@Valid @RequestBody UserRegistrationRequest request) {
         var user = userService.register(request);
 
         return tokenService.create(user);
     }
 
     @PostMapping("/token")
-    public ResponseEntity<@NotNull TokenCreateResponse> createAccessToken(
-            @RequestBody TokenCreateRequest login) {
+    public ResponseEntity<@NotNull TokenCreateResponse> createAccessToken(@RequestBody TokenCreateRequest login) {
         var token = new UsernamePasswordAuthenticationToken(login.username(), login.password());
         var auth = authenticationManager.authenticate(token);
         var user = (User) auth.getPrincipal();
@@ -63,23 +57,23 @@ public class TokenController {
         var response = tokenService.create(user);
 
         log.atInfo()
-                .addKeyValue("event", "authentication_succeeded")
-                .addKeyValue("authMethod", "password")
-                .addKeyValue("userId", String.valueOf(user.getId()))
-                .log("Authentication succeeded");
+            .addKeyValue("event", "authentication_succeeded")
+            .addKeyValue("authMethod", "password")
+            .addKeyValue("userId", String.valueOf(user.getId()))
+            .log("Authentication succeeded");
 
         return response;
     }
 
     @PostMapping("/refresh-token")
     public ResponseEntity<@NotNull TokenCreateResponse> refreshAccessToken(
-            @CookieValue(name = "refresh-token") Optional<String> refreshToken) {
+        @CookieValue(name = "refresh-token") Optional<String> refreshToken) {
         if (refreshToken.isEmpty() || refreshToken.get().isBlank()) {
             log.atWarn()
-                    .addKeyValue("event", "authentication_failed")
-                    .addKeyValue("authMethod", "refresh_token")
-                    .addKeyValue("reason", "missing_token")
-                    .log("Token refresh failed");
+                .addKeyValue("event", "authentication_failed")
+                .addKeyValue("authMethod", "refresh_token")
+                .addKeyValue("reason", "missing_token")
+                .log("Token refresh failed");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
@@ -88,21 +82,21 @@ public class TokenController {
             user = tokenService.getSecurityUser(refreshToken.get());
         } catch (JwtException | UsernameNotFoundException ex) {
             log.atWarn()
-                    .addKeyValue("event", "authentication_failed")
-                    .addKeyValue("authMethod", "refresh_token")
-                    .addKeyValue("reason", resolveRefreshFailureReason(ex))
-                    .addKeyValue("exception", ex.getClass().getSimpleName())
-                    .log("Token refresh failed");
+                .addKeyValue("event", "authentication_failed")
+                .addKeyValue("authMethod", "refresh_token")
+                .addKeyValue("reason", resolveRefreshFailureReason(ex))
+                .addKeyValue("exception", ex.getClass().getSimpleName())
+                .log("Token refresh failed");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         var response = tokenService.create(user);
 
         log.atInfo()
-                .addKeyValue("event", "authentication_succeeded")
-                .addKeyValue("authMethod", "refresh_token")
-                .addKeyValue("userId", String.valueOf(user.getId()))
-                .log("Token refreshed");
+            .addKeyValue("event", "authentication_succeeded")
+            .addKeyValue("authMethod", "refresh_token")
+            .addKeyValue("userId", String.valueOf(user.getId()))
+            .log("Token refreshed");
 
         return response;
     }
@@ -111,14 +105,9 @@ public class TokenController {
         if (ex instanceof UsernameNotFoundException) {
             return "user_not_found";
         }
-        if (ex instanceof JwtValidationException validationEx
-                && validationEx.getErrors().stream()
-                        .anyMatch(
-                                error ->
-                                        error.getDescription() != null
-                                                && error.getDescription()
-                                                        .toLowerCase()
-                                                        .contains("expired"))) {
+        if (ex instanceof JwtValidationException validationEx && validationEx.getErrors()
+            .stream()
+            .anyMatch(error -> error.getDescription() != null && error.getDescription().toLowerCase().contains("expired"))) {
             return "expired_token";
         }
         return "invalid_token";
@@ -126,36 +115,25 @@ public class TokenController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout() {
-        return ResponseEntity.noContent()
-                .header(HttpHeaders.SET_COOKIE, tokenService.clearRefreshTokenCookie())
-                .build();
+        return ResponseEntity.noContent().header(HttpHeaders.SET_COOKIE, tokenService.clearRefreshTokenCookie()).build();
     }
 
     @PostMapping("/google")
-    public ResponseEntity<@NotNull TokenCreateResponse> googleLogin(
-            @Valid @RequestBody GoogleTokenRequest request) {
-        var googleUser =
-                googleAuthService.verifyAuthorizationCode(request.code(), request.redirectUri());
+    public ResponseEntity<@NotNull TokenCreateResponse> googleLogin(@Valid @RequestBody GoogleTokenRequest request) {
+        var googleUser = googleAuthService.verifyAuthorizationCode(request.code(), request.redirectUri());
 
-        var user =
-                userService
-                        .loadUserByEmail(googleUser.email())
-                        .orElseGet(
-                                () ->
-                                        userService.register(
-                                                new UserRegistrationRequest(
-                                                        googleUser.name(),
-                                                        googleUser.email(),
-                                                        UUID.randomUUID().toString())));
+        var user = userService.loadUserByEmail(googleUser.email())
+            .orElseGet(() -> userService
+                .register(new UserRegistrationRequest(googleUser.name(), googleUser.email(), UUID.randomUUID().toString())));
 
         userService.updateLastLogin(user.getId());
         var response = tokenService.create(user);
 
         log.atInfo()
-                .addKeyValue("event", "authentication_succeeded")
-                .addKeyValue("authMethod", "google")
-                .addKeyValue("userId", String.valueOf(user.getId()))
-                .log("Authentication succeeded");
+            .addKeyValue("event", "authentication_succeeded")
+            .addKeyValue("authMethod", "google")
+            .addKeyValue("userId", String.valueOf(user.getId()))
+            .log("Authentication succeeded");
 
         return response;
     }

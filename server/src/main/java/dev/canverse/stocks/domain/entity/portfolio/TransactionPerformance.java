@@ -1,17 +1,13 @@
 package dev.canverse.stocks.domain.entity.portfolio;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-
 import jakarta.persistence.*;
-
+import java.math.BigDecimal;
+import java.time.Instant;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-
 import org.hibernate.annotations.CreationTimestamp;
-
-import java.math.BigDecimal;
-import java.time.Instant;
 
 @Getter
 @Entity
@@ -43,8 +39,7 @@ public class TransactionPerformance {
 
     protected TransactionPerformance() {}
 
-    protected TransactionPerformance(
-            Transaction transaction, BigDecimal profit, BigDecimal returnPercentage) {
+    protected TransactionPerformance(Transaction transaction, BigDecimal profit, BigDecimal returnPercentage) {
         this.transaction = transaction;
         this.profit = profit;
         this.returnPercentage = returnPercentage;

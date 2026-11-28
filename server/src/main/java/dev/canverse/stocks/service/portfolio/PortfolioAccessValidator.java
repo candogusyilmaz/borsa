@@ -19,10 +19,7 @@ public class PortfolioAccessValidator {
     }
 
     public Portfolio validateAccess(Long portfolioId, Long userId) {
-        var portfolio =
-                portfolioRepository
-                        .findById(portfolioId)
-                        .orElseThrow(() -> new NotFoundException("Portfolio not found"));
+        var portfolio = portfolioRepository.findById(portfolioId).orElseThrow(() -> new NotFoundException("Portfolio not found"));
 
         if (!portfolio.getUser().getId().equals(userId)) {
             throw new NotFoundException("Portfolio not found");

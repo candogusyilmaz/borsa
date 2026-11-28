@@ -5,7 +5,6 @@ import static org.springframework.data.web.config.EnableSpringDataWebSupport.Pag
 import dev.canverse.stocks.config.MarketUpdaterProperties;
 import dev.canverse.stocks.security.GoogleOAuthProperties;
 import dev.canverse.stocks.security.RsaKeyProperties;
-
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

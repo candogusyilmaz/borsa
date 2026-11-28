@@ -7,14 +7,11 @@ import dev.canverse.stocks.repository.PositionRepository;
 import dev.canverse.stocks.security.AuthenticationProvider;
 import dev.canverse.stocks.service.portfolio.model.FetchPositionsQuery;
 import dev.canverse.stocks.service.portfolio.model.PositionInfo;
-
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Slf4j
 @Service
@@ -27,11 +24,7 @@ public class PositionService {
     public void deleteAllPositions() {
         positionRepository.deleteAllByUserId(AuthenticationProvider.getUser().getId());
 
-        afterCommit(
-                () ->
-                        log.atInfo()
-                                .addKeyValue("event", "positions_cleared")
-                                .log("User positions cleared"));
+        afterCommit(() -> log.atInfo().addKeyValue("event", "positions_cleared").log("User positions cleared"));
     }
 
     public List<PositionInfo> fetchPositions(Long userId, FetchPositionsQuery query) {

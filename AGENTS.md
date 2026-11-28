@@ -4,6 +4,7 @@
 - Keep the server and web client aligned when changing API contracts. The root [README](README.md) describes the local and production builds.
 - Prefer `rg` for text and file searches. Narrow the directory and glob to match the task. Use language-aware tooling for symbol navigation.
 - For library, framework, SDK, CLI and cloud-service documentation, resolve the library in Context7 and query its official documentation by concept.
+- Run formatting and verification explicitly. Review the diff before staging, select only task-related changes, and preserve unrelated staged work. Never stage the entire working tree automatically.
 
 ## Engineering philosophy
 

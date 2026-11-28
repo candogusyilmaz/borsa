@@ -1,9 +1,8 @@
 package dev.canverse.stocks.config.logging;
 
+import java.util.Map;
 import org.slf4j.MDC;
 import org.springframework.core.task.TaskDecorator;
-
-import java.util.Map;
 
 public class MdcTaskDecorator implements TaskDecorator {
 

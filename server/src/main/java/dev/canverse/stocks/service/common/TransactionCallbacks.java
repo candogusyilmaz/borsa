@@ -1,11 +1,9 @@
 package dev.canverse.stocks.service.common;
 
+import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-
-import java.util.Objects;
 
 /** Best-effort transaction callbacks for non-critical side effects such as operational logging. */
 @Slf4j
@@ -26,17 +24,15 @@ public final class TransactionCallbacks {
     public static void afterCommit(Runnable action) {
         Objects.requireNonNull(action, "action must not be null");
 
-        if (TransactionSynchronizationManager.isActualTransactionActive()
-                && TransactionSynchronizationManager.isSynchronizationActive()) {
-            TransactionSynchronizationManager.registerSynchronization(
-                    new TransactionSynchronization() {
-                        @Override
-                        public void afterCompletion(int status) {
-                            if (status == TransactionSynchronization.STATUS_COMMITTED) {
-                                runSafely(action);
-                            }
-                        }
-                    });
+        if (TransactionSynchronizationManager.isActualTransactionActive() && TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCompletion(int status) {
+                    if (status == TransactionSynchronization.STATUS_COMMITTED) {
+                        runSafely(action);
+                    }
+                }
+            });
             return;
         }
 
@@ -48,10 +44,10 @@ public final class TransactionCallbacks {
             action.run();
         } catch (RuntimeException ex) {
             log.atWarn()
-                    .addKeyValue("event", "transaction_callback_failed")
-                    .addKeyValue("exception", ex.getClass().getSimpleName())
-                    .setCause(ex)
-                    .log("After-commit callback failed");
+                .addKeyValue("event", "transaction_callback_failed")
+                .addKeyValue("exception", ex.getClass().getSimpleName())
+                .setCause(ex)
+                .log("After-commit callback failed");
         }
     }
 }

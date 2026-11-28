@@ -15,17 +15,18 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
-
 import dev.canverse.stocks.config.JwtAuthenticationConverter;
 import dev.canverse.stocks.config.SecurityConfiguration;
 import dev.canverse.stocks.domain.entity.account.User;
 import dev.canverse.stocks.domain.exception.NotFoundException;
 import dev.canverse.stocks.rest.ExceptionHandlerAdvice;
-
 import jakarta.servlet.ServletException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,27 +57,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-
 @WebMvcTest(controllers = RequestLoggingFilterTests.TestController.class)
-@Import({
-    SecurityConfiguration.class,
-    LoggingConfiguration.class,
-    ExceptionHandlerAdvice.class,
-    RequestLoggingFilterTests.TestController.class
-})
+@Import({SecurityConfiguration.class, LoggingConfiguration.class, ExceptionHandlerAdvice.class,
+    RequestLoggingFilterTests.TestController.class})
 class RequestLoggingFilterTests {
 
-    @Autowired private WebApplicationContext context;
+    @Autowired
+    private WebApplicationContext context;
 
     @MockitoBean(name = "accessTokenDecoder")
     private JwtDecoder jwtDecoder;
 
-    @MockitoBean private JwtAuthenticationConverter jwtAuthenticationConverter;
-    @MockitoBean private UserDetailsService userDetailsService;
+    @MockitoBean
+    private JwtAuthenticationConverter jwtAuthenticationConverter;
+    @MockitoBean
+    private UserDetailsService userDetailsService;
 
     private MockMvc mockMvc;
     private ListAppender<ILoggingEvent> httpAppender;
@@ -89,11 +84,7 @@ class RequestLoggingFilterTests {
 
     @BeforeEach
     void setUp() {
-        mockMvc =
-                MockMvcBuilders.webAppContextSetup(context)
-                        .addFilters(new RequestLoggingFilter())
-                        .apply(springSecurity())
-                        .build();
+        mockMvc = MockMvcBuilders.webAppContextSetup(context).addFilters(new RequestLoggingFilter()).apply(springSecurity()).build();
 
         httpLogger = (Logger) LoggerFactory.getLogger("dev.canverse.stocks.config.logging.HTTP");
         adviceLogger = (Logger) LoggerFactory.getLogger(ExceptionHandlerAdvice.class);
@@ -115,23 +106,19 @@ class RequestLoggingFilterTests {
     }
 
     @Test
-    void logsAuthenticatedRequestWithNormalizedRouteTrustedUserIdAndResponseHeader()
-            throws Exception {
+    void logsAuthenticatedRequestWithNormalizedRouteTrustedUserIdAndResponseHeader() throws Exception {
         var user = testUser(42L, "private-user@example.com");
         var auth = UsernamePasswordAuthenticationToken.authenticated(user, null, List.of());
 
-        var result =
-                mockMvc.perform(
-                                get("/api/test/portfolios/98765")
-                                        .queryParam("token", "secret-query-value")
-                                        .header("X-User-Id", "spoofed-user")
-                                        .with(authentication(auth)))
-                        .andExpect(status().isOk())
-                        .andExpect(header().exists(RequestLoggingFilter.REQUEST_ID_HEADER))
-                        .andReturn();
+        var result = mockMvc
+            .perform(get("/api/test/portfolios/98765").queryParam("token", "secret-query-value")
+                .header("X-User-Id", "spoofed-user")
+                .with(authentication(auth)))
+            .andExpect(status().isOk())
+            .andExpect(header().exists(RequestLoggingFilter.REQUEST_ID_HEADER))
+            .andReturn();
 
-        String responseRequestId =
-                result.getResponse().getHeader(RequestLoggingFilter.REQUEST_ID_HEADER);
+        String responseRequestId = result.getResponse().getHeader(RequestLoggingFilter.REQUEST_ID_HEADER);
         assertThat(responseRequestId).matches("^[0-9a-f]{8}$");
 
         // Controller log during request received both requestId and trusted internal userId
@@ -146,8 +133,7 @@ class RequestLoggingFilterTests {
         assertThat(event.getLevel()).isEqualTo(Level.INFO);
         assertThat(event.getMDCPropertyMap().get("requestId")).isEqualTo(responseRequestId);
         assertThat(event.getMDCPropertyMap().get("userId")).isEqualTo("42");
-        assertThat(event.getFormattedMessage())
-                .startsWith("GET /api/test/portfolios/{portfolioId} 200 ");
+        assertThat(event.getFormattedMessage()).startsWith("GET /api/test/portfolios/{portfolioId} 200 ");
         assertThat(event.getFormattedMessage()).doesNotContain("98765");
         assertThat(event.getFormattedMessage()).doesNotContain("secret-query-value");
         assertThat(event.getFormattedMessage()).doesNotContain("private-user@example.com");
@@ -166,14 +152,10 @@ class RequestLoggingFilterTests {
     }
 
     @Test
-    void logsAnonymousPublicRequestWithoutUserIdAndAcceptsValidExternalRequestId()
-            throws Exception {
-        mockMvc.perform(
-                        post("/api/auth/token")
-                                .header(RequestLoggingFilter.REQUEST_ID_HEADER, "req-abc12345")
-                                .header("X-User-Id", "999"))
-                .andExpect(status().isOk())
-                .andExpect(header().string(RequestLoggingFilter.REQUEST_ID_HEADER, "req-abc12345"));
+    void logsAnonymousPublicRequestWithoutUserIdAndAcceptsValidExternalRequestId() throws Exception {
+        mockMvc.perform(post("/api/auth/token").header(RequestLoggingFilter.REQUEST_ID_HEADER, "req-abc12345").header("X-User-Id", "999"))
+            .andExpect(status().isOk())
+            .andExpect(header().string(RequestLoggingFilter.REQUEST_ID_HEADER, "req-abc12345"));
 
         assertThat(httpAppender.list).hasSize(1);
         var event = httpAppender.list.getFirst();
@@ -186,27 +168,21 @@ class RequestLoggingFilterTests {
 
     @Test
     void rejectsMaliciousOrInvalidRequestIdHeaderAndGeneratesSafeReplacement() throws Exception {
-        var result =
-                mockMvc.perform(
-                                post("/api/auth/token")
-                                        .header(
-                                                RequestLoggingFilter.REQUEST_ID_HEADER,
-                                                "bad\r\nFAKE LOG LINE"))
-                        .andExpect(status().isOk())
-                        .andReturn();
+        var result = mockMvc.perform(post("/api/auth/token").header(RequestLoggingFilter.REQUEST_ID_HEADER, "bad\r\nFAKE LOG LINE"))
+            .andExpect(status().isOk())
+            .andReturn();
 
         String effectiveId = result.getResponse().getHeader(RequestLoggingFilter.REQUEST_ID_HEADER);
         assertThat(effectiveId).matches("^[0-9a-f]{8}$");
         assertThat(httpAppender.list).hasSize(1);
-        assertThat(httpAppender.list.getFirst().getMDCPropertyMap().get("requestId"))
-                .isEqualTo(effectiveId);
+        assertThat(httpAppender.list.getFirst().getMDCPropertyMap().get("requestId")).isEqualTo(effectiveId);
     }
 
     @Test
     void logsSecurityRejectedUnauthenticatedRequestWithNormalizedNumericPath() throws Exception {
         mockMvc.perform(get("/api/test/portfolios/12345?secret=topsecret"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(header().exists(RequestLoggingFilter.REQUEST_ID_HEADER));
+            .andExpect(status().isUnauthorized())
+            .andExpect(header().exists(RequestLoggingFilter.REQUEST_ID_HEADER));
 
         assertThat(httpAppender.list).hasSize(1);
         var event = httpAppender.list.getFirst();
@@ -222,8 +198,8 @@ class RequestLoggingFilterTests {
     @Test
     void logsBadCredentialsWithoutStackTraceOrCredentials() throws Exception {
         mockMvc.perform(post("/api/auth/register"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.detail").value("Email or password is incorrect."));
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.detail").value("Email or password is incorrect."));
 
         assertThat(adviceAppender.list).hasSize(1);
         var adviceEvent = adviceAppender.list.getFirst();
@@ -242,8 +218,7 @@ class RequestLoggingFilterTests {
         var user = testUser(77L, "member@example.com");
         var auth = UsernamePasswordAuthenticationToken.authenticated(user, null, List.of());
 
-        mockMvc.perform(get("/api/test/admin-only").with(authentication(auth)))
-                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/test/admin-only").with(authentication(auth))).andExpect(status().isForbidden());
 
         assertThat(adviceAppender.list).hasSize(1);
         var adviceEvent = adviceAppender.list.getFirst();
@@ -264,13 +239,11 @@ class RequestLoggingFilterTests {
         var user = testUser(11L, "user@example.com");
         var auth = UsernamePasswordAuthenticationToken.authenticated(user, null, List.of());
 
-        mockMvc.perform(
-                        post("/api/test/validate")
-                                .with(authentication(auth))
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("{\"name\":\"\"}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.invalid-params[0].field").value("name"));
+        mockMvc
+            .perform(
+                post("/api/test/validate").with(authentication(auth)).contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"\"}"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.invalid-params[0].field").value("name"));
 
         assertThat(adviceAppender.list).noneMatch(e -> e.getLevel().isGreaterOrEqual(Level.WARN));
         assertThat(httpAppender.list).hasSize(1);
@@ -280,8 +253,7 @@ class RequestLoggingFilterTests {
         httpAppender.list.clear();
         adviceAppender.list.clear();
 
-        mockMvc.perform(get("/api/test/not-found").with(authentication(auth)))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(get("/api/test/not-found").with(authentication(auth))).andExpect(status().isNotFound());
 
         assertThat(adviceAppender.list).noneMatch(e -> e.getLevel().isGreaterOrEqual(Level.WARN));
         assertThat(httpAppender.list).hasSize(1);
@@ -289,14 +261,13 @@ class RequestLoggingFilterTests {
     }
 
     @Test
-    void logsBusinessRuleViolationAtWarnWithoutStackTraceAndServerErrorAtErrorWithStackTrace()
-            throws Exception {
+    void logsBusinessRuleViolationAtWarnWithoutStackTraceAndServerErrorAtErrorWithStackTrace() throws Exception {
         var user = testUser(12L, "user@example.com");
         var auth = UsernamePasswordAuthenticationToken.authenticated(user, null, List.of());
 
         mockMvc.perform(get("/api/test/business-rule").with(authentication(auth)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.detail").value("Not enough quantity"));
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.detail").value("Not enough quantity"));
 
         assertThat(adviceAppender.list).hasSize(1);
         var businessEvent = adviceAppender.list.getFirst();
@@ -307,8 +278,7 @@ class RequestLoggingFilterTests {
         adviceAppender.list.clear();
         httpAppender.list.clear();
 
-        mockMvc.perform(get("/api/test/db-failure").with(authentication(auth)))
-                .andExpect(status().isInternalServerError());
+        mockMvc.perform(get("/api/test/db-failure").with(authentication(auth))).andExpect(status().isInternalServerError());
 
         assertThat(adviceAppender.list).hasSize(1);
         var serverEvent = adviceAppender.list.getFirst();
@@ -330,11 +300,8 @@ class RequestLoggingFilterTests {
         mockMvc.perform(get("/assets/index-abc123.js"));
         mockMvc.perform(get("/favicon.ico"));
         mockMvc.perform(get("/swagger-ui/index.html"));
-        mockMvc.perform(
-                        options("/api/test/portfolios/1")
-                                .header(HttpHeaders.ORIGIN, "http://localhost:5173/")
-                                .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET"))
-                .andExpect(status().isOk());
+        mockMvc.perform(options("/api/test/portfolios/1").header(HttpHeaders.ORIGIN, "http://localhost:5173/")
+            .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET")).andExpect(status().isOk());
 
         assertThat(httpAppender.list).isEmpty();
     }
@@ -346,23 +313,16 @@ class RequestLoggingFilterTests {
         var request = new MockHttpServletRequest("GET", "/api/test/boom/55");
         var response = new MockHttpServletResponse();
 
-        assertThatThrownBy(
-                        () ->
-                                filter.doFilter(
-                                        request,
-                                        response,
-                                        (req, res) -> {
-                                            throw new ServletException("boom");
-                                        }))
-                .isInstanceOf(ServletException.class);
+        assertThatThrownBy(() -> filter.doFilter(request, response, (req, res) -> {
+            throw new ServletException("boom");
+        })).isInstanceOf(ServletException.class);
 
         assertThat(httpAppender.list).hasSize(1);
         var event = httpAppender.list.getFirst();
         assertThat(event.getLevel()).isEqualTo(Level.ERROR);
         assertThat(toMap(event).get("status")).isEqualTo(500);
         assertThat(toMap(event).get("route")).isEqualTo("/api/test/boom/{id}");
-        assertThat(event.getMDCPropertyMap().get("traceId"))
-                .isEqualTo("4bf92f3577b34da6a3ce929d0e0e4736");
+        assertThat(event.getMDCPropertyMap().get("traceId")).isEqualTo("4bf92f3577b34da6a3ce929d0e0e4736");
 
         // Request MDC removed, unrelated traceId preserved
         assertThat(MDC.get("requestId")).isNull();
@@ -378,31 +338,26 @@ class RequestLoggingFilterTests {
 
         var decorator = new MdcTaskDecorator();
         var captured = new AtomicReference<Map<String, String>>();
-        Runnable decorated =
-                decorator.decorate(
-                        () -> {
-                            captured.set(MDC.getCopyOfContextMap());
-                            MDC.put("requestId", "mutated");
-                        });
+        Runnable decorated = decorator.decorate(() -> {
+            captured.set(MDC.getCopyOfContextMap());
+            MDC.put("requestId", "mutated");
+        });
 
         MDC.clear();
 
         var workerAfter = new AtomicReference<Map<String, String>>();
-        var worker =
-                new Thread(
-                        () -> {
-                            MDC.put("workerKey", "existing");
-                            decorated.run();
-                            workerAfter.set(MDC.getCopyOfContextMap());
-                            MDC.clear();
-                        });
+        var worker = new Thread(() -> {
+            MDC.put("workerKey", "existing");
+            decorated.run();
+            workerAfter.set(MDC.getCopyOfContextMap());
+            MDC.clear();
+        });
         worker.start();
         worker.join();
 
-        assertThat(captured.get())
-                .containsEntry("requestId", "a83f2b91")
-                .containsEntry("userId", "42")
-                .containsEntry("traceId", "trace-123");
+        assertThat(captured.get()).containsEntry("requestId", "a83f2b91")
+            .containsEntry("userId", "42")
+            .containsEntry("traceId", "trace-123");
         assertThat(workerAfter.get()).containsOnly(Map.entry("workerKey", "existing"));
     }
 
@@ -429,8 +384,7 @@ class RequestLoggingFilterTests {
         if (event.getKeyValuePairs() == null) {
             return Map.of();
         }
-        return event.getKeyValuePairs().stream()
-                .collect(Collectors.toMap(kv -> kv.key, kv -> kv.value));
+        return event.getKeyValuePairs().stream().collect(Collectors.toMap(kv -> kv.key, kv -> kv.value));
     }
 
     private static User testUser(Long id, String email) {

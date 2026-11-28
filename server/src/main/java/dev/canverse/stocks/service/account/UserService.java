@@ -13,10 +13,9 @@ import dev.canverse.stocks.security.AuthenticationProvider;
 import dev.canverse.stocks.service.account.model.OnboardingRequest;
 import dev.canverse.stocks.service.account.model.UserRegistrationRequest;
 import dev.canverse.stocks.service.account.model.UserView;
-
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -24,15 +23,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
-    private static final String[] ALLOWED_DOMAINS = {
-        "gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com"
-    };
+    private static final String[] ALLOWED_DOMAINS = {"gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com"};
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
@@ -42,8 +37,7 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return loadUserByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found."));
+        return loadUserByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found."));
     }
 
     public Optional<User> loadUserByEmail(String email) throws UsernameNotFoundException {
@@ -51,17 +45,15 @@ public class UserService implements UserDetailsService {
     }
 
     public boolean getOnboardingStatus() {
-        return userRepository
-                .findById(AuthenticationProvider.getUser().getId())
-                .map(User::getOnboardingCompleted)
-                .orElseThrow(() -> new IllegalArgumentException("User not found."));
+        return userRepository.findById(AuthenticationProvider.getUser().getId())
+            .map(User::getOnboardingCompleted)
+            .orElseThrow(() -> new IllegalArgumentException("User not found."));
     }
 
     public UserView getMe() {
-        return userRepository
-                .findById(AuthenticationProvider.getUser().getId())
-                .map(UserView::from)
-                .orElseThrow(() -> new IllegalArgumentException("User not found."));
+        return userRepository.findById(AuthenticationProvider.getUser().getId())
+            .map(UserView::from)
+            .orElseThrow(() -> new IllegalArgumentException("User not found."));
     }
 
     @Transactional
@@ -78,14 +70,13 @@ public class UserService implements UserDetailsService {
         var saved = userRepository.save(user);
 
         var userId = saved != null ? saved.getId() : user.getId();
-        afterCommit(
-                () -> {
-                    var builder = log.atInfo().addKeyValue("event", "user_registered");
-                    if (userId != null) {
-                        builder.addKeyValue("userId", String.valueOf(userId));
-                    }
-                    builder.log("User registered");
-                });
+        afterCommit(() -> {
+            var builder = log.atInfo().addKeyValue("event", "user_registered");
+            if (userId != null) {
+                builder.addKeyValue("userId", String.valueOf(userId));
+            }
+            builder.log("User registered");
+        });
 
         return user;
     }
@@ -108,21 +99,13 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public void completeOnboarding(OnboardingRequest request) {
-        var user =
-                userRepository
-                        .findById(AuthenticationProvider.getUser().getId())
-                        .orElseThrow(() -> new IllegalArgumentException("User not found."));
+        var user = userRepository.findById(AuthenticationProvider.getUser().getId())
+            .orElseThrow(() -> new IllegalArgumentException("User not found."));
 
-        var portfolio =
-                new Portfolio(
-                        user, request.portfolio().portfolioName(), request.portfolio().color());
+        var portfolio = new Portfolio(user, request.portfolio().portfolioName(), request.portfolio().color());
         portfolioRepository.save(portfolio);
 
-        var dashboard =
-                new Dashboard(
-                        user,
-                        request.dashboardName(),
-                        currencyRepository.findByCode(request.currencyCode()));
+        var dashboard = new Dashboard(user, request.dashboardName(), currencyRepository.findByCode(request.currencyCode()));
         dashboard.setDefault(true);
         dashboard.addPortfolio(portfolio);
         dashboardRepository.save(dashboard);
@@ -132,12 +115,10 @@ public class UserService implements UserDetailsService {
 
         var portfolioId = portfolio.getId();
         var dashboardId = dashboard.getId();
-        afterCommit(
-                () ->
-                        log.atInfo()
-                                .addKeyValue("event", "onboarding_completed")
-                                .addKeyValue("portfolioId", portfolioId)
-                                .addKeyValue("dashboardId", dashboardId)
-                                .log("User onboarding completed"));
+        afterCommit(() -> log.atInfo()
+            .addKeyValue("event", "onboarding_completed")
+            .addKeyValue("portfolioId", portfolioId)
+            .addKeyValue("dashboardId", dashboardId)
+            .log("User onboarding completed"));
     }
 }

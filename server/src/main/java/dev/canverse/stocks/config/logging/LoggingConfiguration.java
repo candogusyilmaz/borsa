@@ -1,14 +1,12 @@
 package dev.canverse.stocks.config.logging;
 
 import jakarta.servlet.DispatcherType;
-
+import java.util.EnumSet;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.task.TaskDecorator;
-
-import java.util.EnumSet;
 
 @Configuration(proxyBeanMethods = false)
 public class LoggingConfiguration {

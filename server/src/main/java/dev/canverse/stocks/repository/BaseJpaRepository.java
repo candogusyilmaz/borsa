@@ -8,20 +8,21 @@ import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.lang.NonNull;
 
 @NoRepositoryBean
-public interface BaseJpaRepository<T, ID>
-        extends JpaRepository<T, ID>, JpaSpecificationExecutor<T> {
+public interface BaseJpaRepository<T, ID> extends JpaRepository<T, ID>, JpaSpecificationExecutor<T> {
     default String getNotFoundMessage() {
         return "Kayıt bulunamadı.";
     }
 
     default T getReference(@NonNull ID id) {
-        if (!existsById(id)) throw new NotFoundException(getNotFoundMessage(), id);
+        if (!existsById(id))
+            throw new NotFoundException(getNotFoundMessage(), id);
 
         return getReferenceById(id);
     }
 
     default T getReference(@NonNull ID id, String notFoundMessage) {
-        if (!existsById(id)) throw new NotFoundException(notFoundMessage);
+        if (!existsById(id))
+            throw new NotFoundException(notFoundMessage);
 
         return getReferenceById(id);
     }

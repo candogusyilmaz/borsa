@@ -9,15 +9,9 @@ import jakarta.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
 import java.time.Instant;
 
-public record BulkTransactionRequest(
-        Transaction.Type type,
-        @NotNull Long stockId,
-        @NotNull @Positive BigDecimal quantity,
-        @NotNull @Positive BigDecimal price,
-        @PositiveOrZero BigDecimal commission,
-        @NotNull Instant actionDate) {
+public record BulkTransactionRequest(Transaction.Type type, @NotNull Long stockId, @NotNull @Positive BigDecimal quantity,
+    @NotNull @Positive BigDecimal price, @PositiveOrZero BigDecimal commission, @NotNull Instant actionDate) {
     public TradeRequest toTransactionRequest() {
-        return new TradeRequest(
-                stockId, "TRY", quantity, price, commission, actionDate, null, null);
+        return new TradeRequest(stockId, "TRY", quantity, price, commission, actionDate, null, null);
     }
 }

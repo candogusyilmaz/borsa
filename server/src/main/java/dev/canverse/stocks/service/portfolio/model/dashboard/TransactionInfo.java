@@ -9,13 +9,6 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.Instant;
 
-public record TransactionInfo(
-        @NotNull String id,
-        @NotNull Transaction.Type type,
-        @NotNull String portfolioId,
-        @NotNull String positionId,
-        @NotNull String symbol,
-        @NotNull BigDecimal price,
-        @NotNull BigDecimal quantity,
-        @JsonInclude(JsonInclude.Include.NON_NULL) BigDecimal profit,
-        @NotNull Instant actionDate) {}
+public record TransactionInfo(@NotNull String id, @NotNull Transaction.Type type, @NotNull String portfolioId, @NotNull String positionId,
+    @NotNull String symbol, @NotNull BigDecimal price, @NotNull BigDecimal quantity,
+    @JsonInclude(JsonInclude.Include.NON_NULL) BigDecimal profit, @NotNull Instant actionDate) {}

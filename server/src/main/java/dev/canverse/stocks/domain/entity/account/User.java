@@ -1,24 +1,20 @@
 package dev.canverse.stocks.domain.entity.account;
 
 import dev.canverse.stocks.domain.entity.portfolio.Dashboard;
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
-
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
-
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
 import java.time.Instant;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @Getter
 @Setter
@@ -79,10 +75,11 @@ public class User implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // get userRoles -> get roles -> get rolePermissions -> get permissions -> get permission
         // names
-        return this.getUserRoles().stream()
-                .flatMap(ur -> ur.getRole().getRolePermissions().stream())
-                .map(RolePermission::getPermission)
-                .toList();
+        return this.getUserRoles()
+            .stream()
+            .flatMap(ur -> ur.getRole().getRolePermissions().stream())
+            .map(RolePermission::getPermission)
+            .toList();
     }
 
     @Override

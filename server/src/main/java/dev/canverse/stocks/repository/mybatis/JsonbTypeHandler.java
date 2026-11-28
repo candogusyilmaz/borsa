@@ -2,15 +2,13 @@ package dev.canverse.stocks.repository.mybatis;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.apache.ibatis.type.BaseTypeHandler;
-import org.apache.ibatis.type.JdbcType;
-
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import org.apache.ibatis.type.BaseTypeHandler;
+import org.apache.ibatis.type.JdbcType;
 
 public class JsonbTypeHandler<T> extends BaseTypeHandler<T> {
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -26,8 +24,7 @@ public class JsonbTypeHandler<T> extends BaseTypeHandler<T> {
     }
 
     @Override
-    public void setNonNullParameter(PreparedStatement ps, int i, T parameter, JdbcType jdbcType)
-            throws SQLException {
+    public void setNonNullParameter(PreparedStatement ps, int i, T parameter, JdbcType jdbcType) throws SQLException {
         try {
             ps.setString(i, mapper.writeValueAsString(parameter));
         } catch (Exception e) {
@@ -51,7 +48,8 @@ public class JsonbTypeHandler<T> extends BaseTypeHandler<T> {
     }
 
     private T parseJson(String value) throws SQLException {
-        if (value == null) return null;
+        if (value == null)
+            return null;
         try {
             return mapper.readValue(value, javaType);
         } catch (Exception e) {

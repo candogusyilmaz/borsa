@@ -1,26 +1,21 @@
 package dev.canverse.stocks.domain.entity.portfolio;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 import dev.canverse.stocks.domain.Calculator;
 import dev.canverse.stocks.domain.valueobject.TransactionMetadata;
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
-
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
-
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
-
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.time.Instant;
 
 @Getter
 @Entity
@@ -82,13 +77,8 @@ public class Transaction implements Serializable {
 
     protected Transaction() {}
 
-    protected static Transaction buy(
-            Position position,
-            BigDecimal quantity,
-            BigDecimal price,
-            BigDecimal newQuantity,
-            BigDecimal newTotal,
-            Instant actionDate) {
+    protected static Transaction buy(Position position, BigDecimal quantity, BigDecimal price, BigDecimal newQuantity, BigDecimal newTotal,
+        Instant actionDate) {
         var transaction = new Transaction();
 
         transaction.position = position;
@@ -103,13 +93,8 @@ public class Transaction implements Serializable {
         return transaction;
     }
 
-    protected static Transaction sell(
-            Position position,
-            BigDecimal quantity,
-            BigDecimal price,
-            BigDecimal newQuantity,
-            BigDecimal newTotal,
-            Instant actionDate) {
+    protected static Transaction sell(Position position, BigDecimal quantity, BigDecimal price, BigDecimal newQuantity, BigDecimal newTotal,
+        Instant actionDate) {
         var transaction = new Transaction();
         transaction.position = position;
         transaction.type = Type.SELL;
@@ -119,29 +104,22 @@ public class Transaction implements Serializable {
         transaction.actionDate = actionDate;
         transaction.newQuantity = newQuantity;
         transaction.newTotal = newTotal;
-        transaction.performance =
-                new TransactionPerformance(
-                        transaction,
-                        calculateProfit(position, quantity, price),
-                        calculateReturnPercentage(position, price));
+        transaction.performance = new TransactionPerformance(transaction, calculateProfit(position, quantity, price),
+            calculateReturnPercentage(position, price));
 
         return transaction;
     }
 
     private static BigDecimal calculateReturnPercentage(Position position, BigDecimal price) {
-        return Calculator.divide(
-                price.subtract(position.getAveragePrice()).multiply(BigDecimal.valueOf(100)),
-                position.getAveragePrice());
+        return Calculator.divide(price.subtract(position.getAveragePrice()).multiply(BigDecimal.valueOf(100)), position.getAveragePrice());
     }
 
-    private static BigDecimal calculateProfit(
-            Position position, BigDecimal quantity, BigDecimal price) {
+    private static BigDecimal calculateProfit(Position position, BigDecimal quantity, BigDecimal price) {
         return price.subtract(position.getAveragePrice()).multiply(quantity);
     }
 
     public enum Type {
-        BUY,
-        SELL
+        BUY, SELL
     }
 
     public BigDecimal getTotal() {

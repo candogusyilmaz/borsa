@@ -20,7 +20,8 @@ public record PortfolioInfo(@NotNull List<Stock> stocks) {
 
     @NotNull
     public BigDecimal getTotalProfitPercentage() {
-        if (getTotalProfit().equals(BigDecimal.ZERO)) return BigDecimal.ZERO;
+        if (getTotalProfit().equals(BigDecimal.ZERO))
+            return BigDecimal.ZERO;
 
         return Calculator.calculatePercentage(getTotalCost(), getTotalProfit());
     }
@@ -30,18 +31,9 @@ public record PortfolioInfo(@NotNull List<Stock> stocks) {
         return stocks.stream().map(Stock::value).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    public record Stock(
-            @NotNull String id,
-            @NotNull String symbol,
-            @NotNull BigDecimal dailyChange,
-            @NotNull BigDecimal previousClose,
-            @NotNull BigDecimal dailyChangePercent,
-            @NotNull BigDecimal quantity,
-            @NotNull BigDecimal total,
-            @NotNull BigDecimal currentPrice,
-            @NotNull BigDecimal averagePrice,
-            @NotNull BigDecimal dailyProfit,
-            @NotNull BigDecimal value) {
+    public record Stock(@NotNull String id, @NotNull String symbol, @NotNull BigDecimal dailyChange, @NotNull BigDecimal previousClose,
+        @NotNull BigDecimal dailyChangePercent, @NotNull BigDecimal quantity, @NotNull BigDecimal total, @NotNull BigDecimal currentPrice,
+        @NotNull BigDecimal averagePrice, @NotNull BigDecimal dailyProfit, @NotNull BigDecimal value) {
 
         public BigDecimal getProfit() {
             return value.subtract(getCost());
@@ -50,7 +42,8 @@ public record PortfolioInfo(@NotNull List<Stock> stocks) {
         public BigDecimal getProfitPercentage() {
             var cost = getCost();
 
-            if (cost.equals(BigDecimal.ZERO)) return BigDecimal.ZERO;
+            if (cost.equals(BigDecimal.ZERO))
+                return BigDecimal.ZERO;
 
             return Calculator.calculatePercentage(cost, getProfit());
         }

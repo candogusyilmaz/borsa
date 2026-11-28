@@ -9,9 +9,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
-
 import com.querydsl.jpa.impl.JPAQueryFactory;
-
 import dev.canverse.stocks.domain.entity.account.User;
 import dev.canverse.stocks.domain.entity.instrument.Instrument;
 import dev.canverse.stocks.domain.entity.instrument.Market;
@@ -34,7 +32,12 @@ import dev.canverse.stocks.service.portfolio.PortfolioAccessValidator;
 import dev.canverse.stocks.service.portfolio.PortfolioService;
 import dev.canverse.stocks.service.portfolio.TradeService;
 import dev.canverse.stocks.service.portfolio.model.TradeRequest;
-
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,13 +47,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 class StructuredEventLoggingTests {
 
@@ -75,9 +71,7 @@ class StructuredEventLoggingTests {
         var user = new User("sensitive-user@example.com", "secret-hash");
         user.setId(42L);
         user.setName("Sensitive Name");
-        SecurityContextHolder.getContext()
-                .setAuthentication(
-                        UsernamePasswordAuthenticationToken.authenticated(user, null, List.of()));
+        SecurityContextHolder.getContext().setAuthentication(UsernamePasswordAuthenticationToken.authenticated(user, null, List.of()));
     }
 
     @AfterEach
@@ -102,13 +96,11 @@ class StructuredEventLoggingTests {
 
         var dashboard = mock(Dashboard.class);
         when(dashboardRepo.findDefaultByUserId(42L)).thenReturn(dashboard);
-        when(portfolioRepo.save(any(Portfolio.class)))
-                .thenAnswer(
-                        inv -> {
-                            Portfolio p = inv.getArgument(0);
-                            ReflectionTestUtils.setField(p, "id", 101L);
-                            return p;
-                        });
+        when(portfolioRepo.save(any(Portfolio.class))).thenAnswer(inv -> {
+            Portfolio p = inv.getArgument(0);
+            ReflectionTestUtils.setField(p, "id", 101L);
+            return p;
+        });
 
         var service = new PortfolioService(portfolioRepo, dashboardRepo, validator, queryFactory);
 
@@ -140,12 +132,9 @@ class StructuredEventLoggingTests {
         assertThat(portfolioAppender.list).hasSize(1);
         var event = portfolioAppender.list.getFirst();
         assertThat(event.getLevel()).isEqualTo(Level.INFO);
-        assertThat(toMap(event))
-                .containsEntry("event", "portfolio_created")
-                .containsEntry("portfolioId", 101L);
-        assertThat(event.getFormattedMessage())
-                .doesNotContain("My Private Retirement Portfolio")
-                .doesNotContain("sensitive-user@example.com");
+        assertThat(toMap(event)).containsEntry("event", "portfolio_created").containsEntry("portfolioId", 101L);
+        assertThat(event.getFormattedMessage()).doesNotContain("My Private Retirement Portfolio")
+            .doesNotContain("sensitive-user@example.com");
     }
 
     @Test
@@ -169,29 +158,13 @@ class StructuredEventLoggingTests {
 
         when(validator.validateAccess(15L)).thenReturn(portfolio);
         when(instrumentRepo.findById(99L)).thenReturn(Optional.of(instrument));
-        when(marketCurrencyRepo.findById(any()))
-                .thenReturn(Optional.of(mock(MarketCurrency.class)));
+        when(marketCurrencyRepo.findById(any())).thenReturn(Optional.of(mock(MarketCurrency.class)));
         when(positionRepo.findBy(42L, 15L, 99L, "TRY")).thenReturn(Optional.of(position));
 
-        var service =
-                new TradeService(
-                        instrumentRepo,
-                        positionRepo,
-                        tradeRepo,
-                        validator,
-                        marketCurrencyRepo,
-                        tradeMapper);
+        var service = new TradeService(instrumentRepo, positionRepo, tradeRepo, validator, marketCurrencyRepo, tradeMapper);
 
-        var req =
-                new TradeRequest(
-                        99L,
-                        "TRY",
-                        new BigDecimal("1234.56"),
-                        new BigDecimal("987.65"),
-                        new BigDecimal("12.34"),
-                        Instant.now(),
-                        "Private trade note about bonus",
-                        List.of("secret-tag"));
+        var req = new TradeRequest(99L, "TRY", new BigDecimal("1234.56"), new BigDecimal("987.65"), new BigDecimal("12.34"), Instant.now(),
+            "Private trade note about bonus", List.of("secret-tag"));
 
         TransactionSynchronizationManager.initSynchronization();
         TransactionSynchronizationManager.setActualTransactionActive(true);
@@ -206,32 +179,21 @@ class StructuredEventLoggingTests {
         assertThat(tradeAppender.list).hasSize(1);
         var event = tradeAppender.list.getFirst();
         var kv = toMap(event);
-        assertThat(kv)
-                .containsEntry("event", "trade_created")
-                .containsEntry("tradeType", "BUY")
-                .containsEntry("portfolioId", 15L)
-                .containsEntry("instrumentId", 99L)
-                .containsEntry("currencyCode", "TRY")
-                .doesNotContainKeys("price", "quantity", "commission", "total", "notes", "tags");
-        assertThat(event.getFormattedMessage())
-                .doesNotContain("1234.56")
-                .doesNotContain("987.65")
-                .doesNotContain("Private trade note");
+        assertThat(kv).containsEntry("event", "trade_created")
+            .containsEntry("tradeType", "BUY")
+            .containsEntry("portfolioId", 15L)
+            .containsEntry("instrumentId", 99L)
+            .containsEntry("currencyCode", "TRY")
+            .doesNotContainKeys("price", "quantity", "commission", "total", "notes", "tags");
+        assertThat(event.getFormattedMessage()).doesNotContain("1234.56").doesNotContain("987.65").doesNotContain("Private trade note");
     }
 
     @Test
-    void currencySyncFailureDoesNotLeakExternalErrorMessageAndLogsStructuredEvent()
-            throws Exception {
+    void currencySyncFailureDoesNotLeakExternalErrorMessageAndLogsStructuredEvent() throws Exception {
         var forexClient = mock(ForexWebClient.class);
         var currencyRepo = mock(CurrencyRepository.class);
         when(forexClient.getForexRates())
-                .thenReturn(
-                        new ForexRate(
-                                false,
-                                new ForexRate.Error(101, "Invalid API key sk_live_secret_12345"),
-                                "USD",
-                                null,
-                                null));
+            .thenReturn(new ForexRate(false, new ForexRate.Error(101, "Invalid API key sk_live_secret_12345"), "USD", null, null));
 
         var service = new CurrencyService(forexClient, currencyRepo);
         var method = CurrencyService.class.getDeclaredMethod("updateCurrencyRates");
@@ -242,12 +204,11 @@ class StructuredEventLoggingTests {
         var event = currencyAppender.list.getFirst();
         assertThat(event.getLevel()).isEqualTo(Level.ERROR);
         var kv = toMap(event);
-        assertThat(kv)
-                .containsEntry("event", "scheduled_job_failed")
-                .containsEntry("job", "currency_rate_sync")
-                .containsEntry("provider", "forex_rate_api")
-                .containsEntry("errorCode", 101)
-                .containsEntry("outcome", "failed");
+        assertThat(kv).containsEntry("event", "scheduled_job_failed")
+            .containsEntry("job", "currency_rate_sync")
+            .containsEntry("provider", "forex_rate_api")
+            .containsEntry("errorCode", 101)
+            .containsEntry("outcome", "failed");
         assertThat(event.getFormattedMessage()).doesNotContain("sk_live_secret_12345");
         assertThat(kv.values().toString()).doesNotContain("sk_live_secret_12345");
     }

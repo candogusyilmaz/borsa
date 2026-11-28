@@ -4,7 +4,6 @@ import static dev.canverse.stocks.security.JwtConfiguration.ACCESS_TOKEN_USE;
 import static dev.canverse.stocks.security.JwtConfiguration.ISSUER;
 import static dev.canverse.stocks.security.JwtConfiguration.REFRESH_TOKEN_USE;
 import static dev.canverse.stocks.security.JwtConfiguration.TOKEN_USE_CLAIM;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -25,9 +24,15 @@ import dev.canverse.stocks.service.account.TokenService;
 import dev.canverse.stocks.service.account.UserService;
 import dev.canverse.stocks.service.account.model.UserView;
 import dev.canverse.stocks.service.portfolio.PositionService;
-
 import jakarta.servlet.http.Cookie;
-
+import java.net.HttpCookie;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -50,22 +55,16 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-import java.net.HttpCookie;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Optional;
-
 @SpringJUnitWebConfig(JwtPurposeTests.WebConfig.class)
 class JwtPurposeTests {
     private static final String EMAIL = "user@example.com";
 
-    @Autowired private WebApplicationContext context;
-    @Autowired private TokenService tokenService;
-    @Autowired private JwtEncoder jwtEncoder;
+    @Autowired
+    private WebApplicationContext context;
+    @Autowired
+    private TokenService tokenService;
+    @Autowired
+    private JwtEncoder jwtEncoder;
 
     @Autowired
     @Qualifier("accessTokenDecoder")
@@ -75,10 +74,14 @@ class JwtPurposeTests {
     @Qualifier("refreshTokenDecoder")
     private JwtDecoder refreshTokenDecoder;
 
-    @MockitoBean private UserService userService;
-    @MockitoBean private UserRepository userRepository;
-    @MockitoBean private GoogleAuthService googleAuthService;
-    @MockitoBean private PositionService positionService;
+    @MockitoBean
+    private UserService userService;
+    @MockitoBean
+    private UserRepository userRepository;
+    @MockitoBean
+    private GoogleAuthService googleAuthService;
+    @MockitoBean
+    private PositionService positionService;
 
     private MockMvc mockMvc;
     private User user;
@@ -98,15 +101,12 @@ class JwtPurposeTests {
     void accessTokenWorksAsBearerButNotAsRefreshCookie() throws Exception {
         var token = tokenService.createAccessToken(user).token();
         var jwt = accessTokenDecoder.decode(token);
-        assertThat(Duration.between(jwt.getIssuedAt(), jwt.getExpiresAt()))
-                .isEqualTo(Duration.ofHours(1));
+        assertThat(Duration.between(jwt.getIssuedAt(), jwt.getExpiresAt())).isEqualTo(Duration.ofHours(1));
 
-        mockMvc.perform(accountRequest(token))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email").value(EMAIL));
+        mockMvc.perform(accountRequest(token)).andExpect(status().isOk()).andExpect(jsonPath("$.email").value(EMAIL));
         mockMvc.perform(refreshRequest(token))
-                .andExpect(status().isUnauthorized())
-                .andExpect(header().doesNotExist(HttpHeaders.SET_COOKIE));
+            .andExpect(status().isUnauthorized())
+            .andExpect(header().doesNotExist(HttpHeaders.SET_COOKIE));
     }
 
     @Test
@@ -114,15 +114,14 @@ class JwtPurposeTests {
         var cookie = HttpCookie.parse(tokenService.createRefreshTokenCookie(user)).getFirst();
         var token = cookie.getValue();
         var jwt = refreshTokenDecoder.decode(token);
-        assertThat(Duration.between(jwt.getIssuedAt(), jwt.getExpiresAt()))
-                .isEqualTo(Duration.ofDays(7));
+        assertThat(Duration.between(jwt.getIssuedAt(), jwt.getExpiresAt())).isEqualTo(Duration.ofDays(7));
         assertThat(cookie.getMaxAge()).isEqualTo(Duration.ofDays(7).toSeconds());
 
         mockMvc.perform(accountRequest(token)).andExpect(status().isUnauthorized());
         mockMvc.perform(refreshRequest(token))
-                .andExpect(status().isOk())
-                .andExpect(header().exists(HttpHeaders.SET_COOKIE))
-                .andExpect(jsonPath("$.token").isNotEmpty());
+            .andExpect(status().isOk())
+            .andExpect(header().exists(HttpHeaders.SET_COOKIE))
+            .andExpect(jsonPath("$.token").isNotEmpty());
     }
 
     @Test
@@ -138,31 +137,20 @@ class JwtPurposeTests {
     void preservesSignatureIssuerAndExpiryValidation(String tokenUse) throws Exception {
         var now = Instant.now();
         var anotherEncoder = new JwtConfiguration(WebConfig.rsaKeyProperties()).encoder();
-        var invalidTokens =
-                new String[] {
-                    sign(anotherEncoder, ISSUER, tokenUse, now.plusSeconds(300)),
-                    sign(jwtEncoder, "different-issuer", tokenUse, now.plusSeconds(300)),
-                    sign(jwtEncoder, ISSUER, tokenUse, now.minusSeconds(120))
-                };
+        var invalidTokens = new String[]{sign(anotherEncoder, ISSUER, tokenUse, now.plusSeconds(300)),
+            sign(jwtEncoder, "different-issuer", tokenUse, now.plusSeconds(300)),
+            sign(jwtEncoder, ISSUER, tokenUse, now.minusSeconds(120))};
 
         for (String token : invalidTokens) {
-            var request =
-                    ACCESS_TOKEN_USE.equals(tokenUse)
-                            ? accountRequest(token)
-                            : refreshRequest(token);
+            var request = ACCESS_TOKEN_USE.equals(tokenUse) ? accountRequest(token) : refreshRequest(token);
             mockMvc.perform(request).andExpect(status().isUnauthorized());
         }
     }
 
-    private static String sign(
-            JwtEncoder encoder, String issuer, String tokenUse, Instant expiresAt) {
-        var claims =
-                JwtClaimsSet.builder()
-                        .issuer(issuer)
-                        .subject(EMAIL)
-                        .issuedAt(expiresAt.minusSeconds(600))
-                        .expiresAt(expiresAt);
-        if (tokenUse != null) claims.claim(TOKEN_USE_CLAIM, tokenUse);
+    private static String sign(JwtEncoder encoder, String issuer, String tokenUse, Instant expiresAt) {
+        var claims = JwtClaimsSet.builder().issuer(issuer).subject(EMAIL).issuedAt(expiresAt.minusSeconds(600)).expiresAt(expiresAt);
+        if (tokenUse != null)
+            claims.claim(TOKEN_USE_CLAIM, tokenUse);
         return encoder.encode(JwtEncoderParameters.from(claims.build())).getTokenValue();
     }
 
@@ -176,14 +164,8 @@ class JwtPurposeTests {
 
     @Configuration(proxyBeanMethods = false)
     @EnableWebMvc
-    @Import({
-        SecurityConfiguration.class,
-        JwtConfiguration.class,
-        JwtAuthenticationConverter.class,
-        TokenService.class,
-        TokenController.class,
-        AccountController.class
-    })
+    @Import({SecurityConfiguration.class, JwtConfiguration.class, JwtAuthenticationConverter.class, TokenService.class,
+        TokenController.class, AccountController.class})
     static class WebConfig {
         @Bean
         static RsaKeyProperties rsaKeyProperties() throws NoSuchAlgorithmException {

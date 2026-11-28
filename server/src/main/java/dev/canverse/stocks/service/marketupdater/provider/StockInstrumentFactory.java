@@ -5,10 +5,8 @@ import dev.canverse.stocks.domain.entity.instrument.Market;
 import dev.canverse.stocks.domain.entity.instrument.StockInstrument;
 import dev.canverse.stocks.service.marketupdater.MarketInstrumentFactory;
 import dev.canverse.stocks.service.marketupdater.MarketQuote;
-
-import org.springframework.stereotype.Component;
-
 import java.util.Set;
+import org.springframework.stereotype.Component;
 
 @Component
 public class StockInstrumentFactory implements MarketInstrumentFactory {

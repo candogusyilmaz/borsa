@@ -2,10 +2,8 @@ package dev.canverse.stocks.domain.entity.account;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-
-import lombok.Getter;
-
 import java.io.Serializable;
+import lombok.Getter;
 
 @Getter
 @Entity

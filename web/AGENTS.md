@@ -3,7 +3,8 @@
 - Read the root [AGENTS.md](../AGENTS.md), the [frontend standards](../docs/engineering/frontend-standards.md) and the [UI design guidelines](../docs/engineering/ui-design-guidelines.md) before substantial frontend changes.
 - Work from `web/`. Keep routes focused on navigation.
 - Generate `src/routeTree.gen.ts` with the Vite router plugin. Generate `src/api/schema.d.ts` with `npm run generate:openapi` against Spring.
-- Run `npm run typecheck`, `npm run check` and `npm run build` for frontend verification.
+- Use `npm run format` to apply formatting and `npm run check` for read-only Biome verification. The `lint` and `check:fix` scripts also write changes.
+- Choose `npm run typecheck` for a focused type check or `npm run build` to verify production output. The build already includes type checking.
 
 ## Frontend testing
 

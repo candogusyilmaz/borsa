@@ -1,12 +1,10 @@
 package dev.canverse.stocks.repository;
 
 import dev.canverse.stocks.domain.entity.instrument.StockInstrument;
-
+import java.util.Optional;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
 
 @Repository
 public interface StockInstrumentRepository extends BaseJpaRepository<StockInstrument, Long> {

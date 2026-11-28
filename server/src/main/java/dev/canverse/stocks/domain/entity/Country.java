@@ -2,13 +2,10 @@ package dev.canverse.stocks.domain.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
-
-import lombok.Getter;
-
-import org.hibernate.annotations.CreationTimestamp;
-
 import java.io.Serializable;
 import java.time.Instant;
+import lombok.Getter;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Getter
 @Entity

@@ -1,12 +1,10 @@
 package dev.canverse.stocks.service.common;
 
 import static dev.canverse.stocks.service.common.TimingUtils.elapsedMs;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.Test;
 
 class TimingUtilsTests {
 
