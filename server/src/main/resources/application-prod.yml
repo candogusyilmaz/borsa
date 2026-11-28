@@ -1,6 +1,4 @@
 spring:
-  flyway:
-    enabled: true
   jpa:
     show-sql: false
 

@@ -6,15 +6,25 @@ A personal finance and investment tracker for recording trades, managing portfol
 
 Install JDK 21 and Node.js 24 with npm. The Maven wrapper downloads Maven on first use. If toolchain detection misses JDK 21, set `JAVA21_HOME` to its installation directory.
 
-Use an initialized PostgreSQL database with the current application schema. Set the datasource variables below in the terminal or IDE that starts Spring.
+### Database setup
+
+Use PostgreSQL 15. The bootstrap was verified on PostgreSQL 15.19. Create an empty local database owned by a local application login. For example, with an existing `stocks_app` role, run this from a terminal with the PostgreSQL client installed.
+
+```sh
+createdb --host localhost --username postgres --owner stocks_app stocks
+```
+
+Set the datasource variables in the terminal or IDE that starts Spring.
 
 | Variable | Value |
 | --- | --- |
 | `DB_URL` | PostgreSQL JDBC URL, for example `jdbc:postgresql://localhost:5432/stocks` |
-| `DB_USERNAME` | Local database user |
+| `DB_USERNAME` | Local database owner, for example `stocks_app` |
 | `DB_PASSWORD` | Local database password |
 
-Hibernate validates the schema at startup. Flyway is disabled in the default profile, and the checked-in migrations assume an existing schema. A fresh database bootstrap procedure is pending.
+Starting Spring applies `B14__baseline.sql` to an empty database and records it in `public.flyway_schema_history`. Hibernate then validates the schema. The baseline loads countries, currencies, and markets, including the BIST/TRY relationship. The forex job updates the initial V4 rates, and market discovery populates instruments. Keep V2–V14 intact and use V15 and later versioned migrations for schema changes.
+
+### Start the application
 
 On Linux, start the backend from the repository root.
 
@@ -63,9 +73,9 @@ Keep secrets in the server environment.
 | Apply or check Java formatting | `./mvnw spotless:apply` or `./mvnw spotless:check` from `server/` |
 | Compile Java or verify the package | `./mvnw compile` or `./mvnw -DskipTests verify` from `server/` |
 | Run a focused backend test | `./mvnw -Dtest=TestClass test` from `server/` |
-| Run the full backend suite | `./mvnw test` with an initialized PostgreSQL test database |
+| Run the full backend suite | `./mvnw test` from `server/` with the datasource variables pointing to a dedicated local PostgreSQL test database |
 
-In PowerShell, replace `./mvnw` with `.\mvnw.cmd`. Use the production build or the standalone TypeScript check based on what changed.
+In PowerShell, replace `./mvnw` with `.\mvnw.cmd`. Flyway initializes an empty test database when `ServerTests` starts the Spring context. Use the production build or the standalone TypeScript check based on what changed.
 
 ### OpenAPI
 
@@ -83,6 +93,8 @@ With Spring running the current backend code at `http://localhost:8080`, run `np
 Cloudflare Pages serves the frontend. The repository builds it with `npm ci` and `npm run build` in `web/`, produces `web/dist`, and supplies the SPA fallback in `web/public/_redirects`. Set the browser-visible `VITE_API_BASE_URL` at build time when the API uses a separate origin.
 
 Dokploy runs the backend image. The root [Dockerfile](Dockerfile) builds the Spring Boot jar and exposes port 8080. Build it locally with `docker build -t borsa .` from the repository root. The deployed backend uses `SPRING_PROFILES_ACTIVE=prod` and deployment-provided datasource settings and secrets.
+
+Before rollout, confirm the deployed datasource still targets the existing database, Flyway is enabled, and the application role can access `public.flyway_schema_history` and apply future migrations. An existing database with successful V1–V14 history is expected to validate its applied migrations and skip B14. Verify that path against a restored copy if available. Automatic baselining of nonempty databases and Flyway clean are disabled.
 
 For a local jar that also serves the frontend, build `web/` first and then run `./mvnw clean package` from `server/`. Maven copies the existing `web/dist` into the jar's static resources.
 

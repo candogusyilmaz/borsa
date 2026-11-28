@@ -70,9 +70,9 @@ spring:
     show-sql: false
 
   flyway:
-    enabled: false
     locations: classpath:db/migrations
-    baseline-on-migrate: true
+    default-schema: public
+    baseline-on-migrate: false
     out-of-order: false
     validate-on-migrate: true
     clean-disabled: true

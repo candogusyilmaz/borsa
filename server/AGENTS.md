@@ -3,9 +3,9 @@
 - Work from `server/` with Java 21. Use `./mvnw` on Linux or `./mvnw.cmd` on Windows.
 - Apply Java formatting with `./mvnw spotless:apply`. Check it without editing source with `./mvnw spotless:check`.
 - Use `./mvnw compile` for a focused compilation check, `./mvnw -DskipTests verify` for packaging verification, and `./mvnw -Dtest=TestClass test` for relevant automated tests.
-- Preserve existing Flyway history. Add future schema changes through new versioned migrations.
+- `B14__baseline.sql` initializes empty PostgreSQL 15 databases. Preserve B14 and the existing V2–V14 migration contents. Add schema changes through V15 and later versioned migrations.
 - Scope portfolio, position, and trade operations to resources owned by the authenticated account.
-- Use an initialized PostgreSQL test database when running the full `./mvnw test` suite.
+- Point `DB_URL`, `DB_USERNAME`, and `DB_PASSWORD` at a dedicated local PostgreSQL test database for `./mvnw test`. Flyway initializes it if empty. See the [database setup](../README.md#database-setup).
 - Run `./mvnw clean package` after building `web/` to package `web/dist` as Spring static resources locally.
 - Follow [docs/engineering/backend-logging-standards.md](../docs/engineering/backend-logging-standards.md) for logging levels, structured events, MDC correlation, and sensitive-data restrictions.
 

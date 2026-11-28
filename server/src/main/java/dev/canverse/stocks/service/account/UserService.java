@@ -50,6 +50,7 @@ public class UserService implements UserDetailsService {
             .orElseThrow(() -> new IllegalArgumentException("User not found."));
     }
 
+    @Transactional(readOnly = true)
     public UserView getMe() {
         return userRepository.findById(AuthenticationProvider.getUser().getId())
             .map(UserView::from)
