@@ -17,5 +17,5 @@
 
 ## Financial data and verification
 
-- Render financial data from the existing OpenAPI types and TanStack Query hooks. Keep calculations scoped to the applicable currency and available data. Only expose undo for trades the portfolio history marks as eligible. Dashboard fallbacks belong in its adapter. Identify estimated values and partial currency coverage in the UI, and record their replacement contracts in [Dashboard backend requirements](dashboard-backend-requirements.md).
+- Render financial data from the existing OpenAPI types and TanStack Query hooks. Keep calculations scoped to the applicable currency and available data. Only expose undo for trades the portfolio history marks as eligible. Keep dashboard fallbacks in its adapter and identify estimated values and partial currency coverage in the UI. See [Dashboard backend requirements](dashboard-backend-requirements.md) for remaining gaps.
 - Verify light and dark appearance, keyboard operation, overlay focus, mobile safe areas and horizontal fit. Follow the verification commands in [web/AGENTS.md](../../web/AGENTS.md).

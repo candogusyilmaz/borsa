@@ -1,8 +1,11 @@
 # Web instructions
 
-- Read the root [AGENTS.md](../AGENTS.md), the [frontend standards](../docs/engineering/frontend-standards.md) and the [UI design guidelines](../docs/engineering/ui-design-guidelines.md) before substantial frontend changes.
-- Work from `web/`. Keep routes focused on navigation.
-- Generate `src/routeTree.gen.ts` with the Vite router plugin. Generate `src/api/schema.d.ts` with `npm run generate:openapi` against Spring.
+- Work from `web/`. Read the [UI design guidelines](../docs/engineering/ui-design-guidelines.md) for UI changes.
+- Keep app composition in `src/app/` and route definitions, guards, and loaders in `src/routes/`. Keep screens and workflows with their features, and generic formatting, feedback, and UI in `src/shared/`.
+- Use the existing OpenAPI client and TanStack Query for server state. Keep cache invalidation aligned with the backend contract. The backend owns authoritative financial values and rounding.
+- Use the existing Mantine form, notification, and overlay patterns. Validate near the form and show errors by the affected field or action.
+- Authenticated locale preferences take precedence over device defaults once loaded.
+- Never manually edit `src/routeTree.gen.ts` or `src/api/schema.d.ts`. Use the Vite router plugin for the route tree. For relevant backend contract changes, run `npm run generate:openapi` against Spring running the current backend code, review the generated diff, and verify affected consumers.
 - Use `npm run format` to apply formatting and `npm run check` for read-only Biome verification. The `lint` and `check:fix` scripts also write changes.
 - Choose `npm run typecheck` for a focused type check or `npm run build` to verify production output. The build already includes type checking.
 

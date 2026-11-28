@@ -77,12 +77,6 @@ spring:
     validate-on-migrate: true
     clean-disabled: true
 
-  batch:
-    jdbc:
-      initialize-schema: always
-    job:
-      enabled: false
-
   task:
     scheduling:
       pool:
@@ -97,7 +91,6 @@ spring:
 
 mybatis:
   mapper-locations: classpath:mappers/**/*.xml
-  type-handlers-package: dev.canverse.finances.infrastructure.mybatis
 
 management:
   endpoints:
