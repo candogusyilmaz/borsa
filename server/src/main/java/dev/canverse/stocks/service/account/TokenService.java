@@ -1,10 +1,14 @@
 package dev.canverse.stocks.service.account;
 
+import static dev.canverse.stocks.security.JwtConfiguration.ACCESS_TOKEN_USE;
+import static dev.canverse.stocks.security.JwtConfiguration.ISSUER;
+import static dev.canverse.stocks.security.JwtConfiguration.REFRESH_TOKEN_USE;
+import static dev.canverse.stocks.security.JwtConfiguration.TOKEN_USE_CLAIM;
+
 import dev.canverse.stocks.domain.entity.account.User;
 import dev.canverse.stocks.service.account.model.TokenCreateResponse;
 
-import lombok.RequiredArgsConstructor;
-
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +24,6 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 @Service
-@RequiredArgsConstructor
 public class TokenService {
     private static final long ACCESS_TOKEN_EXPIRATION_IN_SECONDS = 60 * 60 * 1;
     private static final long REFRESH_TOKEN_EXPIRATION_IN_SECONDS = 60 * 60 * 24 * 7;
@@ -28,14 +31,23 @@ public class TokenService {
     private final UserDetailsService userService;
 
     private final JwtEncoder jwtEncoder;
-    private final JwtDecoder jwtDecoder;
+    private final JwtDecoder refreshTokenDecoder;
+
+    public TokenService(
+            UserDetailsService userService,
+            JwtEncoder jwtEncoder,
+            @Qualifier("refreshTokenDecoder") JwtDecoder refreshTokenDecoder) {
+        this.userService = userService;
+        this.jwtEncoder = jwtEncoder;
+        this.refreshTokenDecoder = refreshTokenDecoder;
+    }
 
     public User getSecurityUser(String refreshToken) {
         if (refreshToken == null || refreshToken.isBlank()) {
             throw new BadJwtException("Refresh token is missing");
         }
 
-        var jwt = jwtDecoder.decode(refreshToken);
+        var jwt = refreshTokenDecoder.decode(refreshToken);
         var username = jwt.getClaimAsString("sub");
         if (username == null || username.isBlank()) {
             throw new BadJwtException("Refresh token subject is missing");
@@ -57,10 +69,11 @@ public class TokenService {
 
         var claims =
                 JwtClaimsSet.builder()
-                        .issuer("finance-api")
+                        .issuer(ISSUER)
                         .issuedAt(now)
                         .expiresAt(expiresAt)
                         .subject(principal.getEmail())
+                        .claim(TOKEN_USE_CLAIM, REFRESH_TOKEN_USE)
                         .build();
 
         var token = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
@@ -89,10 +102,11 @@ public class TokenService {
 
         var claims =
                 JwtClaimsSet.builder()
-                        .issuer("finance-api")
+                        .issuer(ISSUER)
                         .issuedAt(now)
                         .expiresAt(expiresAt)
                         .subject(principal.getEmail())
+                        .claim(TOKEN_USE_CLAIM, ACCESS_TOKEN_USE)
                         .build();
 
         var token = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();

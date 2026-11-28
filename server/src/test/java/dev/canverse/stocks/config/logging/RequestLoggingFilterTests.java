@@ -72,7 +72,9 @@ class RequestLoggingFilterTests {
 
     @Autowired private WebApplicationContext context;
 
-    @MockitoBean private JwtDecoder jwtDecoder;
+    @MockitoBean(name = "accessTokenDecoder")
+    private JwtDecoder jwtDecoder;
+
     @MockitoBean private JwtAuthenticationConverter jwtAuthenticationConverter;
     @MockitoBean private UserDetailsService userDetailsService;
 

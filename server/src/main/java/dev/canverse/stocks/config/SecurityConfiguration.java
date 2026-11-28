@@ -5,6 +5,7 @@ import dev.canverse.stocks.config.logging.UserMdcFilter;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,6 +20,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
@@ -46,7 +48,10 @@ public class SecurityConfiguration {
 
     @Bean
     public SecurityFilterChain securityFilterChain(
-            HttpSecurity http, JwtAuthenticationConverter jwtConverter) throws Exception {
+            HttpSecurity http,
+            JwtAuthenticationConverter jwtConverter,
+            @Qualifier("accessTokenDecoder") JwtDecoder accessTokenDecoder)
+            throws Exception {
         http.csrf(AbstractHttpConfigurer::disable);
         http.cors(Customizer.withDefaults());
 
@@ -72,7 +77,11 @@ public class SecurityConfiguration {
                                 .permitAll());
 
         http.oauth2ResourceServer(
-                config -> config.jwt(s -> s.jwtAuthenticationConverter(jwtConverter)));
+                config ->
+                        config.jwt(
+                                jwt ->
+                                        jwt.decoder(accessTokenDecoder)
+                                                .jwtAuthenticationConverter(jwtConverter)));
 
         http.exceptionHandling(
                 handler ->
