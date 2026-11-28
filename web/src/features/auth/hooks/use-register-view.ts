@@ -1,6 +1,7 @@
 import { useLingui } from '@lingui/react/macro';
 import { hasLength, isEmail, useForm } from '@mantine/form';
 import { useNavigate } from '@tanstack/react-router';
+import { applyFormApiErrors, parseApiError } from '~/api/errors';
 import { useAuthentication } from '~/features/auth/authentication-context';
 import { alerts } from '~/shared/feedback/alerts';
 
@@ -27,10 +28,11 @@ export function useRegisterView() {
   });
 
   const handleSubmit = form.onSubmit((data) => {
+    const name = `${data.firstName.trim()} ${data.lastName.trim()}`.trim();
     register.mutate(
       {
-        name: `${data.firstName} ${data.lastName}`,
-        email: data.email,
+        name,
+        email: data.email.trim(),
         password: data.password
       },
       {
@@ -38,23 +40,18 @@ export function useRegisterView() {
           navigate({ to: '/dashboard' });
         },
         onError: (error) => {
-          const res = error as unknown as { response?: { data?: unknown } };
-          const responseData = res.response?.data as {
-            detail?: string;
-            'invalid-params'?: { field: string; message: string }[];
-          };
-
-          if (responseData?.['invalid-params']) {
-            for (const param of responseData['invalid-params']) {
-              if (param.field === 'name') {
-                form.setFieldError('firstName', param.message);
-                form.setFieldError('lastName', param.message);
-              } else {
-                form.setFieldError(param.field, param.message);
-              }
+          const applied = applyFormApiErrors(error, (field, message) => {
+            if (field === 'name') {
+              form.setFieldError('firstName', message);
+              form.setFieldError('lastName', message);
+            } else {
+              form.setFieldError(field, message);
             }
-          } else {
-            alerts.error(responseData?.detail || t`An unknown error occurred while creating your account`, t`Error while creating account`);
+          });
+
+          if (!applied) {
+            const { detail, title } = parseApiError(error);
+            alerts.error(detail ?? title ?? t`An unknown error occurred while creating your account`, t`Error while creating account`);
           }
         }
       }

@@ -1,5 +1,6 @@
 import { useLingui } from '@lingui/react/macro';
 import { DateTimePicker, type DateTimePickerProps } from '@mantine/dates';
+import { parseDateTimeInput } from '~/shared/format/format';
 import { useFormat } from '~/shared/format/use-format';
 
 export function LocalizedDateTimePicker(props: DateTimePickerProps) {
@@ -8,7 +9,10 @@ export function LocalizedDateTimePicker(props: DateTimePickerProps) {
 
   return (
     <DateTimePicker
-      valueFormat={(value) => format.toShortDateTime(new Date(value.replace(' ', 'T')))}
+      valueFormat={(value) => {
+        const parsed = parseDateTimeInput(value);
+        return parsed ? format.toShortDateTime(parsed) : value;
+      }}
       ariaLabels={{
         nextMonth: t`Next month`,
         previousMonth: t`Previous month`,

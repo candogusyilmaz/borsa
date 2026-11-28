@@ -1,9 +1,10 @@
 import { googleLogout } from '@react-oauth/google';
 import { type UseMutationResult, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useState } from 'react';
-import { getValidAccessToken } from '~/api/auth-refresh';
+import { AUTH_REQUEST_TIMEOUT_MS, withAuthLock } from '~/api/auth-refresh';
+import { unwrapApiResponse } from '~/api/errors';
 import { client } from '~/api/openapi';
-import { type AuthSession, isTokenExpiringSoon, sessionStore } from '~/api/token';
+import { type AuthSession, sessionStore } from '~/api/token';
 
 export interface AuthContext {
   user: AuthSession | null;
@@ -21,59 +22,47 @@ const AuthContext = createContext<AuthContext>(null!);
 
 export function AuthenticationProvider({ children }: Readonly<AuthProviderProps>) {
   const queryClient = useQueryClient();
-  const [user, setUser] = useState<AuthSession | null>(() => sessionStore.getSession());
+  const [user, setUser] = useState(sessionStore.initialSession);
 
   useEffect(() => {
-    return sessionStore.subscribe((event) => {
-      if (event.type === 'UPDATED') {
-        setUser(event.session);
+    function syncSession() {
+      const session = sessionStore.getSession();
+      if (sessionStore.acceptSession(session)) {
+        setUser(session);
         return;
       }
 
-      setUser(null);
-      googleLogout();
       queryClient.clear();
-    });
+      if (!session) googleLogout();
+      window.location.replace(session ? '/dashboard' : '/login');
+    }
+
+    const unsubscribe = sessionStore.subscribe(syncSession);
+    syncSession();
+    return unsubscribe;
   }, [queryClient]);
 
-  useEffect(() => {
-    const refreshIfNeeded = () => {
-      const current = sessionStore.getSession();
-      if (current && isTokenExpiringSoon(current.token)) {
-        void getValidAccessToken().catch(() => {});
-      }
-    };
-
-    refreshIfNeeded();
-
-    const onVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        refreshIfNeeded();
-      }
-    };
-
-    document.addEventListener('visibilitychange', onVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
-  }, []);
-
+  const email = user?.email;
   const logout = useCallback(async () => {
-    try {
-      await client.POST('/api/auth/logout');
-    } catch {
-      // Clear local session even if the logout request fails (e.g. offline).
-    } finally {
-      sessionStore.clearSession();
-    }
-  }, []);
+    if (!email) return;
+
+    await withAuthLock(async () => {
+      if (sessionStore.getSession()?.email !== email) return;
+
+      try {
+        await client.POST('/api/auth/logout', { signal: AbortSignal.timeout(AUTH_REQUEST_TIMEOUT_MS) });
+      } catch {
+        // Local sign-out still works when the server is unreachable.
+      } finally {
+        if (sessionStore.getSession()?.email === email) sessionStore.clearSession();
+      }
+    });
+  }, [email]);
 
   const login = useMutation({
     mutationFn: async (credentials: { username: string; password: string } | { code: string; redirectUri?: string }) => {
       const endpoint = 'code' in credentials ? '/api/auth/google' : '/api/auth/token';
-      const { data, error } = await client.POST(endpoint, { body: credentials });
-      if (error || !data) {
-        throw { response: { data: error } };
-      }
-      return data;
+      return unwrapApiResponse(await client.POST(endpoint, { body: credentials }));
     },
     onSuccess: (data) => {
       sessionStore.setSession(data);
@@ -82,11 +71,7 @@ export function AuthenticationProvider({ children }: Readonly<AuthProviderProps>
 
   const register = useMutation({
     mutationFn: async (credentials: { name: string; email: string; password: string }) => {
-      const { data, error } = await client.POST('/api/auth/register', { body: credentials });
-      if (error || !data) {
-        throw { response: { data: error } };
-      }
-      return data;
+      return unwrapApiResponse(await client.POST('/api/auth/register', { body: credentials }));
     },
     onSuccess: (data) => {
       sessionStore.setSession(data);

@@ -1,3 +1,4 @@
+import { getCollator } from '~/shared/format/format';
 import type { Position } from './hooks/use-positions-view';
 import { getPositionMetrics } from './position-presentation';
 
@@ -58,7 +59,7 @@ export function getPositionsPageData(
     balances.set(currency, balance);
   }
 
-  const collator = new Intl.Collator(locale);
+  const collator = getCollator(locale);
   visible.sort((a, b) => {
     let byMetric = 0;
     switch (order) {

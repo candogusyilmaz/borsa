@@ -19,10 +19,7 @@ export function TransactionsChart({ model, currency }: { model: DashboardModel; 
   const format = useFormat();
   const [mode, setMode] = useState<ChartMode>('cumulative');
   const { chart, trades } = model;
-  const cumulative = format.currency(chart.cumulative, {
-    currency,
-    currencyDisplay: currency === 'TRY' ? 'narrowSymbol' : undefined
-  });
+  const cumulative = format.currency(chart.cumulative, { currency });
   const rangeLabel = chart.range === 'All' ? t`Cumulative total` : chart.range === '6M' ? t`Last 6 months` : t`Last 3 months`;
   const points = mode === 'cumulative' ? chart.cumulativePoints : chart.periodicPoints;
   const grouping = mode === 'cumulative' ? 'day' : chart.periodicGrouping;

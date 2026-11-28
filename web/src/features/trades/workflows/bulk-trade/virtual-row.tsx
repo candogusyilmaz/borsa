@@ -3,7 +3,7 @@ import { ActionIcon, NumberInput, Text } from '@mantine/core';
 import { IconTrash } from '@tabler/icons-react';
 import { memo, useState } from 'react';
 import { LocalizedDateTimePicker } from '~/shared/components/localized-date-time-picker';
-import { getNumberSeparators } from '~/shared/format/format';
+import { getNumberSeparators, parseDateTimeInput } from '~/shared/format/format';
 import { useLocale } from '~/shared/i18n/locale-context';
 import { AssetCombobox } from './asset-combobox';
 import styles from './bulk-trade-modal.module.css';
@@ -65,11 +65,11 @@ export const VirtualRow = memo(function VirtualRow({
         <NumberInput
           prefix={currencyPrefix}
           hideControls
+          valueIsNumericString
           {...separators}
           inputMode="decimal"
           aria-label={t`Price`}
-          decimalScale={2}
-          fixedDecimalScale
+          decimalScale={8}
           min={0}
           size="sm"
           value={price}
@@ -82,11 +82,12 @@ export const VirtualRow = memo(function VirtualRow({
       <td style={{ padding: '6px 8px' }}>
         <NumberInput
           hideControls
+          valueIsNumericString
           min={0}
           {...separators}
           inputMode="decimal"
           aria-label={t`Quantity`}
-          decimalScale={6}
+          decimalScale={8}
           size="sm"
           value={quantity}
           onChange={setQuantity}
@@ -102,7 +103,7 @@ export const VirtualRow = memo(function VirtualRow({
           size="sm"
           value={actionDate}
           onChange={(v) => {
-            const d = v ? new Date(v) : null;
+            const d = parseDateTimeInput(v);
             setActionDate(d);
             onUpdate(row.id, { actionDate: d });
           }}

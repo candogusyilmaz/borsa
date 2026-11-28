@@ -3,6 +3,7 @@ import { Button, Checkbox, Group, Select, SimpleGrid, Stack, TextInput } from '@
 import { useForm } from '@mantine/form';
 import { useQueryClient } from '@tanstack/react-query';
 import { create } from 'zustand';
+import { applyFormApiErrors, parseApiError } from '~/api/errors';
 import { $api } from '~/api/openapi';
 import { ResponsiveOverlay } from '~/shared/components/responsive-overlay/responsive-overlay';
 import { alerts } from '~/shared/feedback/alerts';
@@ -53,26 +54,21 @@ function CreateNewDashboardForm() {
   const form = useForm({
     mode: 'controlled',
     initialValues: {
-      name: null as string | null,
+      name: '',
       currencyId: null as string | null,
       portfolioIds: [] as string[]
     },
     validate(values) {
+      const trimmedName = values.name.trim();
       return {
-        name: values.name ? (
-          values.name.length < 3 ? (
-            <Trans>Name must be at least 3 characters</Trans>
-          ) : null
-        ) : (
-          <Trans>Name is required</Trans>
-        ),
-        currencyId: values.currencyId ? null : <Trans>Currency is required</Trans>,
-        portfolioIds: values.portfolioIds.length > 0 ? null : <Trans>At least one portfolio is required</Trans>
+        name: !trimmedName ? t`Name is required` : trimmedName.length < 3 ? t`Name must be at least 3 characters` : null,
+        currencyId: values.currencyId ? null : t`Currency is required`,
+        portfolioIds: values.portfolioIds.length > 0 ? null : t`At least one portfolio is required`
       };
     },
     transformValues(values) {
       return {
-        name: values.name!,
+        name: values.name.trim(),
         currencyId: values.currencyId!,
         portfolioIds: values.portfolioIds
       };
@@ -80,16 +76,19 @@ function CreateNewDashboardForm() {
   });
 
   const mutation = $api.useMutation('post', '/api/dashboards', {
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       close();
-      const dashboardName = form.getValues().name;
+      const dashboardName = variables.body?.name ?? form.getValues().name.trim();
       alerts.success(t`Dashboard ${dashboardName} created successfully.`);
       client.invalidateQueries({
         queryKey: ['get', '/api/dashboards']
       });
     },
-    onError: (res) => {
-      console.log(res);
+    onError: (error) => {
+      if (!applyFormApiErrors(error, (field, message) => form.setFieldError(field, message))) {
+        const { detail, title } = parseApiError(error);
+        alerts.error(detail ?? title ?? t`Could not create the dashboard. Try again.`);
+      }
     }
   });
 

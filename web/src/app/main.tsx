@@ -19,7 +19,8 @@ window.addEventListener('vite:preloadError', (event) => {
 });
 
 async function start() {
-  const [, { AppRouter }] = await Promise.all([initLocale(), import('./router')]);
+  initLocale();
+  const { AppRouter } = await import('./router');
 
   createRoot(document.getElementById('root')!).render(
     <StrictMode>

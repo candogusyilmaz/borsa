@@ -34,7 +34,6 @@ export function DashboardSummary({
     if (value == null) return '—';
     return format.currency(value, {
       currency,
-      currencyDisplay: currency === 'TRY' ? 'narrowSymbol' : undefined,
       signDisplay: signed ? 'exceptZero' : undefined
     });
   }

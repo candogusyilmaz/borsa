@@ -1,67 +1,76 @@
 import createFetchClient from 'openapi-fetch';
 import createClient from 'openapi-react-query';
-import { getLocalePreferences } from '~/shared/i18n/i18n';
-import { getValidAccessToken, refreshAccessToken } from './auth-refresh';
+import { getLanguage } from '~/shared/i18n/i18n';
+import { refreshAccessToken } from './auth-refresh';
 import type { paths } from './schema';
-import { isTokenExpiringSoon, sessionStore } from './token';
+import { sessionStore } from './token';
 
-const api = import.meta.env.VITE_API_BASE_URL as string | undefined;
+const api = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/+$/, '') ?? '';
 
-const UNPROTECTED_ROUTES: (keyof paths)[] = [
+const publicPaths: (keyof paths)[] = [
   '/api/auth/token',
   '/api/auth/google',
   '/api/auth/refresh-token',
   '/api/auth/logout',
   '/api/auth/register'
 ];
+const publicUrls = new Set(publicPaths.map((path) => new URL(`${api}${path}`, window.location.origin).href));
 
-function isUnprotectedRequest(url: string): boolean {
-  const { pathname } = new URL(url, window.location.origin);
-  return UNPROTECTED_ROUTES.some((route) => pathname.startsWith(route));
+function isPublicRequest(request: Request): boolean {
+  const { origin, pathname } = new URL(request.url);
+  return request.method === 'POST' && publicUrls.has(`${origin}${pathname}`);
 }
 
-const authFetch: typeof fetch = async (input, init) => {
-  const req = input instanceof Request ? input : new Request(input, init);
-  req.headers.set('Accept-Language', getLocalePreferences().language);
+async function normalizeErrorResponse(response: Response): Promise<Response | undefined> {
+  if (response.status < 400) return;
 
-  if (isUnprotectedRequest(req.url)) {
-    return fetch(req);
-  }
-
-  const initialToken = sessionStore.getToken();
-  let usedToken = initialToken;
-  let didProactiveRefresh = false;
-
-  if (initialToken && isTokenExpiringSoon(initialToken)) {
+  let body: unknown;
+  if (/json/i.test(response.headers.get('content-type') ?? '')) {
     try {
-      usedToken = await getValidAccessToken();
-      didProactiveRefresh = true;
+      body = await response.json();
     } catch (error) {
-      if (!sessionStore.getSession()) {
-        return new Response(null, { status: 401, statusText: 'Unauthorized' });
-      }
-      throw error;
+      if (!(error instanceof SyntaxError)) throw error;
     }
   }
 
-  if (usedToken) {
-    req.headers.set('Authorization', `Bearer ${usedToken}`);
-  }
+  const problem = body && typeof body === 'object' && !Array.isArray(body) ? (body as Record<string, unknown>) : undefined;
+  const headers = new Headers(response.headers);
+  headers.set('content-type', 'application/json');
+  headers.delete('content-length');
+  headers.delete('content-encoding');
 
-  const retryReq = req.clone();
-  const res = await fetch(req);
+  const title = typeof problem?.title === 'string' ? problem.title : response.statusText || undefined;
+  const detail = typeof body === 'string' ? body : problem?.detail;
+  return new Response(JSON.stringify({ ...problem, status: response.status, title, detail }), {
+    status: response.status,
+    statusText: response.statusText,
+    headers
+  });
+}
 
-  if (res.status !== 401 || didProactiveRefresh) {
-    return res;
-  }
+const authFetch: typeof fetch = async (input, init) => {
+  const req = input instanceof Request && !init ? input : new Request(input, init);
+  req.headers.set('Accept-Language', getLanguage());
 
-  try {
-    const newToken = await refreshAccessToken(usedToken);
-    retryReq.headers.set('Authorization', `Bearer ${newToken}`);
-    return fetch(retryReq);
-  } catch {
-    return res;
-  }
+  if (isPublicRequest(req)) return fetch(req);
+
+  const session = sessionStore.getRequestSession();
+  if (!session) return fetch(req);
+
+  req.headers.set('Authorization', `Bearer ${session.token}`);
+  const replay = req.clone();
+  const response = await fetch(req);
+  if (response.status !== 401) return response;
+
+  replay.signal.throwIfAborted();
+  const refreshed = await refreshAccessToken(session, (signal) => client.POST('/api/auth/refresh-token', { signal })).finally(() =>
+    replay.signal.throwIfAborted()
+  );
+  const current = sessionStore.getSession();
+  if (!refreshed || current?.email !== session.email) return response;
+
+  replay.headers.set('Authorization', `Bearer ${current.token}`);
+  return fetch(replay);
 };
 
 export const client = createFetchClient<paths>({
@@ -69,5 +78,7 @@ export const client = createFetchClient<paths>({
   credentials: 'include',
   fetch: authFetch
 });
+
+client.use({ onResponse: ({ response }) => normalizeErrorResponse(response) });
 
 export const $api = createClient(client);

@@ -6,7 +6,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import type React from 'react';
 import { useState } from 'react';
+import { parseApiError } from '~/api/errors';
 import { $api } from '~/api/openapi';
+import { alerts } from '~/shared/feedback/alerts';
+import { getCurrencyInfo } from '~/shared/format/currency';
 import { useLocale } from '~/shared/i18n/locale-context';
 import { sleep } from '~/shared/utils/sleep';
 import classes from '../pages/onboarding.module.css';
@@ -26,7 +29,7 @@ export function DashboardStep({ onboardingRequest, onBack }: DashboardStepProps)
     '/api/currencies',
     {},
     {
-      select: (v) => v.map((c) => getCurrencyInfo(c.label.slice(0, 3), language, formatLocale))
+      select: (v) => v.map((c) => getCurrencyInfo(c.label.split(' - ')[0]?.trim() || c.value, language, formatLocale))
     }
   );
   const navigate = useNavigate();
@@ -43,6 +46,10 @@ export function DashboardStep({ onboardingRequest, onBack }: DashboardStepProps)
       await queryClient.invalidateQueries();
       await sleep(1);
       await navigate({ to: '/dashboard' });
+    },
+    onError: (error) => {
+      const { detail, title } = parseApiError(error);
+      alerts.error(detail ?? title ?? t`Could not complete setup. Please try again.`);
     }
   });
 
@@ -76,7 +83,7 @@ export function DashboardStep({ onboardingRequest, onBack }: DashboardStepProps)
         <Stack gap={35}>
           <TextInput
             name="name"
-            label={t`DASHBOARD NAME`}
+            label={t`Dashboard name`}
             placeholder={t`e.g. My Investments`}
             leftSection={<IconLayoutDashboard size={18} />}
             leftSectionWidth={50}
@@ -87,6 +94,7 @@ export function DashboardStep({ onboardingRequest, onBack }: DashboardStepProps)
                 fontSize: 12,
                 fontWeight: 600,
                 color: 'var(--mantine-color-dimmed)',
+                textTransform: 'uppercase',
                 marginBottom: 4,
                 marginLeft: 2
               },
@@ -198,18 +206,4 @@ export function DashboardStep({ onboardingRequest, onBack }: DashboardStepProps)
       </form>
     </Stack>
   );
-}
-
-function getCurrencyInfo(currency: string, language: string, locale: string) {
-  const name = new Intl.DisplayNames([language], { type: 'currency' }).of(currency);
-
-  const symbol = new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    currencyDisplay: 'symbol'
-  })
-    .formatToParts(0)
-    .find((p) => p.type === 'currency')?.value;
-
-  return { currency, name, symbol };
 }

@@ -1,5 +1,5 @@
 import { Trans, useLingui } from '@lingui/react/macro';
-import { Drawer, Loader, Modal } from '@mantine/core';
+import { Drawer, Loader, Modal, NumberInput } from '@mantine/core';
 import { IconX } from '@tabler/icons-react';
 import { useId, useState } from 'react';
 import { useFormat } from '~/shared/format/use-format';
@@ -104,20 +104,17 @@ function TransactionModalForm({
 
   const form = useTransactionForm({ initialSide, initialStockId, initialPortfolioId, opened, onClose });
 
-  const hero = getHeroLayout(form.qtyStr, isMobile);
+  const toDisplayText = (value: string | number) =>
+    typeof value === 'number' ? format.number(value, { maximumFractionDigits: 8 }) : value;
+  const hero = getHeroLayout(toDisplayText(form.qtyValue), isMobile);
+  const priceWidth = getPriceInputWidth(toDisplayText(form.priceValue));
+  const totalMaxDecimals = form.total > 0 && form.total < 0.01 ? 6 : 2;
   const formattedTotal = format.currency(form.total, {
     currency: form.currencyCode,
     minimumFractionDigits: 2,
-    maximumFractionDigits: 2
+    maximumFractionDigits: totalMaxDecimals
   });
-  const formattedCtaTotal =
-    form.total > 0
-      ? format.currency(form.total, {
-          currency: form.currencyCode,
-          minimumFractionDigits: form.total < 1 ? 2 : 0,
-          maximumFractionDigits: form.total < 1 ? 2 : 0
-        })
-      : '';
+  const formattedCtaTotal = form.total > 0 ? formattedTotal : '';
 
   const symbol = form.selectedAsset?.symbol;
   const ctaBaseLabel = symbol
@@ -186,18 +183,28 @@ function TransactionModalForm({
         />
 
         <label htmlFor={qtyInputId} className={styles.qtyLabel}>
-          <input
+          <NumberInput
             id={qtyInputId}
-            type="text"
+            unstyled
+            hideControls
+            allowNegative={false}
+            withKeyboardEvents={false}
+            valueIsNumericString
+            decimalScale={8}
+            {...form.numberSeparators}
             inputMode="decimal"
-            value={form.qtyStr}
-            onChange={(e) => form.setQtyStr(e.currentTarget.value)}
+            value={form.qtyValue}
+            onChange={form.setQtyValue}
             placeholder="0"
             aria-label={t`Quantity`}
             autoComplete="off"
             data-autofocus={!isMobile && Boolean(initialStockId) ? true : undefined}
-            style={{ fontSize: `${hero.fontSize}px`, width: `${hero.widthEm}em` }}
-            className={styles.qtyInput}
+            classNames={{ input: styles.qtyInput }}
+            styles={{
+              root: { display: 'contents' },
+              wrapper: { display: 'contents' },
+              input: { fontSize: `${hero.fontSize}px`, width: `${hero.widthEm}em` }
+            }}
           />
           <span className={styles.qtyUnit}>
             <Trans comment="Unit label next to the giant quantity input">units</Trans>
@@ -222,17 +229,27 @@ function TransactionModalForm({
               <span>{form.currencySymbol}</span>
             )}
           </span>
-          <input
+          <NumberInput
             id={priceInputId}
-            type="text"
+            unstyled
+            hideControls
+            allowNegative={false}
+            withKeyboardEvents={false}
+            valueIsNumericString
+            decimalScale={8}
+            {...form.numberSeparators}
             inputMode="decimal"
-            value={form.priceStr}
-            onChange={(e) => form.setPriceStr(e.currentTarget.value)}
-            placeholder={`0${form.decimalSeparator}00`}
+            value={form.priceValue}
+            onChange={form.setPriceValue}
+            placeholder={`0${form.numberSeparators.decimalSeparator}00`}
             aria-label={t({ comment: 'Unit price of a financial instrument', message: 'Price' })}
             autoComplete="off"
-            style={{ width: getPriceInputWidth(form.priceStr) }}
-            className={styles.priceInput}
+            classNames={{ input: styles.priceInput }}
+            styles={{
+              root: { display: 'contents' },
+              wrapper: { display: 'contents' },
+              input: { width: priceWidth }
+            }}
           />
         </label>
 

@@ -97,9 +97,8 @@ export function DashboardPortfolios({
             <ul className={styles.detailList}>
               {details.topPositions.map((row) => {
                 const currency = row.position.currencyCode;
-                const currencyDisplay = currency === 'TRY' ? 'narrowSymbol' : undefined;
-                const fullValue = format.currency(row.value, { currency, currencyDisplay });
-                const dailyAmount = format.currency(row.dailyAmount, { currency, currencyDisplay, signDisplay: 'exceptZero' });
+                const fullValue = format.currency(row.value, { currency });
+                const dailyAmount = format.currency(row.dailyAmount, { currency, signDisplay: 'exceptZero' });
                 return (
                   <li key={row.position.id}>
                     <button
@@ -118,7 +117,7 @@ export function DashboardPortfolios({
                       </span>
                       <span className={styles.detailValue}>
                         <strong title={fullValue}>
-                          {format.currency(row.value, { currency, currencyDisplay, notation: 'compact', maximumFractionDigits: 2 })}
+                          {format.currency(row.value, { currency, notation: 'compact', maximumFractionDigits: 2 })}
                           {row.estimatedValue && (
                             <span className={styles.estimate}>
                               {' '}
@@ -180,7 +179,6 @@ function PortfolioRow({ row, currency, compact }: { row: DashboardDetails['portf
             {summary
               ? format.currency(summary.value, {
                   currency: summary.valueCurrency,
-                  currencyDisplay: summary.valueCurrency === 'TRY' ? 'narrowSymbol' : undefined,
                   notation: compact ? 'compact' : 'standard',
                   maximumFractionDigits: 2
                 })

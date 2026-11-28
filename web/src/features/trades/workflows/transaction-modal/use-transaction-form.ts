@@ -2,38 +2,33 @@ import { useLingui } from '@lingui/react/macro';
 import { useQueryClient } from '@tanstack/react-query';
 import { useParams } from '@tanstack/react-router';
 import { useEffect, useMemo, useState } from 'react';
+import { parseApiError } from '~/api/errors';
 import { $api } from '~/api/openapi';
 import { usePositions } from '~/features/positions';
 import { alerts } from '~/shared/feedback/alerts';
 import { getCurrencySymbol } from '~/shared/format/currency';
-import { getNumberSeparators } from '~/shared/format/format';
+import { getNumberFormat, getNumberSeparators } from '~/shared/format/format';
 import { useFormat } from '~/shared/format/use-format';
 import { useLocale } from '~/shared/i18n/locale-context';
 import type { SelectableAsset } from './asset-picker';
 import type { TransactionType } from './store';
 
-export function parseNumericInput(raw: string): number {
-  const trimmed = raw.trim().replace(/\s+/g, '');
-  if (!trimmed) return 0;
-
-  const lastComma = trimmed.lastIndexOf(',');
-  const lastDot = trimmed.lastIndexOf('.');
-  let normalized = trimmed;
-
-  if (lastComma !== -1 && lastDot !== -1) {
-    normalized = lastComma > lastDot ? trimmed.replace(/\./g, '').replace(',', '.') : trimmed.replace(/,/g, '');
-  } else if (lastComma !== -1) {
-    normalized = trimmed.split(',').length > 2 ? trimmed.replace(/,/g, '') : trimmed.replace(',', '.');
-  } else if (lastDot !== -1) {
-    normalized = trimmed.split('.').length > 2 ? trimmed.replace(/\./g, '') : trimmed;
-  }
-
-  const parsed = Number.parseFloat(normalized);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+function toNumericString(value: number, options?: { minDecimals?: number; maxDecimals?: number }): string {
+  return getNumberFormat('en-US', {
+    useGrouping: false,
+    minimumFractionDigits: options?.minDecimals ?? 0,
+    maximumFractionDigits: options?.maxDecimals ?? 20
+  }).format(value);
 }
 
-export function sanitizeDecimalText(raw: string) {
-  return raw.replace(/[^\d.,]/g, '');
+function toPrefillPrice(price: number): string {
+  return toNumericString(price, { minDecimals: 2, maxDecimals: price < 1 ? 8 : 6 });
+}
+
+function toNumber(value: string | number): number {
+  if (typeof value === 'number') return Number.isFinite(value) && value > 0 ? value : 0;
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
 }
 
 export function getHeroLayout(val: string, isMobile: boolean) {
@@ -67,7 +62,7 @@ export function useTransactionForm({
   const { t } = useLingui();
   const { formatLocale } = useLocale();
   const format = useFormat();
-  const { decimalSeparator } = getNumberSeparators(formatLocale);
+  const numberSeparators = getNumberSeparators(formatLocale);
   const { portfolioId: routePortfolioId } = useParams({ strict: false });
   const client = useQueryClient();
 
@@ -79,8 +74,8 @@ export function useTransactionForm({
   const [chosenPortfolioId, setChosenPortfolioId] = useState<string | undefined>(initialPortfolioId ?? routePortfolioId);
   const [selectedStockId, setSelectedStockId] = useState<string | undefined>(initialStockId);
   const [currencyOverride, setCurrencyOverride] = useState<string | undefined>();
-  const [qtyStr, setQtyStr] = useState('');
-  const [priceStr, setPriceStr] = useState('');
+  const [qtyValue, setQtyValue] = useState<string | number>('');
+  const [priceValue, setPriceValue] = useState<string | number>('');
   const [priceTouched, setPriceTouched] = useState(false);
   const [actionDate, setActionDate] = useState<Date>(() => new Date());
   const [note, setNote] = useState('');
@@ -133,9 +128,9 @@ export function useTransactionForm({
   const heldPosition = selectedStockId ? portfolioPositions.get(selectedStockId) : undefined;
 
   useEffect(() => {
-    if (priceTouched || priceStr !== '' || !selectedAsset?.lastPrice) return;
-    setPriceStr(selectedAsset.lastPrice.toFixed(2).replace('.', decimalSeparator));
-  }, [decimalSeparator, priceStr, priceTouched, selectedAsset?.lastPrice]);
+    if (priceTouched || priceValue !== '' || !selectedAsset?.lastPrice) return;
+    setPriceValue(toPrefillPrice(selectedAsset.lastPrice));
+  }, [priceTouched, priceValue, selectedAsset?.lastPrice]);
 
   const currencyCode =
     side === 'Sell'
@@ -144,15 +139,19 @@ export function useTransactionForm({
         ? currencyOverride
         : (selectedAsset?.supportedCurrencies[0] ?? 'TRY');
 
-  const qty = parseNumericInput(qtyStr);
-  const price = parseNumericInput(priceStr);
+  const qty = toNumber(qtyValue);
+  const price = toNumber(priceValue);
   const total = qty * price;
   const exceedsHeld = side === 'Sell' && heldPosition != null && qty > heldPosition.quantity;
 
   const onSuccess = (tradeSide: TransactionType) => {
     onClose();
     const quantity = format.number(qty, { maximumFractionDigits: 8 });
-    const formattedPrice = format.number(price, { minimumFractionDigits: 2 });
+    const formattedPrice = format.currency(price, {
+      currency: currencyCode,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: price < 1 ? 8 : 4
+    });
     const symbol = selectedAsset?.symbol;
     const message = !symbol
       ? t`Trade recorded.`
@@ -165,12 +164,18 @@ export function useTransactionForm({
 
   const buyMutation = $api.useMutation('post', '/api/portfolios/{portfolioId}/trades/buy', {
     onSuccess: () => onSuccess('Buy'),
-    onError: () => alerts.error(t`Could not record the purchase. Try again.`)
+    onError: (error) => {
+      const { detail, title } = parseApiError(error);
+      alerts.error(detail ?? title ?? t`Could not record the purchase. Try again.`);
+    }
   });
 
   const sellMutation = $api.useMutation('post', '/api/portfolios/{portfolioId}/trades/sell', {
     onSuccess: () => onSuccess('Sell'),
-    onError: () => alerts.error(t`Could not record the sale. Try again.`)
+    onError: (error) => {
+      const { detail, title } = parseApiError(error);
+      alerts.error(detail ?? title ?? t`Could not record the sale. Try again.`);
+    }
   });
 
   const isPending = buyMutation.isPending || sellMutation.isPending;
@@ -179,7 +184,7 @@ export function useTransactionForm({
   function selectAsset(asset: SelectableAsset) {
     setSelectedStockId(asset.id);
     setCurrencyOverride(asset.currencyCode);
-    setPriceStr(asset.lastPrice != null ? asset.lastPrice.toFixed(2).replace('.', decimalSeparator) : '');
+    setPriceValue(asset.lastPrice != null ? toPrefillPrice(asset.lastPrice) : '');
     setPriceTouched(false);
   }
 
@@ -188,7 +193,7 @@ export function useTransactionForm({
     setSide(next);
     if (next === 'Sell' && selectedStockId && !portfolioPositions.has(selectedStockId)) {
       setSelectedStockId(undefined);
-      setPriceStr('');
+      setPriceValue('');
       setPriceTouched(false);
     }
   }
@@ -201,7 +206,7 @@ export function useTransactionForm({
       );
       if (!stillHeld) {
         setSelectedStockId(undefined);
-        setPriceStr('');
+        setPriceValue('');
         setPriceTouched(false);
       }
     }
@@ -239,25 +244,25 @@ export function useTransactionForm({
     selectedAsset,
     heldPosition,
     side,
-    qtyStr,
-    priceStr,
+    qtyValue,
+    priceValue,
     actionDate,
     note,
     currencyCode,
     currencySymbol: getCurrencySymbol(currencyCode, formatLocale),
     canCycleCurrency: side === 'Buy' && (selectedAsset?.supportedCurrencies.length ?? 0) > 1,
-    decimalSeparator,
+    numberSeparators,
     total,
     exceedsHeld,
     isPending,
     canSubmit,
-    setQtyStr: (v: string) => setQtyStr(sanitizeDecimalText(v)),
-    setPriceStr: (v: string) => {
-      setPriceStr(sanitizeDecimalText(v));
+    setQtyValue,
+    setPriceValue: (value: string | number) => {
+      setPriceValue(value);
       setPriceTouched(true);
     },
     fillMaxHeld: () => {
-      if (heldPosition) setQtyStr(String(heldPosition.quantity).replace('.', decimalSeparator));
+      if (heldPosition) setQtyValue(toNumericString(heldPosition.quantity));
     },
     setActionDate,
     setNote,

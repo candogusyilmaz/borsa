@@ -1,57 +1,46 @@
 import { i18n } from '@lingui/core';
-import { resolveInitialPreferences } from './preferences-adapter';
-import { type AppLanguage, resolvePreferences, sourceLanguage } from './types';
+import dayjs from 'dayjs';
+import 'dayjs/locale/tr';
+import { messages as en } from '../../locales/en/messages.po';
+import { messages as tr } from '../../locales/tr/messages.po';
+import { type AppLanguage, isAppLanguage, sourceLanguage } from './types';
 
-const catalogs = {
-  en: () => import('../../locales/en/messages.po'),
-  tr: () => import('../../locales/tr/messages.po')
-};
+const storageKey = 'canverse:locale';
 
-const dateLocales = {
-  en: () => import('dayjs/locale/en'),
-  tr: () => import('dayjs/locale/tr')
-};
-
-let preferences = resolvePreferences(sourceLanguage);
-let activation = 0;
-const listeners = new Set<() => void>();
-
-export function getLocalePreferences() {
-  return preferences;
-}
-
-export function subscribeLocale(listener: () => void) {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-}
-
-export async function activateLocale(language: AppLanguage, countryCode?: string | null) {
-  const request = ++activation;
-  let catalog: Awaited<ReturnType<(typeof catalogs)[AppLanguage]>>;
+function readDeviceLanguage(): AppLanguage | undefined {
   try {
-    [catalog] = await Promise.all([catalogs[language](), dateLocales[language]()]);
-  } catch (error) {
-    if (request !== activation) return false;
-    throw error;
+    const stored = localStorage.getItem(storageKey);
+    if (isAppLanguage(stored)) return stored;
+  } catch {
+    // Storage can be disabled without preventing language changes in this tab.
   }
-  if (request !== activation) return false;
-
-  const next = resolvePreferences(language, countryCode);
-  const changed = next.language !== preferences.language || next.countryCode !== preferences.countryCode;
-  if (changed) preferences = next;
-  document.documentElement.lang = language;
-  if (i18n.locale !== language) i18n.loadAndActivate({ locale: language, messages: catalog.messages });
-  if (changed) for (const listener of listeners) listener();
-  return true;
 }
 
-export async function initLocale() {
-  const initial = resolveInitialPreferences();
+function browserLanguage(): AppLanguage {
+  const preferredLanguage = navigator.languages?.[0] || navigator.language;
+  return preferredLanguage?.toLowerCase().split('-')[0] === 'tr' ? 'tr' : sourceLanguage;
+}
+
+function activateLanguage(language: AppLanguage) {
+  document.documentElement.lang = language;
+  dayjs.locale(language);
+  if (i18n.locale !== language) i18n.activate(language);
+}
+
+export function getLanguage(locale = i18n.locale): AppLanguage {
+  return isAppLanguage(locale) ? locale : sourceLanguage;
+}
+
+export function initLocale() {
+  i18n.load({ en, tr });
+  activateLanguage(readDeviceLanguage() ?? browserLanguage());
+}
+
+export function setLanguage(language: AppLanguage) {
+  activateLanguage(language);
   try {
-    await activateLocale(initial.language, initial.countryCode);
-  } catch (error) {
-    if (initial.language === sourceLanguage) throw error;
-    console.error('Could not load the preferred locale', error);
-    await activateLocale(sourceLanguage, initial.countryCode);
+    localStorage.setItem(storageKey, language);
+  } catch {
+    // The active selection remains available in memory.
   }
 }

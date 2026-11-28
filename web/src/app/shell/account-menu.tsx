@@ -2,7 +2,6 @@ import { Trans, useLingui } from '@lingui/react/macro';
 import { ActionIcon, Avatar, Button, Menu, Stack } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { IconLogout, IconMoon, IconSun, IconTrash } from '@tabler/icons-react';
-import { useNavigate } from '@tanstack/react-router';
 import { useClearMyDataModal } from '~/features/account/workflows/clear-my-data';
 import { useAuthentication } from '~/features/auth/authentication-context';
 import { ResponsiveOverlay } from '~/shared/components/responsive-overlay/responsive-overlay';
@@ -13,7 +12,6 @@ import styles from './member-shell.module.css';
 export function AccountMenu({ isMobile }: { isMobile: boolean }) {
   const { t } = useLingui();
   const { user, logout } = useAuthentication();
-  const navigate = useNavigate();
   const { colorScheme, toggleTheme } = useThemeToggle();
   const clearData = useClearMyDataModal((state) => state.open);
   const isDark = colorScheme === 'dark';
@@ -23,7 +21,7 @@ export function AccountMenu({ isMobile }: { isMobile: boolean }) {
   const themeIcon = isDark ? <IconSun size={16} /> : <IconMoon size={16} />;
   const name = user?.name || t`My account`;
   const avatar = <Avatar name={user?.name} size={32} radius="xl" classNames={{ placeholder: styles.avatar }} />;
-  const signOut = () => void logout().then(() => navigate({ to: '/login' }));
+  const signOut = () => void logout();
 
   if (isMobile) {
     return (

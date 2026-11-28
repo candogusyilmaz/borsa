@@ -1,10 +1,11 @@
-import { Trans, useLingui } from '@lingui/react/macro';
+import { Plural, Trans, useLingui } from '@lingui/react/macro';
 import { Button, Group, Text } from '@mantine/core';
 import { IconArrowNarrowRight, IconCirclePlus, IconFile, IconTrash, IconUpload } from '@tabler/icons-react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { $api } from '~/api/openapi';
+import { parseApiError, unwrapApiResponse } from '~/api/errors';
+import { $api, client } from '~/api/openapi';
 import { ResponsiveOverlay } from '~/shared/components/responsive-overlay/responsive-overlay';
 import { alerts } from '~/shared/feedback/alerts';
 import { getCurrencySymbol } from '~/shared/format/currency';
@@ -94,7 +95,21 @@ function BulkTradeForm({ portfolioId, close }: { portfolioId: number; close: () 
 
   // ── Mutations ──────────────────────────────────────────────
 
-  const importMutation = $api.useMutation('post', '/api/portfolios/{portfolioId}/trades/import', {
+  const importMutation = useMutation({
+    mutationFn: async (file: File) => {
+      return unwrapApiResponse(
+        await client.POST('/api/portfolios/{portfolioId}/trades/import', {
+          // TradeController.importTransactions omits @PathVariable portfolioId and consumes = MULTIPART_FORM_DATA_VALUE in OpenAPI schema.
+          params: { path: { portfolioId: Number(portfolioId) } } as never,
+          body: { file } as unknown as { file: string },
+          bodySerializer: () => {
+            const formData = new FormData();
+            formData.append('file', file);
+            return formData;
+          }
+        })
+      );
+    },
     onSuccess: (res) => {
       setRows((prev) => [
         ...prev,
@@ -107,27 +122,35 @@ function BulkTradeForm({ portfolioId, close }: { portfolioId: number; close: () 
           actionDate: new Date(t.actionDate)
         }))
       ]);
-      if (fileInputRef.current) fileInputRef.current.value = '';
       const count = res.length;
       alerts.success(t`Trades imported from file: ${count}.`);
     },
-    onError: () => alerts.error(t`Could not process the file. Please check the format.`)
+    onError: (error) => {
+      const { detail, title } = parseApiError(error);
+      alerts.error(detail ?? title ?? t`Could not process the file. Please check the format.`);
+    },
+    onSettled: () => {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   });
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.currentTarget.files?.[0];
-    if (file) importMutation.mutate({ body: { file: file as unknown as string } });
+    if (file) importMutation.mutate(file);
   };
 
   const saveMutation = $api.useMutation('post', '/api/portfolios/{portfolioId}/trades/bulk', {
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries();
       setRows([]);
       close();
-      const count = rows.length;
+      const count = variables.body.length;
       alerts.success(t`Trades submitted: ${count}.`);
     },
-    onError: () => alerts.error(t`Failed to submit trades. Please try again.`)
+    onError: (error) => {
+      const { detail, title } = parseApiError(error);
+      alerts.error(detail ?? title ?? t`Failed to submit trades. Please try again.`);
+    }
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -262,7 +285,7 @@ function BulkTradeForm({ portfolioId, close }: { portfolioId: number; close: () 
         {/* Footer */}
         <div className={classes.footer}>
           <Text size="sm" c="dimmed">
-            {rows.length} {rows.length === 1 ? 'trade' : 'trades'}
+            <Plural value={rows.length} one="# trade" other="# trades" />
           </Text>
           <Group gap="xs">
             <Button variant="default" onClick={close} disabled={saveMutation.isPending}>

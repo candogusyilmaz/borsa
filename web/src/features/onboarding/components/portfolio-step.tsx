@@ -57,7 +57,7 @@ export function PortfolioStep({ onboardingRequest, setOnboardingRequest, onNext 
         <Stack gap={35}>
           <TextInput
             name="name"
-            label={t`PORTFOLIO NAME`}
+            label={t`Portfolio name`}
             placeholder={t`e.g. Tech Fund`}
             leftSection={<IconFolder size={18} />}
             leftSectionWidth={50}
@@ -68,6 +68,7 @@ export function PortfolioStep({ onboardingRequest, setOnboardingRequest, onNext 
                 fontSize: 12,
                 fontWeight: 600,
                 color: 'var(--mantine-color-dimmed)',
+                textTransform: 'uppercase',
                 marginBottom: 4,
                 marginLeft: 2
               },
@@ -81,8 +82,8 @@ export function PortfolioStep({ onboardingRequest, setOnboardingRequest, onNext 
 
           <Stack gap={10}>
             <Group justify="space-between">
-              <Text fz={12} lts={-0.08} ml={2} fw={600} c="var(--mantine-color-dimmed)">
-                <Trans>THEME COLOR</Trans>
+              <Text fz={12} lts={-0.08} ml={2} fw={600} c="var(--mantine-color-dimmed)" tt="uppercase">
+                <Trans>Theme color</Trans>
               </Text>
               <Text fz={10} c="var(--mantine-primary-color-filled)" fw={700}>
                 <Trans>Visual Identity</Trans>

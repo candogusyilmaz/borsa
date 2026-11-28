@@ -1,81 +1,56 @@
-import { getLocalePreferences } from '~/shared/i18n/i18n';
-import { type AuthSession, isTokenExpiringSoon, sessionStore } from './token';
+import { unwrapApiResponse } from './errors';
+import { type AuthSession, sessionStore } from './token';
 
 const LOCK_NAME = 'canverse-auth-refresh';
-const REFRESH_TIMEOUT_MS = 10_000;
+export const AUTH_REQUEST_TIMEOUT_MS = 10_000;
 
-const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') ?? '';
+type RequestRefresh = (signal: AbortSignal) => Promise<{ data?: AuthSession; error?: unknown; response: Response }>;
 
-let refreshPromise: Promise<string> | null = null;
+let pendingRefresh: { email: string; promise: Promise<AuthSession | null> } | null = null;
 
-async function withCrossTabLock<T>(task: () => Promise<T>): Promise<T> {
-  if (typeof navigator !== 'undefined' && navigator.locks?.request) {
-    return navigator.locks.request(LOCK_NAME, task);
-  }
-  return task();
+export async function withAuthLock<T>(task: () => Promise<T>): Promise<T> {
+  return navigator.locks ? navigator.locks.request(LOCK_NAME, task) : task();
 }
 
-export async function getValidAccessToken(): Promise<string | null> {
-  const session = sessionStore.getSession();
-  if (!session) return null;
+export async function refreshAccessToken(attempt: AuthSession, requestRefresh: RequestRefresh): Promise<AuthSession | null> {
+  const { email, token } = attempt;
+  const current = sessionStore.getSession();
+  if (current?.email !== email) return null;
+  if (current.token !== token) return current;
+  if (pendingRefresh?.email === email) return pendingRefresh.promise;
 
-  if (!isTokenExpiringSoon(session.token)) {
-    return session.token;
-  }
+  const promise = withAuthLock(async () => {
+    const before = sessionStore.getSession();
+    if (before?.email !== email) return null;
+    if (before.token !== token) return before;
 
-  return refreshAccessToken(session.token);
-}
+    const result = await requestRefresh(AbortSignal.timeout(AUTH_REQUEST_TIMEOUT_MS));
+    const after = sessionStore.getSession();
+    if (after?.email !== email) return null;
+    if (after.token !== token) return after;
 
-export async function refreshAccessToken(failedToken: string | null): Promise<string> {
-  const currentToken = sessionStore.getToken();
-
-  if (currentToken && currentToken !== failedToken && !isTokenExpiringSoon(currentToken)) {
-    return currentToken;
-  }
-
-  if (refreshPromise) {
-    return refreshPromise;
-  }
-
-  refreshPromise = withCrossTabLock(async () => {
-    const latestSession = sessionStore.getSession();
-    if (!latestSession) {
-      throw new Error('Session cleared');
-    }
-
-    if (latestSession.token !== failedToken && !isTokenExpiringSoon(latestSession.token)) {
-      return latestSession.token;
-    }
-
-    const res = await fetch(`${apiBaseUrl}/api/auth/refresh-token`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Accept-Language': getLocalePreferences().language
-      },
-      signal: AbortSignal.timeout(REFRESH_TIMEOUT_MS)
-    });
-
-    if (res.status === 401 || res.status === 403) {
+    if (result.response.status === 401) {
       sessionStore.clearSession();
-      throw new Error('Refresh token expired or invalid');
+      return null;
     }
 
-    if (!res.ok) {
-      throw new Error(`Token refresh failed with status ${res.status}`);
-    }
-
-    const data = (await res.json()) as AuthSession;
-    if (!data?.token) {
-      sessionStore.clearSession();
+    const session = unwrapApiResponse(result);
+    if (
+      session?.email !== email ||
+      typeof session.token !== 'string' ||
+      !session.token ||
+      typeof session.name !== 'string' ||
+      !Array.isArray(session.permissions)
+    ) {
       throw new Error('Invalid refresh response');
     }
 
-    sessionStore.setSession(data);
-    return data.token;
+    sessionStore.setSession(session);
+    return session;
   }).finally(() => {
-    refreshPromise = null;
+    if (pendingRefresh?.promise === promise) pendingRefresh = null;
   });
 
-  return refreshPromise;
+  pendingRefresh = { email, promise };
+  return promise;
 }

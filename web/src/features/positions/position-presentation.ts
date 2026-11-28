@@ -1,7 +1,7 @@
 import type { components } from '~/api/schema';
 
-export function getPositionCurrencyOptions(currency: string, market?: boolean): Intl.NumberFormatOptions {
-  return { currency, currencyDisplay: market && currency === 'TRY' ? 'narrowSymbol' : undefined };
+export function getPositionCurrencyOptions(currency: string, _market?: boolean): Intl.NumberFormatOptions {
+  return { currency };
 }
 
 export function getPositionMetrics({ instrument, quantity, avgCost }: components['schemas']['PositionInfo']) {

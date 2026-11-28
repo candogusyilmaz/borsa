@@ -2,89 +2,67 @@ import type { paths } from './schema';
 
 export type AuthSession = paths['/api/auth/token']['post']['responses']['200']['content']['*/*'];
 
-export type SessionEvent = { type: 'UPDATED'; session: AuthSession } | { type: 'CLEARED' };
-
 const STORAGE_KEY = 'user';
-const CHANNEL_NAME = 'canverse_auth_sync';
-const DEFAULT_BUFFER_MS = 60_000;
+const listeners = new Set<() => void>();
 
-const listeners = new Set<(event: SessionEvent) => void>();
-const channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel(CHANNEL_NAME) : null;
-
-channel?.addEventListener('message', (event: MessageEvent<SessionEvent>) => {
-  notifyLocal(event.data);
-});
-
-function notifyLocal(event: SessionEvent): void {
-  for (const listener of listeners) {
-    listener(event);
-  }
+function notifyLocal(): void {
+  for (const listener of listeners) listener();
 }
 
-export function getJwtExpirationMs(token: string): number | null {
+function readSession(): AuthSession | null {
   try {
-    const payloadPart = token.split('.')[1];
-    if (!payloadPart) return null;
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
 
-    const base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
-    const padded = base64.padEnd(base64.length + ((4 - (base64.length % 4)) % 4), '=');
-    const bytes = Uint8Array.from(atob(padded), (char) => char.charCodeAt(0));
-    const payload = JSON.parse(new TextDecoder().decode(bytes)) as { exp?: number };
-
-    return typeof payload.exp === 'number' ? payload.exp * 1000 : null;
+    const session = JSON.parse(raw) as AuthSession | null;
+    return typeof session?.email === 'string' && session.email && typeof session.token === 'string' && session.token ? session : null;
   } catch {
     return null;
   }
 }
 
-export function isTokenExpiringSoon(token: string, bufferMs = DEFAULT_BUFFER_MS): boolean {
-  const expMs = getJwtExpirationMs(token);
-  if (expMs === null) return true;
-
-  return Date.now() + bufferMs >= expMs;
-}
+const initialSession = readSession();
+// A document stays bound to its first signed-in account until navigation replaces it.
+let documentEmail = initialSession?.email;
 
 export const sessionStore = {
-  getSession(): AuthSession | null {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return null;
+  initialSession,
+  getSession: readSession,
 
-      const parsed = JSON.parse(raw) as AuthSession;
-      if (typeof parsed?.token !== 'string' || parsed.token.length === 0) {
-        localStorage.removeItem(STORAGE_KEY);
-        return null;
-      }
-
-      // Access token süresi dolmuş olsa bile silme — HttpOnly refresh cookie ile yenilenecek
-      return parsed;
-    } catch {
-      return null;
-    }
+  acceptSession(session: AuthSession | null): boolean {
+    if (documentEmail && session?.email !== documentEmail) return false;
+    documentEmail ??= session?.email;
+    return true;
   },
 
-  getToken(): string | null {
-    return this.getSession()?.token ?? null;
+  getRequestSession(): AuthSession | null {
+    const session = readSession();
+    if (documentEmail && session?.email !== documentEmail) {
+      throw new DOMException('The signed-in account changed', 'AbortError');
+    }
+    return session;
   },
 
   setSession(session: AuthSession): void {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
-    const event: SessionEvent = { type: 'UPDATED', session };
-    notifyLocal(event);
-    channel?.postMessage(event);
+    notifyLocal();
   },
 
   clearSession(): void {
     localStorage.removeItem(STORAGE_KEY);
-    const event: SessionEvent = { type: 'CLEARED' };
-    notifyLocal(event);
-    channel?.postMessage(event);
+    notifyLocal();
   },
 
-  subscribe(listener: (event: SessionEvent) => void): () => void {
+  subscribe(listener: () => void): () => void {
+    function onStorage(event: StorageEvent) {
+      if (event.storageArea === localStorage && (event.key === STORAGE_KEY || event.key === null)) listener();
+    }
+
     listeners.add(listener);
+    window.addEventListener('storage', onStorage);
     return () => {
       listeners.delete(listener);
+      window.removeEventListener('storage', onStorage);
     };
   }
 };

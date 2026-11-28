@@ -1,6 +1,8 @@
-export function getCurrencySymbol(currencyCode: string, locale: string) {
+import { getDisplayNames, getNumberFormat } from './format';
+
+export function getCurrencySymbol(currencyCode: string, locale: string): string {
   try {
-    const parts = new Intl.NumberFormat(locale, {
+    const parts = getNumberFormat(locale, {
       style: 'currency',
       currency: currencyCode,
       currencyDisplay: 'narrowSymbol'
@@ -10,4 +12,19 @@ export function getCurrencySymbol(currencyCode: string, locale: string) {
   } catch {
     return currencyCode;
   }
+}
+
+export function getCurrencyInfo(currencyCode: string, language: string, locale: string) {
+  let name = currencyCode;
+  try {
+    name = getDisplayNames(language, { type: 'currency' }).of(currencyCode) ?? currencyCode;
+  } catch {
+    // Non-ISO currency codes fall back to the raw code.
+  }
+
+  return {
+    currency: currencyCode,
+    name,
+    symbol: getCurrencySymbol(currencyCode, locale)
+  };
 }

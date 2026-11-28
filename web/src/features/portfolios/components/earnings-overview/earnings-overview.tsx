@@ -7,6 +7,7 @@ import { FinanceBadge } from '~/shared/components/finance-badge/finance-badge';
 import { InlineState } from '~/shared/components/inline-state/inline-state';
 import { getFinanceTone } from '~/shared/format/finance-tone';
 import { useFormat } from '~/shared/format/use-format';
+import { useLocale } from '~/shared/i18n/locale-context';
 import styles from './earnings-overview.module.css';
 import { PeriodNavigator } from './period-navigator';
 
@@ -14,11 +15,13 @@ type Period = 'monthly' | 'weekly';
 
 export function EarningsOverview({ portfolioId }: { portfolioId: number }) {
   const { t } = useLingui();
+  const { language } = useLocale();
   const format = useFormat();
-  const now = dayjs();
+  const now = dayjs().locale(language);
   const [period, setPeriod] = useState<Period>('monthly');
-  const [year, setYear] = useState(now.year());
-  const [week, setWeek] = useState(now.startOf('week'));
+  const [year, setYear] = useState(() => dayjs().year());
+  const [weekAnchor, setWeekAnchor] = useState(() => dayjs());
+  const week = weekAnchor.locale(language).startOf('week');
   const [selectedCurrency, selectCurrency] = useState<string>();
   const [selectedBar, selectBar] = useState<number>();
   const trades = $api.useQuery('get', '/api/trades', { params: { query: { portfolioId } } });
@@ -53,14 +56,15 @@ export function EarningsOverview({ portfolioId }: { portfolioId: number }) {
   const relevant = realized.filter((trade) => trade.currency === currency);
   const monthly = period === 'monthly';
   const start = monthly ? now.year(year).startOf('year') : week;
+  const end = start.add(1, monthly ? 'year' : 'week');
   const unit = monthly ? 'month' : 'day';
   const values = new Map<number, number>();
   let previous = 0;
   const previousStart = monthly ? start.subtract(1, 'year') : start.subtract(1, 'week');
   for (const { date, profit } of relevant) {
     if (date.isBefore(start) && !date.isBefore(previousStart)) previous += profit;
-    if (!date.isBefore(start) && date.isBefore(start.add(1, monthly ? 'year' : 'week'))) {
-      const index = date.diff(start, unit);
+    if (!date.isBefore(start) && date.isBefore(end)) {
+      const index = monthly ? date.month() : date.startOf('day').diff(start.startOf('day'), 'day');
       values.set(index, (values.get(index) ?? 0) + profit);
     }
   }
@@ -78,14 +82,18 @@ export function EarningsOverview({ portfolioId }: { portfolioId: number }) {
   const change = previous !== 0 ? ((total - previous) / Math.abs(previous)) * 100 : undefined;
   const active = bars[selectedBar ?? Math.max(...values.keys())];
   const earliest = relevant.reduce((earlier, { date }) => (date.isBefore(earlier) ? date : earlier), now);
-  const weekStart = format.date(week.valueOf(), { month: 'short', day: 'numeric' });
-  const weekEnd = format.date(week.add(6, 'day').valueOf(), { month: 'short', day: 'numeric' });
-  const weekLabel = `${weekStart} – ${weekEnd}`;
+  const weekEnd = week.add(6, 'day');
+  const includeWeekYear = week.year() !== now.year() || weekEnd.year() !== now.year();
+  const weekLabel = format.dateRange(week.valueOf(), weekEnd.valueOf(), {
+    month: 'short',
+    day: 'numeric',
+    ...(includeWeekYear ? { year: 'numeric' } : {})
+  });
   const money = (value: number) => format.currency(value, { currency, signDisplay: 'exceptZero' });
 
   function shift(offset: number) {
     if (monthly) setYear((value) => value + offset);
-    else setWeek((value) => value.add(offset, 'week'));
+    else setWeekAnchor((value) => value.add(offset, 'week'));
     selectBar(undefined);
   }
 
@@ -112,7 +120,7 @@ export function EarningsOverview({ portfolioId }: { portfolioId: number }) {
             label={monthly ? format.number(year, { useGrouping: false }) : weekLabel}
             onPrev={() => shift(-1)}
             onNext={() => shift(1)}
-            canPrev={monthly ? year > earliest.year() : week.isAfter(earliest.startOf('week'))}
+            canPrev={monthly ? year > earliest.year() : week.isAfter(earliest.locale(language).startOf('week'))}
             canNext={monthly ? year < now.year() : week.isBefore(now.startOf('week'))}
           />
           <SegmentedControl

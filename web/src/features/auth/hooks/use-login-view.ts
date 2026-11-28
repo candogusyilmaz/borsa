@@ -2,6 +2,7 @@ import { useLingui } from '@lingui/react/macro';
 import { useForm } from '@mantine/form';
 import { useNavigate } from '@tanstack/react-router';
 import { useEffect } from 'react';
+import { parseApiError } from '~/api/errors';
 import { useAuthentication } from '~/features/auth/authentication-context';
 import { consumeGoogleRedirectParams } from '~/features/auth/components/google-sign-in-button';
 import { alerts } from '~/shared/feedback/alerts';
@@ -17,7 +18,7 @@ export function useLoginView() {
       password: ''
     },
     validate: {
-      username: (value) => (value ? null : t`Enter your email address`),
+      username: (value) => (value.trim() ? null : t`Enter your email address`),
       password: (value) => (value ? null : t`Enter your password`)
     }
   });
@@ -29,8 +30,9 @@ export function useLoginView() {
         onSuccess: () => {
           navigate({ to: '/dashboard', replace: true });
         },
-        onError: () => {
-          alerts.error(t`Could not sign in with Google. Please try again.`, t`Google sign-in failed`);
+        onError: (error) => {
+          const { detail, title } = parseApiError(error);
+          alerts.error(detail ?? title ?? t`Could not sign in with Google. Please try again.`, t`Google sign-in failed`);
         }
       }
     );
@@ -59,17 +61,10 @@ export function useLoginView() {
         navigate({ to: '/dashboard' });
       },
       onError: (error) => {
-        const res = error as unknown as {
-          response?: { data?: unknown };
-        };
-        const responseData = res.response?.data as {
-          detail?: string;
-        };
-
-        alerts.error(responseData?.detail || t`Invalid username or password`, t`Error while logging in`);
-        form.reset();
-        form.getInputNode('username')?.focus();
-        form.validate();
+        const { detail, title } = parseApiError(error);
+        alerts.error(detail ?? title ?? t`Invalid username or password`, t`Error while logging in`);
+        form.setFieldValue('password', '');
+        form.getInputNode('password')?.focus();
       }
     });
   });
